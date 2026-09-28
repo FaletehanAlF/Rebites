@@ -73,23 +73,6 @@ function sellerProductToFoodItem(
   };
 }
 
-function isOpenNow(openHours: string): boolean {
-  // Deprecated: gunakan isOpenNow dari lib/store-status untuk konsistensi
-  const match = openHours.match(
-    /(\d{1,2})\.(\d{2})\s*[-]\s*(\d{1,2})\.(\d{2})/,
-  );
-  if (!match) return true;
-
-  const open = Number(match[1]) * 60 + Number(match[2]);
-  const close = Number(match[3]) * 60 + Number(match[4]);
-  const now = new Date();
-  const minutes = now.getHours() * 60 + now.getMinutes();
-
-  return open <= close
-    ? minutes >= open && minutes < close
-    : minutes >= open || minutes < close;
-}
-
 function initialsOf(name: string) {
   return name
     .split(" ")

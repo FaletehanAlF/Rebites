@@ -10,8 +10,6 @@ import type {
 
 /** Pajak / biaya admin 12% dari (subtotal - diskon) - selaras dengan lib/server/pricing.ts */
 export const ADMIN_FEE_RATE = 0.12;
-/** @deprecated */
-export const ADMIN_FEE_AMOUNT = 2000;
 
 export const DELIVERY_FEE = 8000;
 

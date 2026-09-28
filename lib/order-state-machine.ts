@@ -6,8 +6,6 @@ import { calculateTravelMinutes } from './delivery-estimate';
 
 /** Pajak/biaya admin 12% - selaras dengan pricing.ts & useOrderCalculation.ts. DB service_fee tetap INT (rounded). */
 export const ADMIN_FEE_RATE = 0.12;
-/** @deprecated nilai lama 2000, disimpan untuk kompatibilitas order lama */
-export const ADMIN_FEE_AMOUNT = 2000;
 
 export type OrderStatusValue =
   | 'pending'

@@ -1,8 +1,6 @@
 ﻿
 /** Pajak / biaya admin 12% dari (subtotal - diskon). DB service_fee tetap integer (dibulatkan). */
 export const ADMIN_FEE_RATE = 0.12;
-/** @deprecated tetap diekspor untuk kompatibilitas import lama - nilai tetap 2000 tapi tidak dipakai lagi untuk kalkulasi baru */
-export const ADMIN_FEE_AMOUNT = 2000;
 export const DELIVERY_FEE = 8000;
 export const REBITES_COIN_RATE = 0.005;
 export const COIN_VALUE = 1;
