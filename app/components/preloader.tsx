@@ -90,7 +90,7 @@ export function Preloader({ onDone }: { onDone?: () => void }) {
                 <div
                   className="h-full rounded-full bg-cream"
                   style={{ width: `${progress}%` }}
-                />
+                ></div>
               </div>
             </div>
           </motion.div>
