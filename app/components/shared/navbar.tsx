@@ -48,7 +48,6 @@ export function ProfileNavbar({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [location, setLocation] = useState(LOCATIONS[0]);
-  const [overDark, setOverDark] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [sessionUser, setSessionUser] = useState<SidebarUser | null>(null);
   const { userId } = useCurrentUser();
@@ -119,31 +118,6 @@ export function ProfileNavbar({
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const sections = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-nav]"),
-    );
-    if (sections.length === 0) return;
-
-    const probeY = 44;
-
-    const update = () => {
-      const current = sections.find((s) => {
-        const r = s.getBoundingClientRect();
-        return r.top <= probeY && r.bottom > probeY;
-      });
-      setOverDark(current?.dataset.nav === "green");
-    };
-
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
-  }, []);
-
   const handleNav = (id: string) => {
     setDrawerOpen(false);
     setActive(id);
@@ -167,21 +141,14 @@ export function ProfileNavbar({
       onClick={onClick}
       className={cn(
         "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200",
-        overDark
-          ? "text-white/80 hover:bg-white/10 hover:text-white"
-          : "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
+        "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
         FOCUS_RING,
       )}
     >
       {children}
       {badge !== undefined && badge > 0 && (
         <span
-          className={cn(
-            "absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold transition-colors duration-500",
-            overDark
-              ? "bg-caramel text-charcoal-900"
-              : "bg-primary text-white",
-          )}
+          className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white"
         >
           {badge}
         </span>
@@ -195,10 +162,7 @@ export function ProfileNavbar({
         <div className="mx-auto w-full max-w-[1400px]">
           <nav
             className={cn(
-              "flex min-w-fit items-center justify-between rounded-full border px-5 shadow-[0_20px_44px_-26px_rgba(47,66,53,0.45)] backdrop-blur-xl transition-colors duration-500 lg:h-16 lg:px-6",
-              overDark
-                ? "border-white/15 bg-primary/75 text-white"
-                : "border-hairline/70 bg-cream/80 text-primary",
+              "flex min-w-fit items-center justify-between rounded-full border border-hairline/70 bg-white px-5 text-primary shadow-[0_20px_44px_-26px_rgba(47,66,53,0.45)] backdrop-blur-xl transition-colors duration-500 lg:h-16 lg:px-6",
             )}
           >
             <Link
@@ -217,8 +181,7 @@ export function ProfileNavbar({
               />
               <span
                 className={cn(
-                  "font-sans text-xl font-bold tracking-tight transition-colors duration-500",
-                  overDark ? "text-white" : "text-primary",
+                  "font-sans text-xl font-bold tracking-tight text-primary transition-colors duration-500",
                 )}
               >
                 ReBites
@@ -238,12 +201,8 @@ export function ProfileNavbar({
                     className={cn(
                       "rounded-full px-3 py-2 font-inter text-sm transition-colors duration-200 xl:px-4",
                       active === link.id
-                        ? overDark
-                          ? "bg-white/15 font-semibold text-white"
-                          : "bg-cream-100 font-semibold text-primary"
-                        : overDark
-                          ? "text-white/75 hover:text-white"
-                          : "text-charcoal-500 hover:text-caramel",
+                        ? "bg-cream-100 font-semibold text-primary"
+                        : "text-charcoal-500 hover:text-caramel",
                       FOCUS_RING,
                     )}
                   >
@@ -263,17 +222,12 @@ export function ProfileNavbar({
                     onClick={() => setLocationOpen((v) => !v)}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition-colors duration-200",
-                      overDark
-                        ? "text-white/80 hover:bg-white/10 hover:text-white"
-                        : "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
+                      "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
                       FOCUS_RING,
                     )}
                   >
                     <MapPin
-                      className={cn(
-                        "h-4 w-4 transition-colors duration-500",
-                        overDark ? "text-caramel" : "text-primary",
-                      )}
+                      className="h-4 w-4 text-primary transition-colors duration-500"
                     />
                     <span className="max-w-[100px] truncate">{location}</span>
                     <ChevronDown
@@ -364,8 +318,7 @@ export function ProfileNavbar({
                 aria-expanded={drawerOpen}
                 onClick={() => setDrawerOpen((v) => !v)}
                 className={cn(
-                  "hidden h-10 w-10 items-center justify-center rounded-full transition-colors duration-200 lg:hidden",
-                  overDark ? "text-white" : "text-primary",
+                  "hidden h-10 w-10 items-center justify-center rounded-full text-primary transition-colors duration-200 lg:hidden",
                   FOCUS_RING,
                 )}
               >
