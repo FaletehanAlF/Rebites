@@ -30,6 +30,14 @@ interface StoreHeroCardProps {
   openNow: boolean;
 }
 
+/** Async store-settings values that override the `vendor` props (empty → keep vendor). */
+interface StoreSettingsOverride {
+  storeName: string;
+  description: string;
+  address: string;
+  image: string;
+}
+
 export function StoreHeroCard({ vendor, openNow }: StoreHeroCardProps) {
   const [following, setFollowing] = useState(false);
   const tagline = vendor.tagline ?? "Mitra surplus makanan ReBites.";
@@ -52,27 +60,27 @@ export function StoreHeroCard({ vendor, openNow }: StoreHeroCardProps) {
     if (!ok) setFollowing(!next);
   };
 
-  const [storeName, setStoreName] = useState(vendor.name);
-  const [storeDesc, setStoreDesc] = useState(vendor.description);
-  const [storeAddress, setStoreAddress] = useState(vendor.address);
-  const [storeImage, setStoreImage] = useState(vendor.image);
+  // Store settings are an async *override* of the vendor props. Deriving the
+  // displayed values means a new `vendor` prop shows up on the very next
+  // render instead of one render late (the old `useState` mirror + sync effect).
+  const [settings, setSettings] = useState<StoreSettingsOverride | null>(null);
 
-  useEffect(() => {
-    setStoreName(vendor.name);
-    setStoreDesc(vendor.description);
-    setStoreAddress(vendor.address);
-    setStoreImage(vendor.image);
-  }, [vendor]);
+  const storeName = settings?.storeName || vendor.name;
+  const storeDesc = settings?.description || vendor.description;
+  const storeAddress = settings?.address || vendor.address;
+  const storeImage = settings?.image || vendor.image;
 
   useEffect(() => {
     let mounted = true;
     const refresh = () => {
       getStoreSettingsByStoreId(vendor.id).then((s) => {
         if (!mounted || !s) return;
-        setStoreName(s.storeName || vendor.name);
-        setStoreDesc(s.description || vendor.description);
-        setStoreAddress(s.address || vendor.address);
-        if (s.image) setStoreImage(s.image);
+        setSettings({
+          storeName: s.storeName || vendor.name,
+          description: s.description || vendor.description,
+          address: s.address || vendor.address,
+          image: s.image || vendor.image,
+        });
       });
     };
     refresh();
@@ -114,6 +122,7 @@ export function StoreHeroCard({ vendor, openNow }: StoreHeroCardProps) {
                   <SmartImage
                     src={storeImage}
                     alt={`Foto ${storeName}`}
+                    sizes="128px"
                   />
                 </div>
 

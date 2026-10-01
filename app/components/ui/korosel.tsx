@@ -58,6 +58,18 @@ interface WheelConfig {
 
 const DEFAULT_ITEMS: string[] = [];
 
+// Read once per page instead of on every render (getComputedStyle forces a
+// style recalc). Only affects animation math, never SSR'd markup, so the
+// server-side fallback of 16 is safe.
+let cachedRemPx: number | null = null;
+function getRemPx(): number {
+  if (typeof window === 'undefined') return 16;
+  if (cachedRemPx == null) {
+    cachedRemPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  }
+  return cachedRemPx;
+}
+
 const OptionWheel = ({
   items = DEFAULT_ITEMS,
   defaultSelected = 3,
@@ -100,11 +112,10 @@ const OptionWheel = ({
   const [selectedIndex, setSelectedIndex] = useState(defaultSelected);
   const [isDragging, setIsDragging] = useState(false);
 
-  const remPx = typeof window !== 'undefined' ? parseFloat(getComputedStyle(document.documentElement).fontSize) || 16 : 16;
+  const remPx = getRemPx();
   const isPlateMode = renderItem != null;
 
-  onChangeRef.current = onChange;
-  cfgRef.current = {
+  const cfg: WheelConfig = {
     count: items.length,
     items,
     rowH: isPlateMode ? (plateSize * spacing * 0.7) : Math.max(fontSize * spacing * remPx, 1),
@@ -121,6 +132,10 @@ const OptionWheel = ({
     plateMode: isPlateMode,
     orientation,
   };
+
+  // Mirror the latest config/callback for the rAF loop and event handlers.
+  onChangeRef.current = onChange;
+  cfgRef.current = cfg;
 
   const runFrame = useCallback((now: number) => {
     const dt = Math.min((now - lastRef.current) / 1000, 0.05);
@@ -182,7 +197,15 @@ const OptionWheel = ({
       }
       el.style.transform = transform;
       el.style.opacity = String(Math.max(cfg.minOpacity, 1 - dist * cfg.fade));
-      el.style.filter = cfg.blur > 0 ? `blur(${(dist * cfg.blur).toFixed(2)}px)` : 'none';
+      // Quantized to 0.5px steps so the (paint-triggering) blur value rarely
+      // changes between frames and style invalidation is minimized.
+      if (cfg.blur > 0) {
+        const b = Math.round(dist * cfg.blur * 2) / 2;
+        const filter = `blur(${b}px)`;
+        if (el.style.filter !== filter) el.style.filter = filter;
+      } else if (el.style.filter !== 'none') {
+        el.style.filter = 'none';
+      }
       el.style.setProperty('--ow-p', p.toFixed(4));
     }
 
@@ -388,22 +411,22 @@ const OptionWheel = ({
           role="option"
           aria-selected={selectedIndex === index}
           className={
-            cfgRef.current.plateMode
+            cfg.plateMode
               ? 'absolute left-1/2 top-1/2 cursor-pointer will-change-[transform,opacity,filter]'
               : `absolute top-1/2 cursor-pointer whitespace-nowrap leading-none will-change-[transform,opacity,filter] [font-size:var(--ow-font-size)] [color:color-mix(in_srgb,var(--ow-active-color)_calc(var(--ow-p,0)*100%),var(--ow-text-color))] ${
-                  cfgRef.current.orientation === 'horizontal'
+                  cfg.orientation === 'horizontal'
                     ? 'left-0 w-max'
                     : side === 'right' ? 'right-[var(--ow-inset)] origin-right' : 'left-[var(--ow-inset)] origin-left'
                 } ${selectedIndex === index ? 'font-medium' : 'font-extralight'}`
           }
           style={
-            cfgRef.current.plateMode
+            cfg.plateMode
               ? { width: plateSize, height: plateSize, marginLeft: -plateSize / 2 }
               : undefined
           }
           onClick={() => handleItemClick(index)}
         >
-          {cfgRef.current.plateMode ? renderItem?.(index, label) : label}
+          {cfg.plateMode ? renderItem?.(index, label) : label}
         </div>
       ))}
     </div>

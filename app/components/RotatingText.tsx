@@ -6,10 +6,12 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type ForwardedRef,
 } from "react";
+import { useReducedMotion } from "framer-motion";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +69,13 @@ const RotatingText = forwardRef<RotatingTextHandle, RotatingTextProps>(
     ref: ForwardedRef<RotatingTextHandle>,
   ) => {
     const [currentTextIndex, setCurrentTextIndex] = useState(0);
+    const containerRef = useRef<HTMLSpanElement | null>(null);
+    // Default `true` agar render server tetap memutar teks; observer mematikan
+    // rotasi begitu elemen keluar viewport.
+    const [inView, setInView] = useState(true);
+    // Rotasi mandiri tiap 2,2 detik — nonaktifkan saat pengguna meminta
+    // prefers-reduced-motion, sama seperti carousel testimoni di halaman ini.
+    const prefersReducedMotion = useReducedMotion();
 
     const splitIntoCharacters = (text: string): string[] => {
       if (typeof Intl !== "undefined" && Intl.Segmenter) {
@@ -157,14 +166,29 @@ const RotatingText = forwardRef<RotatingTextHandle, RotatingTextProps>(
       [next, previous, jumpTo, reset],
     );
 
+    // Rotasi memicu AnimatePresence + layout measurement untuk setiap karakter;
+    // hentikan saat elemennya tidak terlihat (mis. hero sudah di-scroll jauh).
     useEffect(() => {
-      if (!auto) return;
+      const el = containerRef.current;
+      if (!el || typeof IntersectionObserver === "undefined") return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => setInView(entry.isIntersecting),
+        { threshold: 0 },
+      );
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+      if (!auto || !inView || prefersReducedMotion) return;
       const intervalId = setInterval(next, rotationInterval);
       return () => clearInterval(intervalId);
-    }, [next, rotationInterval, auto]);
+    }, [next, rotationInterval, auto, inView, prefersReducedMotion]);
 
     return (
       <motion.span
+        ref={containerRef}
         className={cn("relative flex flex-wrap whitespace-pre-wrap", mainClassName)}
         {...rest}
         layout

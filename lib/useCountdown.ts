@@ -7,15 +7,35 @@ export function useCountdown(deadlineIso: string) {
 
   useEffect(() => {
     const deadline = new Date(deadlineIso).getTime();
+    // Tanggal tidak valid: jangan biarkan remaining menjadi NaN.
+    if (Number.isNaN(deadline)) {
+      setRemaining(0);
+      return;
+    }
+
+    let id: number | null = null;
 
     const tick = () => {
       const diff = deadline - Date.now();
+      if (diff <= 0) {
+        setRemaining(0);
+        // Hentikan interval setelah mencapai 0 agar tidak berjalan terus.
+        if (id !== null) {
+          window.clearInterval(id);
+          id = null;
+        }
+        return;
+      }
       setRemaining(Math.max(0, Math.floor(diff / 1000)));
     };
 
     tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
+    if (deadline > Date.now()) {
+      id = window.setInterval(tick, 1000);
+    }
+    return () => {
+      if (id !== null) window.clearInterval(id);
+    };
   }, [deadlineIso]);
 
   return remaining;

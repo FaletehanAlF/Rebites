@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
 import { useProfile } from "@/hooks/use-profile";
 import { useNotifications } from "@/hooks/use-notifications";
-import { AccountSidebar, type SidebarUser } from "./account-sidebar";
+import { AccountSidebar } from "./account-sidebar";
 
 const LOCATIONS = ["Depok", "Jakarta Selatan", "Bekasi", "Bogor", "Tangerang"];
 
@@ -26,14 +26,46 @@ const NAV_LINKS = [
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50";
 
+// Module scope so React keeps the same component type across renders —
+// defining it inside ProfileNavbar remounted both buttons (losing focus,
+// restarting transitions) on every navbar render.
+function IconButton({
+  label,
+  children,
+  onClick,
+  badge,
+}: {
+  label: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+  badge?: number;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={cn(
+        "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200",
+        "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
+        FOCUS_RING,
+      )}
+    >
+      {children}
+      {badge !== undefined && badge > 0 && (
+        <span
+          className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white"
+        >
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
 function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-interface AuthSessionUser {
-  email?: string;
-  user_metadata?: { full_name?: string };
 }
 
 interface ProfileNavbarProps {
@@ -49,52 +81,14 @@ export function ProfileNavbar({
   const [locationOpen, setLocationOpen] = useState(false);
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [sessionUser, setSessionUser] = useState<SidebarUser | null>(null);
-  const { userId } = useCurrentUser();
+  // Single source of truth for the session: useCurrentUser already subscribes
+  // to auth changes; a second getSession/onAuthStateChange pair was removed.
+  const { user: sessionUser, userId } = useCurrentUser();
   const { avatarUrl } = useProfile();
   const { unreadCount: unreadNotifCount } = useNotifications(userId, "buyer");
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const readUser = ({
-      data,
-    }: {
-      data: { session: { user: AuthSessionUser | null } | null };
-    }) => {
-      if (cancelled) return;
-      const user = data.session?.user;
-      if (!user) {
-        setSessionUser(null);
-        return;
-      }
-      setSessionUser({
-        fullName: user.user_metadata?.full_name ?? "",
-        email: user.email ?? "",
-      });
-    };
-
-    supabase.auth.getSession().then(readUser);
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      readUser({
-        data: { session } as {
-          session: { user: AuthSessionUser | null } | null;
-        },
-      });
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, []);
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setSessionUser(null);
     setProfileOpen(false);
     router.push("/auth/login");
   };
@@ -123,38 +117,6 @@ export function ProfileNavbar({
     setActive(id);
     scrollToId(id);
   };
-
-  const IconButton = ({
-    label,
-    children,
-    onClick,
-    badge,
-  }: {
-    label: string;
-    children: React.ReactNode;
-    onClick?: () => void;
-    badge?: number;
-  }) => (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className={cn(
-        "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200",
-        "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
-        FOCUS_RING,
-      )}
-    >
-      {children}
-      {badge !== undefined && badge > 0 && (
-        <span
-          className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white"
-        >
-          {badge}
-        </span>
-      )}
-    </button>
-  );
 
   return (
     <>

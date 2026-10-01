@@ -1,13 +1,13 @@
 ﻿"use client";
 
 import { useMemo, useState, useRef, useId, useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Car, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import OptionWheel, { type OptionWheelApi } from "@/app/components/ui/korosel";
-import { Reveal } from "@/app/components/reveal";
-import { LeafSprig } from "@/app/components/ornaments";
+import { Reveal } from "@/app/components/shared/reveal";
+import { LeafSprig } from "@/app/components/shared/ornaments";
 import { useCatalog } from "@/lib/catalog";
-import { SearchFilterBar } from "@/app/components/SearchFilterBar";
+import { SearchFilterBar } from "@/app/components/shared/SearchFilterBar";
 import type { FoodItem, FilterKey } from "@/lib/types";
 import {
   ProductDetailPanel,
@@ -198,6 +198,14 @@ export function HeroFoodCarousel() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFilter, setSearchFilter] = useState<FilterKey>("terdekat");
   const wheelApi = useRef<OptionWheelApi | null>(null);
+  const wheelRef = useRef<HTMLDivElement | null>(null);
+  // Roda memutar seluruh katalog sebagai <image> SVG — elemen ini tidak
+  // mendukung loading="lazy", jadi tanpa penjaga semua foto (±1,3 MB) ikut
+  // terunduh saat halaman masih membuka hero. Tunggu sampai rodanya
+  // mendekati viewport, dengan rootMargin longgar agar foto sudah siap
+  // jauh sebelum terlihat.
+  const [platesReady, setPlatesReady] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const { foodItems } = useCatalog();
 
   const displayFoods: PlateFood[] = useMemo(
@@ -219,12 +227,6 @@ export function HeroFoodCarousel() {
   );
 
   useEffect(() => {
-    setFoodIndex((prev) =>
-      Math.min(prev, Math.max(displayFoods.length - 1, 0)),
-    );
-  }, [displayFoods.length]);
-
-  useEffect(() => {
     const updatePlate = () => {
       const w = window.innerWidth;
       if (w < 480) setPlateSize(Math.max(Math.round((w * 14) / 16 / 1.2), 150));
@@ -234,6 +236,26 @@ export function HeroFoodCarousel() {
     updatePlate();
     window.addEventListener("resize", updatePlate);
     return () => window.removeEventListener("resize", updatePlate);
+  }, []);
+
+  useEffect(() => {
+    const el = wheelRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setPlatesReady(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        setPlatesReady(true);
+        io.disconnect();
+      },
+      // 1000px di bawah viewport: foto mulai diunduh ketika pengguna masih
+      // jauh, sehingga tidak pernah terlihat lingkaran kosong.
+      { rootMargin: "1000px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
   const handleSelectResult = (id: string) => {
@@ -371,7 +393,11 @@ export function HeroFoodCarousel() {
                   aria-hidden
                   className="pointer-events-none absolute -inset-y-2 left-0 right-0 z-0 rounded-l-full border-2 border-white bg-green-700 shadow-[0_44px_80px_-42px_rgba(63,107,74,0.75)] ring-1 ring-inset ring-caramel/30"
                 />
-                <div className="relative overflow-hidden rounded-l-full" style={{ height: plateSize + 10 }}>
+                <div
+                  ref={wheelRef}
+                  className="relative overflow-hidden rounded-l-full"
+                  style={{ height: plateSize + 10 }}
+                >
                   <div
                     aria-hidden
                     className="pointer-events-none absolute inset-y-0 left-0 w-1/2 rounded-l-full bg-[radial-gradient(130%_180%_at_12%_30%,rgba(255,253,248,0.18),transparent_55%)]"
@@ -393,13 +419,18 @@ export function HeroFoodCarousel() {
                       smoothing={200}
                       loop
                       draggable
-                      autoRotate={autoRotate}
+                      autoRotate={autoRotate && !prefersReducedMotion}
                       autoRotateInterval={4200}
                       plateSize={plateSize}
                       onChange={(index) => setFoodIndex(index)}
                       apiRef={wheelApi}
                       className="!py-0 -translate-x-[9%] sm:-translate-x-[18%] lg:-translate-x-[20%]"
-                      renderItem={(i) => <FoodPlate image={displayFoods[i].image} />}
+                      renderItem={(i) => (
+                        <FoodPlate
+                          image={displayFoods[i].image}
+                          loaded={platesReady}
+                        />
+                      )}
                     />
                     <div
                       aria-hidden
@@ -436,7 +467,14 @@ export function HeroFoodCarousel() {
   );
 }
 
-function FoodPlate({ image }: { image: string }) {
+function FoodPlate({
+  image,
+  loaded = true,
+}: {
+  image: string;
+  /** false = belum ada di sekitar viewport, foto belum diambil. */
+  loaded?: boolean;
+}) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const gradId = `plate-surface-${uid}`;
   const clipId = `plate-cut-${uid}`;
@@ -482,15 +520,19 @@ function FoodPlate({ image }: { image: string }) {
 
       <circle cx="100" cy="100" r="86" fill="#F7F5EF" />
 
-      <image
-        href={image}
-        x="0"
-        y="0"
-        width="200"
-        height="200"
-        preserveAspectRatio="xMidYMid slice"
-        clipPath={`url(#${clipId})`}
-      />
+      {/* Piringnya (lingkaran solid) selalu digambar supaya tidak ada CLS;
+          hanya fotonya yang ditunda sampai rodanya mendekati viewport. */}
+      {loaded ? (
+        <image
+          href={image}
+          x="0"
+          y="0"
+          width="200"
+          height="200"
+          preserveAspectRatio="xMidYMid slice"
+          clipPath={`url(#${clipId})`}
+        />
+      ) : null}
 
       <circle
         cx="100"

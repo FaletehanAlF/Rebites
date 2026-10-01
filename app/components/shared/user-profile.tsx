@@ -705,7 +705,7 @@ function FollowedStoresSection() {
             Toko Diikuti
           </h3>
           <p className="mt-0.5 font-inter text-xs text-stone">
-            Toko yang kamu ikuti lewat tombol "Ikuti Toko" di halaman detail
+            Toko yang kamu ikuti lewat tombol &quot;Ikuti Toko&quot; di halaman detail
             toko.
           </p>
         </div>
@@ -730,7 +730,7 @@ function FollowedStoresSection() {
               Belum ada toko yang diikuti
             </p>
             <p className="mt-1 max-w-sm text-[10px] leading-relaxed text-sage-500">
-              Tekan tombol "Ikuti Toko" pada halaman detail toko favoritmu agar
+              Tekan tombol &quot;Ikuti Toko&quot; pada halaman detail toko favoritmu agar
               tampil di sini.
             </p>
           </div>
@@ -755,6 +755,7 @@ function FollowedStoresSection() {
                     <SmartImage
                       src={store.logoUrl}
                       alt={`Logo ${store.name}`}
+                      sizes="40px"
                     />
                   ) : (
                     <span className="font-display text-lg font-semibold text-primary">
@@ -871,7 +872,7 @@ function LikedFoodsSection() {
                 >
                   <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-sage-100 ring-1 ring-sage-100">
                     {image ? (
-                      <SmartImage src={image} alt={name} />
+                      <SmartImage src={image} alt={name} sizes="40px" />
                     ) : (
                       <span className="font-display text-lg font-semibold text-primary">
                         {(name || "?").charAt(0).toUpperCase()}
@@ -1299,7 +1300,7 @@ export function UserProfile() {
                   Toko Diikuti
                 </DialogTitle>
                 <DialogDescription className="font-inter text-sm text-stone">
-                  Toko yang kamu ikuti lewat tombol "Ikuti Toko" di halaman
+                  Toko yang kamu ikuti lewat tombol &quot;Ikuti Toko&quot; di halaman
                   detail toko.
                 </DialogDescription>
               </DialogHeader>

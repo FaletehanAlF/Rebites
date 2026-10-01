@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ProfileNavbar } from "@/app/components/shared/navbar";
 import { MobileNavbar } from "@/app/components/shared/MobileNavbar";
 import { MobileBottomNav } from "@/app/components/shared/MobileBottomNav";
@@ -54,6 +54,7 @@ export default function HomePage() {
   const selectedProduct = useProductDetail(selectedProductId);
 
   return (
+    <MotionConfig reducedMotion="user">
     <div>
       {/* Mobile header - only visible on mobile */}
       <div className="lg:hidden">
@@ -313,5 +314,6 @@ export default function HomePage() {
         availableTo={storeClosedModal.availableTo}
       />
     </div>
+    </MotionConfig>
   );
 }

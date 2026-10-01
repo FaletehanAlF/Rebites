@@ -13,6 +13,8 @@ import { OrderCard } from './order-card';
 import { OrderDetailModal } from './order-detail-modal';
 import { Toaster } from '@/app/components/ui/toaster';
 
+const EMPTY_LIST: StoredOrder[] = [];
+
 export function OrderHistoryView() {
   const { orders, activeOrders, completedOrders, loading } = useOrders();
   const { userId } = useCurrentUser();
@@ -39,30 +41,49 @@ export function OrderHistoryView() {
   const [reviewsTick, setReviewsTick] = useState(0);
   const [reviewedMap, setReviewedMap] = useState<Set<string>>(new Set());
 
+  // Key on order IDs rather than the array identity: useOrders replaces the
+  // array reference every 15s sweep even when contents are unchanged, which
+  // previously re-ran the sequential review lookups on every tick.
+  const reviewKey = useMemo(
+    () => completedOrders.map((order) => order.orderId).join('|'),
+    [completedOrders],
+  );
+
   useEffect(() => {
     let mounted = true;
     if (!userId) {
       setReviewedMap(new Set());
       return;
     }
+    const orderIds = reviewKey ? reviewKey.split('|') : [];
     (async () => {
       const map = new Set<string>();
-      for (const order of completedOrders) {
-        const review = await getReviewFor(order.orderId, userId);
-        if (review) map.add(order.orderId);
+      for (const orderId of orderIds) {
+        const review = await getReviewFor(orderId, userId);
+        if (review) map.add(orderId);
       }
       if (mounted) setReviewedMap(map);
     })();
     return () => {
       mounted = false;
     };
-  }, [completedOrders, reviewsTick, userId]);
+  }, [reviewKey, reviewsTick, userId]);
+
+  const counts = useMemo(
+    () => ({
+      all: orders.length,
+      ongoing: activeOrders.length,
+      delivered: completedOrders.length,
+      cancelled: 0,
+    }),
+    [orders, activeOrders, completedOrders],
+  );
 
   const statusToList = (filter: StatusFilter): StoredOrder[] => {
     if (filter === 'all') return orders ?? [];
     if (filter === 'ongoing') return activeOrders;
     if (filter === 'delivered') return completedOrders;
-    if (filter === 'cancelled') return [];
+    if (filter === 'cancelled') return EMPTY_LIST;
     return orders ?? [];
   };
 
@@ -101,13 +122,6 @@ export function OrderHistoryView() {
   }
 
   const isFiltering = query.trim() !== '' || fulfillment !== 'all' || dateRange !== 'all' || statusFilter !== 'all';
-
-  const counts = {
-    all: orders.length,
-    ongoing: activeOrders.length,
-    delivered: completedOrders.length,
-    cancelled: 0,
-  };
 
   return (
     <>

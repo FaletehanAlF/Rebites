@@ -1,6 +1,6 @@
 "use client";
 
-import { Reveal } from "@/app/components/reveal";
+import { Reveal } from "@/app/components/shared/reveal";
 import ReBitesStepCard, { type Step } from "@/app/components/ReBitesStepCard";
 
 const steps: Step[] = [

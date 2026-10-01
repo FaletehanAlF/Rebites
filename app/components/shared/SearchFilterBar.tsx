@@ -20,6 +20,8 @@ interface SearchFilterBarProps {
   onSelectResult?: (id: string) => void;
   placeholder?: string;
   variant?: "default" | "glass" | "light";
+  /** Optional override for the searchable pool (defaults to the catalog). */
+  items?: FoodItem[];
 }
 
 const FOCUS_RING =
@@ -89,6 +91,7 @@ export function SearchFilterBar({
   onSelectResult,
   placeholder = "Cari makanan surplus di sekitarmu...",
   variant = "default",
+  items: itemsOverride,
 }: SearchFilterBarProps) {
   const isGlass = variant === "glass";
   const isLight = variant === "light";
@@ -97,6 +100,7 @@ export function SearchFilterBar({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { foodItems } = useCatalog();
+  const searchPool = itemsOverride ?? foodItems;
 
   const trimmedQuery = query.trim();
 
@@ -104,7 +108,7 @@ export function SearchFilterBar({
     if (!showInlineResults || !trimmedQuery) return [];
 
     const q = trimmedQuery.toLowerCase();
-    let items = foodItems.filter(
+    let matches = searchPool.filter(
       (item) =>
         item.name.toLowerCase().includes(q) ||
         item.vendorName.toLowerCase().includes(q) ||
@@ -118,13 +122,13 @@ export function SearchFilterBar({
       "minuman",
     ];
     if (categoryFilters.includes(activeFilter)) {
-      items = items.filter((item) => item.category === activeFilter);
+      matches = matches.filter((item) => item.category === activeFilter);
     } else if (activeFilter === "segera-habis") {
-      items = items.filter((item) => item.expiresAt);
+      matches = matches.filter((item) => item.expiresAt);
     }
 
-    return [...items].sort(applySort(activeFilter));
-  }, [showInlineResults, trimmedQuery, activeFilter, foodItems]);
+    return [...matches].sort(applySort(activeFilter));
+  }, [showInlineResults, trimmedQuery, activeFilter, searchPool]);
 
   const dropdownVisible =
     showInlineResults && isDropdownOpen && trimmedQuery.length > 0;

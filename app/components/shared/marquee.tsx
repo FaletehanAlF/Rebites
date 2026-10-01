@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function Marquee({
   children,
@@ -13,15 +13,41 @@ export function Marquee({
   className?: string;
   pauseOnHover?: boolean;
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Default `true` supaya render server / tanpa JS tetap beranimasi seperti
+  // biasa; IntersectionObserver hanya mematikannya setelah konfirmasi strip
+  // berada di luar viewport.
+  const [inView, setInView] = useState(true);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Hanya satu aturan animation-play-state yang dipakai pada satu waktu agar
+  // pause saat di luar viewport tidak saling menimpa pauseOnHover.
+  const playStateRule = inView
+    ? pauseOnHover
+      ? 'group-hover:[animation-play-state:paused]'
+      : ''
+    : '[animation-play-state:paused]';
 
   return (
-    <div className={`group flex overflow-hidden ${className ?? ''}`}>
+    <div
+      ref={rootRef}
+      className={`group flex overflow-hidden ${className ?? ''}`}
+    >
       <div
-        ref={trackRef}
         className={`flex shrink-0 items-center ${
           reverse ? 'animate-marquee-reverse' : 'animate-marquee'
-        } ${pauseOnHover ? 'group-hover:[animation-play-state:paused]' : ''}`}
+        } ${playStateRule}`}
       >
         {children}
         {children}

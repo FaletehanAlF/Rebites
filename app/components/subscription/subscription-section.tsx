@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { Reveal } from '@/app/components/reveal';
-import { MagneticButton } from '@/app/components/magnetic-button';
+import { Reveal } from '@/app/components/shared/reveal';
+import { MagneticButton } from '@/app/components/shared/magnetic-button';
 import { SectionShell } from '@/app/components/section-shell';
 import { SUBSCRIPTION_PLANS } from '@/lib/subscription-plans';
 

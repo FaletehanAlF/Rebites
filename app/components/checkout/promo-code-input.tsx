@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BadgePercent, Check, X } from 'lucide-react';
-import { useCheckout } from './checkout-context';
+import { useCheckout, usePromoInput } from './checkout-context';
 
 export function PromoCodeInput() {
-  const { promo, promoInput, setPromoInput, promoError, applyPromo, clearPromo } =
-    useCheckout();
+  const { promo } = useCheckout();
+  const { promoInput, setPromoInput, promoError, applyPromo, clearPromo } =
+    usePromoInput();
   const [open, setOpen] = useState(false);
 
   return (

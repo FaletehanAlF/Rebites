@@ -1,4 +1,3 @@
-'use client';
 
 import { Bike, ShieldCheck, Sparkles } from 'lucide-react';
 

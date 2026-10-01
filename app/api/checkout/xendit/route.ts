@@ -273,8 +273,6 @@ export async function POST(req: NextRequest) {
       ]);
       if (notifErr) console.error('[checkout/xendit] notif free error', notifErr.message);
 
-      console.log('[checkout/xendit] free order created', { orderCode, total: 0, coinUsed: pricing.coinUsed });
-
       const freeStoredOrder = {
         orderId: orderCode,
         userId: user.id,
@@ -393,12 +391,14 @@ export async function POST(req: NextRequest) {
         failureRedirectUrl: failureUrl,
       });
     } catch (e: unknown) {
-      
+      // Roll back the pending order + reserved stock, then fail the request.
       await serviceClient.from('orders').delete().eq('order_code', orderCode);
       await serviceClient.rpc('release_stock', { p_slug: body.productSlug, p_quantity: quantity });
-      const msg = e instanceof Error ? e.message : 'Gagal membuat invoice Xendit.';
-      console.error('[checkout/xendit] xendit error', msg);
-      return NextResponse.json({ error: `Gagal membuat invoice: ${msg}` }, { status: 502 });
+      console.error('[checkout/xendit] xendit error', e instanceof Error ? e.message : e);
+      return NextResponse.json(
+        { error: 'Gagal membuat invoice pembayaran. Silakan coba lagi.' },
+        { status: 502 },
+      );
     }
 
     await serviceClient

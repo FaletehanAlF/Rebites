@@ -60,11 +60,17 @@ export async function POST(req: NextRequest) {
 
   if (externalId.startsWith('RB-')) {
     
-    const { data: order } = await service
+    const { data: order, error: orderErr } = await service
       .from('orders')
       .select('order_code, payment_status, product_slug, quantity, coin_used, coin_earned, buyer_id, vendor_name, product_name, total_price')
       .eq('order_code', externalId)
       .maybeSingle();
+
+    if (orderErr) {
+      // Do not ack: Xendit must retry or the payment is never settled.
+      console.error('[webhook/xendit] order fetch failed', orderErr.message);
+      return NextResponse.json({ error: 'DB fetch failed' }, { status: 500 });
+    }
 
     if (!order) {
       console.warn('[webhook/xendit] order not found', externalId);
@@ -97,9 +103,13 @@ export async function POST(req: NextRequest) {
       const slug = (row.product_slug as string) ?? null;
       const qty = Number(row.quantity ?? 1);
       if (slug && qty > 0) {
-        await service.rpc('release_stock', { p_slug: slug, p_quantity: qty });
+        const { error: relErr } = await service.rpc('release_stock', { p_slug: slug, p_quantity: qty });
+        if (relErr) {
+          console.error('[webhook/xendit] release_stock failed', relErr.message);
+          return NextResponse.json({ error: 'Stock release failed' }, { status: 500 });
+        }
       }
-      await service
+      const { error: expErr } = await service
         .from('orders')
         .update({
           payment_status: 'failed',
@@ -107,13 +117,21 @@ export async function POST(req: NextRequest) {
           xendit_invoice_id: invoiceId,
         } as Record<string, unknown>)
         .eq('order_code', externalId);
+      if (expErr) {
+        console.error('[webhook/xendit] expire update failed', expErr.message);
+        return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
+      }
     } else if (normalizedStatus === 'FAILED' || normalizedStatus === 'VOIDED') {
       const slug2 = (row.product_slug as string) ?? null;
       const qty2 = Number(row.quantity ?? 1);
       if (currentPayment !== 'paid' && slug2 && qty2 > 0) {
-        await service.rpc('release_stock', { p_slug: slug2, p_quantity: qty2 });
+        const { error: relErr2 } = await service.rpc('release_stock', { p_slug: slug2, p_quantity: qty2 });
+        if (relErr2) {
+          console.error('[webhook/xendit] release_stock failed', relErr2.message);
+          return NextResponse.json({ error: 'Stock release failed' }, { status: 500 });
+        }
       }
-      await service
+      const { error: failErr } = await service
         .from('orders')
         .update({
           payment_status: 'failed',
@@ -121,6 +139,10 @@ export async function POST(req: NextRequest) {
           xendit_invoice_id: invoiceId,
         } as Record<string, unknown>)
         .eq('order_code', externalId);
+      if (failErr) {
+        console.error('[webhook/xendit] fail update failed', failErr.message);
+        return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ received: true });
@@ -141,10 +163,14 @@ export async function POST(req: NextRequest) {
       }
       // not_found → biarkan jatuh ke received (fallback verify endpoint / retry webhook)
     } else if (normalizedStatus === 'EXPIRED' || normalizedStatus === 'FAILED' || normalizedStatus === 'VOIDED') {
-      await service
+      const { error: subErr } = await service
         .from('subscriptions')
         .update({ status: 'expired', xendit_status: normalizedStatus } as Record<string, unknown>)
         .eq('xendit_invoice_id', invoiceId);
+      if (subErr) {
+        console.error('[webhook/xendit] subscription update failed', subErr.message);
+        return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ received: true });

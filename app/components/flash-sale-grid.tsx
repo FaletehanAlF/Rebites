@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { Reveal } from "@/app/components/reveal";
-import { SmartImage } from "@/app/components/SmartImage";
+import { Reveal } from "@/app/components/shared/reveal";
+import { SmartImage } from "@/app/components/shared/SmartImage";
 import { formatRupiah } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { useCountdown, formatCountdown } from "@/lib/useCountdown";
@@ -30,17 +30,32 @@ const SLOTS: {
   { key: "18-21", start: 18, end: 21, range: "18.00–21.00", name: "Malam" },
 ];
 
-function getWibParts() {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Jakarta",
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).formatToParts(new Date());
+// `Intl.DateTimeFormat` relatif mahal untuk dibuat (ratusan mikrodetik hingga
+// ms). Versi lama membangun 1 instance baru tiap `getWibParts()` dan
+// `getWibParts()` dipanggil 4x per render — melekatkan 4 konstruksi tiap
+// render, dan FlashSaleGrid sempat me-render tiap detik karena countdown.
+const WIB_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  timeZone: "Asia/Jakarta",
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
+type WibParts = {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+};
+
+function getWibParts(): WibParts {
+  const parts = WIB_FORMATTER.formatToParts(new Date());
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
   return {
     year: Number(get("year")),
@@ -52,16 +67,14 @@ function getWibParts() {
   };
 }
 
-function wibEpochOfToday(h: number, min = 0, sec = 0) {
-  const p = getWibParts();
+function wibEpochOfToday(p: WibParts, h: number, min = 0, sec = 0) {
   return Date.UTC(p.year, p.month - 1, p.day, h, min, sec) - WIB_OFFSET_MS;
 }
 
-function nextStartEpoch() {
-  const p = getWibParts();
+function nextStartEpoch(p: WibParts) {
   const secondsToday = p.hour * 3600 + p.minute * 60 + p.second;
   const dayOffset = secondsToday < 9 * 3600 ? 0 : 1;
-  return wibEpochOfToday(9) + dayOffset * 24 * 3600 * 1000;
+  return wibEpochOfToday(p, 9) + dayOffset * 24 * 3600 * 1000;
 }
 
 function getSlotFromHour(h: number): UrgentSlot | null {
@@ -166,16 +179,58 @@ function parseStockCount(label: string) {
   return match ? parseInt(match[0], 10) : null;
 }
 
+/**
+ * Menjadi `true` tepat saat deadline terlewati — hanya satu kali setState.
+ *
+ * Dulu section ini memakai `useCountdown` langsung, sehingga seluruh header,
+ * tombol slot, dan 4 kartu ikut me-render setiap detik hanya untuk sebuah
+ * boolean. Countdown per detiknya sekarang dimiliki `CountdownBox`.
+ */
+function useDeadlineReached(deadlineIso: string | null): boolean {
+  const [reached, setReached] = useState(false);
+
+  useEffect(() => {
+    if (!deadlineIso) {
+      setReached(false);
+      return;
+    }
+
+    const deadline = new Date(deadlineIso).getTime();
+    if (Number.isNaN(deadline)) {
+      setReached(true);
+      return;
+    }
+
+    const check = () => {
+      if (Date.now() < deadline) return false;
+      setReached(true);
+      return true;
+    };
+
+    if (check()) return;
+    setReached(false);
+
+    const id = window.setInterval(() => {
+      if (check()) window.clearInterval(id);
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [deadlineIso]);
+
+  return reached;
+}
+
 function CountdownBox({
   label,
   range,
-  remainingSeconds,
+  deadlineIso,
 }: {
   label: string;
   range: string;
-  remainingSeconds: number;
+  deadlineIso: string;
 }) {
-  const [h, m, s] = formatCountdown(remainingSeconds).split(":");
+  // Satu-satunya bagian section ini yang layak me-render tiap detik.
+  const remaining = useCountdown(deadlineIso);
+  const [h, m, s] = formatCountdown(remaining ?? 0).split(":");
   return (
     <div className="inline-flex flex-col gap-1.5 rounded-2xl border border-hairline bg-white px-5 py-3.5 shadow-[0_18px_40px_-28px_rgba(30,43,32,0.4)]">
       <p className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-sale">
@@ -339,8 +394,10 @@ export function FlashSaleGrid() {
   const { urgentItems } = useCatalog();
   const [previewSlot, setPreviewSlot] = useState<UrgentSlot | null>(null);
 
-  const realSlot = getSlotFromHour(getWibParts().hour);
-  const currentHour = getWibParts().hour;
+  const wib = getWibParts();
+
+  const realSlot = getSlotFromHour(wib.hour);
+  const currentHour = wib.hour;
   const [, forceTick] = useState(0);
 
   useEffect(() => {
@@ -351,12 +408,12 @@ export function FlashSaleGrid() {
   const activeSlot = previewSlot ?? realSlot;
   const realSlotDef = SLOTS.find((s) => s.key === realSlot) ?? null;
   const slotEndIso = realSlotDef
-    ? new Date(wibEpochOfToday(realSlotDef.end)).toISOString()
+    ? new Date(wibEpochOfToday(wib, realSlotDef.end)).toISOString()
     : null;
-  const nextStartIso = new Date(nextStartEpoch()).toISOString();
+  const nextStartIso = new Date(nextStartEpoch(wib)).toISOString();
+  const deadlineIso = slotEndIso ?? nextStartIso;
 
-  const remaining = useCountdown(slotEndIso ?? nextStartIso);
-  const ended = remaining === 0;
+  const ended = useDeadlineReached(deadlineIso);
   const isWithinHours = realSlot !== null;
 
   const slotSource =
@@ -430,7 +487,7 @@ export function FlashSaleGrid() {
               <CountdownBox
                 label={countdownLabel}
                 range={countdownRange}
-                remainingSeconds={remaining ?? 0}
+                deadlineIso={deadlineIso}
               />
             </Reveal>
 

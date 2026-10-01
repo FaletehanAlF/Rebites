@@ -4,8 +4,8 @@ import { useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Mail, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Reveal } from "./reveal";
-import { SmartImage } from "@/app/components/SmartImage";
+import { Reveal } from "@/app/components/shared/reveal";
+import { SmartImage } from "@/app/components/shared/SmartImage";
 
 const FAQS = [
   {

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import {
+  useEffect,
   useState,
   type FormEvent,
   type InputHTMLAttributes,
@@ -129,22 +130,23 @@ export default function AuthForm({
   const isSignup = mode === "signup";
 
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("rebites_remembered_email") || "";
-    }
-    return "";
-  });
+  // Server and client first render must match: the remembered email is read
+  // after hydration instead of in the initializer (which caused a hydration
+  // mismatch on /auth/login).
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("rebites_remembered_email") !== null;
-    }
-    return false;
-  });
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmEmailOpen, setConfirmEmailOpen] = useState(false);
+
+  useEffect(() => {
+    const remembered = localStorage.getItem("rebites_remembered_email");
+    if (remembered) {
+      setEmail(remembered);
+      setRememberMe(true);
+    }
+  }, []);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

@@ -8,7 +8,6 @@ import type { ProductDetail } from "@/app/components/detail-product/data";
 import { fetchProductDetail } from "@/app/components/detail-product/detail-data";
 import type { OrderDraft } from "@/lib/types";
 import { CheckoutProvider } from "./checkout-context";
-import { CheckoutDecor } from "./checkout-decor";
 import { OrderItemCard } from "./order-item-card";
 import { QuantityStepperCard } from "./quantity-stepper-card";
 import { FulfillmentToggle } from "./fulfillment-toggle";
@@ -53,8 +52,6 @@ function CheckoutContent({
   return (
     <CheckoutProvider draft={draft} initialQuantity={initialQuantity}>
       <main className="relative min-h-screen bg-cream-50 pb-32 sm:pb-28 lg:pb-16">
-        <CheckoutDecor />
-
         <div className="relative mx-auto max-w-[1400px] px-4 pt-4 sm:px-8 sm:pt-6 lg:px-12 lg:pt-10">
           {}
           <div className="flex items-center gap-3">

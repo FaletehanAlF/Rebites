@@ -3,26 +3,37 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export function Preloader({ onDone }: { onDone?: () => void }) {
+export function Preloader() {
   const [done, setDone] = useState(false);
   const [skipped, setSkipped] = useState(false);
-  const [progress, setProgress] = useState(0);
   const finishedRef = useRef(false);
-  const onDoneRef = useRef(onDone);
-  onDoneRef.current = onDone;
+  const barRef = useRef<HTMLDivElement>(null);
 
-  // Identitas stabil: re-render parent (fetchVendors, carousel, dsb.)
-  // tidak boleh me-restart progres loading.
+  // Identitas stabil: re-render parent tidak boleh me-restart progres loading.
   const finish = useCallback((markPlayed: boolean) => {
     if (finishedRef.current) return;
     finishedRef.current = true;
+
+    // Buka kunci scroll begitu intro selesai. Kuncinya dimiliki komponen ini
+    // sendiri supaya halaman induk tidak perlu state `loaded` — yang dulu
+    // me-render ulang seluruh landing page tepat saat animasi keluar berjalan.
+    document.body.style.overflow = '';
 
     if (markPlayed) {
       setDone(true);
     } else {
       setSkipped(true);
     }
-    onDoneRef.current?.();
+  }, []);
+
+  // Kunci scroll selama intro tampil; selalu dikembalikan saat unmount supaya
+  // navigasi ke halaman lain tidak ikut terkunci.
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
   }, []);
 
   // Jalan sekali per mount; tiap buka landing selalu main 1x.
@@ -37,15 +48,21 @@ export function Preloader({ onDone }: { onDone?: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Progress is written straight to the DOM instead of via setState: the old
+  // version re-rendered the whole AnimatePresence tree ~120x during
+  // hydration, and animated `width` (a layout property) every frame.
   useEffect(() => {
     let raf = 0;
     const DURATION = 2000;
     const start = performance.now();
 
     const tick = (now: number) => {
+      if (finishedRef.current) return; // already skipped/finished
       const t = Math.min(1, (now - start) / DURATION);
       const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-      setProgress(Math.round(eased * 100));
+      if (barRef.current) {
+        barRef.current.style.transform = `scaleX(${eased})`;
+      }
       if (t < 1) {
         raf = requestAnimationFrame(tick);
       } else {
@@ -88,8 +105,9 @@ export function Preloader({ onDone }: { onDone?: () => void }) {
               {/* Loading bar polos cream */}
               <div className="mt-8 h-[3px] w-[min(420px,60vw)] overflow-hidden rounded-full bg-cream/20">
                 <div
-                  className="h-full rounded-full bg-cream"
-                  style={{ width: `${progress}%` }}
+                  ref={barRef}
+                  className="h-full w-full origin-left rounded-full bg-cream"
+                  style={{ transform: 'scaleX(0)' }}
                 ></div>
               </div>
             </div>

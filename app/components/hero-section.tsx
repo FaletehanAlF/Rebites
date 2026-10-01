@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
-import { useEffect, useState, useId } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, User, Menu, X, MapPin } from "lucide-react";
 import {
@@ -9,6 +9,7 @@ import {
   motion,
   useScroll,
   useTransform,
+  type MotionValue,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FoldText from "@/app/components/FoldText";
@@ -58,32 +59,41 @@ export function HeroSection() {
 
     const probeY = 128;
 
+    // Coalesce scroll/resize events to one measurement pass per frame:
+    // each pass reads ~8-21 getBoundingClientRect()s, which would otherwise
+    // force layout on every scroll event (competing with Lenis' own rAF loop).
+    let rafId: number | null = null;
     const update = () => {
-      setScrolled(window.scrollY > 32);
+      if (rafId != null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        setScrolled(window.scrollY > 32);
 
-      const current = sections.find((section) => {
-        const rect = section.getBoundingClientRect();
-        return rect.top <= probeY && rect.bottom > probeY;
-      });
-
-      setOverDark(current?.dataset.nav === "green");
-
-      let label = NAV_LINKS[0].label;
-      let labelTarget: HTMLElement | null = null;
-      for (const link of NAV_LINKS) {
-        const el = link.target
-          ? document.getElementById(link.target)
-          : null;
-        if (!el) continue;
-        const rect = el.getBoundingClientRect();
-        if (rect.top <= probeY && rect.bottom > probeY) {
-          if (!labelTarget || rect.top >= labelTarget.getBoundingClientRect().top) {
-            label = link.label;
-            labelTarget = el;
+        let currentNav: string | undefined;
+        for (const section of sections) {
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= probeY && rect.bottom > probeY) {
+            currentNav = section.dataset.nav;
+            break;
           }
         }
-      }
-      setActiveNav(label);
+        setOverDark(currentNav === "green");
+
+        let label = NAV_LINKS[0].label;
+        let bestTop = -Infinity;
+        for (const link of NAV_LINKS) {
+          const el = link.target
+            ? document.getElementById(link.target)
+            : null;
+          if (!el) continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= probeY && rect.bottom > probeY && rect.top >= bestTop) {
+            label = link.label;
+            bestTop = rect.top;
+          }
+        }
+        setActiveNav(label);
+      });
     };
 
     update();
@@ -91,6 +101,7 @@ export function HeroSection() {
     window.addEventListener("resize", update);
 
     return () => {
+      if (rafId != null) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
@@ -370,332 +381,6 @@ export function HeroSection() {
   );
 }
 
-function HeroOrganicArt() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 1440 560"
-      preserveAspectRatio="none"
-      className="
-        pointer-events-none
-        absolute
-        left-1/2
-        top-[90px]
-        z-0
-        h-[470px]
-        w-screen
-        -translate-x-1/2
-        overflow-visible
-        text-forest
-        opacity-50
-      "
-    >
-      <g
-        fill="none"
-        stroke="hsl(var(--primary))"
-        strokeOpacity="0.55"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path
-          d="
-            M -220 330
-            C -40 220, 120 175, 300 215
-            C 465 252, 545 350, 700 330
-            C 850 310, 925 190, 1080 175
-            C 1245 160, 1370 220, 1660 70
-          "
-          strokeWidth="2.8"
-          opacity="0.72"
-        />
-
-        <path
-          d="
-            M -220 365
-            C -35 255, 125 215, 305 248
-            C 470 280, 560 375, 710 355
-            C 855 335, 935 220, 1090 205
-            C 1250 188, 1380 245, 1660 105
-          "
-          strokeWidth="1.7"
-          opacity="0.52"
-        />
-
-        <path
-          d="
-            M -220 393
-            C -30 290, 140 252, 315 278
-            C 485 305, 570 397, 720 380
-            C 870 363, 950 250, 1100 235
-            C 1265 218, 1395 265, 1660 135
-          "
-          strokeWidth="1"
-          opacity="0.34"
-        />
-
-        {/* Hanging stems, each with 3 leaves hanging below the top thread */}
-
-        {/* Stem 1 */}
-        <path
-          d="M 160 4 C 158 30, 161 62, 160 98"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="160"
-          cy="124"
-          rx="9"
-          ry="27"
-          transform="rotate(0 160 124)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="143"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 143 108)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="177"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(45 177 108)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 2 */}
-        <path
-          d="M 360 8 C 362 34, 359 66, 360 102"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="360"
-          cy="128"
-          rx="9"
-          ry="27"
-          transform="rotate(0 360 128)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="343"
-          cy="112"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 343 112)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="377"
-          cy="112"
-          rx="8"
-          ry="22"
-          transform="rotate(45 377 112)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 3 */}
-        <path
-          d="M 565 4 C 567 30, 564 60, 565 96"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="565"
-          cy="120"
-          rx="9"
-          ry="27"
-          transform="rotate(0 565 120)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="548"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 548 105)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="582"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(45 582 105)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 4 */}
-        <path
-          d="M 770 10 C 768 34, 771 62, 770 98"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="770"
-          cy="124"
-          rx="9"
-          ry="27"
-          transform="rotate(0 770 124)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="753"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 753 108)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="787"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(45 787 108)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 5 */}
-        <path
-          d="M 985 6 C 987 32, 984 62, 985 100"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="985"
-          cy="126"
-          rx="9"
-          ry="27"
-          transform="rotate(0 985 126)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="968"
-          cy="110"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 968 110)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="1002"
-          cy="110"
-          rx="8"
-          ry="22"
-          transform="rotate(45 1002 110)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 6 */}
-        <path
-          d="M 1200 10 C 1202 34, 1199 62, 1200 96"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="1200"
-          cy="120"
-          rx="9"
-          ry="27"
-          transform="rotate(0 1200 120)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="1183"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 1183 105)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="1217"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(45 1217 105)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        <circle
-          cx="255"
-          cy="310"
-          r="4"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.46"
-        />
-
-        <circle
-          cx="355"
-          cy="350"
-          r="2.5"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.36"
-        />
-
-        <circle
-          cx="665"
-          cy="250"
-          r="4"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.42"
-        />
-
-        <circle
-          cx="830"
-          cy="300"
-          r="2.5"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.34"
-        />
-
-        <circle
-          cx="1120"
-          cy="340"
-          r="4"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.40"
-        />
-
-        <path d="M 430 150 V 170" strokeWidth="1.5" opacity="0.38" />
-
-        <path d="M 420 160 H 440" strokeWidth="1.5" opacity="0.38" />
-
-        <path d="M 930 365 V 383" strokeWidth="1.3" opacity="0.34" />
-
-        <path d="M 921 374 H 939" strokeWidth="1.3" opacity="0.34" />
-      </g>
-    </svg>
-  );
-}
-
 type LeafProps = {
   src: string;
   size: number;
@@ -709,6 +394,8 @@ type LeafProps = {
   speedY: number;
   speedX: number;
   radius: string;
+  /** Satu `useScroll()` dipakai bersama oleh semua daun. */
+  scrollY: MotionValue<number>;
 };
 
 function Leaf({
@@ -724,8 +411,10 @@ function Leaf({
   speedY,
   speedX,
   radius,
+  scrollY,
 }: LeafProps) {
-  const { scrollY } = useScroll();
+  // transform-only (no layout/repaint), di-subscribe dari satu scroll value
+  // bersama alih-alih 6 listener window terpisah.
   const y = useTransform(scrollY, (v) => v * speedY);
   const x = useTransform(scrollY, (v) => v * speedX);
 
@@ -837,13 +526,16 @@ function HeroFoodBackdrop() {
     },
   ];
 
+  // Satu subscription scroll untuk 6 daun parallax, bukan satu per daun.
+  const { scrollY } = useScroll();
+
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
     >
       {leaves.map((leaf, i) => (
-        <Leaf key={`${leaf.src}-${i}`} {...leaf} />
+        <Leaf key={`${leaf.src}-${i}`} {...leaf} scrollY={scrollY} />
       ))}
 
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-cream to-transparent" />
@@ -851,72 +543,3 @@ function HeroFoodBackdrop() {
   );
 }
 
-function FoodPlate({ image }: { image: string }) {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const gradId = `plate-surface-${uid}`;
-  const clipId = `plate-cut-${uid}`;
-
-  return (
-    <svg
-      viewBox="0 0 200 200"
-      role="img"
-      aria-label="Piring makanan"
-      className="h-full w-full drop-shadow-[0_16px_22px_-14px_rgba(27,77,50,0.55)]"
-    >
-      <defs>
-        <radialGradient id={gradId} cx="50%" cy="42%">
-          <stop offset="0%" stopColor="hsl(var(--secondary))" />
-          <stop offset="72%" stopColor="hsl(var(--muted))" />
-          <stop offset="100%" stopColor="hsl(var(--border))" />
-        </radialGradient>
-
-        <clipPath id={clipId}>
-          <circle cx="100" cy="100" r="84" />
-        </clipPath>
-      </defs>
-
-      <circle cx="100" cy="100" r="92" fill={`url(#${gradId})`} />
-
-      <circle
-        cx="100"
-        cy="100"
-        r="92"
-        fill="none"
-        stroke="hsl(var(--border))"
-        strokeWidth="2.5"
-      />
-
-      <circle
-        cx="100"
-        cy="100"
-        r="88"
-        fill="none"
-        stroke="hsl(var(--border))"
-        strokeWidth="1.5"
-      />
-
-      <circle cx="100" cy="100" r="86" fill="hsl(var(--secondary))" />
-
-      <image
-        href={image}
-        x="0"
-        y="0"
-        width="200"
-        height="200"
-        preserveAspectRatio="xMidYMid slice"
-        clipPath={`url(#${clipId})`}
-      />
-
-      <circle
-        cx="100"
-        cy="100"
-        r="84"
-        fill="none"
-        stroke="hsl(var(--secondary))"
-        strokeWidth="4"
-      />
-
-      <ellipse cx="80" cy="66" rx="46" ry="22" fill="#FFFFFF" opacity="0.16" />
-    </svg>
-  );
-}

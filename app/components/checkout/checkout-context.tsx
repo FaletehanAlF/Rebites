@@ -53,11 +53,6 @@ interface CheckoutContextValue {
   selectMethod: (id: string) => void;
 
   promo: PromoCode | null;
-  promoInput: string;
-  setPromoInput: (value: string) => void;
-  promoError: string | null;
-  applyPromo: () => void;
-  clearPromo: () => void;
 
   coinBalance: number;
   useCoins: boolean;
@@ -74,9 +69,29 @@ interface CheckoutContextValue {
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 
+// Keystroke-frequency state lives in its own context: every promoInput change
+// used to change the main context value and re-render all 11 checkout
+// consumers (payment summary, sticky bar, steppers, ...). Only the promo
+// input subscribes to this one.
+interface PromoInputContextValue {
+  promoInput: string;
+  setPromoInput: (value: string) => void;
+  promoError: string | null;
+  applyPromo: () => void;
+  clearPromo: () => void;
+}
+
+const PromoInputContext = createContext<PromoInputContextValue | null>(null);
+
 export function useCheckout() {
   const ctx = useContext(CheckoutContext);
   if (!ctx) throw new Error('useCheckout must be used within CheckoutProvider');
+  return ctx;
+}
+
+export function usePromoInput() {
+  const ctx = useContext(PromoInputContext);
+  if (!ctx) throw new Error('usePromoInput must be used within CheckoutProvider');
   return ctx;
 }
 
@@ -176,6 +191,17 @@ export function CheckoutProvider({
 
   const canPay = missingRequirement === null && !submitting;
 
+  const promoInputValue = useMemo<PromoInputContextValue>(
+    () => ({
+      promoInput,
+      setPromoInput,
+      promoError,
+      applyPromo,
+      clearPromo,
+    }),
+    [promoInput, promoError, applyPromo, clearPromo],
+  );
+
   const submitOrder = useCallback(() => {
     if (submitting || submittedRef.current) return;
     if (!user) {
@@ -270,8 +296,6 @@ export function CheckoutProvider({
         }
 
         if (json?.invoiceUrl) {
-          
-          console.log('[checkout] redirect ke Xendit', { orderCode: json.orderCode, invoiceUrl: json.invoiceUrl });
           window.location.href = json.invoiceUrl;
           return;
         }
@@ -319,11 +343,6 @@ export function CheckoutProvider({
       selectedMethod,
       selectMethod,
       promo,
-      promoInput,
-      setPromoInput,
-      promoError,
-      applyPromo,
-      clearPromo,
       coinBalance,
       useCoins,
       toggleUseCoins,
@@ -349,10 +368,6 @@ export function CheckoutProvider({
       selectedMethod,
       selectMethod,
       promo,
-      promoInput,
-      promoError,
-      applyPromo,
-      clearPromo,
       coinBalance,
       useCoins,
       toggleUseCoins,
@@ -367,7 +382,9 @@ export function CheckoutProvider({
 
   return (
     <CheckoutContext.Provider value={value}>
-      {children}
+      <PromoInputContext.Provider value={promoInputValue}>
+        {children}
+      </PromoInputContext.Provider>
     </CheckoutContext.Provider>
   );
 }

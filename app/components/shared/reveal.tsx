@@ -45,61 +45,6 @@ export function Reveal({
   );
 }
 
-export function RevealStagger({
-  children,
-  className,
-  stagger = 0.08,
-  delay = 0,
-  start = true,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  stagger?: number;
-  delay?: number;
-  start?: boolean;
-}) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-10% 0px' });
-
-  return (
-    <motion.div
-      ref={ref}
-      className={className}
-      initial="hidden"
-      animate={start && inView ? 'visible' : 'hidden'}
-      variants={{
-        hidden: {},
-        visible: { transition: { staggerChildren: stagger, delayChildren: delay } },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-export function RevealItem({
-  children,
-  className,
-  y = 24,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  y?: number;
-}) {
-  return (
-    <motion.div
-      className={className}
-      variants={{
-        hidden: { opacity: 0, y },
-        visible: { opacity: 1, y: 0 },
-      }}
-      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
 export function RevealWords({
   text,
   className,

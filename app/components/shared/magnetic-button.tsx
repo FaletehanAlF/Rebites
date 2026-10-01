@@ -7,7 +7,6 @@ import {
   useSpring,
   useTransform,
 } from 'framer-motion';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 const SPRING = { stiffness: 320, damping: 24, mass: 0.8 };
@@ -110,40 +109,3 @@ export function MagneticButton({
   );
 }
 
-export function ArrowLink({
-  href,
-  children,
-  className,
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        'group inline-flex items-center gap-2 font-sans text-sm font-medium text-primary transition-colors',
-        className
-      )}
-    >
-      <span className="relative">
-        {children}
-        <span className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-caramel transition-transform duration-300 ease-out group-hover:scale-x-100" />
-      </span>
-      <svg
-        className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-        viewBox="0 0 16 16"
-        fill="none"
-      >
-        <path
-          d="M3 8h10M9 4l4 4-4 4"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </Link>
-  );
-}

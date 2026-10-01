@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -91,6 +91,11 @@ export default function CategoryView({
   }, [baseCategoryItems, searchQuery]);
 
   const selectedProduct = useProductDetail(selectedProductId);
+
+  // Stable identities: ProductDetailModal re-runs its whole effect suite
+  // (keydown listener, body scroll lock, focus restore) whenever onClose changes.
+  const handleViewDetail = useCallback((id: string) => setSelectedProductId(id), []);
+  const handleCloseProduct = useCallback(() => setSelectedProductId(null), []);
 
   const resetSearch = () => {
     setSearchQuery("");
@@ -264,10 +269,7 @@ export default function CategoryView({
                     },
                   }}
                 >
-                  <FoodCard
-                    item={item}
-                    onViewDetail={(id) => setSelectedProductId(id)}
-                  />
+                  <FoodCard item={item} onViewDetail={handleViewDetail} />
                 </motion.div>
               ))}
             </motion.div>
@@ -282,7 +284,7 @@ export default function CategoryView({
         {selectedProduct && (
           <ProductDetailModal
             product={selectedProduct}
-            onClose={() => setSelectedProductId(null)}
+            onClose={handleCloseProduct}
           />
         )}
       </AnimatePresence>

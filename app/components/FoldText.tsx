@@ -8,10 +8,7 @@ import {
   type ElementType,
 } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "@/lib/utils";
-
-gsap.registerPlugin(ScrollTrigger);
 
 type Hinge = "top" | "bottom" | "left" | "right" | "center";
 type Trigger = "scroll" | "hover" | "load";
@@ -113,7 +110,7 @@ export function FoldText({
   const rootRef = useRef<HTMLDivElement>(null);
   const spriteRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const tweenRef = useRef<gsap.core.Tween | null>(null);
-  const triggerRef = useRef<ScrollTrigger | null>(null);
+  const triggerRef = useRef<{ kill: () => void } | null>(null);
 
   const groups = useMemo(() => tokenize(text), [text]);
   const charBase = useMemo(() => {
@@ -200,17 +197,38 @@ export function FoldText({
       };
     }
 
-    const st = ScrollTrigger.create({
-      trigger: root,
-      start,
-      end: "top 20%",
-      toggleActions: once ? "play none none none" : "play none none reverse",
-      onEnter: () => animate(true),
-      onLeaveBack: () => animate(false),
-    });
-    triggerRef.current = st;
+    // `gsap/ScrollTrigger` (~51 kB raw) hanya dipakai untuk trigger="scroll".
+    // Headline hero memakai trigger="load", jadi modulnya di-load on-demand
+    // supaya tidak masuk ke first-load JS halaman landing.
+    let cancelled = false;
+    let st: { kill: () => void } | null = null;
+
+    import("gsap/ScrollTrigger")
+      .then((mod) => {
+        if (cancelled) return;
+        gsap.registerPlugin(mod.ScrollTrigger);
+        st = mod.ScrollTrigger.create({
+          trigger: root,
+          start,
+          end: "top 20%",
+          toggleActions: once ? "play none none none" : "play none none reverse",
+          onEnter: () => animate(true),
+          onLeaveBack: () => animate(false),
+        });
+        triggerRef.current = st;
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        // Jika modul gagal dimuat, headline tidak boleh tetap terlipat
+        // (tersembunyi) — langsung buka agar konten tetap terbaca.
+        console.error("[FoldText] gagal memuat ScrollTrigger:", error);
+        animate(true);
+      });
+
     return () => {
-      st.kill();
+      cancelled = true;
+      st?.kill();
+      triggerRef.current = null;
       tweenRef.current?.kill();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -257,8 +275,13 @@ export function FoldText({
                     style={{ transformStyle: "preserve-3d" }}
                   >
                     <span style={faceFront}>{value}</span>
-                    <span style={faceBack}>{value}</span>
-                    <span style={creaseStyle} />
+                    {/* Muka belakang & lipatan hanya dekoratif. Tanpa
+                        aria-hidden pembaca layar melafalkan tiap karakter dua
+                        kali: "Ubah" terdengar "UUbbaahh". */}
+                    <span aria-hidden style={faceBack}>
+                      {value}
+                    </span>
+                    <span aria-hidden style={creaseStyle} />
                   </span>
                 );
               })}

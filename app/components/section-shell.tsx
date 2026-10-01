@@ -1,7 +1,6 @@
-'use client';
 
 import { cn } from '@/lib/utils';
-import { SoftBlob } from '@/app/components/ornaments';
+import { SoftBlob } from '@/app/components/shared/ornaments';
 
 type SectionTone = 'cream' | 'white' | 'green' | 'transparent';
 

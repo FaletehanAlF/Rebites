@@ -108,8 +108,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ externalId, status: 'pending', invoiceStatus });
   } catch (e: unknown) {
     // Jangan gagalkan polling client - webhook tetap jadi jalur utama
-    const msg = e instanceof Error ? e.message : 'Gagal verifikasi invoice.';
-    console.error('[subscriptions/xendit/verify] error', msg, { externalId });
-    return NextResponse.json({ externalId, status: currentStatus, verifyError: msg });
+    console.error('[subscriptions/xendit/verify] error', e, { externalId });
+    return NextResponse.json({
+      externalId,
+      status: currentStatus,
+      verifyError: 'Gagal memverifikasi invoice.',
+    });
   }
 }
