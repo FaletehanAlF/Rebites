@@ -41,9 +41,9 @@ export default function Home() {
           <Reveal delay={0.05}>
             <div className="mb-10 text-center lg:mb-14">
               <h2 className="font-display text-[clamp(2.25rem,5vw,3.5rem)] font-light leading-[1.05] tracking-[-0.02em] text-primary-foreground">
-                Kenali <span className="italic text-caramel">ReBites</span>
+                Kenali <span className="italic text-primary">ReBites</span>
               </h2>
-              <p className="mt-2 font-display text-[clamp(1.25rem,2.2vw,1.75rem)] font-light italic tracking-[-0.01em] text-caramel/90">
+              <p className="mt-2 font-display text-[clamp(1.25rem,2.2vw,1.75rem)] font-light italic tracking-[-0.01em] text-primary/90">
                 lebih dalam
               </p>
             </div>
@@ -101,7 +101,7 @@ export default function Home() {
                       key={stat.label}
                       className="border-t border-primary-foreground/15 pt-4"
                     >
-                      <p className="whitespace-nowrap font-display text-[clamp(1.6rem,2.6vw,2.2rem)] font-light leading-none tracking-[-0.02em] text-cream">
+                      <p className="whitespace-nowrap font-display text-[clamp(1.6rem,2.6vw,2.2rem)] font-light leading-none tracking-[-0.02em] text-primary-foreground">
                         <span className={stat.compact ? "text-[0.82em]" : undefined}>
                           {stat.value}
                         </span>
@@ -121,9 +121,9 @@ export default function Home() {
             <div className="flex flex-col gap-6">
               <Reveal delay={0.15}>
                 <h3 className="font-display text-[clamp(1.5rem,2.6vw,2rem)] font-light leading-[1.1] tracking-[-0.02em] text-primary-foreground">
-                  Untuk <span className="text-caramel">UMKM</span>. Untuk{" "}
-                  <span className="text-caramel">masyarakat</span>. Untuk{" "}
-                  <span className="text-caramel">lingkungan</span>.
+                  Untuk <span className="text-primary">UMKM</span>. Untuk{" "}
+                  <span className="text-primary">masyarakat</span>. Untuk{" "}
+                  <span className="text-primary">lingkungan</span>.
                 </h3>
               </Reveal>
 
@@ -151,8 +151,8 @@ export default function Home() {
                   },
                 ].map((item, i) => (
                   <Reveal key={item.num} delay={0.2 + i * 0.08}>
-                    <div className="group flex h-full cursor-pointer flex-col rounded-[var(--radius)] border border-white/10 bg-white p-6 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-1 hover:border-caramel sm:p-7">
-                      <span className="font-sans text-sm italic tracking-[0.2em] text-caramel">
+                    <div className="group flex h-full cursor-pointer flex-col rounded-[var(--radius)] border border-white/10 bg-white p-6 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-1 hover:border-primary sm:p-7">
+                      <span className="font-sans text-sm italic tracking-[0.2em] text-primary">
                         {item.num}
                       </span>
 
@@ -170,7 +170,7 @@ export default function Home() {
 
               <Reveal delay={0.2}>
                 <p className="mt-2 max-w-xl font-sans text-sm leading-[1.85] text-primary-foreground">
-                  <span className="font-semibold text-caramel">ReBites</span>{" "}
+                  <span className="font-semibold text-primary">ReBites</span>{" "}
                   adalah marketplace khusus bagi pelaku UMKM untuk menjual
                   makanan surplus yang masih layak konsumsi. Pangan yang
                   berpotensi terbuang kembali bernilai - pelaku usaha
@@ -182,9 +182,9 @@ export default function Home() {
               <Reveal delay={0.25}>
                 <p className="max-w-xl font-sans text-sm leading-[1.85] text-primary-foreground">
                   Saat ini{" "}
-                  <span className="font-semibold text-caramel">ReBites</span>{" "}
+                  <span className="font-semibold text-primary">ReBites</span>{" "}
                   beroperasi di{" "}
-                  <span className="font-semibold text-caramel">
+                  <span className="font-semibold text-primary">
                     Kota Depok
                   </span>{" "}
                   sebagai langkah awal menghadirkan ekosistem penyelamatan

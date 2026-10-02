@@ -84,7 +84,7 @@ function PasswordVisibilityButton({
 }
 
 function inputClass(additional?: string) {
-  return `w-full bg-transparent py-1 font-sans text-[14px] leading-none text-[#1B3F2C] outline-none placeholder:text-muted-foreground ${additional ?? ""}`;
+  return `w-full bg-transparent py-1 font-sans text-[14px] leading-none text-foreground outline-none placeholder:text-muted-foreground ${additional ?? ""}`;
 }
 
 export default function PenjualLoginForm() {
@@ -224,7 +224,7 @@ export default function PenjualLoginForm() {
 
       <motion.h1
         variants={itemVariants}
-        className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-[#14261E] flex-shrink-0"
+        className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-foreground flex-shrink-0"
       >
         Masuk sebagai Penjual
       </motion.h1>
@@ -300,7 +300,7 @@ export default function PenjualLoginForm() {
         {error && (
           <p
             role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700"
+            className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive"
           >
             {error}
           </p>
@@ -322,7 +322,7 @@ export default function PenjualLoginForm() {
         Belum punya toko?{" "}
         <Link
           href="/auth/register/penjual"
-          className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-[#1B3F2C]"
+          className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-foreground"
         >
           Daftar sebagai penjual
         </Link>

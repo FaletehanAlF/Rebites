@@ -93,7 +93,7 @@ export function Preloader() {
               {/* Tulisan timbul dari bawah ke atas */}
               <span className="block overflow-hidden pb-2">
                 <motion.span
-                  className="block font-display text-[clamp(3.5rem,12vw,8.5rem)] font-semibold leading-none tracking-tight text-cream"
+                  className="block font-display text-[clamp(3.5rem,12vw,8.5rem)] font-semibold leading-none tracking-tight text-primary-foreground"
                   initial={{ y: '110%' }}
                   animate={{ y: '0%' }}
                   transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -102,11 +102,11 @@ export function Preloader() {
                 </motion.span>
               </span>
 
-              {/* Loading bar polos cream */}
-              <div className="mt-8 h-[3px] w-[min(420px,60vw)] overflow-hidden rounded-full bg-cream/20">
+              {/* Loading bar polos */}
+              <div className="mt-8 h-[3px] w-[min(420px,60vw)] overflow-hidden rounded-full bg-secondary/20">
                 <div
                   ref={barRef}
-                  className="h-full w-full origin-left rounded-full bg-cream"
+                  className="h-full w-full origin-left rounded-full bg-secondary"
                   style={{ transform: 'scaleX(0)' }}
                 ></div>
               </div>

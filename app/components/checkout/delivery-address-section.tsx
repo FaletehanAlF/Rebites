@@ -104,16 +104,16 @@ export function DeliveryAddressSection() {
             className="overflow-hidden"
             aria-label="Alamat pengiriman"
           >
-            <div className="rounded-2xl border border-sage-100 bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-2xl border border-border bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-display text-base font-medium text-charcoal-900">
+                <h3 className="font-display text-base font-medium text-foreground">
                   Alamat Pengiriman
                 </h3>
                 {selectedAddress && (
                   <button
                     type="button"
                     onClick={() => openPopup('form', null, false)}
-                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-cream-100"
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-muted"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     Tambah Alamat Baru
@@ -130,26 +130,26 @@ export function DeliveryAddressSection() {
                     <button
                       type="button"
                       onClick={() => openPopup('form', selectedAddress, false)}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-caramel/10"
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark/10"
                     >
                       <Pencil className="h-3.5 w-3.5" />
                       Ubah
                     </button>
                   </div>
 
-                  <p className="mt-3 text-sm font-semibold text-charcoal-900">
+                  <p className="mt-3 text-sm font-semibold text-foreground">
                     {selectedAddress.receiverName}
                   </p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-sm text-charcoal-500">
-                    <Phone className="h-3.5 w-3.5 shrink-0 text-sage-500" />
+                  <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     {selectedAddress.phone}
                   </p>
-                  <p className="mt-1.5 flex items-start gap-1.5 text-sm leading-relaxed text-charcoal-500">
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-sage-500" />
+                  <p className="mt-1.5 flex items-start gap-1.5 text-sm leading-relaxed text-muted-foreground">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                     {formatFullAddress(selectedAddress)}
                   </p>
                   {selectedAddress.note && (
-                    <p className="mt-2 flex items-start gap-1.5 text-xs italic leading-relaxed text-sage-600">
+                    <p className="mt-2 flex items-start gap-1.5 text-xs italic leading-relaxed text-muted-foreground">
                       <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                       “{selectedAddress.note}”
                     </p>
@@ -158,7 +158,7 @@ export function DeliveryAddressSection() {
                   <button
                     type="button"
                     onClick={() => openPopup('list', null, false)}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition-colors hover:bg-caramel hover:text-white"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white"
                   >
                     Pilih Alamat Lain
                     {addresses.length > 1 && (
@@ -172,15 +172,15 @@ export function DeliveryAddressSection() {
                 <button
                   type="button"
                   onClick={() => openPopup('form', null, false)}
-                  className="mt-4 flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-sage-500/50 px-6 py-8 text-center transition-colors hover:border-caramel hover:bg-caramel/[0.03]"
+                  className="mt-4 flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-primary/30 px-6 py-8 text-center transition-colors hover:border-primary hover:bg-primary-dark/[0.03]"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-sage-100 text-primary">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-primary">
                     <Plus className="h-5 w-5" />
                   </span>
-                  <span className="text-sm font-semibold text-charcoal-900">
+                  <span className="text-sm font-semibold text-foreground">
                     Tambah Alamat Baru
                   </span>
-                  <span className="text-xs text-charcoal-500">
+                  <span className="text-xs text-muted-foreground">
                     Isi alamat pengiriman agar pesanan bisa diantar
                   </span>
                 </button>
@@ -196,10 +196,10 @@ export function DeliveryAddressSection() {
           {view === 'list' ? (
             <>
               <DialogHeader className="pr-10 text-left">
-                <DialogTitle className="font-display text-xl font-semibold text-charcoal-900">
+                <DialogTitle className="font-display text-xl font-semibold text-foreground">
                   Pilih Alamat Pengiriman
                 </DialogTitle>
-                <DialogDescription className="text-sm text-charcoal-500">
+                <DialogDescription className="text-sm text-muted-foreground">
                   Alamat yang dipilih akan dipakai untuk pesanan ini.
                 </DialogDescription>
               </DialogHeader>
@@ -215,7 +215,7 @@ export function DeliveryAddressSection() {
                         'flex items-start gap-3 rounded-2xl border-2 p-4 transition-all duration-200',
                         active
                           ? 'border-primary bg-primary/[0.05]'
-                          : 'border-sage-100 bg-white',
+                          : 'border-border bg-white',
                       )}
                     >
                       <button
@@ -229,7 +229,7 @@ export function DeliveryAddressSection() {
                           aria-hidden
                           className={cn(
                             'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200',
-                            active ? 'border-primary' : 'border-sage-500/70',
+                            active ? 'border-primary' : 'border-primary/30',
                           )}
                         >
                           {active && (
@@ -241,14 +241,14 @@ export function DeliveryAddressSection() {
                         </span>
                         <span className="min-w-0">
                           <span className="flex items-center gap-2">
-                            <span className="rounded-full bg-cream-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-charcoal-500">
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                               {address.label}
                             </span>
-                            <span className="truncate text-sm font-semibold text-charcoal-900">
+                            <span className="truncate text-sm font-semibold text-foreground">
                               {address.receiverName}
                             </span>
                           </span>
-                          <span className="mt-1 block truncate text-xs text-charcoal-500">
+                          <span className="mt-1 block truncate text-xs text-muted-foreground">
                             {formatFullAddress(address)}
                           </span>
                         </span>
@@ -258,7 +258,7 @@ export function DeliveryAddressSection() {
                         type="button"
                         onClick={() => openPopup('form', address, true)}
                         aria-label={`Ubah alamat ${address.label}`}
-                        className="shrink-0 rounded-full p-2 text-sage-500 transition-colors hover:bg-cream-100 hover:text-caramel"
+                        className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -269,7 +269,7 @@ export function DeliveryAddressSection() {
                 <button
                   type="button"
                   onClick={() => openPopup('form', null, true)}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-sage-500/50 px-4 py-3.5 text-sm font-semibold text-primary transition-colors hover:border-caramel hover:bg-caramel/[0.03]"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/30 px-4 py-3.5 text-sm font-semibold text-primary transition-colors hover:border-primary hover:bg-primary-dark/[0.03]"
                 >
                   <Plus className="h-4 w-4" />
                   Tambah Alamat Baru

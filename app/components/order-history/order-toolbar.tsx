@@ -52,14 +52,14 @@ export function OrderToolbar({
                   'inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors',
                   active
                     ? 'border-primary bg-white text-primary shadow-sm'
-                    : 'border-zinc-200 bg-white text-charcoal-500 hover:border-sage-200 hover:text-caramel'
+                    : 'border-zinc-200 bg-white text-muted-foreground hover:border-border hover:text-primary'
                 )}
               >
                 {p.label}
                 <span
                   className={cn(
                     'rounded-full px-1.5 py-0.5 text-[10px] tabular-nums',
-                    active ? 'bg-primary/10 text-primary' : 'bg-cream-100 text-charcoal-500'
+                    active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                   )}
                 >
                   {count}
@@ -75,14 +75,14 @@ export function OrderToolbar({
             <select
               value={dateRange}
               onChange={(e) => onDateRangeChange(e.target.value)}
-              className="h-8 appearance-none rounded-full bg-zinc-100 px-4 pr-7 text-xs font-medium text-charcoal-900 outline-none"
+              className="h-8 appearance-none rounded-full bg-zinc-100 px-4 pr-7 text-xs font-medium text-foreground outline-none"
             >
               <option value="all">Pilih rentang tanggal</option>
               <option value="7d">7 hari terakhir</option>
               <option value="30d">30 hari terakhir</option>
               <option value="90d">90 hari terakhir</option>
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-charcoal-500" />
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           </div>
         </div>
       </div>
@@ -105,7 +105,7 @@ export function OrderToolbar({
                 'h-8 rounded-full px-3.5 text-xs font-semibold transition-all',
                 fulfillment === f.key
                   ? 'bg-primary text-white shadow-sm'
-                  : 'bg-white text-charcoal-500 ring-1 ring-hairline hover:text-caramel'
+                  : 'bg-white text-muted-foreground ring-1 ring-border hover:text-primary'
               )}
             >
               {f.label}
@@ -113,13 +113,13 @@ export function OrderToolbar({
           ))}
         </div>
         <label className="relative w-full lg:ml-auto lg:max-w-[320px]">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-500" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="search"
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder="Cari Order ID / produk..."
-            className="h-9 w-full rounded-full border border-hairline bg-white pl-10 pr-4 text-sm text-charcoal-900 placeholder:text-charcoal-500/60 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary"
+            className="h-9 w-full rounded-full border border-border bg-white pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary"
           />
         </label>
       </div>

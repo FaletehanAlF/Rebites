@@ -25,7 +25,7 @@ interface SearchFilterBarProps {
 }
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-caramel focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 const GLASS_FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent";
@@ -72,7 +72,7 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="rounded bg-cream-100 px-0.5 font-semibold text-primary">
+      <mark className="rounded bg-muted px-0.5 font-semibold text-primary">
         {text.slice(idx, idx + q.length)}
       </mark>
       {text.slice(idx + q.length)}
@@ -191,8 +191,8 @@ export function SearchFilterBar({
           isGlass
             ? "rounded-[28px] border border-white/25 bg-white/15 p-2 shadow-lg shadow-black/10 backdrop-blur-md sm:rounded-full"
             : isLight
-              ? "rounded-[28px] border border-sage-100 bg-white p-2 shadow-md shadow-primary/5 sm:rounded-full"
-              : "rounded-2xl border border-sage-100 bg-white p-2.5 shadow-md shadow-primary/5 sm:p-3",
+              ? "rounded-[28px] border border-border bg-white p-2 shadow-md shadow-primary/5 sm:rounded-full"
+              : "rounded-2xl border border-border bg-white p-2.5 shadow-md shadow-primary/5 sm:p-3",
         )}
       >
         <form
@@ -207,13 +207,13 @@ export function SearchFilterBar({
             <div
               className={cn(
                 "flex w-full items-center gap-3 rounded-full px-4 py-2.5",
-                !isGlass && !isLight && "bg-cream-50",
+                !isGlass && !isLight && "bg-secondary",
               )}
             >
               <Search
                 className={cn(
                   "h-5 w-5 shrink-0",
-                  isGlass ? "text-white/80" : "text-sage-500",
+                  isGlass ? "text-white/80" : "text-muted-foreground",
                 )}
               />
               <input
@@ -233,7 +233,7 @@ export function SearchFilterBar({
                   "w-full bg-transparent font-sans text-sm focus:outline-none",
                   isGlass
                     ? "text-white placeholder:text-white/60"
-                    : "text-charcoal-900 placeholder:text-charcoal-500/70",
+                    : "text-foreground placeholder:text-muted-foreground/70",
                   (showInlineResults || isLight) &&
                   "[&::-webkit-search-cancel-button]:hidden",
                 )}
@@ -248,7 +248,7 @@ export function SearchFilterBar({
                     "-ml-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors duration-150",
                     isGlass
                       ? "text-white/70 hover:bg-white/15 hover:text-white"
-                      : "text-charcoal-500 hover:bg-cream-100 hover:text-charcoal-900",
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <X className="h-4 w-4" />
@@ -273,7 +273,7 @@ export function SearchFilterBar({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[min(340px,60vh)] overflow-y-auto overscroll-contain rounded-2xl border border-sage-100 bg-white p-1.5 shadow-xl [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-sage-500/40 [&::-webkit-scrollbar-track]:bg-transparent"
+                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[min(340px,60vh)] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-white p-1.5 shadow-xl [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-track]:bg-transparent"
                   >
                     {results.length > 0 ? (
                       results.map((item) => (
@@ -283,9 +283,9 @@ export function SearchFilterBar({
                           role="option"
                           aria-selected={false}
                           onClick={() => handleSelectResult(item.id)}
-                          className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition-colors duration-150 hover:bg-cream-50"
+                          className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition-colors duration-150 hover:bg-secondary"
                         >
-                          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-sage-100">
+                          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-muted">
                             <SmartImage
                               src={item.image}
                               alt={`Foto ${item.name}`}
@@ -294,19 +294,19 @@ export function SearchFilterBar({
                           </div>
 
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-sans text-sm font-semibold text-charcoal-900">
+                            <p className="truncate font-sans text-sm font-semibold text-foreground">
                               <HighlightedText
                                 text={item.name}
                                 query={trimmedQuery}
                               />
                             </p>
-                            <p className="mt-0.5 truncate font-inter text-xs text-charcoal-500">
+                            <p className="mt-0.5 truncate font-secondary text-xs text-muted-foreground">
                               <HighlightedText
                                 text={item.vendorName}
                                 query={trimmedQuery}
                               />
                             </p>
-                            <p className="mt-0.5 truncate font-inter text-[11px] text-charcoal-500">
+                            <p className="mt-0.5 truncate font-secondary text-[11px] text-muted-foreground">
                               {item.stockLabel} · {item.distanceKm} km
                             </p>
                           </div>
@@ -315,7 +315,7 @@ export function SearchFilterBar({
                             <p className="font-sans text-sm font-bold text-primary">
                               {formatRupiah(item.discountedPrice)}
                             </p>
-                            <p className="font-inter text-xs text-charcoal-500 line-through">
+                            <p className="font-secondary text-xs text-muted-foreground line-through">
                               {formatRupiah(item.originalPrice)}
                             </p>
                           </div>
@@ -324,13 +324,13 @@ export function SearchFilterBar({
                     ) : (
                       <div className="flex flex-col items-center gap-1 px-4 py-8 text-center">
                         <SearchX
-                          className="h-7 w-7 text-sage-400"
+                          className="h-7 w-7 text-muted-foreground-400"
                           strokeWidth={1.5}
                         />
-                        <p className="mt-1 font-sans text-sm font-semibold text-charcoal-900">
+                        <p className="mt-1 font-sans text-sm font-semibold text-foreground">
                           Makanan tidak ditemukan
                         </p>
-                        <p className="font-inter text-xs text-charcoal-500">
+                        <p className="font-secondary text-xs text-muted-foreground">
                           Coba kata kunci lain.
                         </p>
                       </div>
@@ -352,11 +352,11 @@ export function SearchFilterBar({
                 "flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors duration-200",
                 isGlass
                   ? "border-white/30 bg-white/10 text-white hover:border-white/60 hover:text-white"
-                  : "border-sage-100 bg-white text-charcoal-500 hover:border-caramel/40 hover:text-caramel",
+                  : "border-border bg-white text-muted-foreground hover:border-primary/40 hover:text-primary",
                 isGlass ? GLASS_FOCUS_RING : FOCUS_RING,
               )}
             >
-              <MapPin className="h-4 w-4 text-caramel" />
+              <MapPin className="h-4 w-4 text-primary" />
               <span className="max-w-[130px] truncate">{location}</span>
               <ChevronDown
                 className={cn(
@@ -381,7 +381,7 @@ export function SearchFilterBar({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-sage-100 bg-white p-1.5 shadow-xl"
+                    className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-1.5 shadow-xl"
                   >
                     {LOCATIONS.map((loc) => (
                       <li key={loc}>
@@ -394,8 +394,8 @@ export function SearchFilterBar({
                           className={cn(
                             "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors duration-150",
                             loc === location
-                              ? "bg-cream-100 font-semibold text-caramel"
-                              : "text-charcoal-500 hover:bg-cream-50 hover:text-caramel",
+                              ? "bg-muted font-semibold text-primary"
+                              : "text-muted-foreground hover:bg-secondary hover:text-primary",
                           )}
                         >
                           <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -421,7 +421,7 @@ export function SearchFilterBar({
                 }}
                 aria-label="Buka filter"
                 className={cn(
-                  "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-sage-100 bg-white px-3 font-sans text-sm font-semibold text-charcoal-700 shadow-sm transition-colors duration-200 active:scale-[0.98] lg:hidden",
+                  "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-border bg-white px-3 font-sans text-sm font-semibold text-foreground shadow-sm transition-colors duration-200 active:scale-[0.98] lg:hidden",
                   FOCUS_RING,
                 )}
               >
@@ -433,7 +433,7 @@ export function SearchFilterBar({
                 type="submit"
                 className={cn(
                   "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 font-sans text-sm font-semibold text-white shadow-md transition-colors duration-200 active:scale-[0.98] sm:px-7",
-                  "bg-caramel hover:bg-caramel",
+                  "bg-primary hover:bg-primary-dark",
                   FOCUS_RING,
                 )}
               >
@@ -463,21 +463,21 @@ export function SearchFilterBar({
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="fixed inset-x-0 bottom-0 z-[60] max-h-[80vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl"
             >
-              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-sage-200" />
+              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
               <div className="flex items-center justify-between">
-                <h3 className="font-sans text-lg font-bold text-charcoal-900">Filter</h3>
+                <h3 className="font-sans text-lg font-bold text-foreground">Filter</h3>
                 <button
                   type="button"
                   onClick={() => setFilterSheetOpen(false)}
                   aria-label="Tutup filter"
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-charcoal-500 hover:bg-cream-100"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               <div className="mt-4">
-                <p className="font-sans text-xs font-semibold uppercase tracking-wider text-charcoal-500">Urutkan</p>
+                <p className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Urutkan</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {FILTER_OPTIONS.map((opt) => {
                     const active = draftFilter === opt.key;
@@ -490,7 +490,7 @@ export function SearchFilterBar({
                           "rounded-full border px-4 py-2 text-xs font-semibold transition-colors",
                           active
                             ? "border-primary bg-primary text-white"
-                            : "border-sage-200 bg-white text-charcoal-700 hover:border-caramel hover:bg-caramel/20",
+                            : "border-border bg-white text-foreground hover:border-primary hover:bg-primary-dark/20",
                         )}
                       >
                         {opt.label}
@@ -506,14 +506,14 @@ export function SearchFilterBar({
                   onClick={() => {
                     setDraftFilter("terdekat");
                   }}
-                  className="flex-1 rounded-full border border-sage-200 bg-white px-4 py-3 text-sm font-semibold text-charcoal-700 transition-colors hover:bg-cream-50"
+                  className="flex-1 rounded-full border border-border bg-white px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
                 >
                   Reset
                 </button>
                 <button
                   type="button"
                   onClick={handleApplyFilter}
-                  className="flex-1 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+                  className="flex-1 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
                 >
                   Terapkan
                 </button>

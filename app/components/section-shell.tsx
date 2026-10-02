@@ -2,10 +2,10 @@
 import { cn } from '@/lib/utils';
 import { SoftBlob } from '@/app/components/shared/ornaments';
 
-type SectionTone = 'cream' | 'white' | 'green' | 'transparent';
+type SectionTone = 'neutral' | 'white' | 'green' | 'transparent';
 
 const toneClasses: Record<SectionTone, string> = {
-  cream: 'grain-overlay bg-cream',
+  neutral: 'grain-overlay bg-secondary',
   white: 'grain-overlay bg-white',
   green: 'grain-overlay bg-primary',
   transparent: '',
@@ -13,7 +13,7 @@ const toneClasses: Record<SectionTone, string> = {
 
 interface SectionShellProps {
   id?: string;
-  dataNav?: 'cream' | 'green';
+  dataNav?: 'neutral' | 'green';
   tone?: SectionTone;
   className?: string;
   containerClassName?: string;
@@ -27,7 +27,7 @@ interface SectionShellProps {
 export function SectionShell({
   id,
   dataNav,
-  tone = 'cream',
+  tone = 'neutral',
   className,
   containerClassName,
   children,

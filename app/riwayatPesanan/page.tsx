@@ -15,8 +15,8 @@ export default function OrderHistoryPage() {
       <Suspense
         fallback={
           <div className="space-y-5">
-            <div className="h-14 w-56 animate-pulse rounded-xl bg-white ring-1 ring-hairline" />
-            <div className="h-52 animate-pulse rounded-2xl bg-white ring-1 ring-hairline" />
+            <div className="h-14 w-56 animate-pulse rounded-xl bg-white ring-1 ring-border" />
+            <div className="h-52 animate-pulse rounded-2xl bg-white ring-1 ring-border" />
           </div>
         }
       >

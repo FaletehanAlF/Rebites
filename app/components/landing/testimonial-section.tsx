@@ -210,7 +210,7 @@ export function TestimonialSection() {
               type="button"
               onClick={() => api?.scrollPrev()}
               aria-label="Testimoni sebelumnya"
-              className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-caramel hover:bg-caramel hover:text-white sm:flex"
+              className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex"
             >
               <ArrowRight className="h-4 w-4 rotate-180" />
             </button>
@@ -219,7 +219,7 @@ export function TestimonialSection() {
               type="button"
               onClick={() => api?.scrollNext()}
               aria-label="Testimoni berikutnya"
-              className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-caramel hover:bg-caramel hover:text-white sm:flex"
+              className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex"
             >
               <ArrowRight className="h-4 w-4" />
             </button>
@@ -231,10 +231,10 @@ export function TestimonialSection() {
                     key={t.name}
                     className="basis-full pl-4 sm:basis-1/2 sm:pl-4 lg:basis-1/3 lg:pl-5"
                   >
-                    <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-8 shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-caramel/40 hover:shadow-[0_30px_60px_-28px_rgba(27,77,50,0.35)] lg:p-9">
+                    <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-8 shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_30px_60px_-28px_rgba(27,77,50,0.35)] lg:p-9">
                       <span
                         aria-hidden
-                        className="pointer-events-none absolute -top-3 right-4 select-none font-display text-[6rem] font-extralight leading-none text-caramel/[0.08] transition-colors duration-300 group-hover:text-caramel/15"
+                        className="pointer-events-none absolute -top-3 right-4 select-none font-display text-[6rem] font-extralight leading-none text-primary/[0.08] transition-colors duration-300 group-hover:text-primary/15"
                       >
                         &ldquo;
                       </span>
@@ -243,12 +243,12 @@ export function TestimonialSection() {
                         {Array.from({ length: t.rating }).map((_, s) => (
                           <Star
                             key={s}
-                            className="h-4 w-4 fill-caramel text-caramel"
+                            className="h-4 w-4 fill-primary text-primary"
                           />
                         ))}
                       </div>
 
-                      <Quote className="mt-5 h-5 w-5 text-caramel/40" />
+                      <Quote className="mt-5 h-5 w-5 text-primary/40" />
 
                       <blockquote className="mt-3 flex-1 font-sans text-sm leading-relaxed text-foreground/80">
                         &ldquo;{t.quote}&rdquo;
@@ -265,7 +265,7 @@ export function TestimonialSection() {
                           }}
                         />
 
-                        <Avatar className="h-11 w-11 border border-caramel/30">
+                        <Avatar className="h-11 w-11 border border-primary/30">
                           <AvatarImage
                             src={t.photo}
                             alt={t.name}
@@ -274,7 +274,7 @@ export function TestimonialSection() {
                             className="object-cover"
                           />
 
-                          <AvatarFallback className="bg-caramel font-display text-sm font-medium text-white">
+                          <AvatarFallback className="bg-primary font-display text-sm font-medium text-white">
                             {t.initials}
                           </AvatarFallback>
                         </Avatar>

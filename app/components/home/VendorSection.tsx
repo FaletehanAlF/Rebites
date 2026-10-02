@@ -12,7 +12,7 @@ import { useSellerPlan } from '@/lib/seller-plan';
 import { isVendorReallyOpen } from '@/lib/store-status';
 
 const FOCUS_RING =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 export function VendorSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -72,17 +72,17 @@ export function VendorSection() {
 
   return (      <section
       id="umkm"
-      data-nav="cream"
-      className="relative overflow-hidden scroll-mt-20 bg-cream-50 pb-10 pt-10 sm:pb-16 sm:pt-16 lg:pb-20 lg:pt-20"
+      data-nav="neutral"
+      className="relative overflow-hidden scroll-mt-20 bg-secondary pb-10 pt-10 sm:pb-16 sm:pt-16 lg:pb-20 lg:pt-20"
     >
-      <SoftBlob className="-right-24 top-1/4 h-80 w-80 bg-sage-100/60" />
+      <SoftBlob className="-right-24 top-1/4 h-80 w-80 bg-muted/60" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="font-sans text-lg font-bold tracking-tight text-charcoal-900 sm:text-[22px] lg:text-[28px]">
+            <h2 className="font-sans text-lg font-bold tracking-tight text-foreground sm:text-[22px] lg:text-[28px]">
               Rekomendasi toko buat kamu
             </h2>
-            <p className="mt-1 max-w-md font-sans text-xs text-charcoal-500 sm:text-sm">
+            <p className="mt-1 max-w-md font-sans text-xs text-muted-foreground sm:text-sm">
               Toko lokal yang rutin menyelamatkan makanan surplusnya setiap hari. Dukung mereka.
             </p>
           </div>
@@ -95,8 +95,8 @@ export function VendorSection() {
             disabled={!canLeft}
             aria-label="Geser rekomendasi ke kiri"
             className={cn(
-              'absolute -left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-sage-100 bg-white text-charcoal-900 shadow-md shadow-primary/5 transition-all duration-200 hover:bg-caramel hover:text-white active:scale-[0.95] sm:-left-5 sm:h-11 sm:w-11',
-              !canLeft && 'cursor-default opacity-35 hover:bg-white hover:text-charcoal-900',
+              'absolute -left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-foreground shadow-md shadow-primary/5 transition-all duration-200 hover:bg-primary-dark hover:text-white active:scale-[0.95] sm:-left-5 sm:h-11 sm:w-11',
+              !canLeft && 'cursor-default opacity-35 hover:bg-white hover:text-foreground',
               FOCUS_RING
             )}
           >
@@ -105,12 +105,12 @@ export function VendorSection() {
 
           <div ref={scrollRef} className="mt-10 grid snap-x snap-mandatory auto-cols-[85%] grid-flow-col gap-5 overflow-x-auto scroll-smooth pb-6 sm:auto-cols-[calc((100%-1.25rem)/2)] lg:auto-cols-[calc((100%-3.75rem)/4)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {loading && (
-              <div className="flex h-56 items-center justify-center text-sm text-charcoal-500">
+              <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
                 Memuat toko...
               </div>
             )}
             {!loading && sortedVendors.length === 0 && (
-              <div className="flex h-56 items-center justify-center text-sm text-charcoal-500">
+              <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
                 Belum ada toko yang buka saat ini.
               </div>
             )}
@@ -157,8 +157,8 @@ export function VendorSection() {
             disabled={!canRight}
             aria-label="Geser rekomendasi ke kanan"
             className={cn(
-              'absolute -right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-sage-100 bg-white text-charcoal-900 shadow-md shadow-primary/5 transition-all duration-200 hover:bg-caramel hover:text-white active:scale-[0.95] sm:-right-5 sm:h-11 sm:w-11',
-              !canRight && 'cursor-default opacity-35 hover:bg-white hover:text-charcoal-900',
+              'absolute -right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-foreground shadow-md shadow-primary/5 transition-all duration-200 hover:bg-primary-dark hover:text-white active:scale-[0.95] sm:-right-5 sm:h-11 sm:w-11',
+              !canRight && 'cursor-default opacity-35 hover:bg-white hover:text-foreground',
               FOCUS_RING
             )}
           >

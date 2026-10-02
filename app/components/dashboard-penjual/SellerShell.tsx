@@ -19,7 +19,7 @@ export function SellerShell({ children }: SellerShellProps) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-cream-50">
+      <div className="flex min-h-screen items-center justify-center bg-secondary">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
@@ -27,7 +27,7 @@ export function SellerShell({ children }: SellerShellProps) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative min-h-screen bg-cream-50 font-sans text-charcoal-900">
+      <div className="relative min-h-screen bg-secondary font-sans text-foreground">
         <DashboardDecor />
 
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

@@ -26,7 +26,7 @@ const NAV_LINKS = [
 ];
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-caramel focus-visible:ring-offset-2 focus-visible:ring-offset-cream";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export function HeroSection() {
   const [open, setOpen] = useState<boolean>(false);
@@ -126,7 +126,7 @@ export function HeroSection() {
   };
 
   return (
-    <div className="overflow-x-hidden bg-cream" data-nav="cream">
+    <div className="overflow-x-hidden bg-secondary" data-nav="neutral">
       <header className="fixed inset-x-0 top-0 z-50">
         <div className="px-4 pt-3 sm:px-6 lg:px-8 sm:pt-4">
           <div className="mx-auto w-full">
@@ -138,7 +138,7 @@ export function HeroSection() {
                       "mx-auto w-full max-w-4xl rounded-full border px-6 shadow-[0_20px_44px_-26px_rgba(27,77,50,0.45)] backdrop-blur-xl sm:px-7 xl:max-w-5xl",
                       navIsDark
                         ? "border-white/15 bg-primary/70 text-white"
-                        : "border-hairline/70 bg-white/85 text-primary",
+                        : "border-border/70 bg-white/85 text-primary",
                     )
                   : cn(
                       "mx-auto w-full max-w-7xl rounded-none border-b border-transparent bg-transparent",
@@ -181,20 +181,20 @@ export function HeroSection() {
                         activeNav === link.label ? "page" : undefined
                       }
                       className={cn(
-                        "relative py-1 font-inter text-sm transition-colors duration-300",
+                        "relative py-1 font-secondary text-sm transition-colors duration-300",
                         activeNav === link.label
                           ? navIsDark
                             ? "font-semibold text-white"
                             : "font-semibold text-primary"
                           : navIsDark
                             ? "text-white/80 hover:text-white"
-                            : "text-primary/80 hover:text-caramel",
+                            : "text-primary/80 hover:text-primary",
                       )}
                     >
                       {link.label}
 
                       {activeNav === link.label && (
-                        <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-caramel" />
+                        <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-primary" />
                       )}
                     </Link>
                   </li>
@@ -205,10 +205,10 @@ export function HeroSection() {
                 <Link
                   href="/auth/login"
                   className={cn(
-                    "hidden items-center gap-1.5 rounded-full px-5 py-2.5 font-inter text-sm font-semibold shadow-[0_14px_30px_-18px_rgba(27,77,50,0.65)] transition-colors duration-300 sm:flex",
+                    "hidden items-center gap-1.5 rounded-full px-5 py-2.5 font-secondary text-sm font-semibold shadow-[0_14px_30px_-18px_rgba(27,77,50,0.65)] transition-colors duration-300 sm:flex",
                     navIsDark
-                      ? "bg-white text-primary hover:bg-caramel hover:text-white"
-                      : "bg-primary text-white hover:bg-caramel hover:text-white",
+                      ? "bg-white text-primary hover:bg-primary-dark hover:text-white"
+                      : "bg-primary text-white hover:bg-primary-dark hover:text-white",
                     FOCUS_RING,
                   )}
                 >
@@ -223,7 +223,7 @@ export function HeroSection() {
                   aria-expanded={open}
                   className={cn(
                     "flex h-10 w-10 items-center justify-center lg:hidden",
-                    navIsDark ? "text-white" : "text-forest",
+                    navIsDark ? "text-white" : "text-primary",
                     FOCUS_RING,
                   )}
                 >
@@ -243,7 +243,7 @@ export function HeroSection() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                  className="mt-2 overflow-hidden rounded-3xl border border-hairline/70 bg-white p-3 shadow-[0_28px_56px_-28px_rgba(27,77,50,0.5)] lg:hidden"
+                  className="mt-2 overflow-hidden rounded-3xl border border-border/70 bg-white p-3 shadow-[0_28px_56px_-28px_rgba(27,77,50,0.5)] lg:hidden"
                 >
                   <ul className="flex flex-col">
                     {NAV_LINKS.map((link) => (
@@ -252,10 +252,10 @@ export function HeroSection() {
                           href={link.href}
                           onClick={(e) => scrollToSection(e, link.label, link.target)}
                           className={cn(
-                            "flex items-center justify-between rounded-2xl px-4 py-3 font-inter text-sm transition-colors duration-300",
+                            "flex items-center justify-between rounded-2xl px-4 py-3 font-secondary text-sm transition-colors duration-300",
                             activeNav === link.label
-                              ? "bg-caramel/10 font-semibold text-primary"
-                              : "text-primary hover:bg-cream",
+                              ? "bg-primary/10 font-semibold text-primary"
+                              : "text-primary hover:bg-secondary",
                           )}
                         >
                           {link.label}
@@ -264,11 +264,11 @@ export function HeroSection() {
                     ))}
                   </ul>
 
-                  <div className="mt-2 flex border-t border-hairline/70 pt-3">
+                  <div className="mt-2 flex border-t border-border/70 pt-3">
                     <Link
                       href="/auth/login"
                       onClick={() => setOpen(false)}
-                      className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary py-3 font-inter text-sm font-semibold text-white transition-colors duration-300 hover:bg-caramel"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary py-3 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-dark"
                     >
                       <User className="h-3.5 w-3.5" />
                       {t("Masuk", "Log In")}
@@ -283,7 +283,7 @@ export function HeroSection() {
 
       <section
         id="top"
-        className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-cream px-4 pb-14 pt-28 sm:px-6 lg:px-8 lg:pt-28"
+        className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-secondary px-4 pb-14 pt-28 sm:px-6 lg:px-8 lg:pt-28"
       >
         <HeroFoodBackdrop />
 
@@ -317,7 +317,7 @@ export function HeroSection() {
               <div className="flex w-full items-baseline justify-center">
                 <RotatingText
                   texts={["makanan.", "UMKM.", "masyarakat.", "lingkungan."]}
-                  mainClassName="font-display font-light italic text-caramel"
+                  mainClassName="font-display font-light italic text-primary"
                   style={{
                     fontSize: "clamp(2rem, 4.5vw, 3.5rem)",
                     lineHeight: 1.05,
@@ -341,12 +341,12 @@ export function HeroSection() {
               <Link
                 href="/auth/register"
                 className={cn(
-                  "group inline-flex items-center gap-2 rounded-full bg-primary px-9 py-4 font-inter text-base font-semibold text-white shadow-[0_16px_32px_-16px_rgba(27,77,50,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-caramel",
+                  "group inline-flex items-center gap-2 rounded-full bg-primary px-9 py-4 font-secondary text-base font-semibold text-white shadow-[0_16px_32px_-16px_rgba(27,77,50,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-dark",
                   FOCUS_RING,
                 )}
               >
                 Mulai Sekarang
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-forest-dark shadow-sm transition-all duration-300 group-hover:translate-x-1">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary-dark shadow-sm transition-all duration-300 group-hover:translate-x-1">
                   <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
@@ -357,7 +357,7 @@ export function HeroSection() {
                     {Array.from({ length: 5 }).map((_, i) => (
                       <svg
                         key={i}
-                        className="h-4 w-4 fill-caramel text-caramel"
+                        className="h-4 w-4 fill-primary text-primary"
                         viewBox="0 0 20 20"
                         aria-hidden
                       >
@@ -365,11 +365,11 @@ export function HeroSection() {
                       </svg>
                     ))}
                   </div>
-                  <span className="font-sans text-sm font-bold leading-none text-forest-dark">
+                  <span className="font-sans text-sm font-bold leading-none text-primary-dark">
                     5.0
                   </span>
                 </div>
-                <span className="font-sans text-[11px] font-medium leading-none text-forest-dark/70">
+                <span className="font-sans text-[11px] font-medium leading-none text-primary-dark/70">
                   dari 500+ ulasan
                 </span>
               </div>
@@ -538,7 +538,7 @@ function HeroFoodBackdrop() {
         <Leaf key={`${leaf.src}-${i}`} {...leaf} scrollY={scrollY} />
       ))}
 
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-cream to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-secondary to-transparent" />
     </div>
   );
 }

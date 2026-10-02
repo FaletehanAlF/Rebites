@@ -4,46 +4,49 @@
 
 @layer base {
   :root {
+    /* Surfaces — white is the primary surface, very light neutral is secondary */
     --background: 0 0% 100%;
-    --foreground: 50 5% 11%;
+    --foreground: 150 25% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 50 5% 11%;
+    --card-foreground: 150 25% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 50 5% 11%;
+    --popover-foreground: 150 25% 10%;
 
+    /* Brand — the ReBites deep green */
     --primary: 148 41% 23%;
-    --primary-foreground: 40 30% 96%;
+    --primary-dark: 148 42% 17%;
+    --primary-foreground: 0 0% 100%;
     --primary-foreground-strong: 0 0% 100%;
 
-    --secondary: 40 30% 96%;
+    /* Secondary / muted — neutral, never warm */
+    --secondary: 150 17% 98%;
     --secondary-foreground: 148 41% 23%;
+    --muted: 150 14% 95%;
+    --muted-foreground: 150 6% 40%;
 
-    --muted: 40 24% 92%;
-    --muted-foreground: 50 5% 36%;
+    /* Accent — subtle green for selected and hover states */
+    --accent: 148 30% 94%;
+    --accent-foreground: 148 41% 20%;
 
-    --accent: 148 41% 23%;
-    --accent-foreground: 40 30% 96%;
-
+    /* Semantic status colours (restrained, never competing with the brand) */
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 98%;
-
-    --warning: 35 90% 50%;
+    --warning: 35 90% 38%;
     --warning-foreground: 0 0% 100%;
+    --success: 145 60% 32%;
+    --success-foreground: 0 0% 100%;
 
-    --success: 148 41% 30%;
-    --success-foreground: 40 30% 96%;
-
-    --border: 40 14% 88%;
-    --input: 40 14% 86%;
+    /* Lines and focus */
+    --border: 144 11% 91%;
+    --input: 144 10% 88%;
     --ring: 148 41% 23%;
 
-    --caramel: 32 38% 65%;
-
+    /* Charts — green and neutral only */
     --chart-1: 148 41% 23%;
-    --chart-2: 148 41% 35%;
-    --chart-3: 40 30% 60%;
-    --chart-4: 148 30% 50%;
-    --chart-5: 50 5% 30%;
+    --chart-2: 145 55% 34%;
+    --chart-3: 145 35% 55%;
+    --chart-4: 150 20% 72%;
+    --chart-5: 150 6% 40%;
 
     --radius: 0.25rem;
   }
@@ -71,24 +74,6 @@
   ::selection {
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-  }
-}
-
-@layer components {
-  .font-display {
-    font-family: var(--font-sans);
-  }
-  .font-sans {
-    font-family: var(--font-sans);
-  }
-  .font-inter {
-    font-family: var(--font-secondary);
-  }
-  .font-secondary {
-    font-family: var(--font-secondary);
-  }
-  .font-script {
-    font-family: var(--font-script);
   }
 }
 

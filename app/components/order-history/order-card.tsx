@@ -29,10 +29,10 @@ export function OrderCard({
   const isDelivered = order.status === 'completed' || order.orderStatus === 'completed';
 
   const badge = isDelivered
-    ? { label: SUB_STATUS_LABEL[subStatus], dot: 'bg-[#16A34A]', bg: 'bg-[#F0FDF4] text-[#16A34A]', ring: 'ring-[#86EFAC]/30' }
+    ? { label: SUB_STATUS_LABEL[subStatus], dot: 'bg-success', bg: 'bg-success/10 text-success', ring: 'ring-success/30' }
     : subStatus === 'diantar' || subStatus === 'siap-diambil'
-      ? { label: SUB_STATUS_LABEL[subStatus], dot: 'bg-[#2563EB]', bg: 'bg-[#EFF6FF] text-[#2563EB]', ring: 'ring-[#93C5FD]/30' }
-      : { label: SUB_STATUS_LABEL[subStatus], dot: 'bg-[#EA580C]', bg: 'bg-[#FFF7ED] text-[#EA580C]', ring: 'ring-[#FDBA74]/30' };
+      ? { label: SUB_STATUS_LABEL[subStatus], dot: 'bg-primary', bg: 'bg-primary/10 text-primary', ring: 'ring-primary/30' }
+      : { label: SUB_STATUS_LABEL[subStatus], dot: 'bg-warning', bg: 'bg-warning/10 text-warning', ring: 'ring-warning/30' };
 
   const dateStr = formatOrderDate(order.createdAt);
 
@@ -88,11 +88,11 @@ export function OrderCard({
           {order.status === 'completed' && (
             <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold">
               {reviewed ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-sage-100 px-2 py-0.5 text-sage-600">
-                  <Star className="h-3 w-3 fill-caramel text-caramel" /> Sudah dinilai
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
+                  <Star className="h-3 w-3 fill-primary text-primary" /> Sudah dinilai
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-caramel/15 px-2 py-0.5 text-caramel-700">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-primary">
                   <Star className="h-3 w-3" /> Belum dinilai · Beri ulasan
                 </span>
               )}

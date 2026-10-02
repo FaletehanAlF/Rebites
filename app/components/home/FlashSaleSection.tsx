@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -216,7 +216,7 @@ function UrgentCard({
           : "cursor-default opacity-95",
       )}
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-sage-100">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <SmartImage
           src={item.image}
           alt={`Foto ${item.name} dari ${item.vendorName}`}
@@ -245,8 +245,8 @@ function UrgentCard({
         )}
 
         {!isActive && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-charcoal-900/30 backdrop-blur-[1px]">
-            <span className="rounded-full bg-white px-4 py-1.5 font-sans text-xs font-bold uppercase tracking-[0.14em] text-charcoal-900 shadow">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-foreground/30 backdrop-blur-[1px]">
+            <span className="rounded-full bg-white px-4 py-1.5 font-sans text-xs font-bold uppercase tracking-[0.14em] text-foreground shadow">
               Akan Datang
             </span>
           </div>
@@ -281,27 +281,27 @@ function UrgentCard({
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="line-clamp-1 font-sans text-[15px] font-bold leading-snug text-charcoal-900">
+        <h3 className="line-clamp-1 font-sans text-[15px] font-bold leading-snug text-foreground">
           {item.name}
         </h3>
-        <p className="mt-0.5 line-clamp-1 font-sans text-[13px] text-charcoal-500">
+        <p className="mt-0.5 line-clamp-1 font-sans text-[13px] text-muted-foreground">
           {item.vendorName}
         </p>
 
-        <div className="mt-2 flex items-center gap-3 text-xs text-charcoal-500">
-          <span className="flex items-center gap-1 font-medium text-charcoal-900">
-            <Star className="h-3.5 w-3.5 fill-caramel text-caramel" />
+        <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1 font-medium text-foreground">
+            <Star className="h-3.5 w-3.5 fill-primary text-primary" />
             {item.rating.toFixed(1)}
           </span>
           <span className="flex items-center gap-1">
-            <MapPin className="h-3.5 w-3.5 text-sage-500" />
+            <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
             {item.distanceKm} km
           </span>
         </div>
 
         {isActive &&
           (stockPct === null ? (
-            <span className="mt-2.5 w-fit rounded-full bg-cream-100 px-3 py-1 text-[11px] font-medium text-charcoal-600">
+            <span className="mt-2.5 w-fit rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
               {item.stockLabel}
             </span>
           ) : (
@@ -312,7 +312,7 @@ function UrgentCard({
                 </span>
                 <span className="text-destructive">Buru!</span>
               </div>
-              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-cream-100">
+              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <motion.div
                   className="h-full rounded-full bg-sale"
                   initial={{ width: 0 }}
@@ -325,7 +325,7 @@ function UrgentCard({
           ))}
 
         <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-xs text-charcoal-500 line-through">
+          <span className="text-xs text-muted-foreground line-through">
             {formatRupiah(item.originalPrice)}
           </span>
           <span className="text-[16px] font-bold leading-none text-primary">
@@ -341,9 +341,9 @@ function UrgentCard({
             if (isActive) openDetail();
           }}
           className={cn(
-            "mt-4 inline-flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-caramel focus-visible:ring-offset-2",
+            "mt-4 inline-flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
             isActive
-              ? "bg-primary text-white hover:bg-caramel"
+              ? "bg-primary text-white hover:bg-primary-dark"
               : "cursor-not-allowed bg-zinc-100 text-zinc-400",
           )}
         >
@@ -433,8 +433,8 @@ export function FlashSaleSection({
 
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <SoftBlob className="-left-24 top-1/4 h-80 w-80 bg-white/25" />
-        <SoftBlob className="-right-20 bottom-0 h-96 w-96 bg-cream-50/50" />
-        <SoftBlob className="-bottom-24 left-1/3 h-80 w-80 bg-caramel/20" />
+        <SoftBlob className="-right-20 bottom-0 h-96 w-96 bg-secondary/50" />
+        <SoftBlob className="-bottom-24 left-1/3 h-80 w-80 bg-primary/20" />
 
         {[
           { top: "10%", left: "8%" },
@@ -495,9 +495,9 @@ export function FlashSaleSection({
           { bottom: "12%", left: "24%" },
         ].map((pos, i) => (
           <motion.span
-            key={`caramel-dot-${i}`}
+            key={`promo-dot-${i}`}
             aria-hidden
-            className="pointer-events-none absolute h-2.5 w-2.5 rounded-full bg-caramel/50"
+            className="pointer-events-none absolute h-2.5 w-2.5 rounded-full bg-primary/50"
             style={pos}
             animate={{
               y: [0, -14, 0],
@@ -526,7 +526,7 @@ export function FlashSaleSection({
             </div>
 
             <h2 className="mt-3 font-sans text-[22px] font-bold tracking-tight text-white sm:text-[28px]">
-              Segera <span className="text-caramel">Beli</span>
+              Segera <span className="text-primary">Beli</span>
             </h2>
 
             <p className="mt-2 max-w-md font-sans text-sm text-white/80">
@@ -567,8 +567,8 @@ export function FlashSaleSection({
                 className={cn(
                   "group relative flex items-center gap-1.5 rounded-full border px-3 py-2 sm:gap-2.5 sm:px-4 sm:py-2.5 md:px-6 md:py-3.5 font-sans transition-all duration-300",
                   isActive
-                    ? "border-transparent bg-caramel text-white shadow-lg shadow-primary/40 hover:bg-white hover:text-caramel"
-                    : "border-white/60 bg-white text-primary shadow-lg shadow-primary/25 hover:bg-caramel hover:text-white",
+                    ? "border-transparent bg-primary text-white shadow-lg shadow-primary/40 hover:bg-white hover:text-primary"
+                    : "border-white/60 bg-white text-primary shadow-lg shadow-primary/25 hover:bg-primary-dark hover:text-white",
                   FOCUS_RING,
                 )}
               >
@@ -580,8 +580,8 @@ export function FlashSaleSection({
                     className={cn(
                       "text-[10px] font-semibold uppercase tracking-[0.18em]",
                       isActive
-                        ? "text-white/70 group-hover:text-caramel"
-                        : "text-caramel/60 group-hover:text-white",
+                        ? "text-white/70 group-hover:text-primary"
+                        : "text-primary/60 group-hover:text-white",
                     )}
                   >
                     {slot.name}

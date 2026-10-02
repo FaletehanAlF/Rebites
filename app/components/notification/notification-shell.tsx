@@ -14,7 +14,7 @@ export function NotificationSidebarShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen bg-secondary lg:bg-cream-50">
+    <div className="relative min-h-screen bg-secondary lg:bg-secondary">
       <div className="lg:hidden"><MobileNavbar /></div>
       <div className="hidden lg:block">
         <ProfileSidebarNav
@@ -25,12 +25,12 @@ export function NotificationSidebarShell({
 
       <div className="lg:pl-[280px]">
         <MobileBottomNav />
-        <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-sage-100 bg-white px-4 py-3 lg:hidden">
+        <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
             aria-label="Buka navigasi"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-cream-100 text-charcoal-900"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground"
           >
             <Menu className="h-5 w-5" />
           </button>

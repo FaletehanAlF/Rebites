@@ -138,10 +138,10 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
 
   if (!plan) {
     return (
-      <main className="min-h-screen bg-cream">
+      <main className="min-h-screen bg-secondary">
         <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col items-center justify-center px-4 text-center">
-          <h1 className="font-display text-2xl font-medium text-charcoal-900">Langganan ReBites</h1>
-          <p className="mt-2 text-sm text-charcoal-500">Pilih paket langganan terlebih dahulu.</p>
+          <h1 className="font-display text-2xl font-medium text-foreground">Langganan ReBites</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Pilih paket langganan terlebih dahulu.</p>
           <Link href="/#langganan" className="mt-6 inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-white">
             Lihat Paket
           </Link>
@@ -158,22 +158,22 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
 
   if (status === 'pending') {
     return (
-      <main className="min-h-screen bg-cream">
+      <main className="min-h-screen bg-secondary">
         <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col items-center justify-center px-4 py-10">
-          <div className="w-full rounded-3xl border border-hairline bg-white p-8 text-center shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)] sm:p-10">
-            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-caramel text-white shadow-[0_16px_32px_-16px_rgba(245,158,11,0.6)]">
+          <div className="w-full rounded-3xl border border-border bg-white p-8 text-center shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)] sm:p-10">
+            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-white shadow-[0_16px_32px_-16px_rgba(245,158,11,0.6)]">
               <Clock className="h-7 w-7" />
             </span>
-            <h1 className="mt-5 font-display text-2xl font-medium tracking-tight text-charcoal-900">Menunggu Pembayaran</h1>
-            <p className="mt-2 text-sm leading-relaxed text-charcoal-500">
-              Selesaikan pembayaran di halaman Xendit. Langganan <strong className="text-charcoal-900">ReBites {plan.name}</strong> akan aktif otomatis setelah pembayaran terverifikasi.
+            <h1 className="mt-5 font-display text-2xl font-medium tracking-tight text-foreground">Menunggu Pembayaran</h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Selesaikan pembayaran di halaman Xendit. Langganan <strong className="text-foreground">ReBites {plan.name}</strong> akan aktif otomatis setelah pembayaran terverifikasi.
             </p>
-            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-caramel-50 px-3 py-1 text-xs font-semibold text-caramel-700">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-caramel" />
+            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
               Memverifikasi
             </p>
             <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-              <Link href="/dashboard/penjual/langganan" className="inline-flex h-11 flex-1 items-center justify-center rounded-full border border-hairline px-5 text-sm font-semibold text-charcoal-700">
+              <Link href="/dashboard/penjual/langganan" className="inline-flex h-11 flex-1 items-center justify-center rounded-full border border-border px-5 text-sm font-semibold text-foreground">
                 Cek Langganan
               </Link>
             </div>
@@ -185,14 +185,14 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
 
   if (status === 'failed') {
     return (
-      <main className="min-h-screen bg-cream">
+      <main className="min-h-screen bg-secondary">
         <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col items-center justify-center px-4 py-10">
-          <div className="w-full rounded-3xl border border-hairline bg-white p-8 text-center shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)] sm:p-10">
-            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white">
+          <div className="w-full rounded-3xl border border-border bg-white p-8 text-center shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)] sm:p-10">
+            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive text-white">
               <XCircle className="h-7 w-7" />
             </span>
-            <h1 className="mt-5 font-display text-2xl font-medium tracking-tight text-charcoal-900">Pembayaran Gagal</h1>
-            <p className="mt-2 text-sm leading-relaxed text-charcoal-500">Pembayaran kadaluarsa atau dibatalkan. Silakan coba lagi.</p>
+            <h1 className="mt-5 font-display text-2xl font-medium tracking-tight text-foreground">Pembayaran Gagal</h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Pembayaran kadaluarsa atau dibatalkan. Silakan coba lagi.</p>
             <Link href="/dashboard/penjual/langganan" className="mt-6 inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-white">
               Kembali ke Langganan
             </Link>
@@ -203,42 +203,42 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
   }
 
   return (
-    <main className="min-h-screen bg-cream">
+    <main className="min-h-screen bg-secondary">
       <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col items-center justify-center px-4 py-10">
-        <div className="w-full rounded-3xl border border-hairline bg-white p-8 text-center shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)] sm:p-10">
+        <div className="w-full rounded-3xl border border-border bg-white p-8 text-center shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)] sm:p-10">
           <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-white shadow-[0_16px_32px_-16px_rgba(27,77,50,0.6)]">
             <Check className="h-7 w-7" strokeWidth={3} />
           </span>
-          <h1 className="mt-5 font-display text-2xl font-medium tracking-tight text-charcoal-900">Langganan Aktif!</h1>
-          <p className="mt-2 text-sm leading-relaxed text-charcoal-500">
-            Selamat! Paket <strong className="text-charcoal-900">ReBites {plan.name}</strong> kamu sudah aktif hingga{' '}
-            <strong className="text-charcoal-900">{periodEnd}</strong>.
+          <h1 className="mt-5 font-display text-2xl font-medium tracking-tight text-foreground">Langganan Aktif!</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Selamat! Paket <strong className="text-foreground">ReBites {plan.name}</strong> kamu sudah aktif hingga{' '}
+            <strong className="text-foreground">{periodEnd}</strong>.
           </p>
-          <dl className="mt-6 space-y-2.5 rounded-2xl bg-cream-100 p-4 text-left text-sm">
+          <dl className="mt-6 space-y-2.5 rounded-2xl bg-muted p-4 text-left text-sm">
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-charcoal-500">Paket</dt>
-              <dd className="font-medium text-charcoal-900">ReBites {plan.name}</dd>
+              <dt className="text-muted-foreground">Paket</dt>
+              <dd className="font-medium text-foreground">ReBites {plan.name}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-charcoal-500">Siklus</dt>
-              <dd className="font-medium capitalize text-charcoal-900">{billing === 'yearly' ? 'Tahunan' : 'Bulanan'}</dd>
+              <dt className="text-muted-foreground">Siklus</dt>
+              <dd className="font-medium capitalize text-foreground">{billing === 'yearly' ? 'Tahunan' : 'Bulanan'}</dd>
             </div>
-            <div className="flex items-center justify-between gap-4 border-t border-hairline pt-2.5">
-              <dt className="text-charcoal-500">Perpanjangan berikutnya</dt>
-              <dd className="font-medium text-charcoal-900">{periodEnd}</dd>
+            <div className="flex items-center justify-between gap-4 border-t border-border pt-2.5">
+              <dt className="text-muted-foreground">Perpanjangan berikutnya</dt>
+              <dd className="font-medium text-foreground">{periodEnd}</dd>
             </div>
           </dl>
           <div className="mt-7 flex flex-col gap-2.5 sm:flex-row">
-            <Link href="/dashboard/penjual" className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm shadow-primary/25 hover:bg-caramel">
+            <Link href="/dashboard/penjual" className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm shadow-primary/25 hover:bg-primary-dark">
               <LayoutDashboard className="h-4 w-4" />
               Ke Dashboard Penjual
             </Link>
-            <Link href="/home" className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-primary px-5 text-sm font-semibold text-primary hover:bg-caramel/20">
+            <Link href="/home" className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-primary px-5 text-sm font-semibold text-primary hover:bg-primary-dark/20">
               <Store className="h-4 w-4" />
               Ke Beranda
             </Link>
           </div>
-          <p className="mt-5 text-xs leading-relaxed text-charcoal-500">Pembayaran diproses aman via Xendit.</p>
+          <p className="mt-5 text-xs leading-relaxed text-muted-foreground">Pembayaran diproses aman via Xendit.</p>
         </div>
       </div>
     </main>

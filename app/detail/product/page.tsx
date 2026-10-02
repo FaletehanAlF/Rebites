@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function DetailProductPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-cream-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-secondary" />}>
       <DetailProductContent />
     </Suspense>
   );

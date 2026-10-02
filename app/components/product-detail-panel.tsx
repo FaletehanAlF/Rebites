@@ -11,7 +11,7 @@ import {
 import { formatRupiah } from "@/lib/data";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export type FeaturedFood = {
   name: string;
@@ -42,7 +42,7 @@ function RichText({ text }: { text: string }) {
   return (
     <>
       {before}
-      <strong className="font-semibold text-caramel">ReBites</strong>
+      <strong className="font-semibold text-primary">ReBites</strong>
       {after}
     </>
   );
@@ -63,29 +63,29 @@ export function ProductDetailPanel({ food }: { food: FeaturedFood }) {
   return (
     <div className="flex flex-col gap-3 sm:gap-4">
       {/* A ,  Label kategori */}
-      <span className="inline-flex w-fit items-center gap-2 rounded-full border border-caramel/40 bg-white px-4 py-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-caramel shadow-[0_10px_22px_-16px_rgba(192,138,62,0.8)]">
-        <Star className="h-3.5 w-3.5 fill-caramel text-caramel" />
+      <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/40 bg-white px-4 py-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-primary shadow-[0_10px_22px_-16px_rgba(192,138,62,0.8)]">
+        <Star className="h-3.5 w-3.5 fill-primary text-primary" />
         {food.badge ?? "Menu Favorit"}
       </span>
 
       {/* B ,  Judul produk (satu baris) */}
-      <h3 className="truncate font-display font-light leading-[1.08] tracking-[-0.02em] text-charcoal-900 whitespace-nowrap [font-size:clamp(1.85rem,3.2vw,2.6rem)]">
+      <h3 className="truncate font-display font-light leading-[1.08] tracking-[-0.02em] text-foreground whitespace-nowrap [font-size:clamp(1.85rem,3.2vw,2.6rem)]">
         {food.name}
       </h3>
 
       {/* Nama toko */}
-      <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.18em] text-charcoal-500">
+      <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {food.merchant}
       </p>
 
       {/* E ,  Badge kategori & jam buka (di bawah nama) */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-sage-500/30 bg-white px-3 py-1.5 font-sans text-xs font-semibold text-charcoal-600">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-white px-3 py-1.5 font-sans text-xs font-semibold text-muted-foreground">
           <Utensils className="h-3.5 w-3.5 text-primary" />
           {food.category}
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-caramel/40 bg-white px-3 py-1.5 font-sans text-xs font-semibold text-charcoal-600">
-          <Clock className="h-3.5 w-3.5 text-caramel" />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-white px-3 py-1.5 font-sans text-xs font-semibold text-muted-foreground">
+          <Clock className="h-3.5 w-3.5 text-primary" />
           Buka {food.hours}
         </span>
       </div>
@@ -93,7 +93,7 @@ export function ProductDetailPanel({ food }: { food: FeaturedFood }) {
       {/* C ,  Stok, rating & ulasan */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2" aria-label={`Rating ${food.rating} dari 5`}>
         {food.stockLabel && (
-          <span className="inline-flex items-center rounded-full bg-sage-100 px-3 py-1 font-sans text-[11px] font-semibold text-primary">
+          <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 font-sans text-[11px] font-semibold text-primary">
             {food.stockLabel}
           </span>
         )}
@@ -101,13 +101,13 @@ export function ProductDetailPanel({ food }: { food: FeaturedFood }) {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-0.5">
             {Array.from({ length: 5 }).map((_, s) => (
-              <Star key={s} className="h-4 w-4 fill-caramel text-caramel" />
+              <Star key={s} className="h-4 w-4 fill-primary text-primary" />
             ))}
           </div>
-          <span className="font-sans text-sm font-bold text-charcoal-900">
+          <span className="font-sans text-sm font-bold text-foreground">
             {food.rating.toFixed(1)}
           </span>
-          <span className="font-sans text-sm text-charcoal-500">
+          <span className="font-sans text-sm text-muted-foreground">
             ({food.reviewCount} ulasan)
           </span>
         </div>
@@ -120,13 +120,13 @@ export function ProductDetailPanel({ food }: { food: FeaturedFood }) {
 
       <span
         aria-hidden
-        className="h-px w-full bg-gradient-to-r from-caramel/50 via-caramel/20 to-transparent"
+        className="h-px w-full bg-gradient-to-r from-primary/50 via-primary/20 to-transparent"
       />
 
       {/* F ,  Blok harga */}
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
         <div className="flex flex-col">
-          <span className="font-sans text-sm text-charcoal-500 line-through">
+          <span className="font-sans text-sm text-muted-foreground line-through">
             {formatRupiah(food.originalPrice)}
           </span>
           <span className="mt-0.5 font-display text-[2.15rem] font-bold leading-none tracking-tight text-primary sm:text-[2.5rem]">

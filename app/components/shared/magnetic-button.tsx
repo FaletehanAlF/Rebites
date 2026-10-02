@@ -22,7 +22,7 @@ export function MagneticButton({
   children: React.ReactNode;
   href?: string;
   onClick?: () => void;
-  variant?: 'default' | 'outline' | 'cream' | 'white';
+  variant?: 'default' | 'outline' | 'light' | 'white';
   className?: string;
   strength?: number;
 }) {
@@ -58,13 +58,13 @@ export function MagneticButton({
   const base = cn(
     'group relative inline-flex items-center justify-center gap-2 rounded-[var(--radius)] px-7 py-3.5 font-sans text-sm font-medium tracking-tight transition-colors duration-300',
     variant === 'default' &&
-      'bg-primary text-primary-foreground-strong hover:bg-caramel',
+      'bg-primary text-primary-foreground-strong hover:bg-primary-dark',
     variant === 'outline' &&
-      'border border-primary/40 text-primary hover:border-caramel hover:bg-caramel hover:text-white',
-    variant === 'cream' &&
-      'bg-secondary text-primary hover:bg-caramel hover:text-white border border-primary/10',
+      'border border-primary/40 text-primary hover:border-primary hover:bg-primary-dark hover:text-white',
+    variant === 'light' &&
+      'bg-secondary text-primary hover:bg-primary-dark hover:text-white border border-primary/10',
     variant === 'white' &&
-      'border border-caramel/40 bg-white text-primary hover:border-caramel hover:bg-caramel hover:text-white',
+      'border border-primary/40 bg-white text-primary hover:border-primary hover:bg-primary-dark hover:text-white',
     className
   );
 

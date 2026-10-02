@@ -138,7 +138,7 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
   return (
     <>
       <div className="mt-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sage-500">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Review Pelanggan
         </p>
         <h2 className="mt-1.5 font-display text-2xl font-medium tracking-tight text-primary sm:text-3xl">
@@ -151,7 +151,7 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
           type="button"
           onClick={() => carouselApi?.scrollPrev()}
           aria-label="Review sebelumnya"
-          className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-caramel hover:bg-caramel hover:text-white sm:flex"
+          className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex"
         >
           <ArrowRight className="h-4 w-4 rotate-180" />
         </button>
@@ -160,7 +160,7 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
           type="button"
           onClick={() => carouselApi?.scrollNext()}
           aria-label="Review berikutnya"
-          className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-caramel hover:bg-caramel hover:text-white sm:flex"
+          className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex"
         >
           <ArrowRight className="h-4 w-4" />
         </button>
@@ -172,10 +172,10 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
                 key={review.id}
                 className="basis-full pl-4 sm:basis-1/2 sm:pl-4 lg:basis-1/3 lg:pl-5"
               >
-                <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-8 shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-caramel/40 hover:shadow-[0_30px_60px_-28px_rgba(34,81,56,0.35)] lg:p-9">
+                <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-8 shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_30px_60px_-28px_rgba(34,81,56,0.35)] lg:p-9">
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute -top-3 right-4 select-none font-display text-[6rem] font-extralight leading-none text-caramel/[0.08] transition-colors duration-300 group-hover:text-caramel/15"
+                    className="pointer-events-none absolute -top-3 right-4 select-none font-display text-[6rem] font-extralight leading-none text-primary/[0.08] transition-colors duration-300 group-hover:text-primary/15"
                   >
                     &ldquo;
                   </span>
@@ -184,12 +184,12 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
                     {Array.from({ length: review.rating }).map((_, s) => (
                       <Star
                         key={s}
-                        className="h-4 w-4 fill-caramel text-caramel"
+                        className="h-4 w-4 fill-primary text-primary"
                       />
                     ))}
                   </div>
 
-                  <Quote className="mt-5 h-5 w-5 text-caramel/40" />
+                  <Quote className="mt-5 h-5 w-5 text-primary/40" />
 
                   <blockquote className="mt-3 flex-1 font-sans text-sm leading-relaxed text-foreground/80">
                     &ldquo;{review.comment}&rdquo;
@@ -206,14 +206,14 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
                       }}
                     />
 
-                    <Avatar className="h-11 w-11 border border-caramel/30">
+                    <Avatar className="h-11 w-11 border border-primary/30">
                       <AvatarImage
                         src={review.avatar}
                         alt={review.name}
                         className="object-cover"
                       />
 
-                      <AvatarFallback className="bg-caramel font-display text-sm font-medium text-white">
+                      <AvatarFallback className="bg-primary font-display text-sm font-medium text-white">
                         {initialsOf(review.name)}
                       </AvatarFallback>
                     </Avatar>
@@ -245,7 +245,7 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
             className={`h-1.5 rounded-full transition-all duration-300 ${
               activeIndex === i
                 ? "w-8 bg-primary"
-                : "w-1.5 bg-charcoal-900/15 hover:bg-charcoal-900/30"
+                : "w-1.5 bg-foreground/15 hover:bg-foreground/30"
             }`}
           />
         ))}
@@ -256,23 +256,23 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
 
 function StoreNotFound() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-cream-50 px-5 font-sans text-charcoal-900">
-      <div className="flex w-full max-w-md flex-col items-center gap-5 rounded-2xl border border-sage-100 bg-white p-10 text-center shadow-md shadow-primary/5">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-sage-100 text-primary">
+    <main className="flex min-h-screen items-center justify-center bg-secondary px-5 font-sans text-foreground">
+      <div className="flex w-full max-w-md flex-col items-center gap-5 rounded-2xl border border-border bg-white p-10 text-center shadow-md shadow-primary/5">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
           <Utensils className="h-6 w-6" />
         </span>
         <div>
           <h1 className="font-display text-xl font-medium tracking-tight text-primary">
             Toko tidak ditemukan
           </h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-charcoal-500">
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
             Toko yang kamu cari tidak tersedia atau sudah tidak aktif. Coba
             jelajahi toko lain di beranda.
           </p>
         </div>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-caramel"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark"
         >
           <ArrowLeft className="h-4 w-4" />
           Kembali ke Beranda
@@ -423,7 +423,7 @@ function StoreDetailContent() {
   }
 
   return (
-    <main className="min-h-screen bg-cream-50 font-sans text-charcoal-900">
+    <main className="min-h-screen bg-secondary font-sans text-foreground">
       { }
       <StoreHeroCard vendor={vendor} openNow={openNow} />
 
@@ -436,21 +436,21 @@ function StoreDetailContent() {
 
           <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-500" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={`Cari menu di ${vendor.name}...`}
                 aria-label="Cari menu di toko ini"
-                className="w-full rounded-full border border-sage-100 bg-cream-50 py-2.5 pl-11 pr-10 text-sm text-charcoal-900 outline-none transition-colors placeholder:text-charcoal-500/70 focus:border-primary focus:bg-white"
+                className="w-full rounded-full border border-border bg-secondary py-2.5 pl-11 pr-10 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:bg-white"
               />
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery("")}
                   aria-label="Hapus pencarian"
-                  className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-sage-100 text-charcoal-900 transition-colors hover:bg-sage-100/70"
+                  className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-muted/70"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -467,7 +467,7 @@ function StoreDetailContent() {
                   "flex h-[38px] items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors duration-200",
                   activeCategory !== "Semua" || isCategoryOpen
                     ? "border-primary bg-white text-primary"
-                    : "border-sage-100 bg-white text-charcoal-900 hover:border-caramel hover:text-caramel",
+                    : "border-border bg-white text-foreground hover:border-primary hover:text-primary",
                 )}
               >
                 {activeCategory === "Semua" ? "Kategori" : activeCategory}
@@ -486,7 +486,7 @@ function StoreDetailContent() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-sage-100 bg-white p-2 shadow-lg shadow-primary/10"
+                    className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-border bg-white p-2 shadow-lg shadow-primary/10"
                   >
                     {displayCategories.map((cat) => {
                       const isActive = activeCategory === cat;
@@ -503,7 +503,7 @@ function StoreDetailContent() {
                             "flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors duration-200",
                             isActive
                               ? "bg-primary font-semibold text-white"
-                              : "text-charcoal-500 hover:bg-sage-100",
+                              : "text-muted-foreground hover:bg-muted",
                           )}
                         >
                           {cat}
@@ -527,36 +527,36 @@ function StoreDetailContent() {
               ))}
             </div>
           ) : loadsOwnProducts && storeError ? (
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-sage-100 bg-white p-10 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cream-50 text-primary shadow-sm">
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border bg-white p-10 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
                 <SearchX className="h-6 w-6" />
               </span>
               <div>
-                <p className="text-sm font-bold text-charcoal-900">
+                <p className="text-sm font-bold text-foreground">
                   Menu gagal dimuat
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-sage-500">
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                   Terjadi kendala saat memuat menu toko ini. Silakan coba lagi.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setReloadKey((k) => k + 1)}
-                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-caramel"
+                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark"
               >
                 Coba Lagi
               </button>
             </div>
           ) : loadsOwnProducts && storeProducts.length === 0 ? (
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-sage-100 bg-white p-10 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cream-50 text-primary shadow-sm">
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
                 <Utensils className="h-6 w-6" />
               </span>
               <div>
-                <p className="text-sm font-bold text-charcoal-900">
+                <p className="text-sm font-bold text-foreground">
                   Belum ada menu surplus
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-sage-500">
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                   Toko ini belum menayangkan menu surplus. Kunjungi lagi nanti,
                   ya.
                 </p>
@@ -585,15 +585,15 @@ function StoreDetailContent() {
               </div>
 
               {!hasResults && (
-                <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-sage-100 bg-white p-10 text-center">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cream-50 text-primary shadow-sm">
+                <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
                     <SearchX className="h-6 w-6" />
                   </span>
                   <div>
-                    <p className="text-sm font-bold text-charcoal-900">
+                    <p className="text-sm font-bold text-foreground">
                       Menu tidak ditemukan
                     </p>
-                    <p className="mt-1 text-xs leading-relaxed text-sage-500">
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                       Coba kata kunci lain atau lihat semua menu surplus di toko
                       ini.
                     </p>
@@ -604,7 +604,7 @@ function StoreDetailContent() {
                       setQuery("");
                       setActiveCategory("Semua");
                     }}
-                    className="rounded-full border border-primary px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-caramel hover:text-white"
+                    className="rounded-full border border-primary px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white"
                   >
                     Lihat Semua Menu
                   </button>
@@ -637,7 +637,7 @@ function StoreDetailContent() {
 
 export default function DetailTokoPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-cream-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-secondary" />}>
       <StoreDetailContent />
     </Suspense>
   );

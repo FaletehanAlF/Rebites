@@ -33,8 +33,8 @@ export function NotificationCard({
       className={cn(
         'flex w-full items-start gap-3.5 rounded-2xl border p-4 text-left transition-all duration-200',
         notification.read
-          ? 'border-sage-100 bg-white hover:bg-cream-50'
-          : 'border-primary/20 bg-primary/5 hover:bg-caramel/20'
+          ? 'border-border bg-white hover:bg-secondary'
+          : 'border-primary/20 bg-primary/5 hover:bg-primary-dark/20'
       )}
     >
       <NotificationIcon type={notification.type} />
@@ -45,8 +45,8 @@ export function NotificationCard({
             className={cn(
               'text-sm leading-snug',
               notification.read
-                ? 'font-medium text-charcoal-500'
-                : 'font-semibold text-charcoal-900'
+                ? 'font-medium text-muted-foreground'
+                : 'font-semibold text-foreground'
             )}
           >
             {notification.title}
@@ -55,11 +55,11 @@ export function NotificationCard({
             <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
           )}
         </div>
-        <p className="mt-1 text-xs leading-relaxed text-charcoal-500/80">
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground/80">
           {notification.message}
         </p>
         <div className="mt-2 flex items-center gap-2">
-          <time className="text-[11px] text-sage-500">
+          <time className="text-[11px] text-muted-foreground">
             {formatNotificationTime(notification.createdAt)}
           </time>
           {notification.href && (

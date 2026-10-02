@@ -65,7 +65,7 @@ export default function HomePage() {
         <ProfileNavbar showLocationDropdown={false} />
       </div>
 
-      <main className="bg-cream-50 pb-20 pt-[120px] sm:pt-[140px] lg:pb-0 lg:pt-0">
+      <main className="bg-secondary pb-20 pt-[120px] sm:pt-[140px] lg:pb-0 lg:pt-0">
         <Hero />
         <UrgentDealsSection from="home" onViewDetail={handleViewDetail} />
         <CategorySection />
@@ -74,8 +74,8 @@ export default function HomePage() {
 
         <section
           id="langganan"
-          data-nav="cream"
-          className="grain-overlay relative overflow-hidden bg-cream py-10 sm:py-16 lg:py-20"
+          data-nav="neutral"
+          className="grain-overlay relative overflow-hidden bg-secondary py-10 sm:py-16 lg:py-20"
         >
           <div className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-primary/[0.06] blur-3xl" />
 
@@ -84,7 +84,7 @@ export default function HomePage() {
               <Reveal delay={0.1}>
                 <h2 className="mt-4 font-sans text-[clamp(1.5rem,4.5vw,3.5rem)] font-medium leading-[1.02] tracking-[-0.02em] text-primary sm:mt-6">
                   Kembangkan usaha bersama{" "}
-                  <span className="text-caramel">ReBites.</span>
+                  <span className="text-primary">ReBites.</span>
                 </h2>
               </Reveal>
 
@@ -115,13 +115,13 @@ export default function HomePage() {
                           className={`relative z-10 flex items-center gap-2 rounded-full px-5 py-2 font-sans text-xs font-medium tracking-tight transition-colors duration-300 ${
                             active
                               ? "text-primary-foreground"
-                              : "text-muted-foreground hover:text-caramel"
+                              : "text-muted-foreground hover:text-primary"
                           }`}
                         >
                           {active && (
                             <motion.span
                               layoutId="billing-pill"
-                              className="absolute inset-0 rounded-full bg-caramel"
+                              className="absolute inset-0 rounded-full bg-primary"
                               transition={{
                                 type: "spring",
                                 stiffness: 320,
@@ -164,15 +164,15 @@ export default function HomePage() {
 
                 return (
                   <Reveal key={plan.name} delay={i * 0.1} className="h-full min-w-[280px] snap-start sm:min-w-0">
-                    <div className="relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-background p-8 shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-caramel lg:p-9">
+                    <div className="relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-background p-8 shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-primary lg:p-9">
                       {plan.popular && (
-                        <div className="absolute right-5 top-5 rounded-full bg-caramel px-3 py-1 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
+                        <div className="absolute right-5 top-5 rounded-full bg-primary px-3 py-1 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
                           Paling Populer
                         </div>
                       )}
 
                       <div className="relative flex items-center justify-between">
-                        <span className="font-sans text-sm italic tracking-[0.2em] text-caramel">
+                        <span className="font-sans text-sm italic tracking-[0.2em] text-primary">
                           0{i + 1}
                         </span>
                       </div>
@@ -239,7 +239,7 @@ export default function HomePage() {
 
                         <span
                           aria-hidden
-                          className="absolute left-1/2 top-0 h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rotate-45 bg-caramel/50"
+                          className="absolute left-1/2 top-0 h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rotate-45 bg-primary/50"
                         />
 
                         <ul className="space-y-3">
@@ -248,7 +248,7 @@ export default function HomePage() {
                               key={j}
                               className="flex items-start gap-3 font-sans text-sm"
                             >
-                              <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-caramel/30 text-caramel">
+                              <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-primary/30 text-primary">
                                 <svg
                                   viewBox="0 0 10 10"
                                   className="h-2 w-2"

@@ -24,7 +24,7 @@ const NAV_LINKS = [
 ];
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 // Module scope so React keeps the same component type across renders —
 // defining it inside ProfileNavbar remounted both buttons (losing focus,
@@ -47,7 +47,7 @@ function IconButton({
       onClick={onClick}
       className={cn(
         "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200",
-        "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
+        "text-muted-foreground hover:bg-muted hover:text-primary",
         FOCUS_RING,
       )}
     >
@@ -124,7 +124,7 @@ export function ProfileNavbar({
         <div className="mx-auto w-full max-w-[1400px]">
           <nav
             className={cn(
-              "flex min-w-fit items-center justify-between rounded-full border border-hairline/70 bg-white px-5 text-primary shadow-[0_20px_44px_-26px_rgba(47,66,53,0.45)] backdrop-blur-xl transition-colors duration-500 lg:h-16 lg:px-6",
+              "flex min-w-fit items-center justify-between rounded-full border border-border/70 bg-white px-5 text-primary shadow-[0_20px_44px_-26px_rgba(47,66,53,0.45)] backdrop-blur-xl transition-colors duration-500 lg:h-16 lg:px-6",
             )}
           >
             <Link
@@ -161,10 +161,10 @@ export function ProfileNavbar({
                     }}
                     aria-current={active === link.id ? "page" : undefined}
                     className={cn(
-                      "rounded-full px-3 py-2 font-inter text-sm transition-colors duration-200 xl:px-4",
+                      "rounded-full px-3 py-2 font-secondary text-sm transition-colors duration-200 xl:px-4",
                       active === link.id
-                        ? "bg-cream-100 font-semibold text-primary"
-                        : "text-charcoal-500 hover:text-caramel",
+                        ? "bg-muted font-semibold text-primary"
+                        : "text-muted-foreground hover:text-primary",
                       FOCUS_RING,
                     )}
                   >
@@ -184,7 +184,7 @@ export function ProfileNavbar({
                     onClick={() => setLocationOpen((v) => !v)}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition-colors duration-200",
-                      "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
+                      "text-muted-foreground hover:bg-muted hover:text-primary",
                       FOCUS_RING,
                     )}
                   >
@@ -215,7 +215,7 @@ export function ProfileNavbar({
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -6 }}
                           transition={{ duration: 0.18 }}
-                          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-sage-100 bg-white p-1.5 text-primary shadow-xl"
+                          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-1.5 text-primary shadow-xl"
                         >
                           {LOCATIONS.map((loc) => (
                             <li key={loc}>
@@ -228,8 +228,8 @@ export function ProfileNavbar({
                                 className={cn(
                                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors duration-150",
                                   loc === location
-                                    ? "bg-cream-100 font-semibold text-primary"
-                                    : "text-charcoal-500 hover:bg-cream-50 hover:text-caramel",
+                                    ? "bg-muted font-semibold text-primary"
+                                    : "text-muted-foreground hover:bg-secondary hover:text-primary",
                                 )}
                               >
                                 <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -310,7 +310,7 @@ export function ProfileNavbar({
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[60] flex h-full w-72 flex-col bg-cream-50 p-5 shadow-2xl lg:hidden"
+              className="fixed right-0 top-0 z-[60] flex h-full w-72 flex-col bg-secondary p-5 shadow-2xl lg:hidden"
             >
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
@@ -329,7 +329,7 @@ export function ProfileNavbar({
                   type="button"
                   aria-label="Tutup menu"
                   onClick={() => setDrawerOpen(false)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal-900 hover:bg-cream-100"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -345,10 +345,10 @@ export function ProfileNavbar({
                         handleNav(link.id);
                       }}
                       className={cn(
-                        "block rounded-xl px-4 py-3 font-inter text-sm transition-colors duration-150",
+                        "block rounded-xl px-4 py-3 font-secondary text-sm transition-colors duration-150",
                         active === link.id
-                          ? "bg-cream-100 font-semibold text-primary"
-                          : "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
+                          ? "bg-muted font-semibold text-primary"
+                          : "text-muted-foreground hover:bg-muted hover:text-primary",
                       )}
                     >
                       {link.label}
@@ -357,11 +357,11 @@ export function ProfileNavbar({
                 ))}
               </ul>
 
-                <div className="mt-4 border-t border-sage-100 pt-4">
+                <div className="mt-4 border-t border-border pt-4">
                 <Link
                   href="/notifikasi/pembeli"
                   onClick={() => setDrawerOpen(false)}
-                  className="flex items-center justify-between rounded-xl px-4 py-3 font-inter text-sm text-charcoal-500 hover:bg-cream-100 hover:text-caramel"
+                  className="flex items-center justify-between rounded-xl px-4 py-3 font-secondary text-sm text-muted-foreground hover:bg-muted hover:text-primary"
                 >
                   <span className="flex items-center gap-2">
                     <Bell className="h-4 w-4" />
@@ -375,8 +375,8 @@ export function ProfileNavbar({
                 </Link>
               </div>
 
-              <div className="mt-4 border-t border-sage-100 pt-4">
-                <p className="font-inter text-xs font-semibold uppercase tracking-wider text-charcoal-500">
+              <div className="mt-4 border-t border-border pt-4">
+                <p className="font-secondary text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Lokasi
                 </p>
                 <button

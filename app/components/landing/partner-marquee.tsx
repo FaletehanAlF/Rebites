@@ -49,9 +49,9 @@ export function PartnerMarquee() {
 
   return (
     <section
-      data-nav="cream"
+      data-nav="neutral"
       aria-label="Mitra ReBites"
-      className="border-y border-hairline bg-cream py-5 lg:py-6"
+      className="border-y border-border bg-secondary py-5 lg:py-6"
     >
       <div className="[mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
         <Marquee pauseOnHover>
@@ -63,7 +63,7 @@ export function PartnerMarquee() {
               {p}
               <span
                 aria-hidden
-                className="ml-6 h-1 w-1 rounded-full bg-caramel/70"
+                className="ml-6 h-1 w-1 rounded-full bg-primary/70"
               />
             </span>
           ))}

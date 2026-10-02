@@ -99,16 +99,16 @@ export function getStatusLabel(status: string): string {
 export function getStatusColor(status: string): { bg: string; text: string; dot: string } {
   const colors: Record<string, { bg: string; text: string; dot: string }> = {
     pending: { bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-500' },
-    paid: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
-    processing: { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500' },
+    paid: { bg: 'bg-primary/10', text: 'text-primary', dot: 'bg-primary' },
+    processing: { bg: 'bg-warning/10', text: 'text-warning', dot: 'bg-warning' },
     ready_for_pickup: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
     out_for_delivery: { bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-500' },
-    completed: { bg: 'bg-sage-100', text: 'text-charcoal-500', dot: 'bg-charcoal-500' },
-    cancelled: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
+    completed: { bg: 'bg-muted', text: 'text-muted-foreground', dot: 'bg-muted-foreground' },
+    cancelled: { bg: 'bg-destructive/10', text: 'text-destructive', dot: 'bg-destructive' },
     refunded: { bg: 'bg-gray-50', text: 'text-gray-700', dot: 'bg-gray-500' },
-    preparing: { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500' },
+    preparing: { bg: 'bg-warning/10', text: 'text-warning', dot: 'bg-warning' },
     ready: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-    failed: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
+    failed: { bg: 'bg-destructive/10', text: 'text-destructive', dot: 'bg-destructive' },
   };
   return colors[status] ?? { bg: 'bg-gray-50', text: 'text-gray-700', dot: 'bg-gray-500' };
 }

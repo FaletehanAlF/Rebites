@@ -22,12 +22,12 @@ export function PhotoPicker({ value, onChange }: PhotoPickerProps) {
   return (
     <div>
       {value ? (
-        <div className="relative h-44 overflow-hidden rounded-2xl border border-sage-100">
+        <div className="relative h-44 overflow-hidden rounded-2xl border border-border">
           <SmartImage src={value} alt="Pratinjau foto menu" />
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 bg-gradient-to-t from-charcoal-900/85 to-transparent p-3">
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 bg-gradient-to-t from-foreground/85 to-transparent p-3">
             <label
               htmlFor="menu-photo-input"
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-cream-50 px-3 py-1.5 text-[11px] font-semibold text-charcoal-900 transition-colors hover:bg-white"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-[11px] font-semibold text-foreground transition-colors hover:bg-white"
             >
               <ImagePlus className="h-3.5 w-3.5" />
               Ganti Foto
@@ -35,7 +35,7 @@ export function PhotoPicker({ value, onChange }: PhotoPickerProps) {
             <button
               type="button"
               onClick={() => onChange('')}
-              className="inline-flex items-center gap-1.5 rounded-full bg-cream-50/25 px-3 py-1.5 text-[11px] font-semibold text-cream-50 transition-colors hover:bg-cream-50/40"
+              className="inline-flex items-center gap-1.5 rounded-full bg-secondary/25 px-3 py-1.5 text-[11px] font-semibold text-primary-foreground transition-colors hover:bg-secondary/40"
             >
               <Trash2 className="h-3.5 w-3.5" />
               Hapus
@@ -45,16 +45,16 @@ export function PhotoPicker({ value, onChange }: PhotoPickerProps) {
       ) : (
         <label
           htmlFor="menu-photo-input"
-          className="flex h-44 cursor-pointer flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed border-sage-100 bg-cream-50 text-center transition-colors hover:border-sage-500/60 hover:bg-sage-100/40"
+          className="flex h-44 cursor-pointer flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed border-border bg-secondary text-center transition-colors hover:border-primary/30 hover:bg-muted/40"
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-sage-100 text-primary">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-primary">
             <Camera className="h-6 w-6" />
           </span>
           <span>
-            <span className="block text-sm font-semibold text-charcoal-900">
+            <span className="block text-sm font-semibold text-foreground">
               Upload Foto Menu
             </span>
-            <span className="mt-0.5 block text-[11px] text-sage-500">
+            <span className="mt-0.5 block text-[11px] text-muted-foreground">
               PNG atau JPG, maksimal 5 MB
             </span>
           </span>

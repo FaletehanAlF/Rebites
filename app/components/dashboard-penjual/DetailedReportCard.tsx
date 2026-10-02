@@ -39,7 +39,7 @@ export function DetailedReportCard({ period }: { period: StatsPeriod }) {
   if (!hydrated) {
     return (
       <Card>
-        <div className="h-6 w-40 animate-pulse rounded-lg bg-cream-100" />
+        <div className="h-6 w-40 animate-pulse rounded-lg bg-muted" />
         <div className="mt-4">
           <CardLinesSkeleton />
         </div>
@@ -62,7 +62,7 @@ export function DetailedReportCard({ period }: { period: StatsPeriod }) {
       <Card>
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sage-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Laporan Rinci · {period.replace('-', ' ')}
             </p>
             <h3 className="mt-1 flex items-center gap-1.5 font-display text-lg font-medium tracking-tight text-primary">
@@ -70,7 +70,7 @@ export function DetailedReportCard({ period }: { period: StatsPeriod }) {
               Penjualan Harian
             </h3>
           </div>
-          <span className="rounded-full bg-sage-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-charcoal-900">
+          <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
             Paket {plan.label}
           </span>
         </div>
@@ -88,7 +88,7 @@ export function DetailedReportCard({ period }: { period: StatsPeriod }) {
     <Card>
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sage-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Laporan Rinci · {period.replace('-', ' ')}
           </p>
           <h3 className="mt-1 flex items-center gap-1.5 font-display text-lg font-medium tracking-tight text-primary">
@@ -96,14 +96,14 @@ export function DetailedReportCard({ period }: { period: StatsPeriod }) {
             Penjualan Harian
           </h3>
         </div>
-        <span className="rounded-full bg-sage-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-charcoal-900">
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
           Paket {plan.label}
         </span>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-sage-100">
+      <div className="mt-4 overflow-x-auto rounded-xl border border-border">
         <table className="w-full min-w-[420px] text-left text-xs">
-          <thead className="bg-cream-50 text-[10px] font-bold uppercase tracking-[0.12em] text-sage-500">
+          <thead className="bg-secondary text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
               <th scope="col" className="px-4 py-2.5">Hari</th>
               <th scope="col" className="px-4 py-2.5 text-right">Terjual</th>
@@ -111,12 +111,12 @@ export function DetailedReportCard({ period }: { period: StatsPeriod }) {
               <th scope="col" className="px-4 py-2.5 text-right">Pendapatan</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-sage-100">
+          <tbody className="divide-y divide-border-100">
             {rows.map((row) => (
-              <tr key={`${period}-${row.day}`} className="text-charcoal-900">
+              <tr key={`${period}-${row.day}`} className="text-foreground">
                 <th scope="row" className="px-4 py-2.5 font-semibold">{row.day}</th>
                 <td className="px-4 py-2.5 text-right tabular-nums">{row.terjual}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-sage-500">{row.tersisa}</td>
+                <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">{row.tersisa}</td>
                 <td className="px-4 py-2.5 text-right font-semibold tabular-nums">
                   {formatRupiah(row.revenue)}
                 </td>

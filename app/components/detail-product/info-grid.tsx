@@ -24,15 +24,15 @@ export function InfoGrid({ product }: { product: ProductDetail }) {
     <StaggerGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {items.map(({ icon: Icon, label, value }) => (
         <StaggerItem key={label} className="h-full">
-          <div className="flex h-full items-start gap-4 rounded-2xl border border-sage-100 bg-white p-5 transition-shadow duration-300 hover:shadow-[0_18px_40px_-28px_rgba(47,66,53,0.4)]">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sage-100 text-primary">
+          <div className="flex h-full items-start gap-4 rounded-2xl border border-border bg-white p-5 transition-shadow duration-300 hover:shadow-[0_18px_40px_-28px_rgba(47,66,53,0.4)]">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
               <Icon className="h-5 w-5" />
             </span>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-charcoal-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 {label}
               </p>
-              <p className="mt-1 text-sm font-semibold text-charcoal-900">
+              <p className="mt-1 text-sm font-semibold text-foreground">
                 {value}
               </p>
             </div>

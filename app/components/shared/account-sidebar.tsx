@@ -25,7 +25,7 @@ interface AccountSidebarProps {
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const FOCUS_RING =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 const ACCOUNT_MENU = [
   { href: '/profile', label: 'Profil & Akun Saya', icon: Settings },
@@ -92,11 +92,11 @@ export function AccountSidebar({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ duration: 0.3, ease: EASE }}
-            className="fixed right-0 top-0 z-[80] flex h-full w-[88vw] max-w-[92vw] flex-col overflow-y-auto bg-cream-50 shadow-2xl md:w-[360px] md:max-w-none lg:w-[400px]"
+            className="fixed right-0 top-0 z-[80] flex h-full w-[88vw] max-w-[92vw] flex-col overflow-y-auto bg-secondary shadow-2xl md:w-[360px] md:max-w-none lg:w-[400px]"
           >
             { }
             <header className="flex items-center justify-between px-8 pb-5 pt-7">
-              <h2 className="font-inter text-xl font-semibold text-charcoal-900">
+              <h2 className="font-secondary text-xl font-semibold text-foreground">
                 Profil Pengguna
               </h2>
               <button
@@ -104,18 +104,18 @@ export function AccountSidebar({
                 aria-label="Tutup profil pengguna"
                 onClick={onClose}
                 className={cn(
-                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-charcoal-500 transition-colors duration-200 hover:bg-cream-100 hover:text-charcoal-900',
+                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground',
                   FOCUS_RING,
                 )}
               >
                 <X className="h-5 w-5" />
               </button>
             </header>
-            <div className="mx-8 h-px bg-hairline" />
+            <div className="mx-8 h-px bg-border" />
 
             { }
             <div className="flex items-center gap-4 px-8 py-6">
-              <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 ring-1 ring-hairline">
+              <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 ring-1 ring-border">
                 {avatarUrl ? (
                   <Image src={avatarUrl} alt={displayName} fill className="object-cover" unoptimized />
                 ) : initials ? (
@@ -127,27 +127,27 @@ export function AccountSidebar({
                 )}
               </span>
               <div className="min-w-0">
-                <p className="truncate font-inter text-base font-semibold text-charcoal-900">
+                <p className="truncate font-secondary text-base font-semibold text-foreground">
                   {displayName}
                 </p>
-                <p className="truncate font-inter text-sm text-stone">
+                <p className="truncate font-secondary text-sm text-muted-foreground">
                   {user?.email || '-'}
                 </p>
               </div>
             </div>
-            <div className="mx-8 h-px bg-hairline" />
+            <div className="mx-8 h-px bg-border" />
 
             { }
             <div className="px-8 pt-6">
-              <div className="flex items-center gap-3.5 rounded-2xl border border-caramel/40 bg-caramel/15 px-4 py-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-caramel text-white shadow-sm">
+              <div className="flex items-center gap-3.5 rounded-2xl border border-primary/40 bg-primary/15 px-4 py-3.5">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm">
                   <Coins className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-inter text-base font-bold tabular-nums text-caramel-dark">
+                  <p className="font-secondary text-base font-bold tabular-nums text-primary">
                     {balance.toLocaleString('id-ID')} Coin
                   </p>
-                  <p className="font-inter text-xs text-stone">
+                  <p className="font-secondary text-xs text-muted-foreground">
                     Total didapat: {totalEarned.toLocaleString('id-ID')} Coin
                   </p>
                 </div>
@@ -162,7 +162,7 @@ export function AccountSidebar({
                     href="/dashboard/penjual"
                     onClick={onClose}
                     className={cn(
-                      'inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-inter text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors duration-200 hover:bg-caramel',
+                      'inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-secondary text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors duration-200 hover:bg-primary-dark',
                       FOCUS_RING,
                     )}
                   >
@@ -173,7 +173,7 @@ export function AccountSidebar({
                   <Link
                     href="/auth/register/penjual"
                     className={cn(
-                      'inline-flex items-center gap-2 rounded-full bg-primary/10 px-5 py-2.5 font-inter text-sm font-semibold text-primary transition-colors duration-200 hover:bg-caramel/[0.18]',
+                      'inline-flex items-center gap-2 rounded-full bg-primary/10 px-5 py-2.5 font-secondary text-sm font-semibold text-primary transition-colors duration-200 hover:bg-primary-dark/[0.18]',
                       FOCUS_RING,
                     )}
                   >
@@ -192,11 +192,11 @@ export function AccountSidebar({
                   href={href}
                   onClick={onClose}
                   className={cn(
-                    'group flex w-full items-center gap-3.5 rounded-xl px-4 py-3 font-inter text-base font-medium text-charcoal-900 transition-colors duration-200 hover:bg-caramel/5 hover:text-caramel',
+                    'group flex w-full items-center gap-3.5 rounded-xl px-4 py-3 font-secondary text-base font-medium text-foreground transition-colors duration-200 hover:bg-primary-dark/5 hover:text-primary',
                     FOCUS_RING,
                   )}
                 >
-                  <Icon className="h-5 w-5 shrink-0 text-charcoal-500 transition-colors duration-200 group-hover:text-caramel" />
+                  <Icon className="h-5 w-5 shrink-0 text-muted-foreground transition-colors duration-200 group-hover:text-primary" />
                   {label}
                 </Link>
               ))}
@@ -205,14 +205,14 @@ export function AccountSidebar({
             { }
             <div className="flex-1" />
 
-            <div className="mx-8 h-px bg-hairline" />
+            <div className="mx-8 h-px bg-border" />
             <div className="px-8 py-6">
               {user ? (
                 <button
                   type="button"
                   onClick={onLogout}
                   className={cn(
-                    'inline-flex w-full items-center justify-center gap-2.5 rounded-2xl bg-red-500/[0.08] px-4 py-3.5 font-inter text-sm font-semibold text-red-500 transition-colors duration-200 hover:bg-red-500/[0.15]',
+                    'inline-flex w-full items-center justify-center gap-2.5 rounded-2xl bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-destructive transition-colors duration-200 hover:bg-destructive',
                     FOCUS_RING,
                   )}
                 >
@@ -223,7 +223,7 @@ export function AccountSidebar({
                 <Link
                   href="/auth/login"
                   className={cn(
-                    'inline-flex w-full items-center justify-center rounded-2xl bg-red-600 px-4 py-3.5 font-inter text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-200 hover:bg-red-700 active:scale-[0.98]',
+                    'inline-flex w-full items-center justify-center rounded-2xl bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-200 hover:bg-destructive active:scale-[0.98]',
                     FOCUS_RING,
                   )}
                 >

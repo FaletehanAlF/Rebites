@@ -72,8 +72,8 @@ export function StoreRatingCard() {
   return (
     <Card>
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-bold text-charcoal-900">Rating Toko</h2>
-        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sage-500">
+        <h2 className="text-sm font-bold text-foreground">Rating Toko</h2>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           Penilaian pembeli
         </span>
       </div>
@@ -91,7 +91,7 @@ export function StoreRatingCard() {
       <div className="flex items-center gap-4">
         <p className="font-display text-[38px] font-medium leading-none tracking-tight text-primary">
           <span>{average.toFixed(1)}</span>
-          <span className="ml-1 align-middle text-xs font-medium text-sage-500">/ 5.0</span>
+          <span className="ml-1 align-middle text-xs font-medium text-muted-foreground">/ 5.0</span>
         </p>
         <div>
           <div className="flex items-center gap-0.5" aria-hidden>
@@ -100,13 +100,13 @@ export function StoreRatingCard() {
                 key={star}
                 className={
                   star <= Math.round(average)
-                    ? 'h-3.5 w-3.5 fill-caramel text-caramel'
-                    : 'h-3.5 w-3.5 text-sage-100 fill-sage-100'
+                    ? 'h-3.5 w-3.5 fill-primary text-primary'
+                    : 'h-3.5 w-3.5 text-primary-foreground fill-border-100'
                 }
               />
             ))}
           </div>
-          <p className="mt-1 whitespace-nowrap text-[11px] font-semibold text-charcoal-900">
+          <p className="mt-1 whitespace-nowrap text-[11px] font-semibold text-foreground">
             Total rating: {reviews.length} orang
           </p>
         </div>
@@ -118,17 +118,17 @@ export function StoreRatingCard() {
           const percent = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
           return (
             <li key={star} className="flex items-center gap-2 text-[11px]">
-              <span className="flex w-7 shrink-0 items-center gap-0.5 font-medium text-charcoal-900">
+              <span className="flex w-7 shrink-0 items-center gap-0.5 font-medium text-foreground">
                 {star}
-                <Star className="h-3 w-3 fill-caramel text-caramel" aria-hidden />
+                <Star className="h-3 w-3 fill-primary text-primary" aria-hidden />
               </span>
-              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-cream-100">
+              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
                 <span
-                  className="block h-full rounded-full bg-caramel"
+                  className="block h-full rounded-full bg-primary"
                   style={{ width: `${percent}%` }}
                 />
               </span>
-              <span className="w-12 shrink-0 text-right tabular-nums text-sage-500">
+              <span className="w-12 shrink-0 text-right tabular-nums text-muted-foreground">
                 {count} orang
               </span>
             </li>

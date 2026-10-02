@@ -63,16 +63,16 @@ function ProductLimitMeter({ products }: { products: SellerProduct[] }) {
   const isFull = !isUnlimited && count >= max;
 
   return (
-    <div className="mt-5 rounded-2xl bg-cream-50 p-4">
+    <div className="mt-5 rounded-2xl bg-secondary p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-semibold text-charcoal-900">
+        <p className="text-xs font-semibold text-foreground">
           Kuota produk{' '}
-          <span className="text-sage-500">· paket {plan.label}</span>
+          <span className="text-muted-foreground">· paket {plan.label}</span>
         </p>
         <p
           className={cn(
             'text-xs font-bold',
-            isFull ? 'text-caramel-dark' : 'text-primary'
+            isFull ? 'text-primary' : 'text-primary'
           )}
         >
           {isUnlimited ? `${count} produk · tanpa batas` : `${count}/${max} produk`}
@@ -83,14 +83,14 @@ function ProductLimitMeter({ products }: { products: SellerProduct[] }) {
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500',
-              isFull ? 'bg-caramel' : 'bg-primary'
+              isFull ? 'bg-primary' : 'bg-primary'
             )}
             style={{ width: `${percent}%` }}
           />
         </div>
       )}
       {plan.tier === 'basic' && (
-        <p className="mt-2 text-[11px] leading-relaxed text-sage-500">
+        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
           Paket Basic menyimpan maksimal {max} produk dan riwayat penjualan 30 hari.
         </p>
       )}
@@ -111,14 +111,14 @@ function StockEditor({ product }: { product: SellerProduct }) {
 
   return (
     <div className="flex items-center gap-2">
-      <Package className="h-3.5 w-3.5 text-sage-500" />
-      <span className="text-xs text-charcoal-500">Stok:</span>
+      <Package className="h-3.5 w-3.5 text-muted-foreground" />
+      <span className="text-xs text-muted-foreground">Stok:</span>
       {editing ? (
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => handleSave(Math.max(0, stock - 1))}
-            className="flex h-6 w-6 items-center justify-center rounded-md border border-sage-200 bg-white text-charcoal-700 transition-colors hover:bg-sage-50"
+            className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white text-foreground transition-colors hover:bg-secondary"
           >
             <Minus className="h-3 w-3" />
           </button>
@@ -128,14 +128,14 @@ function StockEditor({ product }: { product: SellerProduct }) {
             onChange={(e) => setStock(Math.max(0, Number(e.target.value)))}
             onBlur={() => handleSave(stock)}
             onKeyDown={(e) => e.key === 'Enter' && handleSave(stock)}
-            className="h-7 w-14 rounded-md border border-primary bg-white px-2 text-center text-xs font-bold text-charcoal-900 outline-none ring-2 ring-primary/20"
+            className="h-7 w-14 rounded-md border border-primary bg-white px-2 text-center text-xs font-bold text-foreground outline-none ring-2 ring-primary/20"
             min={0}
             autoFocus
           />
           <button
             type="button"
             onClick={() => handleSave(stock + 1)}
-            className="flex h-6 w-6 items-center justify-center rounded-md border border-sage-200 bg-white text-charcoal-700 transition-colors hover:bg-sage-50"
+            className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white text-foreground transition-colors hover:bg-secondary"
           >
             <Plus className="h-3 w-3" />
           </button>
@@ -147,8 +147,8 @@ function StockEditor({ product }: { product: SellerProduct }) {
           className={cn(
             'rounded-full px-2.5 py-0.5 text-xs font-bold transition-colors',
             stock > 0
-              ? 'bg-primary/10 text-primary hover:bg-caramel'
-              : 'bg-red-100 text-red-600 hover:bg-red-200'
+              ? 'bg-primary/10 text-primary hover:bg-primary-dark'
+              : 'bg-destructive/15 text-destructive hover:bg-destructive/25'
           )}
         >
           {stock > 0 ? `${stock} porsi` : 'Habis'}
@@ -186,15 +186,15 @@ function TimeEditor({ product }: { product: SellerProduct }) {
       { }
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock className="h-3.5 w-3.5 text-sage-500" />
-          <span className="text-xs text-charcoal-500">Jam jual:</span>
+          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Jam jual:</span>
         </div>
         <button
           type="button"
           onClick={handleAllDayToggle}
           className={cn(
             'relative inline-flex h-5 w-9 items-center rounded-full transition-colors',
-            allDay ? 'bg-primary' : 'bg-sage-200'
+            allDay ? 'bg-primary' : 'bg-muted'
           )}
         >
           <span
@@ -213,14 +213,14 @@ function TimeEditor({ product }: { product: SellerProduct }) {
             type="time"
             value={startTime}
             onChange={(e) => handleTimeChange('startTime', e.target.value)}
-            className="h-7 flex-1 rounded-md border border-sage-200 bg-white px-2 text-xs text-charcoal-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
-          <span className="text-xs text-sage-500">–</span>
+          <span className="text-xs text-muted-foreground">–</span>
           <input
             type="time"
             value={endTime}
             onChange={(e) => handleTimeChange('endTime', e.target.value)}
-            className="h-7 flex-1 rounded-md border border-sage-200 bg-white px-2 text-xs text-charcoal-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
       )}
@@ -231,13 +231,13 @@ function TimeEditor({ product }: { product: SellerProduct }) {
           'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
           available
             ? 'bg-primary/10 text-primary'
-            : 'bg-red-100 text-red-600'
+            : 'bg-destructive/15 text-destructive'
         )}
       >
         <span
           className={cn(
             'h-1.5 w-1.5 rounded-full',
-            available ? 'bg-primary/100' : 'bg-red-500'
+            available ? 'bg-primary/100' : 'bg-destructive'
           )}
         />
         {available
@@ -276,11 +276,11 @@ const FLASH_STATUS_META: Record<
   Exclude<FlashSaleStatus, 'inactive'>,
   { label: string; className: string }
 > = {
-  scheduled: { label: 'Terjadwal', className: 'bg-caramel/15 text-charcoal-900' },
+  scheduled: { label: 'Terjadwal', className: 'bg-primary/15 text-foreground' },
   active: { label: 'Sedang berlangsung', className: 'bg-primary/10 text-primary' },
   ended: {
     label: 'Berakhir',
-    className: 'border border-sage-100 bg-cream-50 text-charcoal-500',
+    className: 'border border-border bg-secondary text-muted-foreground',
   },
 };
 
@@ -418,15 +418,15 @@ function FlashSalePanel({
       : null;
 
   return (
-    <div className="mt-3 rounded-2xl bg-cream-50 p-3">
+    <div className="mt-3 rounded-2xl bg-secondary p-3">
       <div className="flex items-center gap-2">
         <Zap
           className={cn(
             'h-3.5 w-3.5 shrink-0',
-            occupiesSlot || editing ? 'text-caramel' : 'text-sage-500'
+            occupiesSlot || editing ? 'text-primary' : 'text-muted-foreground'
           )}
         />
-        <span className="text-xs font-semibold text-charcoal-900">Flash Sale</span>
+        <span className="text-xs font-semibold text-foreground">Flash Sale</span>
         <div className="ml-auto flex items-center gap-2">
           <FlashStatusBadge status={status} />
           <button
@@ -445,7 +445,7 @@ function FlashSalePanel({
             }
             className={cn(
               'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
-              occupiesSlot ? 'bg-caramel' : 'bg-stone',
+              occupiesSlot ? 'bg-primary' : 'bg-muted',
               switchDisabled && 'cursor-not-allowed opacity-40'
             )}
           >
@@ -460,19 +460,19 @@ function FlashSalePanel({
       </div>
 
       {isBasic ? (
-        <p className="mt-2 text-[11px] leading-relaxed text-sage-500">
+        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
           Tidak tersedia di paket Basic. Upgrade ke Standar untuk mengikuti Flash Sale.
         </p>
       ) : editing ? (
         <div className="mt-3 space-y-2.5">
           { }
           <div className="rounded-xl bg-white p-2.5">
-            <label className="block text-[10px] font-semibold uppercase tracking-wider text-charcoal-900">
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-foreground">
               Harga Flash Sale
             </label>
             <div className="mt-1 flex items-center gap-2">
               <div className="relative flex-1">
-                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-sage-500">
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-muted-foreground">
                   Rp
                 </span>
                 <input
@@ -483,11 +483,11 @@ function FlashSalePanel({
                     setPrice(event.target.value);
                     setError('');
                   }}
-                  className="h-8 w-full rounded-lg border border-sage-200 bg-white pl-7 pr-2 text-xs font-bold text-charcoal-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="h-8 w-full rounded-lg border border-border bg-white pl-7 pr-2 text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
               <div className="shrink-0 text-right">
-                <p className="text-[10px] font-medium text-sage-500 line-through">
+                <p className="text-[10px] font-medium text-muted-foreground line-through">
                   {formatRupiah(product.surplusPrice)}
                 </p>
                 {previewDiscount !== null && (
@@ -501,10 +501,10 @@ function FlashSalePanel({
 
           {/* Pilih Waktu Flash Sale: Pagi/Siang/Sore/Malam - produk akan tampil di slot ini di home */}
           <div className="rounded-xl bg-white p-2.5">
-            <label className="block text-[10px] font-semibold uppercase tracking-wider text-charcoal-900">
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-foreground">
               Waktu Flash Sale
             </label>
-            <p className="mt-1 text-[11px] leading-relaxed text-sage-500">
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
               Pilih jam tampil di section Flash Sale home. Produk akan tampil di slot yang dipilih.
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -522,11 +522,11 @@ function FlashSalePanel({
                       'rounded-xl border px-3 py-2.5 text-left transition-colors',
                       active
                         ? 'border-primary bg-primary text-white shadow-sm'
-                        : 'border-sage-200 bg-white text-charcoal-900 hover:border-caramel hover:bg-caramel/20'
+                        : 'border-border bg-white text-foreground hover:border-primary hover:bg-primary-dark/20'
                     )}
                   >
                     <span className="text-xs font-bold">{slot.label}</span>
-                    <span className={cn('block text-[11px]', active ? 'text-white/80' : 'text-sage-500')}>
+                    <span className={cn('block text-[11px]', active ? 'text-white/80' : 'text-muted-foreground')}>
                       {slot.range}
                     </span>
                   </button>
@@ -539,7 +539,7 @@ function FlashSalePanel({
             try {
               const iso = slotToWibIso(selectedSlot);
               return (
-                <p className="text-[11px] leading-relaxed text-sage-500">
+                <p className="text-[11px] leading-relaxed text-muted-foreground">
                   Mulai: {formatPeriodLabel(iso.startIso)}
                   <br />
                   Berakhir: {formatPeriodLabel(iso.endIso)}
@@ -553,7 +553,7 @@ function FlashSalePanel({
           })()}
 
           {error && (
-            <p className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] font-medium text-red-600">
+            <p className="inline-flex items-center gap-1.5 rounded-lg bg-destructive/10 px-2.5 py-1.5 text-[11px] font-medium text-destructive">
               <XCircle className="h-3.5 w-3.5 shrink-0" />
               {error}
             </p>
@@ -563,7 +563,7 @@ function FlashSalePanel({
             <button
               type="button"
               onClick={handleSave}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/20 transition-colors hover:bg-caramel"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/20 transition-colors hover:bg-primary-dark"
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
               Simpan
@@ -575,7 +575,7 @@ function FlashSalePanel({
                   removeFlashSale(product.id);
                   setEditing(false);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-red-200 px-4 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
+                className="inline-flex items-center gap-1.5 rounded-full border border-destructive/25 px-4 py-2 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Keluar dari Flash Sale
@@ -584,7 +584,7 @@ function FlashSalePanel({
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-sage-200 bg-white px-4 py-2 text-xs font-semibold text-charcoal-900 transition-colors hover:bg-sage-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
             >
               Batal
             </button>
@@ -593,26 +593,26 @@ function FlashSalePanel({
       ) : cfg ? (
         <div className="mt-2 space-y-1.5 rounded-xl bg-white p-2.5">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[11px] text-sage-500">Harga normal</span>
-            <span className="text-[11px] font-medium text-charcoal-500 line-through">
+            <span className="text-[11px] text-muted-foreground">Harga normal</span>
+            <span className="text-[11px] font-medium text-muted-foreground line-through">
               {formatRupiah(product.surplusPrice)}
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[11px] font-medium text-charcoal-900">Harga Flash Sale</span>
+            <span className="text-[11px] font-medium text-foreground">Harga Flash Sale</span>
             <span className="flex items-center gap-1.5">
               {draftDiscount > 0 && (
                 <span className="text-[10px] font-bold text-primary">Diskon {draftDiscount}%</span>
               )}
-              <span className="text-xs font-bold text-charcoal-900">{formatRupiah(cfg.price)}</span>
+              <span className="text-xs font-bold text-foreground">{formatRupiah(cfg.price)}</span>
             </span>
           </div>
-          <div className="flex items-start justify-between gap-2 text-[11px] text-sage-500">
+          <div className="flex items-start justify-between gap-2 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3 shrink-0" />
               Slot
             </span>
-            <span className="text-right font-medium text-charcoal-900">
+            <span className="text-right font-medium text-foreground">
               {(() => {
                 try {
                   const slotKey = slotFromStartIso(cfg.startIso);
@@ -625,35 +625,35 @@ function FlashSalePanel({
               • {status === 'active' ? 'Tampil di Home' : status === 'scheduled' ? 'Akan tampil' : 'Berakhir'}
             </span>
           </div>
-          <div className="flex items-start justify-between gap-2 text-[11px] text-sage-500">
+          <div className="flex items-start justify-between gap-2 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1">
               <CalendarDays className="h-3 w-3 shrink-0" />
               Mulai
             </span>
-            <span className="text-right font-medium text-charcoal-900">
+            <span className="text-right font-medium text-foreground">
               {formatPeriodLabel(cfg.startIso)}
             </span>
           </div>
-          <div className="flex items-start justify-between gap-2 text-[11px] text-sage-500">
+          <div className="flex items-start justify-between gap-2 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1">
               <CalendarDays className="h-3 w-3 shrink-0" />
               Berakhir
             </span>
-            <span className="text-right font-medium text-charcoal-900">
+            <span className="text-right font-medium text-foreground">
               {formatPeriodLabel(cfg.endIso)}
             </span>
           </div>
           <button
             type="button"
             onClick={startEditing}
-            className="mt-0.5 inline-flex items-center gap-1.5 rounded-full border border-sage-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-charcoal-900 transition-colors hover:bg-sage-50"
+            className="mt-0.5 inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[11px] font-semibold text-foreground transition-colors hover:bg-secondary"
           >
             <Pencil className="h-3 w-3" />
             Ubah pengaturan
           </button>
         </div>
       ) : (
-        <p className="mt-1.5 text-[11px] text-sage-500">
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
           {!canEnable
             ? 'Kuota Flash Sale paket Standar sudah digunakan.'
             : 'Tidak mengikuti Flash Sale.'}
@@ -703,10 +703,10 @@ function MenuCard({
 
   return (
     <Card className="flex flex-col p-4">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-sage-100">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
         <SmartImage src={product.image} alt={`Foto ${product.name}`} />
         {product.featured && (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-caramel px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white shadow-md">
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white shadow-md">
             <Crown className="h-3 w-3" />
             Unggulan
           </span>
@@ -716,7 +716,7 @@ function MenuCard({
             'absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em]',
             available
               ? 'bg-white/95 text-primary'
-              : 'bg-white/95 text-charcoal-500'
+              : 'bg-white/95 text-muted-foreground'
           )}
         >
           {available ? `Stok ${product.stock}` : product.stock <= 0 ? 'Habis' : 'Tutup'}
@@ -725,16 +725,16 @@ function MenuCard({
 
       <div className="mt-3 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="truncate text-sm font-bold text-charcoal-900">
+          <h3 className="truncate text-sm font-bold text-foreground">
             {product.name}
           </h3>
-          <p className="mt-0.5 text-xs text-sage-500">{product.category}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{product.category}</p>
         </div>
         <button
           type="button"
           onClick={onEdit}
           aria-label={`Edit ${product.name}`}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-sage-200 text-charcoal-500 transition-colors hover:border-caramel hover:bg-caramel/20 hover:text-caramel"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:bg-primary-dark/20 hover:text-primary"
         >
           <Pencil className="h-3 w-3" />
         </button>
@@ -744,7 +744,7 @@ function MenuCard({
         <span className="text-sm font-bold text-primary">
           {formatRupiah(product.surplusPrice)}
         </span>
-        <span className="text-xs text-charcoal-500 line-through">
+        <span className="text-xs text-muted-foreground line-through">
           {formatRupiah(product.originalPrice)}
         </span>
       </div>
@@ -773,7 +773,7 @@ function MenuCard({
         <button
           type="button"
           onClick={handleToggleStock}
-          className="rounded-full border border-sage-100 px-3 py-1.5 text-[11px] font-semibold text-charcoal-900 transition-colors hover:bg-cream-50"
+          className="rounded-full border border-border px-3 py-1.5 text-[11px] font-semibold text-foreground transition-colors hover:bg-secondary"
         >
           {product.stock > 0 ? 'Set Habis' : 'Set Tersedia'}
         </button>
@@ -785,8 +785,8 @@ function MenuCard({
             className={cn(
               'rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors',
               product.featured
-                ? 'bg-caramel text-white hover:bg-caramel-600'
-                : 'border border-caramel-500 text-caramel-dark hover:bg-caramel/15'
+                ? 'bg-primary text-white hover:bg-primary-dark'
+                : 'border border-primary text-primary hover:bg-primary-dark/15'
             )}
           >
             {product.featured ? 'Lepas Unggulan' : 'Jadikan Unggulan'}
@@ -801,8 +801,8 @@ function MenuCard({
           className={cn(
             'ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors',
             confirmingDelete
-              ? 'bg-red-600 text-white'
-              : 'border border-sage-100 text-charcoal-500 hover:bg-cream-50 hover:text-charcoal-900'
+              ? 'bg-destructive text-white'
+              : 'border border-border text-muted-foreground hover:bg-secondary hover:text-foreground'
           )}
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -836,11 +836,11 @@ function FlashSaleSectionHeader({
     <Card className="mt-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="flex items-center gap-1.5 text-sm font-bold text-charcoal-900">
-            <Zap className="h-4 w-4 text-caramel" />
+          <h2 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+            <Zap className="h-4 w-4 text-primary" />
             Flash Sale
           </h2>
-          <p className="mt-1 text-xs text-sage-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Pilih menu yang ingin kamu tampilkan dalam Flash Sale.
           </p>
         </div>
@@ -848,7 +848,7 @@ function FlashSaleSectionHeader({
         <span
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold',
-            isBasic ? 'bg-caramel/15 text-charcoal-900' : 'bg-sage-100 text-charcoal-900'
+            isBasic ? 'bg-primary/15 text-foreground' : 'bg-muted text-foreground'
           )}
         >
           {isBasic && <Lock className="h-3 w-3" />}
@@ -857,21 +857,21 @@ function FlashSaleSectionHeader({
       </div>
 
       {isBasic && (
-        <div className="mt-4 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-sage-100 bg-cream-50 p-4 sm:flex-row sm:items-center">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-100 text-charcoal-500">
+        <div className="mt-4 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-secondary p-4 sm:flex-row sm:items-center">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <Lock className="h-4 w-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="inline-flex items-center rounded-full bg-caramel/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-charcoal-900">
+            <p className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
               Fitur Premium
             </p>
-            <p className="mt-1.5 text-xs leading-relaxed text-sage-500">
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
               Upgrade paket untuk menambahkan produk ke Flash Sale.
             </p>
           </div>
           <Link
             href="/dashboard/penjual/langganan"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
           >
             <Crown className="h-3.5 w-3.5" />
             Lihat Paket
@@ -931,14 +931,14 @@ export default function MenuSayaPage() {
 
       <Card className="mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-bold text-charcoal-900">
+          <p className="text-sm font-bold text-foreground">
             Daftar menu toko ({products.length})
           </p>
           {isLimitReached ? (
             plan.upgradeSlug && (
               <Link
                 href={`/langganan/pembayaran?plan=${plan.upgradeSlug}&billing=monthly`}
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
               >
                 <Lock className="h-3.5 w-3.5" />
                 Naikkan kuota via upgrade
@@ -947,7 +947,7 @@ export default function MenuSayaPage() {
           ) : (
             <Link
               href="/dashboard/penjual/tambahMenu"
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
             >
               <Plus className="h-3.5 w-3.5" />
               Tambah Menu
@@ -958,8 +958,8 @@ export default function MenuSayaPage() {
         <ProductLimitMeter products={products} />
 
         {isLimitReached && (
-          <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-caramel/15 px-3 py-2 text-[11px] font-medium text-charcoal-900">
-            <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-caramel-dark" />
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
+            <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-primary" />
             Batas produk tercapai ({products.length}/{plan.maxProducts}). Hapus salah satu
             menu atau upgrade paket untuk menambah lagi.
           </p>
@@ -969,7 +969,7 @@ export default function MenuSayaPage() {
       <FlashSaleSectionHeader plan={plan} quota={flashQuota} used={flashUsed} />
 
       {quotaBlocked && (
-        <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-caramel/15 px-3 py-2 text-[11px] font-medium text-charcoal-900">
+        <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
           <XCircle className="h-3.5 w-3.5 shrink-0" />
           {flashQuota === 0
             ? 'Fitur Flash Sale tersedia mulai dari paket Standar. Upgrade paket untuk menambahkan produk ke Flash Sale.'
@@ -989,34 +989,34 @@ export default function MenuSayaPage() {
           ))}
         </div>
       ) : productsError ? (
-        <div className="mt-6 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-sage-100 bg-white p-5 sm:flex-row sm:items-center">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-100 text-charcoal-500">
+        <div className="mt-6 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-white p-5 sm:flex-row sm:items-center">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <XCircle className="h-4 w-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-charcoal-900">
+            <p className="text-sm font-bold text-foreground">
               Daftar menu gagal dimuat
             </p>
-            <p className="mt-1 text-xs leading-relaxed text-sage-500">
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               {productsError} Coba lagi untuk memuat menu tokomu.
             </p>
           </div>
           <button
             type="button"
             onClick={refreshProducts}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
           >
             Coba Lagi
           </button>
         </div>
       ) : products.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-sage-100 bg-white p-10 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cream-50 text-primary shadow-sm">
+        <div className="mt-6 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
             <Utensils className="h-6 w-6" />
           </span>
           <div>
-            <p className="text-sm font-bold text-charcoal-900">Belum ada menu</p>
-            <p className="mt-1 text-xs leading-relaxed text-sage-500">
+            <p className="text-sm font-bold text-foreground">Belum ada menu</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               Menu yang kamu tambahkan akan tampil di sini dan langsung muncul
               di halaman Detail Toko.
             </p>
@@ -1024,7 +1024,7 @@ export default function MenuSayaPage() {
           {!isLimitReached && (
             <Link
               href="/dashboard/penjual/tambahMenu"
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
             >
               <Plus className="h-3.5 w-3.5" />
               Tambah Menu
@@ -1055,12 +1055,12 @@ export default function MenuSayaPage() {
 
       { }
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
-        <DialogContent className="max-w-sm rounded-2xl border-sage-100 bg-white p-6">
+        <DialogContent className="max-w-sm rounded-2xl border-border bg-white p-6">
           <DialogHeader>
             <DialogTitle className="font-display text-lg font-medium tracking-tight text-primary">
               Flash Sale belum tersedia
             </DialogTitle>
-            <DialogDescription className="text-xs leading-relaxed text-sage-500">
+            <DialogDescription className="text-xs leading-relaxed text-muted-foreground">
               Fitur Flash Sale tersedia mulai dari paket Standar. Upgrade paket untuk
               menampilkan produkmu di Flash Sale.
             </DialogDescription>
@@ -1068,7 +1068,7 @@ export default function MenuSayaPage() {
           <Link
             href="/dashboard/penjual/langganan"
             onClick={() => setUpgradeOpen(false)}
-            className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+            className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
           >
             <Crown className="h-3.5 w-3.5" />
             Lihat Paket

@@ -30,8 +30,8 @@ const ICON_CONFIG: Record<
 > = {
   order_created: {
     icon: ShoppingBag,
-    bg: 'bg-blue-50',
-    color: 'text-blue-600',
+    bg: 'bg-primary/10',
+    color: 'text-primary',
   },
   payment_success: {
     icon: CreditCard,
@@ -40,18 +40,18 @@ const ICON_CONFIG: Record<
   },
   order_delivering: {
     icon: Truck,
-    bg: 'bg-orange-50',
-    color: 'text-orange-600',
+    bg: 'bg-warning/10',
+    color: 'text-warning',
   },
   order_completed: {
     icon: PackageCheck,
-    bg: 'bg-sage-100',
+    bg: 'bg-muted',
     color: 'text-primary',
   },
   promo: {
     icon: Gift,
-    bg: 'bg-caramel/15',
-    color: 'text-caramel-dark',
+    bg: 'bg-primary/15',
+    color: 'text-primary',
   },
   incoming_order: {
     icon: ShoppingBag,
@@ -60,13 +60,13 @@ const ICON_CONFIG: Record<
   },
   new_review: {
     icon: Star,
-    bg: 'bg-caramel-50',
-    color: 'text-caramel-dark',
+    bg: 'bg-primary/15',
+    color: 'text-primary',
   },
   subscription_active: {
     icon: Crown,
-    bg: 'bg-caramel/15',
-    color: 'text-caramel-dark',
+    bg: 'bg-primary/15',
+    color: 'text-primary',
   },
   subscription_renewed: {
     icon: RefreshCw,
@@ -75,26 +75,26 @@ const ICON_CONFIG: Record<
   },
   subscription_expiring: {
     icon: AlertTriangle,
-    bg: 'bg-orange-50',
-    color: 'text-orange-600',
+    bg: 'bg-warning/10',
+    color: 'text-warning',
   },
   subscription_changed: {
     icon: Crown,
-    bg: 'bg-blue-50',
-    color: 'text-blue-600',
+    bg: 'bg-primary/10',
+    color: 'text-primary',
   },
   subscription_expired: {
     icon: XCircle,
-    bg: 'bg-red-50',
-    color: 'text-red-500',
+    bg: 'bg-destructive/10',
+    color: 'text-destructive',
   },
 };
 
 export function NotificationIcon({ type, className }: NotificationIconProps) {
   const config = ICON_CONFIG[type] ?? {
     icon: Bell,
-    bg: 'bg-cream-100',
-    color: 'text-charcoal-500',
+    bg: 'bg-muted',
+    color: 'text-muted-foreground',
   };
   const Icon = config.icon;
 

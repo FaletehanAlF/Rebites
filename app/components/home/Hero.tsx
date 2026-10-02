@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion, type Variants } from "framer-motion";
 import { ArrowRight, Recycle } from "lucide-react";
@@ -58,8 +58,8 @@ export function Hero() {
   return (
     <section
       id="home"
-      data-nav="cream"
-      className="relative overflow-hidden scroll-mt-20 bg-cream-50 px-4 pb-10 pt-16 sm:px-6 lg:px-8 lg:pb-24 lg:pt-28"
+      data-nav="neutral"
+      className="relative overflow-hidden scroll-mt-20 bg-secondary px-4 pb-10 pt-16 sm:px-6 lg:px-8 lg:pb-24 lg:pt-28"
     >
       <motion.div
         variants={container}
@@ -82,22 +82,22 @@ export function Hero() {
           <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary to-primary/25" />
 
           <div className="relative flex h-full flex-col justify-end p-6 sm:p-10 lg:p-14">
-            <h1 className="max-w-2xl font-sans text-2xl font-bold leading-[1.05] tracking-tight text-cream-50 sm:text-4xl lg:text-[3.85rem]">
+            <h1 className="max-w-2xl font-sans text-2xl font-bold leading-[1.05] tracking-tight text-primary-foreground sm:text-4xl lg:text-[3.85rem]">
               Temukan Makanan Surplus,
               <br className="hidden sm:block" />
               <span className="relative inline-block">
                 Hemat dan Nikmat
-                <span className="absolute inset-x-0 -bottom-1 h-[3px] rounded-full bg-caramel sm:-bottom-2" />
+                <span className="absolute inset-x-0 -bottom-1 h-[3px] rounded-full bg-primary sm:-bottom-2" />
               </span>
             </h1>
-            <p className="mt-3 max-w-lg font-inter text-xs leading-relaxed text-cream-50/85 sm:mt-5 sm:text-[15px] lg:text-[16px] text-white">
+            <p className="mt-3 max-w-lg font-secondary text-xs leading-relaxed text-primary-foreground/85 sm:mt-5 sm:text-[15px] lg:text-[16px] text-white">
               Temukan makanan surplus berkualitas dari UMKM di sekitarmu dengan
               harga lebih bersahabat.
             </p>
 
             <div className="mt-5 sm:mt-8">
               <Button
-                variant="outlineCream"
+                variant="outlineLight"
                 size="sm"
                 onClick={() => scrollToId("rekomendasi")}
                 className="group px-5 py-2.5 text-[12px] sm:scale-105 sm:px-7 sm:py-3.5 sm:text-[13px] lg:scale-110 lg:px-8"
@@ -107,8 +107,8 @@ export function Hero() {
               </Button>
             </div>
 
-            <p className="mt-3 flex items-center gap-2 font-inter text-[11px] text-cream-50/75 sm:mt-5 sm:text-sm">
-              <Recycle className="h-3.5 w-3.5 text-caramel sm:h-4 sm:w-4" />
+            <p className="mt-3 flex items-center gap-2 font-secondary text-[11px] text-primary-foreground/75 sm:mt-5 sm:text-sm">
+              <Recycle className="h-3.5 w-3.5 text-primary sm:h-4 sm:w-4" />
               1000+ porsi makanan berhasil diselamatkan
             </p>
           </div>
@@ -126,19 +126,19 @@ export function Hero() {
                 sizes="(min-width: 1024px) 40vw, 100vw"
               />
             </div>
-            <div className="absolute inset-0 bg-primary/80 transition-colors duration-300 group-hover:bg-caramel-900/70" />
+            <div className="absolute inset-0 bg-primary/80 transition-colors duration-300 group-hover:bg-primary-dark/70" />
 
             <div className="relative flex h-full flex-col justify-end p-4 sm:p-6 lg:p-8">
-              <h2 className="mt-3 font-sans text-lg font-bold leading-snug text-cream-50 sm:mt-4 sm:text-2xl lg:text-[1.7rem]">
+              <h2 className="mt-3 font-sans text-lg font-bold leading-snug text-primary-foreground sm:mt-4 sm:text-2xl lg:text-[1.7rem]">
                 Diskon Kilat,
                 <br />
                 Hemat Besar.
               </h2>
-              <p className="mt-1.5 max-w-[260px] font-inter text-xs leading-relaxed text-cream-50/80 sm:mt-2 sm:text-sm">
+              <p className="mt-1.5 max-w-[260px] font-secondary text-xs leading-relaxed text-primary-foreground/80 sm:mt-2 sm:text-sm">
                 Dapatkan diskon spesial untuk makanan favoritmu sekarang.
               </p>
               <Button
-                variant="outlineCream"
+                variant="outlineLight"
                 size="sm"
                 className="mt-3 sm:mt-5"
                 onClick={() => scrollToId("flashSale")}
@@ -160,17 +160,17 @@ export function Hero() {
                 sizes="(min-width: 1024px) 40vw, 100vw"
               />
             </div>
-            <div className="absolute inset-0 bg-primary/80 transition-colors duration-300 group-hover:bg-caramel-900/70" />
+            <div className="absolute inset-0 bg-primary/80 transition-colors duration-300 group-hover:bg-primary-dark/70" />
 
             <div className="relative flex h-full flex-col justify-end p-4 sm:p-6 lg:p-8">
-              <h2 className="mt-2 font-sans text-base font-bold text-cream-50 sm:mt-3 sm:text-xl lg:text-2xl">
+              <h2 className="mt-2 font-sans text-base font-bold text-primary-foreground sm:mt-3 sm:text-xl lg:text-2xl">
                 Punya Makanan Surplus?
               </h2>
-              <p className="mt-1 max-w-[260px] font-inter text-xs leading-relaxed text-cream-50/80 sm:mt-1.5 sm:text-sm">
+              <p className="mt-1 max-w-[260px] font-secondary text-xs leading-relaxed text-primary-foreground/80 sm:mt-1.5 sm:text-sm">
                 Jual sekarang dengan harga diskon dan ubah sisa jadi pemasukan.
               </p>
               <Button
-                variant="outlineCream"
+                variant="outlineLight"
                 size="sm"
                 className="mt-3 sm:mt-5"
                 onClick={handleMulaiJual}

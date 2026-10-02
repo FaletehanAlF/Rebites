@@ -35,12 +35,12 @@ export function FulfillmentToggle() {
   return (
     <section
       aria-label="Metode pengambilan pesanan"
-      className="rounded-2xl border border-sage-100 bg-white p-5 shadow-sm sm:p-6"
+      className="rounded-2xl border border-border bg-white p-5 shadow-sm sm:p-6"
     >
-      <h3 className="font-display text-base font-medium text-charcoal-900">
+      <h3 className="font-display text-base font-medium text-foreground">
         Metode pengambilan
       </h3>
-      <p className="mt-0.5 text-sm text-sage-500">
+      <p className="mt-0.5 text-sm text-muted-foreground">
         Pilih cara kamu menerima pesanan
       </p>
 
@@ -59,7 +59,7 @@ export function FulfillmentToggle() {
                 'group relative flex items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-all duration-200',
                 selected
                   ? 'border-primary bg-primary/[0.05] shadow-lg shadow-primary/10'
-                  : 'border-sage-100 bg-white hover:border-sage-500/50 hover:shadow-md'
+                  : 'border-border bg-white hover:border-primary/30 hover:shadow-md'
               )}
             >
               <span
@@ -67,7 +67,7 @@ export function FulfillmentToggle() {
                   'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-200',
                   selected
                     ? 'bg-primary text-white'
-                    : 'bg-sage-100 text-primary'
+                    : 'bg-muted text-primary'
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -77,12 +77,12 @@ export function FulfillmentToggle() {
                 <span
                   className={cn(
                     'block text-sm font-semibold transition-colors duration-200',
-                    selected ? 'text-primary' : 'text-charcoal-900'
+                    selected ? 'text-primary' : 'text-foreground'
                   )}
                 >
                   {option.title}
                 </span>
-                <span className="mt-0.5 block text-xs leading-snug text-charcoal-500">
+                <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
                   {option.subtitle}
                 </span>
               </span>
@@ -91,7 +91,7 @@ export function FulfillmentToggle() {
                 aria-hidden
                 className={cn(
                   'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200',
-                  selected ? 'border-primary' : 'border-sage-500/70'
+                  selected ? 'border-primary' : 'border-primary/30'
                 )}
               >
                 {selected && (

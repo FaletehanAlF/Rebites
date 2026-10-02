@@ -114,7 +114,7 @@ function SubscriptionContent({
         type="button"
         onClick={() => router.back()}
         disabled={processing}
-        className="inline-flex h-9 items-center gap-1.5 -ml-2 rounded-full px-2 text-[13px] font-semibold text-charcoal-500 transition-colors hover:bg-white hover:text-primary disabled:pointer-events-none disabled:opacity-50"
+        className="inline-flex h-9 items-center gap-1.5 -ml-2 rounded-full px-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-white hover:text-primary disabled:pointer-events-none disabled:opacity-50"
       >
         <ArrowLeft className="h-4 w-4" />
         Kembali
@@ -234,12 +234,12 @@ function SubscriptionContent({
           </div>
 
           {errorMessage && !processing && (
-            <div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3.5">
-              <p className="flex items-start gap-1.5 text-[13px] font-semibold text-red-700">
+            <div role="alert" className="mt-4 rounded-xl border border-destructive/25 bg-destructive/10 p-3.5">
+              <p className="flex items-start gap-1.5 text-[13px] font-semibold text-destructive">
                 <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 Pembayaran belum dapat diproses.
               </p>
-              <p className="mt-1 pl-[1.375rem] text-xs leading-relaxed text-red-600">{errorMessage}</p>
+              <p className="mt-1 pl-[1.375rem] text-xs leading-relaxed text-destructive">{errorMessage}</p>
             </div>
           )}
 
@@ -353,9 +353,9 @@ export function SubscriptionCheckoutView() {
   // Early returns after all hooks
   if (authLoading || !authChecked) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-hairline bg-white px-6 py-14 text-center">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-border bg-white px-6 py-14 text-center">
         <div className="h-14 w-14 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <p className="mt-4 text-sm text-charcoal-500">Memeriksa autentikasi...</p>
+        <p className="mt-4 text-sm text-muted-foreground">Memeriksa autentikasi...</p>
       </div>
     );
   }
@@ -366,11 +366,11 @@ export function SubscriptionCheckoutView() {
 
   if (!initialPlan) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-hairline bg-white px-6 py-14 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cream-100 text-primary">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-border bg-white px-6 py-14 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
           <CreditCard className="h-6 w-6" />
         </span>
-        <h1 className="mt-5 font-display text-xl font-medium tracking-tight text-charcoal-900">Paket tidak tersedia</h1>
+        <h1 className="mt-5 font-display text-xl font-medium tracking-tight text-foreground">Paket tidak tersedia</h1>
         <Link
           href="/dashboard/penjual/langganan"
           className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-white hover:bg-primary"

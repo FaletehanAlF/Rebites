@@ -190,7 +190,7 @@ export default function ForgotPasswordForm() {
               </FieldBox>
 
               {error && (
-                <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700">
+                <p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive">
                   {error}
                 </p>
               )}

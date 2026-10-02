@@ -113,7 +113,7 @@ export function MobileNavbar() {
     <>
       {/* Mobile-only sticky header */}
       <header className="fixed inset-x-0 top-0 z-50 lg:hidden">
-        <div className="bg-white/95 backdrop-blur-lg border-b border-sage-100">
+        <div className="bg-white/95 backdrop-blur-lg border-b border-border">
           <div className="flex items-center gap-3 px-4 py-2.5">
             <Link href="/home" className="flex shrink-0 items-center gap-2">
               <Image
@@ -131,7 +131,7 @@ export function MobileNavbar() {
             <div className="ml-auto flex items-center gap-1">
               <Link
                 href="/notifikasi/pembeli"
-                className="relative flex h-9 w-9 items-center justify-center rounded-full text-charcoal-600 hover:bg-cream-100"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
               >
                 <Bell className="h-5 w-5" />
                 {unreadNotifCount > 0 && (
@@ -145,7 +145,7 @@ export function MobileNavbar() {
                 type="button"
                 onClick={() => setProfileOpen(true)}
                 aria-label="Profil"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal-600 hover:bg-cream-100"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
               >
                 {avatarUrl ? (
                   <span className="relative h-7 w-7 overflow-hidden rounded-full ring-1 ring-black/5">
@@ -171,7 +171,7 @@ export function MobileNavbar() {
                 onClick={() => setDrawerOpen(true)}
                 aria-label="Buka menu navigasi"
                 aria-expanded={drawerOpen}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal-600 hover:bg-cream-100"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
               >
                 <Menu className="h-5 w-5" />
               </button>
@@ -198,9 +198,9 @@ export function MobileNavbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[60] flex h-full w-[85vw] max-w-[320px] flex-col bg-cream-50 shadow-2xl lg:hidden"
+              className="fixed right-0 top-0 z-[60] flex h-full w-[85vw] max-w-[320px] flex-col bg-secondary shadow-2xl lg:hidden"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-sage-100">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                 <span className="flex items-center gap-2">
                   <Image
                     src="/logo.png"
@@ -217,7 +217,7 @@ export function MobileNavbar() {
                   type="button"
                   onClick={() => setDrawerOpen(false)}
                   aria-label="Tutup menu"
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-charcoal-600 hover:bg-cream-100"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -233,7 +233,7 @@ export function MobileNavbar() {
                           e.preventDefault();
                           handleNav(link.id);
                         }}
-                        className="block rounded-xl px-4 py-3 font-inter text-sm font-medium text-charcoal-700 hover:bg-cream-100 hover:text-caramel"
+                        className="block rounded-xl px-4 py-3 font-secondary text-sm font-medium text-foreground hover:bg-muted hover:text-primary"
                       >
                         {link.label}
                       </a>
@@ -241,11 +241,11 @@ export function MobileNavbar() {
                   ))}
                 </ul>
 
-                <div className="mt-4 border-t border-sage-100 pt-4 space-y-1">
+                <div className="mt-4 border-t border-border pt-4 space-y-1">
                   <Link
                     href="/notifikasi/pembeli"
                     onClick={() => setDrawerOpen(false)}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 font-inter text-sm text-charcoal-700 hover:bg-cream-100 hover:text-caramel"
+                    className="flex items-center justify-between rounded-xl px-4 py-3 font-secondary text-sm text-foreground hover:bg-muted hover:text-primary"
                   >
                     <span className="flex items-center gap-2">
                       <Bell className="h-4 w-4" />
@@ -261,7 +261,7 @@ export function MobileNavbar() {
                   <Link
                     href="/profile"
                     onClick={() => setDrawerOpen(false)}
-                    className="flex items-center gap-2 rounded-xl px-4 py-3 font-inter text-sm text-charcoal-700 hover:bg-cream-100 hover:text-caramel"
+                    className="flex items-center gap-2 rounded-xl px-4 py-3 font-secondary text-sm text-foreground hover:bg-muted hover:text-primary"
                   >
                     <User className="h-4 w-4" />
                     Profil Saya
@@ -271,7 +271,7 @@ export function MobileNavbar() {
                     <Link
                       href="/dashboard/penjual"
                       onClick={() => setDrawerOpen(false)}
-                      className="flex items-center gap-2 rounded-xl px-4 py-3 font-inter text-sm text-charcoal-700 hover:bg-cream-100 hover:text-caramel"
+                      className="flex items-center gap-2 rounded-xl px-4 py-3 font-secondary text-sm text-foreground hover:bg-muted hover:text-primary"
                     >
                       <Store className="h-4 w-4" />
                       Dashboard Penjual
@@ -279,8 +279,8 @@ export function MobileNavbar() {
                   )}
                 </div>
 
-                <div className="mt-4 border-t border-sage-100 pt-4">
-                  <p className="px-4 text-xs font-semibold uppercase tracking-wider text-charcoal-500">
+                <div className="mt-4 border-t border-border pt-4">
+                  <p className="px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Lokasi
                   </p>
                   <button
@@ -301,12 +301,12 @@ export function MobileNavbar() {
                 </div>
               </nav>
 
-              <div className="border-t border-sage-100 p-4">
+              <div className="border-t border-border p-4">
                 {sessionUser ? (
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-100"
+                    className="w-full rounded-xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive hover:bg-destructive/15"
                   >
                     Keluar Akun
                   </button>
@@ -314,7 +314,7 @@ export function MobileNavbar() {
                   <Link
                     href="/auth/login"
                     onClick={() => setDrawerOpen(false)}
-                    className="block w-full rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white hover:bg-caramel"
+                    className="block w-full rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white hover:bg-primary-dark"
                   >
                     Masuk / Daftar
                   </Link>

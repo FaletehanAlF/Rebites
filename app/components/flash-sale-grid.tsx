@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import type { UrgentSlot, UrgentItem } from "@/lib/types";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-caramel focus-visible:ring-offset-2 focus-visible:ring-offset-cream";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 const WIB_OFFSET_MS = 7 * 3600 * 1000;
 
@@ -232,11 +232,11 @@ function CountdownBox({
   const remaining = useCountdown(deadlineIso);
   const [h, m, s] = formatCountdown(remaining ?? 0).split(":");
   return (
-    <div className="inline-flex flex-col gap-1.5 rounded-2xl border border-hairline bg-white px-5 py-3.5 shadow-[0_18px_40px_-28px_rgba(30,43,32,0.4)]">
+    <div className="inline-flex flex-col gap-1.5 rounded-2xl border border-border bg-white px-5 py-3.5 shadow-[0_18px_40px_-28px_rgba(30,43,32,0.4)]">
       <p className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-sale">
         {label}
       </p>
-      <p className="font-sans text-[11px] font-semibold tabular-nums text-forest-dark">
+      <p className="font-sans text-[11px] font-semibold tabular-nums text-primary-dark">
         {range}
       </p>
       <div className="flex items-baseline gap-1">
@@ -262,7 +262,7 @@ function CountdownBox({
           </span>
         ))}
       </div>
-      <div className="flex gap-1 font-sans text-[9px] font-semibold uppercase tracking-[0.18em] text-forest-dark/60">
+      <div className="flex gap-1 font-sans text-[9px] font-semibold uppercase tracking-[0.18em] text-primary-dark/60">
         <span className="min-w-[2ch] text-center">Jam</span>
         <span aria-hidden className="w-[1ch]" />
         <span className="min-w-[2ch] text-center">Menit</span>
@@ -298,13 +298,13 @@ function FlashSaleCard({
         className={cn(
           "group relative flex h-full flex-col rounded-[24px] border bg-white pt-20 px-5 pb-5 transition-all duration-300",
           isLive
-            ? "border-hairline/70 shadow-[0_12px_30px_-18px_rgba(46,42,34,0.3)] hover:-translate-y-1.5 hover:border-caramel/30 hover:shadow-[0_22px_44px_-20px_rgba(46,42,34,0.35)]"
-            : "border-hairline/50 bg-white/80 shadow-[0_10px_24px_-18px_rgba(46,42,34,0.2)]",
+            ? "border-border/70 shadow-[0_12px_30px_-18px_rgba(46,42,34,0.3)] hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-[0_22px_44px_-20px_rgba(46,42,34,0.35)]"
+            : "border-border/50 bg-white/80 shadow-[0_10px_24px_-18px_rgba(46,42,34,0.2)]",
         )}
       >
         <div
           className={cn(
-            "absolute -top-10 left-6 h-[136px] w-[136px] overflow-hidden rounded-full border-[3px] border-white bg-cream shadow-[0_12px_24px_-12px_rgba(46,42,34,0.4)]",
+            "absolute -top-10 left-6 h-[136px] w-[136px] overflow-hidden rounded-full border-[3px] border-white bg-secondary shadow-[0_12px_24px_-12px_rgba(46,42,34,0.4)]",
             !isLive && "grayscale-[0.4]",
           )}
         >
@@ -325,7 +325,7 @@ function FlashSaleCard({
             <span className="font-sans text-xs text-muted-foreground line-through">
               {formatRupiah(item.originalPrice)}
             </span>
-            <span className="font-sans text-lg font-bold tracking-tight text-caramel">
+            <span className="font-sans text-lg font-bold tracking-tight text-primary">
               {formatRupiah(item.price)}
             </span>
             <span className="inline-flex rounded-full bg-sale px-2 py-0.5 font-sans text-[10px] font-bold text-white">
@@ -334,7 +334,7 @@ function FlashSaleCard({
           </div>
         </div>
 
-        <h3 className="mt-3 font-sans text-[17px] font-bold leading-snug text-forest-dark">
+        <h3 className="mt-3 font-sans text-[17px] font-bold leading-snug text-primary-dark">
           {item.name}
         </h3>
         <p className="mt-0.5 font-sans text-[13px] text-muted-foreground">
@@ -343,17 +343,17 @@ function FlashSaleCard({
 
         <div className="mt-3">
           <div className="flex items-center justify-between font-sans text-[11px]">
-            <span className={cn("font-bold", isLive ? "text-sale" : "text-stone-400")}>
+            <span className={cn("font-bold", isLive ? "text-sale" : "text-muted-foreground")}>
               {stockText}
             </span>
             {isLive && <span className="text-sale">Buru!</span>}
           </div>
           {stockPct !== null && (
-            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-cream">
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
               <div
                 className={cn(
                   "h-full rounded-full",
-                  isLive ? "bg-sale" : "bg-stone-300",
+                  isLive ? "bg-sale" : "bg-muted-foreground",
                 )}
                 style={{ width: `${isLive ? stockPct : 0}%` }}
               />
@@ -377,10 +377,10 @@ function FlashSaleCard({
             if (isLive) router.push("/auth/login");
           }}
           className={cn(
-            "absolute bottom-5 right-5 inline-flex h-10 items-center rounded-full px-4 font-sans text-[12px] font-bold uppercase tracking-wide shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-caramel focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+            "absolute bottom-5 right-5 inline-flex h-10 items-center rounded-full px-4 font-sans text-[12px] font-bold uppercase tracking-wide shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white",
             isLive
-              ? "bg-forest text-white hover:bg-caramel hover:scale-105"
-              : "cursor-not-allowed bg-stone-200 text-stone-400",
+              ? "bg-primary text-white hover:bg-primary-dark hover:scale-105"
+              : "cursor-not-allowed bg-muted text-muted-foreground",
           )}
         >
           {isLive ? "Beli" : status}
@@ -450,8 +450,8 @@ export function FlashSaleGrid() {
   return (
     <section
       id="flash-sale"
-      data-nav="cream"
-      className="grain-overlay relative overflow-hidden bg-cream py-16 lg:py-20"
+      data-nav="neutral"
+      className="grain-overlay relative overflow-hidden bg-secondary py-16 lg:py-20"
     >
       <div className="relative mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8">
         <div className="mb-10 grid gap-6 lg:mb-12 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -462,15 +462,15 @@ export function FlashSaleGrid() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sale opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-sale" />
                 </span>
-                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.22em] text-caramel">
+                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
                   Flash Sale
                 </span>
               </div>
             </Reveal>
 
             <Reveal delay={0.1}>
-              <h2 className="mt-4 font-display text-[clamp(1.9rem,4vw,3rem)] font-light leading-[1.05] tracking-[-0.02em] text-forest-dark">
-                Menu Flash Sale <span className="text-caramel">ReBites</span>
+              <h2 className="mt-4 font-display text-[clamp(1.9rem,4vw,3rem)] font-light leading-[1.05] tracking-[-0.02em] text-primary-dark">
+                Menu Flash Sale <span className="text-primary">ReBites</span>
               </h2>
             </Reveal>
 
@@ -494,7 +494,7 @@ export function FlashSaleGrid() {
             <Reveal delay={0.15}>
               <Link
                 href="/#rekomendasi"
-                className="group inline-flex items-center gap-1.5 font-sans text-sm font-medium text-forest transition-colors hover:text-caramel"
+                className="group inline-flex items-center gap-1.5 font-sans text-sm font-medium text-primary transition-colors hover:text-primary"
               >
                 Lihat Semua Menu
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
@@ -522,7 +522,7 @@ export function FlashSaleGrid() {
                     "flex items-center gap-2.5 rounded-full border font-sans transition-all duration-300",
                     isActive
                       ? "cursor-pointer border-primary/50 bg-primary text-white shadow-[0_14px_30px_-18px_rgba(27,77,50,0.75)] hover:bg-primary/90"
-                      : "cursor-pointer border-stone-200 bg-stone-100 text-stone-500 hover:border-stone-300 hover:bg-stone-200",
+                      : "cursor-pointer border-border bg-muted text-primary-foreground0 hover:border-border hover:bg-muted",
                     FOCUS_RING,
                   )}
                 >
@@ -532,7 +532,7 @@ export function FlashSaleGrid() {
                   <span
                     className={cn(
                       "pr-4 text-[10px] font-semibold uppercase tracking-[0.16em]",
-                      isActive ? "text-white/85" : "text-stone-400",
+                      isActive ? "text-white/85" : "text-muted-foreground",
                     )}
                   >
                     {slot.name}

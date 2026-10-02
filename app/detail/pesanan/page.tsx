@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function DetailPesananPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-cream-50" />}>
+    <Suspense fallback={<main className="min-h-screen bg-secondary" />}>
       <CheckoutView />
     </Suspense>
   );

@@ -40,7 +40,7 @@ export function CTAButtons({
         onClick={handleOrder}
         whileHover={reduce ? undefined : { scale: 1.02 }}
         whileTap={reduce ? undefined : { scale: 0.98 }}
-        className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-caramel hover:shadow-[0_20px_45px_-20px_rgba(27,77,50,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50"
+        className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-primary-dark hover:shadow-[0_20px_45px_-20px_rgba(27,77,50,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         {added ? (
           <>
@@ -62,10 +62,10 @@ export function CTAButtons({
         onClick={handleSave}
         whileTap={reduce ? undefined : { scale: 0.94 }}
         className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-full border px-6 py-3.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50",
+          "inline-flex items-center justify-center gap-2 rounded-full border px-6 py-3.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           saved
-            ? "border-primary bg-sage-100 text-primary"
-            : "border-sage-500/60 text-primary hover:bg-cream-100",
+            ? "border-primary bg-muted text-primary"
+            : "border-primary/30 text-primary hover:bg-muted",
         )}
       >
         <motion.span

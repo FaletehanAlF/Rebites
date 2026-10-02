@@ -114,7 +114,7 @@ export function OrderHistoryView() {
   if (loading) {
     return (
       <div className="w-full space-y-5">
-        <div className="h-10 w-56 animate-pulse rounded-xl bg-white ring-1 ring-hairline" />
+        <div className="h-10 w-56 animate-pulse rounded-xl bg-white ring-1 ring-border" />
         <div className="h-24 animate-pulse rounded-xl border border-zinc-200 bg-white" />
         <div className="h-32 animate-pulse rounded-xl border border-zinc-200 bg-white" />
       </div>
@@ -235,7 +235,7 @@ function EmptyState({
 
   return (
     <div className="flex flex-col items-center rounded-xl border border-dashed border-zinc-200 bg-white px-6 py-10 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-100 text-primary">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-primary">
         <PackageSearch className="h-5 w-5" />
       </span>
       <h3 className="mt-3 font-display text-base font-medium text-zinc-900">Belum Ada Pesanan</h3>

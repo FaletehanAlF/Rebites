@@ -62,21 +62,21 @@ export function DetailProductContent() {
   }, [product]);
 
   if (status === "loading") {
-    return <div className="min-h-screen bg-cream-50" />;
+    return <div className="min-h-screen bg-secondary" />;
   }
 
   if (status === "not-found" || !product) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-cream-50 px-6 text-center">
-        <p className="font-sans text-lg font-bold text-charcoal-900">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-secondary px-6 text-center">
+        <p className="font-sans text-lg font-bold text-foreground">
           Produk tidak ditemukan
         </p>
-        <p className="max-w-sm text-sm leading-relaxed text-charcoal-500">
+        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
           Menu yang kamu cari mungkin sudah habis atau dihapus penjualnya.
         </p>
         <a
           href="/"
-          className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-caramel"
+          className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
         >
           Kembali ke Beranda
         </a>

@@ -17,7 +17,7 @@ const SalesActivityChartCard = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[340px] animate-pulse rounded-3xl border border-sage-200/60 bg-sage-100/40" />
+      <div className="h-[340px] animate-pulse rounded-3xl border border-border/60 bg-muted/40" />
     ),
   }
 );
@@ -39,9 +39,9 @@ export default function PerformaTokoPage() {
 
           <Link
             href="/dashboard/penjual/langganan"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition-colors hover:bg-caramel/10"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark/10"
           >
-            <Crown className="h-3.5 w-3.5 text-caramel" />
+            <Crown className="h-3.5 w-3.5 text-primary" />
             Kelola Paket Langganan
           </Link>
         </div>

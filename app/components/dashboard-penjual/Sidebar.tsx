@@ -89,8 +89,8 @@ function NavItemLink({ item, onClose }: { item: NavItem; onClose?: () => void })
       className={cn(
         'group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors',
         isActive
-          ? 'bg-sage-100 text-charcoal-900'
-          : 'text-charcoal-500 hover:bg-sage-100/60 hover:text-charcoal-900'
+          ? 'bg-muted text-foreground'
+          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
       )}
     >
       <Icon
@@ -98,7 +98,7 @@ function NavItemLink({ item, onClose }: { item: NavItem; onClose?: () => void })
           'h-[18px] w-[18px] shrink-0',
           isActive
             ? 'text-primary'
-            : 'text-sage-500 group-hover:text-caramel'
+            : 'text-muted-foreground group-hover:text-primary'
         )}
       />
       <span className="flex-1">{item.label}</span>
@@ -114,7 +114,7 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
       transition={{ duration: 0.3 }}
       className="relative flex h-full flex-col overflow-y-auto"
     >
-      <DotPattern className="left-0 top-0 h-36 w-36 text-sage-100" />
+      <DotPattern className="left-0 top-0 h-36 w-36 text-primary-foreground" />
 
       <div className="relative flex items-center gap-2.5 px-6 pb-6 pt-7">
         <Link
@@ -128,7 +128,7 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
           <p className="font-display text-xl font-semibold leading-none tracking-tight text-primary">
             ReBites
           </p>
-          <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-sage-500">
+          <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Food Rescue
           </p>
         </Link>
@@ -136,7 +136,7 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
           type="button"
           onClick={onClose}
           aria-label="Tutup menu navigasi"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-sage-500 transition-colors hover:bg-sage-100 lg:hidden"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted lg:hidden"
         >
           <X className="h-4 w-4" />
         </button>
@@ -162,13 +162,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-charcoal-900/40 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm lg:hidden"
             aria-hidden
           />
         )}
       </AnimatePresence>
 
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-[280px] border-r border-sage-100 bg-cream-50 lg:block">
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-[280px] border-r border-border bg-secondary lg:block">
         <SidebarContent onClose={onClose} />
       </aside>
 
@@ -180,7 +180,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
-            className="fixed inset-y-0 left-0 z-50 w-[300px] bg-cream-50 lg:hidden"
+            className="fixed inset-y-0 left-0 z-50 w-[300px] bg-secondary lg:hidden"
           >
             <SidebarContent onClose={onClose} />
           </motion.aside>

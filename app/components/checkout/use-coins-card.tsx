@@ -27,7 +27,7 @@ function CoinSwitch({
       onClick={() => onChange(!checked)}
       className={cn(
         'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full px-1 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-        checked ? 'bg-primary' : 'bg-sage-500/40',
+        checked ? 'bg-primary' : 'bg-primary/40',
         disabled && 'cursor-not-allowed opacity-40',
       )}
     >
@@ -49,21 +49,21 @@ export function UseCoinsCard() {
     hasCoins && summary.coinUsed > 0 && coinBalance > summary.totalBeforeCoin;
 
   return (
-    <div className="mt-4 rounded-xl border border-caramel/30 bg-caramel/10 px-3.5 py-3">
+    <div className="mt-4 rounded-xl border border-primary/30 bg-primary/10 px-3.5 py-3">
       <div className="flex items-center gap-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-caramel text-white shadow-sm">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm">
           <Coins className="h-4 w-4" />
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-charcoal-900">
+          <p className="text-xs font-semibold text-foreground">
             Gunakan ReBites Coin
           </p>
-          <p className="text-[11px] leading-snug text-charcoal-500">
+          <p className="text-[11px] leading-snug text-muted-foreground">
             {hasCoins ? (
               <>
                 Saldo kamu:{' '}
-                <span className="font-semibold tabular-nums text-charcoal-900">
+                <span className="font-semibold tabular-nums text-foreground">
                   {coinBalance.toLocaleString('id-ID')} Coin
                 </span>{' '}
                 · 1 Coin = Rp1
@@ -91,17 +91,17 @@ export function UseCoinsCard() {
             transition={{ duration: 0.25, ease: EASE }}
             className="overflow-hidden"
           >
-            <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-caramel/30 pt-2.5">
-              <p className="text-[11px] leading-snug text-charcoal-500">
+            <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-primary/30 pt-2.5">
+              <p className="text-[11px] leading-snug text-muted-foreground">
                 {cappedByTotal ? 'Menggunakan maksimal' : 'Menggunakan'}{' '}
-                <span className="font-semibold tabular-nums text-charcoal-900">
+                <span className="font-semibold tabular-nums text-foreground">
                   <AnimatedNumber
                     value={summary.coinUsed}
                     format={(v) => v.toLocaleString('id-ID')}
                   />
                 </span>{' '}
                 Coin{' '}
-                <span className="text-sage-500">
+                <span className="text-muted-foreground">
                   (sisa {summary.remainingCoin.toLocaleString('id-ID')} Coin)
                 </span>
               </p>

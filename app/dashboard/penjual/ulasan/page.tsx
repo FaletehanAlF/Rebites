@@ -37,8 +37,8 @@ function Stars({ rating }: { rating: number }) {
           className={cn(
             "h-3.5 w-3.5",
             n <= rating
-              ? "fill-caramel text-caramel"
-              : "fill-sage-100 text-sage-100",
+              ? "fill-primary text-primary"
+              : "fill-border-100 text-primary-foreground",
           )}
         />
       ))}
@@ -48,8 +48,8 @@ function Stars({ rating }: { rating: number }) {
 
 function ReviewItem({ review }: { review: SellerReview }) {
   return (
-    <li className="flex gap-3 rounded-2xl border border-sage-100 bg-white p-4">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sage-100 text-[11px] font-bold text-sage-600">
+    <li className="flex gap-3 rounded-2xl border border-border bg-white p-4">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
         {review.authorAvatar ? (
           <img
             src={review.authorAvatar}
@@ -62,24 +62,24 @@ function ReviewItem({ review }: { review: SellerReview }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-sm font-semibold text-charcoal-900">
+          <p className="text-sm font-semibold text-foreground">
             {review.authorName}
           </p>
           <Stars rating={review.rating} />
-          <span className="text-xs text-sage-500">
+          <span className="text-xs text-muted-foreground">
             · {formatReviewDate(review.createdAt)}
           </span>
         </div>
-        <p className="mt-1 text-xs font-medium text-sage-500">
+        <p className="mt-1 text-xs font-medium text-muted-foreground">
           {review.menuName || "Menu"} ·{" "}
           <span className="font-mono">#{review.orderCode}</span>
         </p>
         {review.comment ? (
-          <p className="mt-2 break-words rounded-xl bg-cream-50 px-3 py-2 text-[13px] leading-relaxed text-charcoal-900">
+          <p className="mt-2 break-words rounded-xl bg-secondary px-3 py-2 text-[13px] leading-relaxed text-foreground">
             {review.comment}
           </p>
         ) : (
-          <p className="mt-2 text-xs italic text-sage-400">Tanpa komentar</p>
+          <p className="mt-2 text-xs italic text-muted-foreground-400">Tanpa komentar</p>
         )}
       </div>
     </li>
@@ -144,7 +144,7 @@ export default function UlasanPage() {
         <div className="lg:col-span-4">
           <StoreRatingCard />
           <Card className="mt-5">
-            <h3 className="text-sm font-bold text-charcoal-900">
+            <h3 className="text-sm font-bold text-foreground">
               Filter Rating
             </h3>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -157,20 +157,20 @@ export default function UlasanPage() {
                     "inline-flex items-center gap-1 rounded-full px-4 py-2 text-xs font-semibold transition-colors",
                     filter === f
                       ? "bg-primary text-white"
-                      : "border border-sage-100 bg-white text-charcoal-500 hover:text-charcoal-900",
+                      : "border border-border bg-white text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {f === "all" ? (
                     "Semua"
                   ) : (
                     <>
-                      {f} <Star className="h-3 w-3 fill-caramel text-caramel" />
+                      {f} <Star className="h-3 w-3 fill-primary text-primary" />
                     </>
                   )}
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-xs text-sage-500">
+            <p className="mt-3 text-xs text-muted-foreground">
               Menampilkan {filtered.length} dari {reviews.length} ulasan
             </p>
           </Card>
@@ -178,21 +178,21 @@ export default function UlasanPage() {
 
         <div className="lg:col-span-8">
           {loading ? (
-            <Card className="py-10 text-center text-sm text-sage-500">
+            <Card className="py-10 text-center text-sm text-muted-foreground">
               Memuat ulasan...
             </Card>
           ) : filtered.length === 0 ? (
             <Card className="flex flex-col items-center justify-center gap-4 py-14 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-sage-100 text-primary">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
                 <MessageSquare className="h-6 w-6" />
               </span>
               <div className="max-w-sm">
-                <p className="text-sm font-bold text-charcoal-900">
+                <p className="text-sm font-bold text-foreground">
                   {reviews.length === 0
                     ? "Belum ada ulasan"
                     : "Tidak ada ulasan pada filter ini"}
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-sage-500">
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                   {reviews.length === 0
                     ? "Ulasan pembeli akan muncul di sini setelah pesanan selesai dan pembeli memberi penilaian bintang & komentar."
                     : "Coba pilih filter lain untuk melihat ulasan dengan rating berbeda."}

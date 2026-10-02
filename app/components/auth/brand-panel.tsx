@@ -26,7 +26,7 @@ export default function BrandPanel({ title, description }: BrandPanelProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-primary/70 via-transparent to-primary/45" />
       </div>
 
-      <div className="pointer-events-none absolute -left-1/4 top-1/4 h-[34rem] w-[34rem] rounded-full bg-caramel/25 blur-[130px]" />
+      <div className="pointer-events-none absolute -left-1/4 top-1/4 h-[34rem] w-[34rem] rounded-full bg-primary/25 blur-[130px]" />
       <div className="pointer-events-none absolute -bottom-1/3 -right-1/4 h-[38rem] w-[38rem] rounded-full bg-primary/85 blur-[110px]" />
 
       <div className="absolute left-8 top-8 z-10 flex items-center gap-2.5 text-primary-foreground xl:left-12 xl:top-10">
