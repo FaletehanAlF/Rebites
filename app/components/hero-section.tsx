@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState, useId } from "react";
 import Link from "next/link";
-import { ArrowRight, User, Menu, X, MapPin } from "lucide-react";
+import { ArrowRight, Search, User, Menu, X, MapPin } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FoldText from "@/app/components/FoldText";
@@ -28,6 +28,7 @@ export function HeroSection() {
   const [activeNav, setActiveNav] = useState<string>("Beranda");
   const [overDark, setOverDark] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>("");
 
   const lang = "id" as "id" | "en";
 
@@ -93,6 +94,15 @@ export function HeroSection() {
 
   const navIsDark = mounted && overDark;
 
+  const scrollToTarget = (target: string) => {
+    const el = target ? document.getElementById(target) : null;
+    if (!el) return;
+
+    const lenis = window.__lenis;
+    if (lenis) lenis.scrollTo(el, { offset: -104, duration: 1.1 });
+    else el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const scrollToSection = (
     e: React.MouseEvent<HTMLAnchorElement>,
     label: string,
@@ -101,12 +111,19 @@ export function HeroSection() {
     e.preventDefault();
     setActiveNav(label);
     setOpen(false);
-    const el = target ? document.getElementById(target) : null;
-    if (!el) return;
+    scrollToTarget(target);
+  };
 
-    const lenis = window.__lenis;
-    if (lenis) lenis.scrollTo(el, { offset: -104, duration: 1.1 });
-    else el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const trimmed = query.trim();
+    if (trimmed) {
+      window.dispatchEvent(
+        new CustomEvent("rebites:hero-search", { detail: trimmed }),
+      );
+    }
+    setActiveNav("Rekomendasi");
+    scrollToTarget("rekomendasi");
   };
 
   return (
@@ -321,19 +338,44 @@ export function HeroSection() {
               makanan.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
-              <Link
-                href="/auth/register"
-                className={cn(
-                  "group inline-flex items-center gap-2 rounded-full bg-primary px-9 py-4 font-inter text-base font-semibold text-white shadow-[0_16px_32px_-16px_rgba(27,77,50,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-caramel",
-                  FOCUS_RING,
-                )}
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <form
+                role="search"
+                aria-label="Cari makanan surplus"
+                onSubmit={handleSearchSubmit}
+                className="flex w-full max-w-xl items-center gap-2 rounded-full border border-hairline bg-white/90 p-2 pl-4 shadow-[0_18px_40px_-24px_rgba(27,77,50,0.45)] backdrop-blur"
               >
-                Daftar Sekarang
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-forest-dark shadow-sm transition-all duration-300 group-hover:translate-x-1">
-                  <ArrowRight className="h-4 w-4" />
+                <Search
+                  className="h-4 w-4 shrink-0 text-muted-foreground"
+                  aria-hidden
+                />
+                <label htmlFor="hero-search" className="sr-only">
+                  Cari makanan surplus
+                </label>
+                <input
+                  id="hero-search"
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Cari ayam geprek, soto mie, sate..."
+                  autoComplete="off"
+                  className="h-11 w-full bg-transparent font-inter text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
+                />
+                <span className="hidden shrink-0 items-center gap-1 rounded-full bg-cream-100 px-3 py-1.5 font-inter text-xs font-semibold text-primary sm:inline-flex">
+                  <MapPin className="h-3.5 w-3.5 text-caramel" aria-hidden />
+                  Depok
                 </span>
-              </Link>
+                <button
+                  type="submit"
+                  className={cn(
+                    "group inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-primary px-6 font-inter text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-px hover:bg-caramel",
+                    FOCUS_RING,
+                  )}
+                >
+                  Cari
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </button>
+              </form>
             </div>
           </div>
         </div>
