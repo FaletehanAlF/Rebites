@@ -1,23 +1,18 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { useEffect, useState, useId } from "react";
 import Link from "next/link";
 import { ArrowRight, User, Menu, X, MapPin } from "lucide-react";
-import {
-  AnimatePresence,
-  motion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FoldText from "@/app/components/FoldText";
 import RotatingText from "@/app/components/RotatingText";
 
 const NAV_LINKS = [
   { href: "/#top", label: "Beranda", target: "top" },
-  { href: "/#about", label: "Tentang", target: "about" },
   { href: "/#rekomendasi", label: "Rekomendasi", target: "rekomendasi" },
+  { href: "/#about", label: "Tentang", target: "about" },
   { href: "/#cara-kerja", label: "Cara Kerja", target: "cara-kerja" },
   { href: "/#langganan", label: "Langganan", target: "langganan" },
   { href: "/#testimoni", label: "Testimoni", target: "testimoni" },
@@ -306,7 +301,7 @@ export function HeroSection() {
               <div className="flex w-full items-baseline justify-center">
                 <RotatingText
                   texts={["makanan.", "UMKM.", "masyarakat.", "lingkungan."]}
-                  mainClassName="font-display font-light italic text-caramel"
+                  mainClassName="font-display font-bold italic text-caramel"
                   style={{
                     fontSize: "clamp(2rem, 4.5vw, 3.5rem)",
                     lineHeight: 1.05,
@@ -334,34 +329,11 @@ export function HeroSection() {
                   FOCUS_RING,
                 )}
               >
-                Mulai Sekarang
+                Daftar Sekarang
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-forest-dark shadow-sm transition-all duration-300 group-hover:translate-x-1">
                   <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
-
-              <div className="flex flex-col items-center leading-none">
-                <div className="flex items-center gap-1">
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <svg
-                        key={i}
-                        className="h-4 w-4 fill-caramel text-caramel"
-                        viewBox="0 0 20 20"
-                        aria-hidden
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <span className="font-sans text-sm font-bold leading-none text-forest-dark">
-                    5.0
-                  </span>
-                </div>
-                <span className="font-sans text-[11px] font-medium leading-none text-forest-dark/70">
-                  dari 500+ ulasan
-                </span>
-              </div>
             </div>
           </div>
         </div>
@@ -433,212 +405,6 @@ function HeroOrganicArt() {
           opacity="0.34"
         />
 
-        {/* Hanging stems, each with 3 leaves hanging below the top thread */}
-
-        {/* Stem 1 */}
-        <path
-          d="M 160 4 C 158 30, 161 62, 160 98"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="160"
-          cy="124"
-          rx="9"
-          ry="27"
-          transform="rotate(0 160 124)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="143"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 143 108)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="177"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(45 177 108)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 2 */}
-        <path
-          d="M 360 8 C 362 34, 359 66, 360 102"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="360"
-          cy="128"
-          rx="9"
-          ry="27"
-          transform="rotate(0 360 128)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="343"
-          cy="112"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 343 112)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="377"
-          cy="112"
-          rx="8"
-          ry="22"
-          transform="rotate(45 377 112)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 3 */}
-        <path
-          d="M 565 4 C 567 30, 564 60, 565 96"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="565"
-          cy="120"
-          rx="9"
-          ry="27"
-          transform="rotate(0 565 120)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="548"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 548 105)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="582"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(45 582 105)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 4 */}
-        <path
-          d="M 770 10 C 768 34, 771 62, 770 98"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="770"
-          cy="124"
-          rx="9"
-          ry="27"
-          transform="rotate(0 770 124)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="753"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 753 108)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="787"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(45 787 108)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 5 */}
-        <path
-          d="M 985 6 C 987 32, 984 62, 985 100"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="985"
-          cy="126"
-          rx="9"
-          ry="27"
-          transform="rotate(0 985 126)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="968"
-          cy="110"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 968 110)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="1002"
-          cy="110"
-          rx="8"
-          ry="22"
-          transform="rotate(45 1002 110)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 6 */}
-        <path
-          d="M 1200 10 C 1202 34, 1199 62, 1200 96"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="1200"
-          cy="120"
-          rx="9"
-          ry="27"
-          transform="rotate(0 1200 120)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="1183"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 1183 105)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="1217"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(45 1217 105)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
         <circle
           cx="255"
           cy="310"
@@ -696,156 +462,12 @@ function HeroOrganicArt() {
   );
 }
 
-type LeafProps = {
-  src: string;
-  size: number;
-  top?: string;
-  left?: string;
-  right?: string;
-  bottom?: string;
-  rotate: number;
-  opacity: number;
-  blur?: number;
-  speedY: number;
-  speedX: number;
-  radius: string;
-};
-
-function Leaf({
-  src,
-  size,
-  top,
-  left,
-  right,
-  bottom,
-  rotate,
-  opacity,
-  blur,
-  speedY,
-  speedX,
-  radius,
-}: LeafProps) {
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, (v) => v * speedY);
-  const x = useTransform(scrollY, (v) => v * speedX);
-
-  return (
-    <motion.div
-      aria-hidden
-      className="pointer-events-none z-0 overflow-hidden"
-      style={{
-        position: "absolute",
-        top,
-        left,
-        right,
-        bottom,
-        width: size,
-        height: size,
-        y,
-        x,
-        rotate,
-        opacity,
-        filter: `${blur ? `blur(${blur}px) ` : ""}saturate(1.35) brightness(0.96) contrast(1.1)`,
-        borderRadius: radius,
-      }}
-    >
-      <Image
-        src={src}
-        alt=""
-        fill
-        sizes="(max-width: 640px) 256px, 384px"
-        fetchPriority="low"
-        className="object-cover"
-      />
-    </motion.div>
-  );
-}
-
 function HeroFoodBackdrop() {
-  const leaves = [
-    {
-      src: "/daun797797.jpg",
-      size: 320,
-      top: "-40px",
-      left: "-70px",
-      radius: "100% 0 100% 0",
-      rotate: -35,
-      opacity: 0.8,
-      blur: 0,
-      speedY: -0.12,
-      speedX: 0.04,
-    },
-    {
-      src: "/daun797797.jpg",
-      size: 288,
-      top: "-44px",
-      right: "-70px",
-      radius: "0 100% 0 100%",
-      rotate: 32,
-      opacity: 0.5,
-      blur: 0.5,
-      speedY: -0.18,
-      speedX: -0.04,
-    },
-    {
-      src: "/daun1420019.jpg",
-      size: 300,
-      bottom: "24px",
-      left: "-56px",
-      radius: "0 100% 0 100%",
-      rotate: 28,
-      opacity: 0.8,
-      blur: 0,
-      speedY: -0.24,
-      speedX: 0.06,
-    },
-    {
-      src: "/daun1072179.jpg",
-      size: 272,
-      bottom: "24px",
-      right: "-56px",
-      radius: "100% 0 100% 0",
-      rotate: -30,
-      opacity: 0.5,
-      blur: 0.4,
-      speedY: -0.2,
-      speedX: -0.05,
-    },
-    {
-      src: "/daun1072179.jpg",
-      size: 208,
-      top: "46%",
-      left: "4%",
-      radius: "0 100% 0 100%",
-      rotate: 14,
-      opacity: 0.7,
-      blur: 0,
-      speedY: -0.32,
-      speedX: 0.09,
-    },
-    {
-      src: "/daun1420019.jpg",
-      size: 208,
-      top: "48%",
-      right: "4%",
-      radius: "100% 0 100% 0",
-      rotate: -16,
-      opacity: 0.45,
-      blur: 0.3,
-      speedY: -0.36,
-      speedX: -0.08,
-    },
-  ];
-
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
     >
-      {leaves.map((leaf, i) => (
-        <Leaf key={`${leaf.src}-${i}`} {...leaf} />
-      ))}
-
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-cream to-transparent" />
     </div>
   );

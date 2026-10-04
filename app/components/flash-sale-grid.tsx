@@ -393,8 +393,8 @@ export function FlashSaleGrid() {
   return (
     <section
       id="flash-sale"
-      data-nav="cream"
-      className="grain-overlay relative overflow-hidden bg-cream py-16 lg:py-20"
+      data-nav="green"
+      className="grain-overlay relative overflow-hidden bg-primary py-16 lg:py-20"
     >
       <div className="relative mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8">
         <div className="mb-10 grid gap-6 lg:mb-12 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -412,13 +412,13 @@ export function FlashSaleGrid() {
             </Reveal>
 
             <Reveal delay={0.1}>
-              <h2 className="mt-4 font-display text-[clamp(1.9rem,4vw,3rem)] font-light leading-[1.05] tracking-[-0.02em] text-forest-dark">
+              <h2 className="mt-4 font-display text-[clamp(1.9rem,4vw,3rem)] font-light leading-[1.05] tracking-[-0.02em] text-primary-foreground">
                 Menu Flash Sale <span className="text-caramel">ReBites</span>
               </h2>
             </Reveal>
 
             <Reveal delay={0.15}>
-              <p className="mx-auto mt-4 max-w-xl font-sans text-sm leading-[1.8] text-muted-foreground lg:mx-0">
+              <p className="mx-auto mt-4 max-w-xl font-sans text-sm leading-[1.8] text-primary-foreground/70 lg:mx-0">
                 Nikmati makanan surplus spesial selama jam flash sale. Stok
                 terbatas, harga jauh lebih hemat.
               </p>
@@ -437,7 +437,7 @@ export function FlashSaleGrid() {
             <Reveal delay={0.15}>
               <Link
                 href="/#rekomendasi"
-                className="group inline-flex items-center gap-1.5 font-sans text-sm font-medium text-forest transition-colors hover:text-caramel"
+                className="group inline-flex items-center gap-1.5 font-sans text-sm font-medium text-cream transition-colors hover:text-caramel"
               >
                 Lihat Semua Menu
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
@@ -464,8 +464,8 @@ export function FlashSaleGrid() {
                   className={cn(
                     "flex items-center gap-2.5 rounded-full border font-sans transition-all duration-300",
                     isActive
-                      ? "cursor-pointer border-primary/50 bg-primary text-white shadow-[0_14px_30px_-18px_rgba(27,77,50,0.75)] hover:bg-primary/90"
-                      : "cursor-pointer border-stone-200 bg-stone-100 text-stone-500 hover:border-stone-300 hover:bg-stone-200",
+                      ? "cursor-pointer border-caramel/50 bg-white text-forest shadow-[0_14px_30px_-18px_rgba(0,0,0,0.45)] hover:bg-cream"
+                      : "cursor-pointer border-white/15 bg-white/10 text-white/70 hover:border-white/30 hover:bg-white/20",
                     FOCUS_RING,
                   )}
                 >
@@ -475,7 +475,7 @@ export function FlashSaleGrid() {
                   <span
                     className={cn(
                       "pr-4 text-[10px] font-semibold uppercase tracking-[0.16em]",
-                      isActive ? "text-white/85" : "text-stone-400",
+                      isActive ? "text-forest/70" : "text-white/50",
                     )}
                   >
                     {slot.name}
