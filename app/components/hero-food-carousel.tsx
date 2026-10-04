@@ -1,17 +1,12 @@
 ﻿"use client";
 
 import { useMemo, useState, useRef, useId, useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import OptionWheel, { type OptionWheelApi } from "@/app/components/ui/korosel";
 import { Reveal } from "@/app/components/reveal";
 import { LeafSprig } from "@/app/components/ornaments";
 import { useCatalog } from "@/lib/catalog";
 import type { FoodItem } from "@/lib/types";
-import {
-  ProductDetailPanel,
-  type FeaturedFood,
-} from "@/app/components/product-detail-panel";
+import type { FeaturedFood } from "@/app/components/product-detail-panel";
 
 const FOODS: FeaturedFood[] = [
   {
@@ -191,8 +186,7 @@ function foodItemToPlate(food: FoodItem): PlateFood {
 }
 
 export function HeroFoodCarousel() {
-  const [foodIndex, setFoodIndex] = useState(0);
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [autoRotate] = useState(true);
   const [plateSize, setPlateSize] = useState(320);
   const wheelApi = useRef<OptionWheelApi | null>(null);
   const { foodItems } = useCatalog();
@@ -204,17 +198,6 @@ export function HeroFoodCarousel() {
         : (FOODS as PlateFood[]),
     [foodItems],
   );
-
-  const safeIndex = Math.min(
-    foodIndex,
-    Math.max(displayFoods.length - 1, 0),
-  );
-  const selected = displayFoods[safeIndex] ?? displayFoods[0];
-  useEffect(() => {
-    setFoodIndex((prev) =>
-      Math.min(prev, Math.max(displayFoods.length - 1, 0)),
-    );
-  }, [displayFoods.length]);
 
   useEffect(() => {
     const updatePlate = () => {
@@ -280,7 +263,6 @@ export function HeroFoodCarousel() {
                   autoRotate={autoRotate}
                   autoRotateInterval={4200}
                   plateSize={plateSize}
-                  onChange={(index) => setFoodIndex(index)}
                   apiRef={wheelApi}
                   className="!py-0"
                   renderItem={(i) => <FoodPlate image={displayFoods[i].image} />}
@@ -295,54 +277,7 @@ export function HeroFoodCarousel() {
                 />
               </div>
             </div>
-
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <button
-                type="button"
-                aria-label="Makanan sebelumnya"
-                onClick={() => {
-                  setAutoRotate(false);
-                  wheelApi.current?.prev();
-                }}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/10 bg-white text-forest shadow-[0_8px_18px_-10px_rgba(27,77,50,0.6)] transition-all duration-200 hover:bg-primary hover:text-white active:scale-95 sm:h-14 sm:w-14"
-              >
-                <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
-              </button>
-
-              <div className="flex items-center gap-1 rounded-full border border-primary/10 bg-white/90 px-3.5 py-2 font-sans text-sm font-bold tabular-nums text-forest shadow-[0_8px_18px_-10px_rgba(27,77,50,0.5)]">
-                <span className="text-forest">{displayFoods.length > 0 ? safeIndex + 1 : 0}</span>
-                <span className="text-forest/50">/</span>
-                <span className="text-forest/60">{displayFoods.length}</span>
-              </div>
-
-              <button
-                type="button"
-                aria-label="Makanan berikutnya"
-                onClick={() => {
-                  setAutoRotate(false);
-                  wheelApi.current?.next();
-                }}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/10 bg-white text-forest shadow-[0_8px_18px_-10px_rgba(27,77,50,0.6)] transition-all duration-200 hover:bg-primary hover:text-white active:scale-95 sm:h-14 sm:w-14"
-              >
-                <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
-              </button>
-            </div>
           </Reveal>
-
-          <div className="w-full max-w-2xl">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={safeIndex}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full"
-              >
-                <ProductDetailPanel food={selected} />
-              </motion.div>
-            </AnimatePresence>
-          </div>
         </div>
       </div>
 
