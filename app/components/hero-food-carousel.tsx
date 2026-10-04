@@ -2,13 +2,12 @@
 
 import { useMemo, useState, useRef, useId, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Car, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import OptionWheel, { type OptionWheelApi } from "@/app/components/ui/korosel";
 import { Reveal } from "@/app/components/reveal";
 import { LeafSprig } from "@/app/components/ornaments";
 import { useCatalog } from "@/lib/catalog";
-import { SearchFilterBar } from "@/app/components/SearchFilterBar";
-import type { FoodItem, FilterKey } from "@/lib/types";
+import type { FoodItem } from "@/lib/types";
 import {
   ProductDetailPanel,
   type FeaturedFood,
@@ -195,8 +194,6 @@ export function HeroFoodCarousel() {
   const [foodIndex, setFoodIndex] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
   const [plateSize, setPlateSize] = useState(320);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFilter, setSearchFilter] = useState<FilterKey>("terdekat");
   const wheelApi = useRef<OptionWheelApi | null>(null);
   const { foodItems } = useCatalog();
 
@@ -213,11 +210,6 @@ export function HeroFoodCarousel() {
     Math.max(displayFoods.length - 1, 0),
   );
   const selected = displayFoods[safeIndex] ?? displayFoods[0];
-  const discountPct = Math.max(
-    0,
-    Math.round((1 - selected.price / selected.originalPrice) * 100) || 0,
-  );
-
   useEffect(() => {
     setFoodIndex((prev) =>
       Math.min(prev, Math.max(displayFoods.length - 1, 0)),
@@ -234,31 +226,6 @@ export function HeroFoodCarousel() {
     updatePlate();
     window.addEventListener("resize", updatePlate);
     return () => window.removeEventListener("resize", updatePlate);
-  }, []);
-
-  const handleSelectResult = (id: string) => {
-    const index = displayFoods.findIndex((food) => food.id === id);
-    if (index === -1) return;
-    setAutoRotate(false);
-    wheelApi.current?.to(index);
-    setFoodIndex(index);
-  };
-
-  const handleQueryChange = (value: string) => {
-    setSearchQuery(value);
-    if (!value) setAutoRotate(true);
-  };
-
-  useEffect(() => {
-    const handleHeroSearch = (event: Event) => {
-      const detail = (event as CustomEvent<string>).detail ?? "";
-      setSearchQuery(detail);
-      if (detail) setAutoRotate(false);
-    };
-
-    window.addEventListener("rebites:hero-search", handleHeroSearch);
-    return () =>
-      window.removeEventListener("rebites:hero-search", handleHeroSearch);
   }, []);
 
   return (
@@ -283,23 +250,86 @@ export function HeroFoodCarousel() {
           </p>
         </Reveal>
 
-        <Reveal delay={0.1} className="mx-auto mt-8 w-full max-w-4xl">
-          <SearchFilterBar
-            query={searchQuery}
-            onQueryChange={handleQueryChange}
-            onSearchSubmit={() => undefined}
-            activeFilter={searchFilter}
-            onFilterChange={setSearchFilter}
-            showLocation={false}
-            showInlineResults
-            onSelectResult={handleSelectResult}
-            variant="light"
-            items={foodItems}
-          />
-        </Reveal>
+        <div className="mt-10 flex flex-col items-center gap-10 lg:mt-12">
+          <Reveal className="relative w-full">
+            <div
+              className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-[2.5rem] border-2 border-white bg-green-700 shadow-[0_44px_80px_-42px_rgba(63,107,74,0.75)] ring-1 ring-inset ring-caramel/30"
+              style={{ height: plateSize + 70 }}
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 left-0 w-1/2 rounded-l-full bg-[radial-gradient(130%_180%_at_12%_30%,rgba(255,253,248,0.18),transparent_55%)]"
+              />
+              <LeafSprig className="left-7 top-1/2 h-12 w-12 -translate-y-1/2 rotate-12 text-white/30" />
 
-        <div className="mt-8 grid items-center gap-10 lg:mt-14 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
-          <div className="order-2 w-full lg:order-1 lg:pl-16 xl:pl-28">
+              <div className="absolute inset-0">
+                <OptionWheel
+                  items={displayFoods.map((f) => f.name)}
+                  defaultSelected={0}
+                  side="right"
+                  orientation="vertical"
+                  spacing={0.45}
+                  curve={10}
+                  tilt={10}
+                  blur={8}
+                  fade={0.55}
+                  minOpacity={0.12}
+                  smoothing={200}
+                  loop
+                  draggable
+                  autoRotate={autoRotate}
+                  autoRotateInterval={4200}
+                  plateSize={plateSize}
+                  onChange={(index) => setFoodIndex(index)}
+                  apiRef={wheelApi}
+                  className="!py-0"
+                  renderItem={(i) => <FoodPlate image={displayFoods[i].image} />}
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-green-700 to-transparent"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-green-700 to-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                aria-label="Makanan sebelumnya"
+                onClick={() => {
+                  setAutoRotate(false);
+                  wheelApi.current?.prev();
+                }}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/10 bg-white text-forest shadow-[0_8px_18px_-10px_rgba(27,77,50,0.6)] transition-all duration-200 hover:bg-primary hover:text-white active:scale-95 sm:h-14 sm:w-14"
+              >
+                <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
+              </button>
+
+              <div className="flex items-center gap-1 rounded-full border border-primary/10 bg-white/90 px-3.5 py-2 font-sans text-sm font-bold tabular-nums text-forest shadow-[0_8px_18px_-10px_rgba(27,77,50,0.5)]">
+                <span className="text-forest">{displayFoods.length > 0 ? safeIndex + 1 : 0}</span>
+                <span className="text-forest/50">/</span>
+                <span className="text-forest/60">{displayFoods.length}</span>
+              </div>
+
+              <button
+                type="button"
+                aria-label="Makanan berikutnya"
+                onClick={() => {
+                  setAutoRotate(false);
+                  wheelApi.current?.next();
+                }}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/10 bg-white text-forest shadow-[0_8px_18px_-10px_rgba(27,77,50,0.6)] transition-all duration-200 hover:bg-primary hover:text-white active:scale-95 sm:h-14 sm:w-14"
+              >
+                <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
+              </button>
+            </div>
+          </Reveal>
+
+          <div className="w-full max-w-2xl">
             <AnimatePresence mode="wait">
               <motion.div
                 key={safeIndex}
@@ -312,134 +342,6 @@ export function HeroFoodCarousel() {
                 <ProductDetailPanel food={selected} />
               </motion.div>
             </AnimatePresence>
-          </div>
-
-          <div className="order-1 lg:order-2">
-            <Reveal className="relative">
-              <div className="pointer-events-none absolute right-8 top-3 z-30 flex flex-col items-end gap-2.5 sm:right-16 sm:top-4">
-                <div className="drop-shadow-[0_16px_28px_rgba(47,66,53,0.55)]">
-                  <div
-                    aria-label={`Diskon ${discountPct} persen`}
-                    className="flex h-24 w-24 items-center justify-center bg-cream text-center sm:h-28 sm:w-28"
-                    style={{
-                      clipPath:
-                        "polygon(50.00% 0.00%, 53.62% 8.66%, 58.68% 0.76%, 60.74% 9.91%, 67.10% 3.02%, 67.54% 12.39%, 75.00% 6.70%, 73.80% 16.01%, 82.14% 11.70%, 79.34% 20.66%, 88.30% 17.86%, 83.99% 26.20%, 93.30% 25.00%, 87.61% 32.46%, 96.98% 32.90%, 90.09% 39.26%, 99.24% 41.32%, 91.34% 46.38%, 100.00% 50.00%, 91.34% 53.62%, 99.24% 58.68%, 90.09% 60.74%, 96.98% 67.10%, 87.61% 67.54%, 93.30% 75.00%, 83.99% 73.80%, 88.30% 82.14%, 79.34% 79.34%, 82.14% 88.30%, 73.80% 83.99%, 75.00% 93.30%, 67.54% 87.61%, 67.10% 96.98%, 60.74% 90.09%, 58.68% 99.24%, 53.62% 91.34%, 50.00% 100.00%, 46.38% 91.34%, 41.32% 99.24%, 39.26% 90.09%, 32.90% 96.98%, 32.46% 87.61%, 25.00% 93.30%, 26.20% 83.99%, 17.86% 88.30%, 20.66% 79.34%, 11.70% 82.14%, 16.01% 73.80%, 6.70% 75.00%, 12.39% 67.54%, 3.02% 67.10%, 9.91% 60.74%, 0.76% 58.68%, 8.66% 53.62%, 0.00% 50.00%, 8.66% 46.38%, 0.76% 41.32%, 9.91% 39.26%, 3.02% 32.90%, 12.39% 32.46%, 6.70% 25.00%, 16.01% 26.20%, 11.70% 17.86%, 20.66% 20.66%, 17.86% 11.70%, 26.20% 16.01%, 25.00% 6.70%, 32.46% 12.39%, 32.90% 3.02%, 39.26% 9.91%, 41.32% 0.76%, 46.38% 8.66%)",
-                    }}
-                  >
-                    <span className="flex items-center gap-1 font-sans text-2xl font-black leading-none text-forest-dark sm:text-3xl">
-                      <span className="text-lg sm:text-xl">−</span>
-                      {discountPct}%
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-full border border-caramel/30 bg-white/95 text-primary shadow-[0_14px_28px_-18px_rgba(27,77,50,0.6)] sm:h-28 sm:w-28">
-                  <Car className="h-6 w-6 fill-caramel/15 text-caramel sm:h-7 sm:w-7" strokeWidth={2.2} />
-                  <span className="px-1 text-center font-sans text-[9px] font-black uppercase leading-[1.15] tracking-[0.08em] text-primary sm:text-[10px]">
-                    Pengantaran Cepat
-                  </span>
-                </div>
-
-                <div className="inline-flex translate-x-4 items-center gap-1.5 rounded-full bg-white/95 px-4 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.12em] text-primary shadow-[0_14px_28px_-18px_rgba(27,77,50,0.5)] sm:text-[11px]">
-                  <ShieldCheck className="h-3.5 w-3.5 text-caramel" strokeWidth={2.2} />
-                  Kualitas Terjamin
-                </div>
-              </div>
-
-              <div className="absolute bottom-3 right-3 z-30 flex items-center gap-3 sm:bottom-4 sm:right-9">
-                <button
-                  type="button"
-                  aria-label="Makanan sebelumnya"
-                  onClick={() => {
-                    setAutoRotate(false);
-                    wheelApi.current?.prev();
-                  }}
-                  className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/10 bg-white text-forest shadow-[0_8px_18px_-10px_rgba(27,77,50,0.6)] transition-all duration-200 hover:bg-primary hover:text-white active:scale-95 sm:h-14 sm:w-14"
-                >
-                  <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
-                </button>
-
-                <div className="flex items-center gap-1 rounded-full border border-primary/10 bg-white/90 px-3.5 py-2 font-sans text-sm font-bold tabular-nums text-forest shadow-[0_8px_18px_-10px_rgba(27,77,50,0.5)]">
-                  <span className="text-forest">{displayFoods.length > 0 ? safeIndex + 1 : 0}</span>
-                  <span className="text-forest/50">/</span>
-                  <span className="text-forest/60">{displayFoods.length}</span>
-                </div>
-
-                <button
-                  type="button"
-                  aria-label="Makanan berikutnya"
-                  onClick={() => {
-                    setAutoRotate(false);
-                    wheelApi.current?.next();
-                  }}
-                  className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/10 bg-white text-forest shadow-[0_8px_18px_-10px_rgba(27,77,50,0.6)] transition-all duration-200 hover:bg-primary hover:text-white active:scale-95 sm:h-14 sm:w-14"
-                >
-                  <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
-                </button>
-              </div>
-
-              <div className="relative mx-auto w-full max-w-[15rem] sm:max-w-[30rem] lg:mr-[-2rem] lg:max-w-[42rem]">
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute -inset-y-2 left-0 right-0 z-0 rounded-l-full border-2 border-white bg-green-700 shadow-[0_44px_80px_-42px_rgba(63,107,74,0.75)] ring-1 ring-inset ring-caramel/30"
-                />
-                <div className="relative overflow-hidden rounded-l-full" style={{ height: plateSize + 10 }}>
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-y-0 left-0 w-1/2 rounded-l-full bg-[radial-gradient(130%_180%_at_12%_30%,rgba(255,253,248,0.18),transparent_55%)]"
-                  />
-                  <LeafSprig className="left-7 top-1/2 h-12 w-12 -translate-y-1/2 rotate-12 text-white/30" />
-
-                  <div className="absolute inset-0">
-                    <OptionWheel
-                      items={displayFoods.map((f) => f.name)}
-                      defaultSelected={0}
-                      side="right"
-                      orientation="vertical"
-                      spacing={0.45}
-                      curve={18}
-                      tilt={6}
-                      blur={4}
-                      fade={1}
-                      minOpacity={0}
-                      smoothing={200}
-                      loop
-                      draggable
-                      autoRotate={autoRotate}
-                      autoRotateInterval={4200}
-                      plateSize={plateSize}
-                      onChange={(index) => setFoodIndex(index)}
-                      apiRef={wheelApi}
-                      className="!py-0 -translate-x-[9%] sm:-translate-x-[18%] lg:-translate-x-[20%]"
-                      renderItem={(i) => <FoodPlate image={displayFoods[i].image} />}
-                    />
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-green-700 to-transparent"
-                    />
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-green-700 to-transparent"
-                    />
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b from-green-700 to-transparent"
-                    />
-                  </div>
-
-                  <div
-                    aria-hidden
-                    className="absolute right-7 top-1/2 z-20 hidden -translate-y-1/2 flex-col items-center gap-3 lg:flex"
-                  >
-                    <span className="h-9 w-px bg-caramel/60" />
-                    <span className="[writing-mode:vertical-rl] font-display text-xs font-semibold uppercase tracking-[0.48em] text-white">
-                      ReBites
-                    </span>
-                    <span className="h-9 w-px bg-caramel/60" />
-                  </div>
-                </div>
-              </div>
-            </Reveal>
           </div>
         </div>
       </div>

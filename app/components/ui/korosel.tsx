@@ -389,7 +389,7 @@ const OptionWheel = ({
           aria-selected={selectedIndex === index}
           className={
             cfgRef.current.plateMode
-              ? 'absolute left-1/2 top-1/2 cursor-pointer will-change-[transform,opacity,filter]'
+              ? `absolute left-1/2 top-1/2 cursor-pointer will-change-[transform,opacity,filter] ${selectedIndex === index ? 'font-bold text-white' : 'font-light text-white/40'}`
               : `absolute top-1/2 cursor-pointer whitespace-nowrap leading-none will-change-[transform,opacity,filter] [font-size:var(--ow-font-size)] [color:color-mix(in_srgb,var(--ow-active-color)_calc(var(--ow-p,0)*100%),var(--ow-text-color))] ${
                   cfgRef.current.orientation === 'horizontal'
                     ? 'left-0 w-max'
