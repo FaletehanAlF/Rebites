@@ -249,18 +249,6 @@ export function HeroFoodCarousel() {
     if (!value) setAutoRotate(true);
   };
 
-  useEffect(() => {
-    const handleHeroSearch = (event: Event) => {
-      const detail = (event as CustomEvent<string>).detail ?? "";
-      setSearchQuery(detail);
-      if (detail) setAutoRotate(false);
-    };
-
-    window.addEventListener("rebites:hero-search", handleHeroSearch);
-    return () =>
-      window.removeEventListener("rebites:hero-search", handleHeroSearch);
-  }, []);
-
   return (
     <section
       id="rekomendasi"
