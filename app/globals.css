@@ -102,9 +102,6 @@ html.lenis body {
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
 
 ::-webkit-scrollbar {
   width: 10px;
