@@ -89,10 +89,12 @@ export async function createXenditInvoice(
       (json as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message ??
       (json as { error_code?: string })?.error_code ??
       `Xendit error ${res.status}`;
+    // Production-safe: jangan log body (berisi payer_email/PII) —
+    // cukup external_id + status + pesan.
     console.error('[xendit] create invoice failed', {
       status: res.status,
-      body,
-      response: json,
+      external_id: params.externalId,
+      message: msg,
     });
     throw new Error(msg);
   }

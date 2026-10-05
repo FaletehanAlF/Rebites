@@ -280,14 +280,18 @@ function UrgentCard({
         <p className="mt-0.5 line-clamp-1 font-sans text-[13px] text-charcoal-500">{item.vendorName}</p>
 
         <div className="mt-2 flex items-center gap-3 text-xs text-charcoal-500">
-          <span className="flex items-center gap-1 font-medium text-charcoal-900">
-            <Star className="h-3.5 w-3.5 fill-caramel text-caramel" />
-            {item.rating.toFixed(1)}
-          </span>
-          <span className="flex items-center gap-1">
-            <MapPin className="h-3.5 w-3.5 text-sage-500" />
-            {item.distanceKm} km
-          </span>
+          {item.rating != null && (
+            <span className="flex items-center gap-1 font-medium text-charcoal-900">
+              <Star className="h-3.5 w-3.5 fill-caramel text-caramel" />
+              {item.rating.toFixed(1)}
+            </span>
+          )}
+          {item.distanceKm != null && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5 text-sage-500" />
+              {item.distanceKm} km
+            </span>
+          )}
         </div>
 
         {isActive &&

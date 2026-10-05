@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Check, Clock, LayoutDashboard, Store, XCircle } from 'lucide-react';
 import { getSubscriptionPlan, computePeriodEnd, type BillingCycle } from '@/lib/subscription-plans';
 import { supabase } from '@/lib/supabase';
+import { fetchWithAuth, getValidAuthHeader } from '@/lib/auth-token';
 
 const METHOD_NAMES: Record<string, string> = {
   qris: 'QRIS',
@@ -83,32 +84,29 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
 
     const check = async () => {
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
-        if (token) {
-          const res = await fetch('/api/subscriptions/xendit/verify', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ externalId }),
-          });
-          if (res.ok && !cancelled) {
-            const json = (await res.json()) as { status?: string };
-            if (json.status === 'active') {
-              setStatus('active');
-              if (interval) clearInterval(interval);
-              return;
-            }
-            if (json.status === 'expired') {
-              setStatus('failed');
-              if (interval) clearInterval(interval);
-              return;
-            }
-            setStatus('pending');
+        const authHeader = await getValidAuthHeader();
+        const res = await fetchWithAuth('/api/subscriptions/xendit/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: authHeader,
+          },
+          body: JSON.stringify({ externalId }),
+        });
+        if (res.ok && !cancelled) {
+          const json = (await res.json()) as { status?: string };
+          if (json.status === 'active') {
+            setStatus('active');
+            if (interval) clearInterval(interval);
             return;
           }
+          if (json.status === 'expired') {
+            setStatus('failed');
+            if (interval) clearInterval(interval);
+            return;
+          }
+          setStatus('pending');
+          return;
         }
       } catch {
       }

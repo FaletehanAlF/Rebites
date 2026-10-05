@@ -170,9 +170,11 @@ const FOODS: FeaturedFood[] = [
 type PlateFood = FeaturedFood & { id?: string };
 
 function foodItemToPlate(food: FoodItem): PlateFood {
+  // Skor heuristik internal (tidak ditampilkan). Nilai null diperlakukan
+  // sebagai 0 agar tidak menghasilkan NaN; reviewCount punya floor 40.
   const reviewCount = Math.max(
     40,
-    Math.round(food.rating * 42 + (food.distanceKm || 1) * 7),
+    Math.round((food.rating ?? 0) * 42 + (food.distanceKm ?? 0) * 7),
   );
   return {
     id: food.id,
@@ -184,7 +186,9 @@ function foodItemToPlate(food: FoodItem): PlateFood {
     price: food.discountedPrice,
     originalPrice: food.originalPrice,
     badge: "Best Seller",
-    rating: food.rating,
+    // Piring dekoratif tidak merender angka rating; fallback hanya untuk
+    // kepuasan tipe (products.rating NOT NULL di DB sehingga tak terjangkau).
+    rating: food.rating ?? 0,
     reviewCount,
     stockLabel: food.stockLabel,
     description: `${food.name} dari ${food.vendorName}, menu berkualitas dengan harga yang terjangkau.`,

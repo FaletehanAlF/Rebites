@@ -5,6 +5,50 @@ import { supabase } from './supabase';
 
 export const DEMO_USER_ID = 'demo-user';
 
+export type UserRole = 'admin' | 'umkm' | 'buyer';
+
+const ROLE_HOME_PATH: Record<UserRole, string> = {
+  admin: '/dashboard/admin',
+  umkm: '/dashboard/penjual',
+  buyer: '/home',
+};
+
+export function getHomePathForRole(role: UserRole | null | undefined): string {
+  if (role && ROLE_HOME_PATH[role]) return ROLE_HOME_PATH[role];
+  return '/home';
+}
+
+export function isSafeRedirectPath(path: string | null | undefined): path is string {
+  if (!path) return false;
+  return path.startsWith('/') && !path.startsWith('//');
+}
+
+export async function fetchCurrentUserRole(
+  userId?: string | null
+): Promise<UserRole | null> {
+  try {
+    let uid = userId ?? null;
+    if (!uid) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      uid = session?.user?.id ?? null;
+    }
+    if (!uid) return null;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', uid)
+      .maybeSingle();
+    if (error || !data) return null;
+    const role = (data as { role?: unknown }).role;
+    if (role === 'admin' || role === 'umkm' || role === 'buyer') return role;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export interface CurrentUser {
   id: string;
   fullName: string;

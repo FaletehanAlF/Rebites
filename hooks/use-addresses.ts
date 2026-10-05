@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { fetchWithAuth } from '@/lib/auth-token';
 import { useCurrentUser } from '@/lib/current-user';
 import type { AddressLabel, DeliveryAddress } from '@/lib/types';
 
@@ -14,6 +15,12 @@ export interface AddressFormValues {
   district: string;
   fullAddress: string;
   note?: string;
+  /** 7B-1: kode pos 5 digit, opsional (NULL untuk legacy). */
+  postalCode?: string | null;
+  /** 7B-1: selalu NULL dari form (tanpa map-picker). */
+  latitude?: number | null;
+  /** 7B-1: selalu NULL dari form (tanpa map-picker). */
+  longitude?: number | null;
 }
 
 type AddressRow = Record<string, any>;
@@ -29,6 +36,10 @@ function rowToAddress(row: AddressRow): DeliveryAddress {
     district: row.district ?? '',
     fullAddress: row.full_address ?? '',
     note: row.note ?? undefined,
+    // Backward compat: order/alamat lama tanpa kolom baru -> null.
+    postalCode: row.postal_code ?? null,
+    latitude: row.latitude ?? null,
+    longitude: row.longitude ?? null,
   };
 }
 
@@ -42,16 +53,11 @@ function valuesToRow(values: AddressFormValues): AddressRow {
     district: values.district,
     full_address: values.fullAddress,
     note: values.note ?? null,
+    // 7B-1: postal opsional ("" -> NULL di API), lat/lng dari form selalu NULL.
+    postal_code: values.postalCode?.trim() ? values.postalCode.trim() : null,
+    latitude: values.latitude ?? null,
+    longitude: values.longitude ?? null,
   };
-}
-
-/** Header auth Bearer untuk memanggil API backend profile. */
-async function getAuthHeaders(): Promise<Record<string, string> | null> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session?.access_token) return null;
-  return { Authorization: `Bearer ${session.access_token}` };
 }
 
 export function useAddresses() {
@@ -75,16 +81,14 @@ export function useAddresses() {
       setLoading(true);
       let list: DeliveryAddress[] = [];
       try {
-        const headers = await getAuthHeaders();
-        if (headers) {
-          const res = await fetch('/api/profile/addresses', { headers });
-          if (res.ok) {
-            const json = (await res.json()) as { addresses?: AddressRow[] };
-            list = (json.addresses ?? []).map(rowToAddress);
-          }
+        // fetchWithAuth: token fresh + retry 1x setelah force-refresh bila 401.
+        const res = await fetchWithAuth('/api/profile/addresses');
+        if (res.ok) {
+          const json = (await res.json()) as { addresses?: AddressRow[] };
+          list = (json.addresses ?? []).map(rowToAddress);
         }
       } catch {
-        // fallback di bawah
+        // fallback di bawah (mis. tidak ada session sama sekali)
       }
       if (list.length === 0) {
         // Fallback: baca langsung dari tabel via RLS
@@ -115,11 +119,9 @@ export function useAddresses() {
       if (!userId) return;
       (async () => {
         try {
-          const headers = await getAuthHeaders();
-          if (!headers) return;
-          await fetch('/api/profile/addresses', {
+          await fetchWithAuth('/api/profile/addresses', {
             method: 'PUT',
-            headers: { ...headers, 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, is_selected: true }),
           });
         } catch {
@@ -134,11 +136,9 @@ export function useAddresses() {
     async (values: AddressFormValues): Promise<DeliveryAddress | null> => {
       if (!userId) return null;
       try {
-        const headers = await getAuthHeaders();
-        if (!headers) return null;
-        const res = await fetch('/api/profile/addresses', {
+        const res = await fetchWithAuth('/api/profile/addresses', {
           method: 'POST',
-          headers: { ...headers, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(valuesToRow(values)),
         });
         if (!res.ok) {
@@ -164,11 +164,9 @@ export function useAddresses() {
     async (id: string, values: AddressFormValues): Promise<void> => {
       if (!userId) return;
       try {
-        const headers = await getAuthHeaders();
-        if (!headers) return;
-        const res = await fetch('/api/profile/addresses', {
+        const res = await fetchWithAuth('/api/profile/addresses', {
           method: 'PUT',
-          headers: { ...headers, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, ...valuesToRow(values) }),
         });
         if (!res.ok) {

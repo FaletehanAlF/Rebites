@@ -14,6 +14,11 @@ export interface PricingInput {
   promoPercentOff?: number; 
   useCoins: boolean;
   coinBalance: number;
+  /**
+   * 7C-2C: ongkir ter-validasi server (mis. rate Biteship) untuk delivery.
+   * Bila diisi, dipakai sebagai ganti DELIVERY_FEE. Pickup tetap 0.
+   */
+  deliveryFeeOverride?: number;
 }
 
 export interface PricingResult {
@@ -35,7 +40,10 @@ export function calculatePricing(input: PricingInput): PricingResult {
   // 12% dari nilai kena pajak (subtotal setelah diskon). Dibulatkan ke integer agar aman untuk kolom service_fee INT.
   const taxable = Math.max(0, subtotal - discount);
   const serviceFee = Math.round(taxable * ADMIN_FEE_RATE);
-  const deliveryFee = input.fulfillment === 'delivery' ? DELIVERY_FEE : 0;
+  // 7C-2C: delivery memakai override ter-validasi bila ada; fallback flat
+  // DELIVERY_FEE hanya bila override tidak diberikan. Pickup selalu 0.
+  const deliveryFee =
+    input.fulfillment === 'delivery' ? (input.deliveryFeeOverride ?? DELIVERY_FEE) : 0;
   const totalBeforeCoin = Math.max(
     0,
     subtotal - discount + serviceFee + deliveryFee

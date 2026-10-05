@@ -13,6 +13,7 @@ import { HeroSection } from "@/app/components/hero-section";
 import { HeroFoodCarousel } from "@/app/components/hero-food-carousel";
 import { SmartImage } from "@/app/components/SmartImage";
 import { SubscriptionSection } from "@/app/components/subscription/subscription-section";
+import { ArticlesSection } from "@/app/components/landing/articles-section";
 import { FaqSection } from "@/app/components/faq-section";
 import { FlashSaleGrid } from "@/app/components/flash-sale-grid";
 import {
@@ -378,6 +379,8 @@ export default function Home() {
       <HowItWorks />
 
       <SubscriptionSection />
+
+      <ArticlesSection />
 
 <section
         id="testimoni"

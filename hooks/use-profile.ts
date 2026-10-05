@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { fetchWithAuth, getValidAuthHeader } from '@/lib/auth-token';
 
 export const PROFILE_UPDATED_EVENT = 'rebites-profile-updated';
 
@@ -55,12 +56,10 @@ export function useProfile() {
         let avatarUrl: string | null = null;
         let fullNameFromDb: string | null = null;
         try {
-          const token = session?.access_token;
           let ok = false;
-          if (token) {
-            const res = await fetch('/api/profile', {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+          try {
+            // Token fresh + retry 1x bila 401 (tanpa logout paksa).
+            const res = await fetchWithAuth('/api/profile');
             if (res.ok) {
               const json = (await res.json()) as {
                 profile?: { full_name: string | null; avatar_url: string | null };
@@ -69,6 +68,8 @@ export function useProfile() {
               fullNameFromDb = json.profile?.full_name ?? null;
               ok = true;
             }
+          } catch {
+            // AuthError (tidak ada session) -> lanjut ke fallback RLS di bawah.
           }
           if (!ok) {
             // Fallback: baca langsung dari tabel profiles via RLS
@@ -141,6 +142,12 @@ export async function uploadAvatar(file: File): Promise<{ publicUrl: string | nu
   if (!session?.user.id) {
     return { publicUrl: null, error: 'Sesi tidak ditemukan, silakan login ulang.' };
   }
+  let authHeader: string;
+  try {
+    authHeader = await getValidAuthHeader();
+  } catch {
+    return { publicUrl: null, error: 'Sesi tidak ditemukan, silakan login ulang.' };
+  }
 
   const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   if (!allowed.includes(file.type)) {
@@ -156,9 +163,9 @@ export async function uploadAvatar(file: File): Promise<{ publicUrl: string | nu
   try {
     const form = new FormData();
     form.append('file', file);
-    const res = await fetch('/api/profile/avatar', {
+    const res = await fetchWithAuth('/api/profile/avatar', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: { Authorization: authHeader },
       body: form,
     });
     const json = (await res.json().catch(() => null)) as {
@@ -185,19 +192,19 @@ export async function uploadAvatar(file: File): Promise<{ publicUrl: string | nu
 
 /** Simpan nama profil via backend API (PATCH /api/profile). */
 export async function updateProfileName(fullName: string): Promise<{ error: string | null }> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session?.access_token) {
+  let authHeader: string;
+  try {
+    authHeader = await getValidAuthHeader();
+  } catch {
     return { error: 'Sesi tidak ditemukan, silakan login ulang.' };
   }
 
   try {
-    const res = await fetch('/api/profile', {
+    const res = await fetchWithAuth('/api/profile', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
+        Authorization: authHeader,
       },
       body: JSON.stringify({ fullName }),
     });

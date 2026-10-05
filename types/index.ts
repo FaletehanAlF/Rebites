@@ -28,6 +28,7 @@ export interface Profile {
   phone: string | null;
   avatar_url: string | null;
   is_verified: boolean;
+  account_status: AccountStatus;
   created_at: string;
 }
 
@@ -109,4 +110,89 @@ export interface OrderWithDetails extends Order {
 
 export interface ProductWithUMKM extends Product {
   umkm: Pick<UMKMProfile, 'id' | 'business_name' | 'city' | 'rating'>;
+}
+
+// ---------------------------------------------------------------------------
+// Admin Monitoring foundation (migration 0025, database saja, tanpa UI).
+// Cerminan tipe untuk tabel: activity_logs, reports, warnings, sanctions,
+// admin_audit_logs, dan profiles.account_status.
+// ---------------------------------------------------------------------------
+
+export type AccountStatus = 'active' | 'suspended' | 'banned';
+
+export type ActivityType =
+  | 'login'
+  | 'register'
+  | 'product_created'
+  | 'product_updated'
+  | 'product_deleted'
+  | 'order_created'
+  | 'order_cancelled'
+  | 'store_updated'
+  | 'subscription_changed'
+  | 'report_received'
+  | 'warning_received';
+
+export interface ActivityLog {
+  id: string;
+  user_id: string | null;
+  activity_type: ActivityType;
+  description: string;
+  target_type: string | null;
+  target_id: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export type ReportStatus = 'open' | 'reviewing' | 'resolved' | 'dismissed';
+
+export interface UserReport {
+  id: string;
+  reported_user_id: string | null;
+  reported_by: string | null;
+  activity_id: string | null;
+  category: string;
+  description: string;
+  status: ReportStatus;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+export type WarningLevel = 1 | 2 | 3;
+
+export interface UserWarning {
+  id: string;
+  user_id: string | null;
+  report_id: string | null;
+  issued_by: string | null;
+  warning_level: WarningLevel;
+  category: string;
+  reason: string;
+  created_at: string;
+}
+
+export type SanctionType = 'suspend' | 'ban' | 'delete';
+
+export interface UserSanction {
+  id: string;
+  user_id: string | null;
+  warning_id: string | null;
+  issued_by: string | null;
+  sanction_type: SanctionType;
+  reason: string;
+  start_at: string;
+  end_at: string | null;
+  created_at: string;
+}
+
+export interface AdminAuditLog {
+  id: string;
+  admin_id: string | null;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  reason: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
 }

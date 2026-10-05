@@ -14,6 +14,7 @@ import { QuantityStepperCard } from "./quantity-stepper-card";
 import { FulfillmentToggle } from "./fulfillment-toggle";
 import { PickupInfoCard } from "./pickup-info-row";
 import { DeliveryAddressSection } from "./delivery-address-section";
+import { ShippingOptionSection } from "./shipping-option-section";
 import { PaymentSummaryCard } from "./payment-summary-card";
 import { StickyMobileBar } from "./sticky-mobile-bar";
 import { CheckoutSuccessDialog } from "./checkout-success-dialog";
@@ -34,6 +35,14 @@ function buildOrderDraft(product: ProductDetail): OrderDraft {
     discountedPrice: product.discountedPrice,
     stockRemaining: product.stockRemaining,
     distanceKm: product.distanceKm,
+    // 7B-2B: kapabilitas fulfillment untuk gating UI (server validasi ulang).
+    isDelivery: product.isDelivery ?? true,
+    isPickup: product.isPickup ?? true,
+    // 7B-2D-1: package dari ProductDetail (NULL = belum diketahui).
+    weightGram: product.weightGram ?? null,
+    lengthCm: product.lengthCm ?? null,
+    widthCm: product.widthCm ?? null,
+    heightCm: product.heightCm ?? null,
     pickupTime: product.pickupTime,
     pickupLocation: product.pickupLocation,
     reservedUntil: new Date(
@@ -84,6 +93,7 @@ function CheckoutContent({
 
               <PickupInfoCard />
               <DeliveryAddressSection />
+              <ShippingOptionSection />
             </div>
 
             {}

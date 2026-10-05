@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/server/supabase';
 import { settleOrderPaid } from '@/lib/server/order-settlement';
 import { activateSubscriptionPaid } from '@/lib/server/subscription-activation';
+import { createBiteshipShipment } from '@/lib/server/biteship-shipment';
 
 export const runtime = 'nodejs';
 
@@ -24,6 +25,31 @@ interface XenditCallback {
   payment_channel?: string;
   payment_destination?: string;
   payer_email?: string;
+}
+
+/**
+ * 7C-3C-3: attempt shipment Biteship pasca-payment (delivery only).
+ * Terisolasi penuh: exception TIDAK BOLEH mengubah hasil settlement
+ * (payment tetap paid, webhook tetap sukses). Pickup dilewati tanpa call.
+ * Idempoten via guard internal createBiteshipShipment (already/recovered).
+ */
+async function maybeCreateShipment(orderCode: string, deliveryOption: unknown): Promise<void> {
+  if (deliveryOption !== 'delivery') return;
+  try {
+    const result = await createBiteshipShipment(orderCode);
+    if (!result.ok) {
+      // shipment_error sudah disimpan service; log ringkas tanpa data sensitif.
+      console.warn('[webhook/xendit] shipment gagal', { orderCode, reason: result.reason });
+    } else {
+      console.log('[webhook/xendit] shipment', { orderCode, status: result.status });
+    }
+  } catch (err) {
+    // Isolasi: kegagalan tak terduga tidak boleh menggagalkan webhook payment.
+    console.error(
+      '[webhook/xendit] shipment exception',
+      err instanceof Error ? err.message : 'unknown'
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -62,7 +88,7 @@ export async function POST(req: NextRequest) {
     
     const { data: order } = await service
       .from('orders')
-      .select('order_code, payment_status, product_slug, quantity, coin_used, coin_earned, buyer_id, vendor_name, product_name, total_price')
+      .select('order_code, payment_status, product_slug, quantity, coin_used, coin_earned, buyer_id, vendor_name, product_name, total_price, delivery_option')
       .eq('order_code', externalId)
       .maybeSingle();
 
@@ -75,13 +101,32 @@ export async function POST(req: NextRequest) {
     const currentPayment = row.payment_status as string;
 
     if (normalizedStatus === 'PAID' || normalizedStatus === 'SETTLED') {
+      // Fail-closed: nominal webhook harus sama dengan total order.
+      // Tanpa ini invoice salah nominal bisa menandai order lunas.
+      const paidAmount =
+        payload.paid_amount != null
+          ? Number(payload.paid_amount)
+          : payload.amount != null
+            ? Number(payload.amount)
+            : null;
+      if (paidAmount == null || !Number.isFinite(paidAmount)) {
+        console.warn('[webhook/xendit] missing amount', externalId);
+        return NextResponse.json({ error: 'Missing amount' }, { status: 400 });
+      }
       const result = await settleOrderPaid(
         service,
         externalId,
         invoiceId,
-        payload.payment_channel ?? payload.payment_method ?? null
+        payload.payment_channel ?? payload.payment_method ?? null,
+        paidAmount
       );
+      if (result.reason === 'amount_mismatch') {
+        return NextResponse.json({ error: 'Amount mismatch' }, { status: 422 });
+      }
       if (result.reason === 'already_paid') {
+        // 7C-3C-3 recovery: payment sudah paid, shipment mungkin belum pernah
+        // dibuat (mis. gagal sebelumnya). Guard internal mencegah duplikat.
+        await maybeCreateShipment(externalId, row.delivery_option);
         return NextResponse.json({ received: true, already: 'paid' });
       }
       if (result.reason === 'not_found') {
@@ -90,6 +135,9 @@ export async function POST(req: NextRequest) {
       if (result.reason === 'update_failed') {
         return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
       }
+      // 7C-3C-3: settlement fresh sukses → attempt shipment (delivery only).
+      // Gagal shipment tidak mengubah payment paid / respons webhook.
+      await maybeCreateShipment(externalId, row.delivery_option);
     } else if (normalizedStatus === 'EXPIRED') {
       if (currentPayment === 'paid') {
         return NextResponse.json({ received: true, already: 'paid' });

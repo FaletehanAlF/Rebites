@@ -6,11 +6,22 @@ const UUID_RE =
 const DEFAULT_VENDOR_AVATAR =
   'https://images.pexels.com/photos/37193132/pexels-photo-37193132.jpeg?auto=compress&cs=tinysrgb&w=800';
 
+/**
+ * 7B-2D-1: mapping berat/dimensi dari DB. NULL = belum diketahui
+ * (produk legacy / seller belum mengisi). Tanpa default/fallback.
+ */
+function toPackageInt(value: unknown): number | null {
+  if (value == null) return null;
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  const int = Math.floor(num);
+  return int >= 1 ? int : null;
+}
+
 function rowToProductDetail(row: Record<string, any>): ProductDetail {
   const umkm = (row.umkm ?? {}) as Record<string, any>;
   const slug: string = row.slug ?? row.id;
-  const name: string = row.name ?? 'Produk Surplus';
-  const stock: number = row.stock ?? 0;
+  const name: string = row.name ?? 'Produk Surplus';  const stock: number = row.stock ?? 0;
   const soldCount = Number(row.sold_count ?? 0);
   const porsiTerselamatkan = Number(umkm.porsi_terselamatkan ?? 0);
   const co2eTotal = Number(umkm.co2e_saved_kg ?? 0);
@@ -34,7 +45,18 @@ function rowToProductDetail(row: Record<string, any>): ProductDetail {
     stockRemaining: stock,
     rating: Number(row.rating ?? 5),
     reviewCount: soldCount > 0 ? soldCount : 32,
-    distanceKm: Number(row.distance_km ?? 1),
+    // 7B-1: NULL = belum diketahui. Jangan fallback 1 km (bukan kebenaran shipping).
+    distanceKm: row.distance_km != null && Number.isFinite(Number(row.distance_km))
+      ? Number(row.distance_km)
+      : null,
+    // 7B-2B: kapabilitas fulfillment (DB NOT NULL DEFAULT true).
+    isDelivery: row.is_delivery ?? true,
+    isPickup: row.is_pickup ?? true,
+    // 7B-2D-1: package dari DB (select * sudah mencakup kolom shipping).
+    weightGram: toPackageInt(row.weight_gram),
+    lengthCm: toPackageInt(row.length_cm),
+    widthCm: toPackageInt(row.width_cm),
+    heightCm: toPackageInt(row.height_cm),
     originalPrice: row.original_price ?? 0,
     discountedPrice: row.surplus_price ?? 0,
     description: row.description?.trim()
@@ -60,10 +82,12 @@ export async function fetchProductDetail(
   id: string
 ): Promise<ProductDetail | undefined> {
   try {
+    // Hanya produk terverifikasi yang boleh dibuka publik (pending/rejected = not-found).
     let { data } = await supabase
       .from('products')
       .select('*, umkm:umkm_profiles(*)')
       .eq('slug', id)
+      .eq('verification_status', 'approved')
       .maybeSingle();
 
     if (!data && UUID_RE.test(id)) {
@@ -71,6 +95,7 @@ export async function fetchProductDetail(
         .from('products')
         .select('*, umkm:umkm_profiles(*)')
         .eq('id', id)
+        .eq('verification_status', 'approved')
         .maybeSingle());
     }
 
@@ -95,6 +120,7 @@ export async function fetchRelatedProducts(
       )
       .eq('category', category)
       .neq('slug', excludeSlug)
+      .eq('verification_status', 'approved')
       .order('rating', { ascending: false })
       .limit(5);
     if (error || !data) return [];

@@ -112,14 +112,18 @@ export function FoodCard({
         <p className="mt-0.5 line-clamp-1 font-sans text-[11px] text-charcoal-500 sm:text-[13px]">{item.vendorName}</p>
 
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-charcoal-500 sm:mt-2 sm:gap-2 sm:text-xs">
-          <span className="inline-flex items-center gap-1 font-medium text-charcoal-900">
-            <Star className="h-3 w-3 fill-caramel text-caramel sm:h-3.5 sm:w-3.5" />
-            {item.rating.toFixed(1)}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <MapPin className="h-3 w-3 text-sage-500 sm:h-3.5 sm:w-3.5" />
-            {item.distanceKm} km
-          </span>
+          {item.rating != null && (
+            <span className="inline-flex items-center gap-1 font-medium text-charcoal-900">
+              <Star className="h-3 w-3 fill-caramel text-caramel sm:h-3.5 sm:w-3.5" />
+              {item.rating.toFixed(1)}
+            </span>
+          )}
+          {item.distanceKm != null && (
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3 w-3 text-sage-500 sm:h-3.5 sm:w-3.5" />
+              {item.distanceKm} km
+            </span>
+          )}
           <span className="inline-flex items-center gap-1">
             <Clock className="h-3 w-3 text-sage-500 sm:h-3.5 sm:w-3.5" />
             {item.availableFrom} {item.availableTo}

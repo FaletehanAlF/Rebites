@@ -30,6 +30,14 @@ interface OrderCalculationInput {
   useCoins?: boolean;
 
   coinBalance?: number;
+
+  /**
+   * 7C-2D: override ongkir untuk DISPLAY (mis. harga opsi Biteship terpilih).
+   * Delivery memakai nilai ini bila diberikan; bila tidak diberikan, memakai
+   * flat DELIVERY_FEE (behavior lama). Pickup selalu 0. Bukan source of truth
+   * final order (server revalidasi).
+   */
+  deliveryFeeOverride?: number | null;
 }
 
 export function useOrderCalculation({
@@ -39,6 +47,7 @@ export function useOrderCalculation({
   promo,
   useCoins = false,
   coinBalance = 0,
+  deliveryFeeOverride = null,
 }: OrderCalculationInput): CheckoutSummary {
   return useMemo(() => {
     const subtotal = draft.discountedPrice * quantity;
@@ -47,7 +56,10 @@ export function useOrderCalculation({
       : 0;
     const taxable = Math.max(0, subtotal - discount);
     const serviceFee = Math.round(taxable * ADMIN_FEE_RATE);
-    const deliveryFee = fulfillment === 'delivery' ? DELIVERY_FEE : 0;
+    // 7C-2D: delivery memakai override bila diberikan (harga opsi terpilih);
+    // tanpa override = flat lama. Pickup selalu 0.
+    const deliveryFee =
+      fulfillment === 'delivery' ? (deliveryFeeOverride ?? DELIVERY_FEE) : 0;
     const totalBeforeCoin = Math.max(
       0,
       subtotal - discount + serviceFee + deliveryFee,
@@ -79,5 +91,5 @@ export function useOrderCalculation({
       co2eSaved,
       coinEarned,
     };
-  }, [draft, quantity, fulfillment, promo, useCoins, coinBalance]);
+  }, [draft, quantity, fulfillment, promo, useCoins, coinBalance, deliveryFeeOverride]);
 }

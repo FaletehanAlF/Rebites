@@ -30,7 +30,29 @@ const OPTIONS: {
 ];
 
 export function FulfillmentToggle() {
-  const { fulfillment, setFulfillment } = useCheckout();
+  const { draft, fulfillment, setFulfillment } = useCheckout();
+
+  // 7B-2B: hanya tampilkan metode yang didukung kapabilitas produk.
+  // Security boundary tetap di server (checkout menolak fulfillment invalid).
+  const visibleOptions = OPTIONS.filter((option) =>
+    option.value === 'pickup' ? draft.isPickup : draft.isDelivery
+  );
+
+  if (visibleOptions.length === 0) {
+    return (
+      <section
+        aria-label="Metode pengambilan pesanan"
+        className="rounded-2xl border border-sage-100 bg-white p-5 shadow-sm sm:p-6"
+      >
+        <h3 className="font-display text-base font-medium text-charcoal-900">
+          Metode pengambilan
+        </h3>
+        <p className="mt-0.5 text-sm text-sage-500">
+          Produk ini sedang tidak tersedia untuk dipesan.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -45,7 +67,7 @@ export function FulfillmentToggle() {
       </p>
 
       <div role="radiogroup" className="mt-4 grid gap-3 sm:grid-cols-2">
-        {OPTIONS.map((option) => {
+        {visibleOptions.map((option) => {
           const selected = fulfillment === option.value;
           const Icon = option.icon;
           return (

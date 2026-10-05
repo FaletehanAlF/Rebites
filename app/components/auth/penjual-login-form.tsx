@@ -15,6 +15,10 @@ import {
   Lock,
 } from "lucide-react";
 import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/use-seller-status";
+import {
+  fetchCurrentUserRole,
+  getHomePathForRole,
+} from "@/lib/current-user";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -180,7 +184,15 @@ export default function PenjualLoginForm() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event(SELLER_STATUS_UPDATED_EVENT));
       }
-      router.push("/dashboard/penjual");
+      const role = await fetchCurrentUserRole(user.id);
+      // Seller flow dipertahankan: umkm (dan anomali buyer/null yang lolos
+      // cek umkm_profiles) tetap ke dashboard penjual. Hanya admin yang
+      // diarahkan keluar via mapping terpusat.
+      const target =
+        role === "admin"
+          ? getHomePathForRole(role)
+          : getHomePathForRole("umkm");
+      router.push(target);
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       setError(message || "Terjadi kesalahan. Silakan coba lagi.");

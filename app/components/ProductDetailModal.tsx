@@ -279,10 +279,13 @@ export function ProductDetailModal({
                 <Clock className="h-3.5 w-3.5 text-primary" />
                 {product.pickupTime.from}–{product.pickupTime.to}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-cream-100 px-3 py-1.5 text-xs font-medium text-charcoal-500">
-                <MapPin className="h-3.5 w-3.5 text-primary" />
-                {product.distanceKm} km
-              </span>
+              {/* 7B-1: jarak hanya tampil jika angka nyata; NULL disembunyikan. */}
+              {typeof product.distanceKm === 'number' && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-cream-100 px-3 py-1.5 text-xs font-medium text-charcoal-500">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
+                  {product.distanceKm} km
+                </span>
+              )}
               <span className="inline-flex items-center gap-1.5 rounded-full bg-cream-100 px-3 py-1.5 text-xs font-medium text-charcoal-500">
                 <Truck className="h-3.5 w-3.5 text-primary" />
                 Ambil sendiri

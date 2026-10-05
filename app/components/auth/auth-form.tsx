@@ -27,6 +27,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/app/components/ui/dialog";
+import {
+  fetchCurrentUserRole,
+  getHomePathForRole,
+  isSafeRedirectPath,
+} from "@/lib/current-user";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -205,8 +210,14 @@ export default function AuthForm({
               billingParam === "yearly" ? "yearly" : "monthly"
             }`
           : null;
+      const rawRedirect = params.get("redirect");
+      const safeRedirect = isSafeRedirectPath(rawRedirect)
+        ? rawRedirect
+        : null;
+      const role = await fetchCurrentUserRole();
+      const roleHome = role ? getHomePathForRole(role) : redirectTo;
       window.location.href =
-        params.get("redirect") || penjualRegisterTarget || redirectTo;
+        safeRedirect || penjualRegisterTarget || roleHome || redirectTo;
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       if (message.includes("Supabase env")) {

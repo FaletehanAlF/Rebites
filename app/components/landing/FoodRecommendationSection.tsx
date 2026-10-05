@@ -109,10 +109,14 @@ export function FoodRecommendationSection({ onViewDetail }: { onViewDetail?: (id
         );
         break;
       case "terdekat":
-        list.sort((a, b) => a.distanceKm - b.distanceKm);
+        list.sort(
+          (a, b) =>
+            (a.distanceKm ?? Number.MAX_SAFE_INTEGER) -
+            (b.distanceKm ?? Number.MAX_SAFE_INTEGER),
+        );
         break;
       default:
-        list.sort((a, b) => b.rating - a.rating);
+        list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     }
 
     const dailySeed = getDailySeed();

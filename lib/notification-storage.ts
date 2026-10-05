@@ -18,7 +18,9 @@ export type NotificationType =
   | 'subscription_renewed'
   | 'subscription_expiring'
   | 'subscription_changed'
-  | 'subscription_expired';
+  | 'subscription_expired'
+  | 'product_approved'
+  | 'product_rejected';
 
 export interface Notification {
   id: string;

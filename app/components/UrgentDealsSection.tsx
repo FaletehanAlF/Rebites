@@ -68,7 +68,7 @@ export function UrgentDealsSection({
 
   const items = useMemo(
     () =>
-      [...foodItems].sort((a, b) => b.rating - a.rating).slice(0, MAX_ITEMS),
+      [...foodItems].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, MAX_ITEMS),
     [foodItems],
   );
 
