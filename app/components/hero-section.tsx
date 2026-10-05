@@ -56,7 +56,7 @@ export function HeroSection() {
       return;
     }
 
-    const probeY = 112;
+    const probeY = 128;
 
     const update = () => {
       setScrolled(window.scrollY > 32);
@@ -110,7 +110,7 @@ export function HeroSection() {
     if (!el) return;
 
     const lenis = window.__lenis;
-    if (lenis) lenis.scrollTo(el, { offset: -88, duration: 1.1 });
+    if (lenis) lenis.scrollTo(el, { offset: -104, duration: 1.1 });
     else el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -121,7 +121,7 @@ export function HeroSection() {
           <div className="mx-auto w-full">
             <nav
               className={cn(
-                "flex h-16 min-w-fit items-center justify-between px-5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-6 lg:px-8",
+                "flex h-20 min-w-fit items-center justify-between px-5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-6 lg:px-8",
                 scrolled
                   ? cn(
                       "mx-auto w-full max-w-4xl rounded-full border px-6 shadow-[0_20px_44px_-26px_rgba(27,77,50,0.45)] backdrop-blur-xl sm:px-7 xl:max-w-5xl",
@@ -142,9 +142,9 @@ export function HeroSection() {
                 <Image
                   src="/logo.png"
                   alt="ReBites"
-                  width={36}
-                  height={36}
-                  className="h-9 w-9 rounded-full object-cover"
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-full object-cover"
                 />
 
                 <span
@@ -272,7 +272,7 @@ export function HeroSection() {
 
       <section
         id="top"
-        className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-cream px-4 pb-14 pt-24 sm:px-6 lg:px-8 lg:pt-24"
+        className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-cream px-4 pb-14 pt-28 sm:px-6 lg:px-8 lg:pt-28"
       >
         <HeroFoodBackdrop />
 

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, Star, Quote } from "lucide-react";
 import { SmoothScroll } from "@/app/components/smooth-scroll";
@@ -117,6 +117,7 @@ export default function Home() {
   const [testimonialApi, setTestimonialApi] = useState<CarouselApi>();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const testimonialPaused = useRef(false);
+  const handlePreloaderDone = useCallback(() => setLoaded(true), []);
   // Nama mitra diambil langsung dari daftar toko di database.
   const [partners, setPartners] = useState<string[]>([]);
 
@@ -175,7 +176,7 @@ export default function Home() {
 
   return (
     <SmoothScroll>
-      <Preloader onDone={() => setLoaded(true)} />
+      <Preloader onDone={handlePreloaderDone} />
       <div className="flex min-h-screen flex-col">
         <div id="top" className="flex flex-1 flex-col">
           <HeroSection />

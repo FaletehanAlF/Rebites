@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import type { Vendor } from '@/lib/types';
 
-import { isVendorReallyOpen, isOpenNow } from '@/lib/store-status';
+import { isVendorReallyOpen } from '@/lib/store-status';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50';

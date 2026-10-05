@@ -13,7 +13,3 @@ export function isStoreOpen(availableFrom: string, availableTo: string): boolean
 
   return currentTimeInMinutes >= fromTimeInMinutes && currentTimeInMinutes <= toTimeInMinutes;
 }
-
-export function getStoreClosedMessage(availableFrom: string, availableTo: string): string {
-  return `Toko ini sedang tutup. Kembali lagi besok di jam ${availableFrom}–${availableTo} untuk menikmati makanan ini.`;
-}
