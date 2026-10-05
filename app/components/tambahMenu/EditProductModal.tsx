@@ -9,8 +9,9 @@ import {
   uploadProductImage,
   type SellerProduct,
 } from '@/lib/product-storage';
-import { MENU_CATEGORIES } from './types';
+import { MENU_CATEGORIES, parseShippingNumber } from './types';
 import { NumberField } from './NumberField';
+import { ShippingInfoSection } from './ShippingInfoSection';
 import {
   Dialog,
   DialogContent,
@@ -78,6 +79,14 @@ export function EditProductModal({
   const [endTime, setEndTime] = useState('17:00');
   const [allDay, setAllDay] = useState(false);
   const [isSurplusToday, setIsSurplusToday] = useState(true);
+  // 7B-2B: kapabilitas fulfillment (DB NOT NULL, default true untuk legacy).
+  const [isDelivery, setIsDelivery] = useState(true);
+  const [isPickup, setIsPickup] = useState(true);
+  // 7B-2D-1: package opsional sebagai teks mentah ('' = kosong = NULL).
+  const [weightRaw, setWeightRaw] = useState('');
+  const [lengthRaw, setLengthRaw] = useState('');
+  const [widthRaw, setWidthRaw] = useState('');
+  const [heightRaw, setHeightRaw] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -96,6 +105,13 @@ export function EditProductModal({
     setEndTime(product.endTime || '17:00');
     setAllDay(product.allDay ?? false);
     setIsSurplusToday(product.isSurplusToday);
+    setIsDelivery(product.isDelivery ?? true);
+    setIsPickup(product.isPickup ?? true);
+    // 7B-2D-1: produk lama tanpa package (NULL) tampil sebagai kosong.
+    setWeightRaw(product.weightGram != null ? String(product.weightGram) : '');
+    setLengthRaw(product.lengthCm != null ? String(product.lengthCm) : '');
+    setWidthRaw(product.widthCm != null ? String(product.widthCm) : '');
+    setHeightRaw(product.heightCm != null ? String(product.heightCm) : '');
     setShowAdvanced(false);
     setError('');
   }, [open, product]);
@@ -140,6 +156,20 @@ export function EditProductModal({
       setError('Harga normal tidak boleh negatif.');
       return;
     }
+    // 7B-2B: minimal satu metode pengambilan harus aktif.
+    if (!isDelivery && !isPickup) {
+      setError('Pilih minimal satu metode pengambilan: Diantar atau Ambil Sendiri.');
+      return;
+    }
+    // 7B-2D-1: berat/dimensi boleh kosong (NULL); jika diisi harus angka positif.
+    const weightParsed = parseShippingNumber(weightRaw);
+    const lengthParsed = parseShippingNumber(lengthRaw);
+    const widthParsed = parseShippingNumber(widthRaw);
+    const heightParsed = parseShippingNumber(heightRaw);
+    if (!weightParsed.ok || !lengthParsed.ok || !widthParsed.ok || !heightParsed.ok) {
+      setError('Berat dan dimensi harus berupa angka positif. Kosongkan jika belum tahu.');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -178,6 +208,14 @@ export function EditProductModal({
         allDay,
         isSurplusToday,
         discountPercent,
+        // 7B-2B: kapabilitas fulfillment pilihan seller.
+        isDelivery,
+        isPickup,
+        // 7B-2D-1: package opsional (NULL jika kosong, tanpa angka palsu).
+        weightGram: weightParsed.value,
+        lengthCm: lengthParsed.value,
+        widthCm: widthParsed.value,
+        heightCm: heightParsed.value,
       });
 
       if (!updated) {
@@ -304,6 +342,25 @@ export function EditProductModal({
             />
           </div>
 
+          <div className="space-y-3 rounded-xl bg-cream-50 p-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-charcoal-900">
+              Metode Pengambilan
+            </p>
+            <ToggleSwitch
+              checked={isDelivery}
+              onChange={setIsDelivery}
+              label="Diantar ke alamat pembeli"
+            />
+            <ToggleSwitch
+              checked={isPickup}
+              onChange={setIsPickup}
+              label="Ambil sendiri di toko"
+            />
+            <p className="text-[11px] text-sage-500">
+              Minimal satu metode harus aktif.
+            </p>
+          </div>
+
           <div className="rounded-xl bg-cream-50 p-3">
             <button
               type="button"
@@ -375,6 +432,22 @@ export function EditProductModal({
                   onChange={setIsSurplusToday}
                   label="Tandai sebagai surplus hari ini"
                 />
+
+                <div>
+                  <ShippingInfoSection
+                    idPrefix="edit-product"
+                    weightRaw={weightRaw}
+                    lengthRaw={lengthRaw}
+                    widthRaw={widthRaw}
+                    heightRaw={heightRaw}
+                    onWeightChange={setWeightRaw}
+                    onLengthChange={setLengthRaw}
+                    onWidthChange={setWidthRaw}
+                    onHeightChange={setHeightRaw}
+                    isDelivery={isDelivery}
+                    variant="edit"
+                  />
+                </div>
               </div>
             )}
           </div>

@@ -23,6 +23,7 @@ import {
 } from '@/lib/subscription-plans';
 import { saveSubscription } from '@/lib/subscription-storage';
 import { supabase } from '@/lib/supabase';
+import { AuthError, fetchWithAuth, getValidAuthHeader } from '@/lib/auth-token';
 import { useCurrentUser } from '@/lib/current-user';
 import { toast } from '@/hooks/use-toast';
 
@@ -69,21 +70,22 @@ function SubscriptionContent({
     setErrorMessage(null);
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) {
+      let authHeader: string;
+      try {
+        authHeader = await getValidAuthHeader();
+      } catch (err) {
         setProcessing(false);
-        setErrorMessage('Sesi habis, silakan login ulang.');
+        setErrorMessage(
+          err instanceof AuthError ? err.message : 'Sesi habis, silakan login ulang.'
+        );
         router.push('/auth/login');
         return;
       }
-      const res = await fetch('/api/subscriptions/xendit', {
+      const res = await fetchWithAuth('/api/subscriptions/xendit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: authHeader,
         },
         body: JSON.stringify({ planSlug: currentPlan.slug, billing }),
       });

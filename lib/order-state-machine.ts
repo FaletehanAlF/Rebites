@@ -122,7 +122,7 @@ export async function transitionOrderStatus(
     
     const { data: order, error: fetchError } = await supabase
       .from('orders')
-      .select('order_status, order_code, buyer_id, umkm_id, product_name, vendor_name, vendor_slug, delivery_option')
+      .select('order_status, order_code, buyer_id, umkm_id, product_name, vendor_name, vendor_slug, delivery_option, distance_km')
       .eq('order_code', orderId)
       .maybeSingle();
 
@@ -144,14 +144,23 @@ export async function transitionOrderStatus(
     }
 
     if (newStatus === 'out_for_delivery') {
-      const distanceKm = Number((order as Record<string, any>).distance_km ?? 1);
-      const travelMinutes = calculateTravelMinutes(distanceKm);
+      // 7B-2C: gunakan orders.distance_km jika tersedia; NULL = unknown.
+      // Jangan karang 1 km / angka dummy dan jangan hitung ETA dari jarak
+      // yang tidak diketahui. Pickup tidak memakai delivery ETA.
       const deliveryStartedAt = new Date();
-      const estimatedArrivalAt = new Date(deliveryStartedAt.getTime() + travelMinutes * 60_000);
       updatePayload.delivery_started_at = deliveryStartedAt.toISOString();
-      updatePayload.estimated_arrival_at = estimatedArrivalAt.toISOString();
-      updatePayload.delivery_distance_km = distanceKm;
-      updatePayload.estimated_delivery_minutes = travelMinutes;
+      const deliveryOption = (order as Record<string, any>).delivery_option;
+      const rawDistance = (order as Record<string, any>).distance_km;
+      const parsedDistance = rawDistance == null ? NaN : Number(rawDistance);
+      const distanceKm =
+        Number.isFinite(parsedDistance) && parsedDistance >= 0 ? parsedDistance : null;
+      if (deliveryOption !== 'pickup' && distanceKm != null) {
+        const travelMinutes = calculateTravelMinutes(distanceKm);
+        const estimatedArrivalAt = new Date(deliveryStartedAt.getTime() + travelMinutes * 60_000);
+        updatePayload.estimated_arrival_at = estimatedArrivalAt.toISOString();
+        updatePayload.delivery_distance_km = distanceKm;
+        updatePayload.estimated_delivery_minutes = travelMinutes;
+      }
     }
 
     const { error: updateError } = await supabase

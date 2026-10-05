@@ -44,6 +44,7 @@ import type { UrgentSlot } from '@/lib/types';
 import type { SellerProduct } from '@/lib/product-storage';
 import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { Card } from '@/app/components/dashboard-penjual/Card';
+import { Badge } from '@/app/components/ui/badge';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import {
   Dialog,
@@ -729,6 +730,22 @@ function MenuCard({
             {product.name}
           </h3>
           <p className="mt-0.5 text-xs text-sage-500">{product.category}</p>
+          <div className="mt-1.5">
+            {(product.verificationStatus ?? 'pending') === 'approved' ? (
+              <Badge variant="success">Disetujui</Badge>
+            ) : (product.verificationStatus ?? 'pending') === 'rejected' ? (
+              <Badge variant="destructive">Ditolak</Badge>
+            ) : (
+              <Badge variant="warning">Menunggu Verifikasi</Badge>
+            )}
+          </div>
+          {(product.verificationStatus ?? 'pending') === 'rejected' &&
+          product.rejectionReason?.trim() ? (
+            <p className="mt-1.5 rounded-xl bg-red-50 px-3 py-2 text-[11px] leading-relaxed text-red-700">
+              <span className="font-bold">Alasan penolakan: </span>
+              {product.rejectionReason.trim()}
+            </p>
+          ) : null}
         </div>
         <button
           type="button"

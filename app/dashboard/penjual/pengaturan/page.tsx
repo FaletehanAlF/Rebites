@@ -28,6 +28,9 @@ export default function PengaturanTokoPage() {
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
   const [openHours, setOpenHours] = useState("");
+  // 7B-1: origin foundation (opsional, NULL untuk data legacy).
+  const [postalCode, setPostalCode] = useState("");
+  const [storePhone, setStorePhone] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -45,6 +48,8 @@ export default function PengaturanTokoPage() {
       setStoreName(settings?.storeName ?? "");
       setDescription(settings?.description ?? "");
       setAddress(settings?.address ?? "");
+      setPostalCode(settings?.postalCode ?? "");
+      setStorePhone(settings?.phone ?? "");
       setImageUrl(settings?.image ?? "");
       setOpenHours(settings?.openHours ?? "");
       setLoading(false);
@@ -95,6 +100,18 @@ export default function PengaturanTokoPage() {
       setError("Format jam operasional tidak valid. Contoh: 09.00–21.00");
       return;
     }
+    // 7B-1: kode pos opsional; jika diisi harus 5 digit. String kosong = NULL.
+    const postalTrimmed = postalCode.trim();
+    if (postalTrimmed !== '' && !/^[0-9]{5}$/.test(postalTrimmed)) {
+      setError("Kode pos toko harus 5 digit angka (cth. 16424). Kosongkan jika belum tahu.");
+      return;
+    }
+    // 7B-1: telepon toko opsional; jika diisi minimal 9 digit.
+    const phoneTrimmed = storePhone.trim();
+    if (phoneTrimmed !== '' && !/^[0-9+\-\s]{9,16}$/.test(phoneTrimmed)) {
+      setError("Nomor telepon toko tidak valid (9–16 digit). Kosongkan jika belum ada.");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -133,6 +150,9 @@ export default function PengaturanTokoPage() {
         address: address.trim(),
         image: finalImage || undefined,
         openHours: trimmedOpenHours,
+        // 7B-1: kosong -> NULL (legacy aman).
+        postalCode: postalTrimmed === '' ? null : postalTrimmed,
+        phone: phoneTrimmed === '' ? null : phoneTrimmed,
       });
       if (!ok) throw new Error("Gagal menyimpan pengaturan toko.");
 
@@ -142,6 +162,8 @@ export default function PengaturanTokoPage() {
       setStoreName(storeName.trim());
       setDescription(description.trim());
       setAddress(address.trim());
+      setPostalCode(postalTrimmed);
+      setStorePhone(phoneTrimmed);
       setLogoFile(null);
       setLogoPreview(null);
       setMessage("Pengaturan toko tersimpan. Perubahan langsung tampil di beranda & Detail Toko.");
@@ -255,6 +277,50 @@ export default function PengaturanTokoPage() {
                   placeholder="Jl. contoh no. 123"
                   className={inputClass()}
                 />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="settings-postal-code"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-sage-500"
+                >
+                  Kode Pos Toko{" "}
+                  <span className="normal-case text-charcoal-500/60">(opsional)</span>
+                </label>
+                <input
+                  id="settings-postal-code"
+                  type="text"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  placeholder="cth. 16424"
+                  inputMode="numeric"
+                  maxLength={5}
+                  className={inputClass()}
+                />
+                <p className="mt-1 text-[10px] text-charcoal-500/60">
+                  5 digit. Dibutuhkan untuk ongkir ekspedisi nantinya.
+                </p>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="settings-phone"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-sage-500"
+                >
+                  Telepon Toko{" "}
+                  <span className="normal-case text-charcoal-500/60">(opsional)</span>
+                </label>
+                <input
+                  id="settings-phone"
+                  type="tel"
+                  value={storePhone}
+                  onChange={(e) => setStorePhone(e.target.value)}
+                  placeholder="08xxxxxxxxxx"
+                  className={inputClass()}
+                />
+                <p className="mt-1 text-[10px] text-charcoal-500/60">
+                  Untuk kontak kurir pengiriman nantinya.
+                </p>
               </div>
 
               <div>

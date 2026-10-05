@@ -2,7 +2,7 @@
 
 import { supabase } from './supabase';
 import { getSellerUmkm } from './product-storage';
-import type { StoredOrder, FulfillmentMode, DeliveryAddress } from './types';
+import type { StoredOrder, FulfillmentMode, AddressSnapshot, ShippingSnapshot } from './types';
 
 export const ORDERS_UPDATED_EVENT = 'rebites-orders-updated';
 
@@ -32,7 +32,7 @@ export function rowToStoredOrder(row: OrderRow): StoredOrder {
     fulfillment: (row.delivery_option === 'delivery'
       ? 'delivery'
       : 'pickup') as FulfillmentMode,
-    addressSnapshot: (row.address_snapshot ?? null) as Omit<DeliveryAddress, 'id'> | null,
+    addressSnapshot: (row.address_snapshot ?? null) as AddressSnapshot | null,
     paymentMethodId: row.payment_method_id ?? 'tanpa-pembayaran',
     subtotal: row.subtotal ?? 0,
     discount: row.discount ?? 0,
@@ -62,6 +62,20 @@ export function rowToStoredOrder(row: OrderRow): StoredOrder {
     estimatedDeliveryMinutes: row.estimated_delivery_minutes ?? undefined,
     deliveryStartedAt: row.delivery_started_at ?? undefined,
     estimatedArrivalAt: row.estimated_arrival_at ?? undefined,
+    // 7B-2D-5: snapshot imut; order legacy (NULL) tetap terbaca.
+    shippingSnapshot: (row.shipping_snapshot ?? null) as ShippingSnapshot | null,
+    // 7C-1: pilihan kurir; pickup/legacy (NULL) tetap terbaca.
+    courierCode: row.courier_code ?? undefined,
+    courierServiceCode: row.courier_service_code ?? undefined,
+    courierServiceName: row.courier_service_name ?? undefined,
+    shippingRate: row.shipping_rate ?? undefined,
+    // 7C-3C-1: identitas/status shipment; belum-ada-shipment (NULL) tetap terbaca.
+    biteshipOrderId: row.biteship_order_id ?? undefined,
+    biteshipTrackingId: row.biteship_tracking_id ?? undefined,
+    biteshipWaybillId: row.biteship_waybill_id ?? undefined,
+    shipmentStatus: row.shipment_status ?? undefined,
+    shipmentCreatedAt: row.shipment_created_at ?? undefined,
+    shipmentError: row.shipment_error ?? undefined,
     progressStatus: row.progress_status ?? undefined,
   };
 }
@@ -191,6 +205,17 @@ const PATCH_COLUMN_MAP: Record<string, string> = {
   estimatedDeliveryMinutes: 'estimated_delivery_minutes',
   deliveryStartedAt: 'delivery_started_at',
   estimatedArrivalAt: 'estimated_arrival_at',
+  shippingSnapshot: 'shipping_snapshot',
+  courierCode: 'courier_code',
+  courierServiceCode: 'courier_service_code',
+  courierServiceName: 'courier_service_name',
+  shippingRate: 'shipping_rate',
+  biteshipOrderId: 'biteship_order_id',
+  biteshipTrackingId: 'biteship_tracking_id',
+  biteshipWaybillId: 'biteship_waybill_id',
+  shipmentStatus: 'shipment_status',
+  shipmentCreatedAt: 'shipment_created_at',
+  shipmentError: 'shipment_error',
 };
 
 export async function patchOrder(

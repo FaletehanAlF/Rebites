@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import {
+  CheckCircle2,
   CreditCard,
   Gift,
   PackageCheck,
@@ -85,6 +86,16 @@ const ICON_CONFIG: Record<
     color: 'text-blue-600',
   },
   subscription_expired: {
+    icon: XCircle,
+    bg: 'bg-red-50',
+    color: 'text-red-500',
+  },
+  product_approved: {
+    icon: CheckCircle2,
+    bg: 'bg-sage-100',
+    color: 'text-primary',
+  },
+  product_rejected: {
     icon: XCircle,
     bg: 'bg-red-50',
     color: 'text-red-500',

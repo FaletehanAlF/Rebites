@@ -28,6 +28,23 @@ export interface SellerProduct {
     endIso: string;
   } | null;
   createdAt: string;
+  // 7B-2A: data shipping (products.weight_gram/length_cm/width_cm/height_cm).
+  // NULL = belum diketahui (produk legacy). Tanpa default/fallback.
+  weightGram?: number | null;
+  lengthCm?: number | null;
+  widthCm?: number | null;
+  heightCm?: number | null;
+  // Rating produk dari database (products.rating, NOT NULL DEFAULT 5.0).
+  // Null berarti belum ada rating tercatat — UI wajib menyembunyikan,
+  // bukan mengarang angka. Opsional karena produk baru memakai default DB.
+  rating?: number | null;
+  // Status verifikasi admin (read-only dari sisi seller; ditulis DB/trigger).
+  verificationStatus?: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string | null;
+  // 7B-2B: kapabilitas fulfillment (products.is_delivery/is_pickup NOT NULL).
+  // Boolean wajib (bukan opsional): DB selalu punya nilai; legacy -> default true.
+  isDelivery: boolean;
+  isPickup: boolean;
 }
 
 export interface SellerUmkm {
@@ -68,9 +85,24 @@ function rowToSellerProduct(row: ProductRow): SellerProduct {
           }
         : null,
     createdAt: row.created_at ?? new Date().toISOString(),
+    rating: row.rating != null ? Number(row.rating) : null,
+    verificationStatus: row.verification_status ?? 'pending',
+    rejectionReason: row.rejection_reason ?? null,
+    // 7B-2B: DB NOT NULL DEFAULT true -> fallback true untuk baris lama.
+    isDelivery: row.is_delivery ?? true,
+    isPickup: row.is_pickup ?? true,
+    // 7B-2A: kolom shipping baru, NULL untuk produk legacy (backward compat).
+    weightGram: row.weight_gram ?? null,
+    lengthCm: row.length_cm ?? null,
+    widthCm: row.width_cm ?? null,
+    heightCm: row.height_cm ?? null,
   };
 }
 
+// Whitelist kolom yang boleh ditulis seller. Kolom verifikasi
+// (verification_status, rejection_reason, reviewed_at, reviewed_by) SENGAJA
+// tidak pernah dipetakan dari input client; penegakan final ada di DB
+// (RLS products_insert_own + trigger enforce_product_verification_*).
 function sellerProductToRow(product: Partial<SellerProduct>): Record<string, unknown> {
   const payload: Record<string, unknown> = {};
   if (product.name !== undefined) payload.name = product.name;
@@ -89,11 +121,20 @@ function sellerProductToRow(product: Partial<SellerProduct>): Record<string, unk
   if (product.allDay !== undefined) payload.all_day = product.allDay;
   if (product.isSurplusToday !== undefined) payload.is_surplus_today = product.isSurplusToday;
   if (product.featured !== undefined) payload.featured = product.featured;
+  // 7B-2B: kapabilitas fulfillment seller (boolean, bukan opsional di tipe).
+  if (product.isDelivery !== undefined) payload.is_delivery = product.isDelivery;
+  if (product.isPickup !== undefined) payload.is_pickup = product.isPickup;
   if (product.flashSale !== undefined) {
     payload.flash_sale_price = product.flashSale?.price ?? null;
     payload.flash_sale_start = product.flashSale?.startIso ?? null;
     payload.flash_sale_end = product.flashSale?.endIso ?? null;
   }
+  // 7B-2A: kolom shipping (nullable). Tidak ada fallback; NULL = belum diisi.
+  // Belum dipakai form seller/checkout pada tahap ini (hanya mapping).
+  if (product.weightGram !== undefined) payload.weight_gram = product.weightGram;
+  if (product.lengthCm !== undefined) payload.length_cm = product.lengthCm;
+  if (product.widthCm !== undefined) payload.width_cm = product.widthCm;
+  if (product.heightCm !== undefined) payload.height_cm = product.heightCm;
   return payload;
 }
 
@@ -139,8 +180,13 @@ export async function getSellerProducts(): Promise<SellerProduct[]> {
   return (data ?? []).map(rowToSellerProduct);
 }
 
+// Jalur publik (menu toko, katalog) default hanya produk approved agar
+// produk pending/rejected tidak bocor ke publik. Jalur seller/internal
+// (dashboard Menu Saya) memakai { includeAll: true } agar tetap melihat
+// semua produk miliknya termasuk yang pending.
 export async function getStoreProductsBySlug(
-  slug: string
+  slug: string,
+  options?: { onlyApproved?: boolean; includeAll?: boolean }
 ): Promise<{ products: SellerProduct[]; error: string | null }> {
   if (!slug) return { products: [], error: null };
 
@@ -173,11 +219,16 @@ export async function getStoreProductsBySlug(
 
   if (!umkmId) return { products: [], error: null };
 
-  const { data, error } = await supabase
+  let storeQuery = supabase
     .from('products')
     .select('*')
     .eq('umkm_id', umkmId)
     .order('created_at', { ascending: false });
+  const onlyApproved = options?.includeAll ? false : (options?.onlyApproved ?? true);
+  if (onlyApproved) {
+    storeQuery = storeQuery.eq('verification_status', 'approved');
+  }
+  const { data, error } = await storeQuery;
   if (error) {
     console.error('[product-storage] gagal memuat produk toko:', error.message);
     return { products: [], error: STORE_LOAD_ERROR };
@@ -230,10 +281,14 @@ export async function saveSellerProduct(
       return null;
     }
   } catch {}
+  // Produk baru selalu 'pending' (fail-safe). DB juga memaksa via default +
+  // RLS + trigger, jadi nilai ini tidak bisa di-override dari input client
+  // karena sellerProductToRow() tidak memetakan kolom verifikasi.
   const payload = {
     umkm_id: umkm.id,
     slug: generateProductSlug(),
     ...sellerProductToRow({ ...input, flashSale: input.flashSale ?? null }),
+    verification_status: 'pending',
   };
 
   const { data, error } = await supabase

@@ -705,7 +705,7 @@ function FollowedStoresSection() {
             Toko Diikuti
           </h3>
           <p className="mt-0.5 font-inter text-xs text-stone">
-            Toko yang kamu ikuti lewat tombol "Ikuti Toko" di halaman detail
+            Toko yang kamu ikuti lewat tombol &ldquo;Ikuti Toko&rdquo; di halaman detail
             toko.
           </p>
         </div>
@@ -730,7 +730,7 @@ function FollowedStoresSection() {
               Belum ada toko yang diikuti
             </p>
             <p className="mt-1 max-w-sm text-[10px] leading-relaxed text-sage-500">
-              Tekan tombol "Ikuti Toko" pada halaman detail toko favoritmu agar
+              Tekan tombol &ldquo;Ikuti Toko&rdquo; pada halaman detail toko favoritmu agar
               tampil di sini.
             </p>
           </div>
@@ -1299,7 +1299,7 @@ export function UserProfile() {
                   Toko Diikuti
                 </DialogTitle>
                 <DialogDescription className="font-inter text-sm text-stone">
-                  Toko yang kamu ikuti lewat tombol "Ikuti Toko" di halaman
+                  Toko yang kamu ikuti lewat tombol &ldquo;Ikuti Toko&rdquo; di halaman
                   detail toko.
                 </DialogDescription>
               </DialogHeader>

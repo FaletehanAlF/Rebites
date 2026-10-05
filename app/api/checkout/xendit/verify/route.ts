@@ -49,8 +49,12 @@ export async function POST(req: NextRequest) {
         service,
         orderCode,
         invoiceId,
-        invoice.payment_channel ?? invoice.payment_method ?? null
+        invoice.payment_channel ?? invoice.payment_method ?? null,
+        Number(invoice.amount ?? NaN)
       );
+      if (result.reason === 'amount_mismatch') {
+        return NextResponse.json({ error: 'Nominal invoice tidak sesuai pesanan.' }, { status: 409 });
+      }
       if (result.reason === 'update_failed') {
         return NextResponse.json({ error: 'Gagal menandai pesanan lunas.' }, { status: 500 });
       }

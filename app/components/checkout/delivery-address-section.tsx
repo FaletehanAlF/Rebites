@@ -32,6 +32,8 @@ function formatFullAddress(address: DeliveryAddress) {
     address.district,
     address.city,
     address.province,
+    // 7B-1: tampilkan kode pos jika ada; alamat lama tanpa postal tetap tampil.
+    address.postalCode ?? null,
   ]
     .filter(Boolean)
     .join(', ');

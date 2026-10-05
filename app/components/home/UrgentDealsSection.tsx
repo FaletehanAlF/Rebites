@@ -99,7 +99,7 @@ export function UrgentDealsSection({
   }, []);
 
   const items = useMemo(() => {
-    const sorted = [...foodItems].sort((a, b) => b.rating - a.rating);
+    const sorted = [...foodItems].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     const dailySeed = getDailySeed();
     const offset = getDailyOffset(dailySeed, sorted.length, MAX_ITEMS);
     return sorted.slice(offset, offset + MAX_ITEMS);

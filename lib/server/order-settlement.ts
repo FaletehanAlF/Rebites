@@ -2,14 +2,21 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type SettleResult = {
   settled: boolean;
-  reason?: 'not_found' | 'already_paid' | 'update_failed';
+  reason?: 'not_found' | 'already_paid' | 'update_failed' | 'amount_mismatch';
 };
 
 export async function settleOrderPaid(
   service: SupabaseClient,
   externalId: string,
   invoiceId: string,
-  paymentChannel?: string | null
+  paymentChannel?: string | null,
+  /**
+   * Jumlah yang benar-benar dibayar menurut sumber terpercaya
+   * (webhook: paid_amount ?? amount; verify: invoice.amount).
+   * Bila terisi dan tidak sama dengan orders.total_price, settlement
+   * DITOLAK agar invoice salah nominal tidak menandai order lunas.
+   */
+  paidAmount?: number | null
 ): Promise<SettleResult> {
   const { data: order } = await service
     .from('orders')
@@ -24,6 +31,18 @@ export async function settleOrderPaid(
   const row = order as Record<string, unknown>;
   if (row.payment_status === 'paid') {
     return { settled: false, reason: 'already_paid' };
+  }
+
+  if (paidAmount != null && Number.isFinite(paidAmount)) {
+    const expected = Number(row.total_price ?? NaN);
+    if (!Number.isFinite(expected) || Math.round(paidAmount) !== Math.round(expected)) {
+      console.error('[order-settlement] amount mismatch', {
+        orderCode: externalId,
+        expected,
+        paid: paidAmount,
+      });
+      return { settled: false, reason: 'amount_mismatch' };
+    }
   }
 
   const { error: updErr } = await service

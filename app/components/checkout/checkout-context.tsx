@@ -16,6 +16,7 @@ import type {
   OrderDraft,
   PaymentMethod,
   PromoCode,
+  ShippingRateOption,
   StoredOrder,
 } from '@/lib/types';
 import { useOrderCalculation } from '@/lib/useOrderCalculation';
@@ -26,8 +27,9 @@ import {
   type AddressFormValues,
 } from '@/hooks/use-addresses';
 import { validatePromoCode } from '@/lib/catalog';
-import { supabase } from '@/lib/supabase';
+import { AuthError, fetchWithAuth, getValidAuthHeader } from '@/lib/auth-token';
 import { getOrderById } from '@/lib/order-storage';
+import { buildAddressSnapshot } from '@/lib/location-validation';
 import { paymentMethods } from './payment-methods';
 
 interface CheckoutContextValue {
@@ -70,9 +72,26 @@ interface CheckoutContextValue {
   submitOrder: () => void;
 
   successOrder: StoredOrder | null;
+
+  /** 7C-2A: opsi ongkir Biteship (display-only; harga final tetap revalidasi server). */
+  shippingOptions: ShippingRateOption[];
+  /** 7C-2A: pilihan kurir user (identifier saja, bukan harga). Tidak auto-select. */
+  selectedShipping: { courierCode: string; serviceCode: string } | null;
+  setSelectedShipping: (next: { courierCode: string; serviceCode: string } | null) => void;
+  /** 7C-2D: opsi yang cocok dengan pilihan (null bila belum/stale). Untuk display pricing. */
+  selectedShippingOption: ShippingRateOption | null;
+  shippingLoading: boolean;
+  shippingError: string | null;
 }
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
+
+const SHIPPING_CACHE_TTL_MS = 5 * 60 * 1000;
+const shippingRatesCache = new Map<
+  string,
+  { options: ShippingRateOption[]; expiresAt: number }
+>();
+const shippingRatesInFlight = new Map<string, Promise<ShippingRateOption[]>>();
 
 export function useCheckout() {
   const ctx = useContext(CheckoutContext);
@@ -93,7 +112,11 @@ export function CheckoutProvider({
   const { user } = useCurrentUser();
 
   const [quantity, setQuantity] = useState(initialQuantity);
-  const [fulfillment, setFulfillment] = useState<FulfillmentMode>('pickup');
+  // 7B-2B: fulfillment awal mengikuti kapabilitas produk.
+  // delivery-only -> 'delivery'; selain itu 'pickup' (invalid diblokir missingRequirement).
+  const [fulfillment, setFulfillment] = useState<FulfillmentMode>(() =>
+    draft.isDelivery && !draft.isPickup ? 'delivery' : 'pickup'
+  );
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null);
   const [promoInput, setPromoInput] = useState('');
   const [promo, setPromo] = useState<PromoCode | null>(null);
@@ -101,6 +124,16 @@ export function CheckoutProvider({
   const [useCoins, setUseCoins] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [successOrder, setSuccessOrder] = useState<StoredOrder | null>(null);
+
+  // 7C-2A: shipping state (rates Biteship, display-only; total/pricing tidak berubah).
+  const [shippingOptions, setShippingOptions] = useState<ShippingRateOption[]>([]);
+  const [selectedShipping, setSelectedShipping] = useState<{
+    courierCode: string;
+    serviceCode: string;
+  } | null>(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const [shippingError, setShippingError] = useState<string | null>(null);
+  const shippingSeqRef = useRef(0);
 
   const { balance: coinBalance } = useRebitesCoins();
 
@@ -113,6 +146,122 @@ export function CheckoutProvider({
     addAddress,
     updateAddress,
   } = useAddresses();
+
+  // 7C-2A: fetch rates Biteship via endpoint internal (server-authoritative).
+  // Hanya untuk delivery + alamat terpilih; pickup/tanpa-alamat = reset kosong.
+  // Tidak auto-select; pilihan lama selalu di-reset saat dependency berubah.
+  useEffect(() => {
+    const seq = shippingSeqRef.current + 1;
+    shippingSeqRef.current = seq;
+
+    // Reset dulu agar pilihan lama tidak terbawa.
+    setSelectedShipping(null);
+    setShippingOptions([]);
+    setShippingError(null);
+
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const finish = () => {
+      if (timer !== null) clearTimeout(timer);
+      controller.abort();
+    };
+
+    if (fulfillment !== 'delivery' || !selectedAddressId || !draft.productSlug || !user) {
+      setShippingLoading(false);
+      return finish;
+    }
+    if (!draft.isDelivery) {
+      setShippingLoading(false);
+      return finish;
+    }
+    if (!Number.isFinite(quantity) || quantity < 1) {
+      setShippingLoading(false);
+      return finish;
+    }
+
+    const cacheKey = `shipping:${draft.productSlug}:${quantity}:${selectedAddressId}:${fulfillment}`;
+    const cached = shippingRatesCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      setShippingOptions(cached.options);
+      setShippingError(null);
+      setShippingLoading(false);
+      return finish;
+    }
+
+    setShippingLoading(true);
+
+    timer = setTimeout(() => {
+      (async () => {
+        try {
+          if (process.env.NODE_ENV !== 'production') {
+            console.debug('[checkout] shipping effect', { seq, fulfillment, selectedAddressId, productSlug: draft.productSlug, quantity, hasUser: Boolean(user), cacheKey });
+          }
+
+          let shared = shippingRatesInFlight.get(cacheKey);
+          if (!shared) {
+            shared = (async () => {
+              const res = await fetchWithAuth(
+                '/api/shipping/rates',
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    productSlug: draft.productSlug,
+                    quantity,
+                    addressId: selectedAddressId,
+                    fulfillment,
+                  }),
+                  signal: controller.signal,
+                }
+              );
+              const json = (await res.json().catch(() => null)) as
+                | { options?: ShippingRateOption[]; error?: string }
+                | null;
+              if (!res.ok) {
+                throw new Error(
+                  (json?.error && String(json.error)) || 'Gagal menghitung ongkir. Coba lagi.'
+                );
+              }
+              const options = json && Array.isArray(json.options) ? json.options : [];
+              shippingRatesCache.set(cacheKey, {
+                options,
+                expiresAt: Date.now() + SHIPPING_CACHE_TTL_MS,
+              });
+              return options;
+            })();
+            shippingRatesInFlight.set(cacheKey, shared);
+            shared.finally(() => {
+              shippingRatesInFlight.delete(cacheKey);
+            }).catch(() => undefined);
+          }
+
+          const options = await shared;
+
+          // Stale-response protection: abaikan bila sudah ada request lebih baru.
+          if (shippingSeqRef.current !== seq || controller.signal.aborted) return;
+
+          setShippingOptions(options);
+          setShippingLoading(false);
+        } catch (error) {
+          if (shippingSeqRef.current !== seq || controller.signal.aborted) return;
+          if (error instanceof DOMException && error.name === 'AbortError') return;
+          if (error instanceof Error && error.name === 'AbortError') return;
+          setShippingOptions([]);
+          setShippingLoading(false);
+          setShippingError(
+            error instanceof AuthError
+              ? 'Sesi login habis. Silakan login ulang.'
+              : error instanceof Error && error.message
+                ? error.message
+                : 'Gagal menghitung ongkir. Coba lagi.'
+          );
+        }
+      })();
+    }, 500);
+
+    return finish;
+  }, [fulfillment, quantity, selectedAddressId, draft.productSlug, user, draft.isDelivery]);
 
   const increment = useCallback(
     () =>
@@ -154,6 +303,20 @@ export function CheckoutProvider({
     setPromoError(null);
   }, []);
 
+  // 7C-2D: derive opsi yang cocok dengan pilihan user dari options terbaru.
+  // Pilihan yang sudah tidak ada di options = stale → null (tanpa harga lama).
+  const selectedShippingOption = useMemo<ShippingRateOption | null>(
+    () =>
+      selectedShipping
+        ? (shippingOptions.find(
+            (option) =>
+              option.courierCode === selectedShipping.courierCode &&
+              option.serviceCode === selectedShipping.serviceCode
+          ) ?? null)
+        : null,
+    [shippingOptions, selectedShipping]
+  );
+
   const summary = useOrderCalculation({
     draft,
     quantity,
@@ -161,6 +324,10 @@ export function CheckoutProvider({
     promo,
     useCoins,
     coinBalance,
+    // 7C-2D: DISPLAY memakai harga opsi terpilih; tanpa pilihan = 0
+    // (tanpa fallback Rp8.000). Final order tetap revalidasi server.
+    deliveryFeeOverride:
+      fulfillment === 'delivery' ? (selectedShippingOption?.price ?? 0) : 0,
   });
 
   const toggleUseCoins = useCallback(
@@ -169,10 +336,36 @@ export function CheckoutProvider({
   );
 
   const missingRequirement = useMemo<string | null>(() => {
-    if (fulfillment === 'delivery' && !selectedAddress)
-      return 'Pilih alamat pengiriman terlebih dahulu.';
+    // 7B-2B: fulfillment harus didukung kapabilitas produk (UI gating;
+    // security boundary tetap di server checkout).
+    if (!draft.isDelivery && !draft.isPickup) {
+      return 'Produk ini sedang tidak tersedia untuk dipesan.';
+    }
+    if (fulfillment === 'delivery' && !draft.isDelivery) {
+      return 'Produk ini tidak tersedia untuk diantar.';
+    }
+    if (fulfillment === 'pickup' && !draft.isPickup) {
+      return 'Produk ini tidak tersedia untuk diambil sendiri.';
+    }
+    // 7B-1: pickup tidak butuh alamat (behavior lama dipertahankan).
+    // delivery wajib ada alamat terpilih dengan field minimum
+    // (nama, telepon, alamat, kecamatan). postal/latlng opsional (NULL legacy).
+    if (fulfillment === 'delivery') {
+      if (!selectedAddress) return 'Pilih alamat pengiriman terlebih dahulu.';
+      if (
+        !selectedAddress.receiverName.trim() ||
+        !selectedAddress.phone.trim() ||
+        !selectedAddress.fullAddress.trim() ||
+        !selectedAddress.district.trim()
+      ) {
+        return 'Alamat pengiriman belum lengkap. Perbarui nama, telepon, alamat, dan kecamatan.';
+      }
+      // 7C-2C: delivery wajib memilih layanan pengiriman (identifier saja;
+      // harga final tetap revalidasi server). Pickup tidak butuh pilihan.
+      if (!selectedShipping) return 'Pilih layanan pengiriman terlebih dahulu.';
+    }
     return null;
-  }, [fulfillment, selectedAddress]);
+  }, [draft, fulfillment, selectedAddress, selectedShipping]);
 
   const canPay = missingRequirement === null && !submitting;
 
@@ -182,7 +375,24 @@ export function CheckoutProvider({
       router.push('/auth/login');
       return;
     }
-    if (fulfillment === 'delivery' && !selectedAddress) return;
+    // 7B-2B: pickup tetap tanpa alamat; delivery wajib alamat minimum.
+    // Fulfillment yang tidak didukung produk ditolak di sini (server menolak juga).
+    if (!draft.isDelivery && !draft.isPickup) return;
+    if (fulfillment === 'delivery' && !draft.isDelivery) return;
+    if (fulfillment === 'pickup' && !draft.isPickup) return;
+    if (fulfillment === 'delivery') {
+      if (!selectedAddress) return;
+      if (
+        !selectedAddress.receiverName.trim() ||
+        !selectedAddress.phone.trim() ||
+        !selectedAddress.fullAddress.trim() ||
+        !selectedAddress.district.trim()
+      ) {
+        return;
+      }
+      // 7C-2C: cegah submit delivery tanpa pilihan kurir (server menolak juga).
+      if (!selectedShipping) return;
+    }
 
     submittedRef.current = true;
     setSubmitting(true);
@@ -190,12 +400,15 @@ export function CheckoutProvider({
 
     (async () => {
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
-        if (!token) {
+        let authHeader: string;
+        try {
+          authHeader = await getValidAuthHeader();
+        } catch (err) {
           setSubmitting(false);
           submittedRef.current = false;
-          setPromoError('Sesi login habis. Silakan login ulang.');
+          setPromoError(
+            err instanceof AuthError ? err.message : 'Sesi login habis. Silakan login ulang.'
+          );
           router.push('/auth/login');
           return;
         }
@@ -207,25 +420,29 @@ export function CheckoutProvider({
           promoCode: promo?.code ?? null,
           useCoins,
           distanceKm: draft.distanceKm ?? null,
+          // 7B-2D-1: info package untuk observabilitas; SUMBER KEBENARAN
+          // tetap database di server (server mengabaikan nilai ini bila beda).
+          weightGram: draft.weightGram ?? null,
+          lengthCm: draft.lengthCm ?? null,
+          widthCm: draft.widthCm ?? null,
+          heightCm: draft.heightCm ?? null,
+          // 7C-2C: identifier pilihan kurir saja (bukan harga/nama).
+          // Harga final selalu hasil revalidasi Biteship di server.
+          courierCode: selectedShipping?.courierCode ?? null,
+          courierServiceCode: selectedShipping?.serviceCode ?? null,
         };
         if (fulfillment === 'delivery' && selectedAddress) {
-          payload.addressSnapshot = {
-            label: selectedAddress.label,
-            receiverName: selectedAddress.receiverName,
-            phone: selectedAddress.phone,
-            province: selectedAddress.province,
-            city: selectedAddress.city,
-            district: selectedAddress.district,
-            fullAddress: selectedAddress.fullAddress,
-            note: selectedAddress.note,
-          };
+          // 7B-1: snapshot diperluas (addressId + postal + lat/lng, NULL jika belum ada).
+          // Order lama tanpa field baru tetap terbaca (backward compat).
+          // TIDAK ada panggilan provider shipping / hitung ongkir / shipment di sini.
+          payload.addressSnapshot = buildAddressSnapshot(selectedAddress);
         }
 
-        const res = await fetch('/api/checkout/xendit', {
+        const res = await fetchWithAuth('/api/checkout/xendit', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
+            Authorization: authHeader,
           },
           body: JSON.stringify(payload),
         });
@@ -294,6 +511,7 @@ export function CheckoutProvider({
     quantity,
     router,
     selectedAddress,
+    selectedShipping,
     submitting,
     useCoins,
     user,
@@ -333,6 +551,12 @@ export function CheckoutProvider({
       submitting,
       submitOrder,
       successOrder,
+      shippingOptions,
+      selectedShipping,
+      setSelectedShipping,
+      selectedShippingOption,
+      shippingLoading,
+      shippingError,
     }),
     [
       draft,
@@ -362,6 +586,11 @@ export function CheckoutProvider({
       submitting,
       submitOrder,
       successOrder,
+      shippingOptions,
+      selectedShipping,
+      selectedShippingOption,
+      shippingLoading,
+      shippingError,
     ]
   );
 

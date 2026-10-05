@@ -35,8 +35,8 @@ function productToFoodItem(row: ProductRow): FoodItem {
     vendorName: row.umkm?.business_name ?? '',
     image: row.image_url ?? '/foods/ikansayur.jpg',
     category: row.category ?? 'Lainnya',
-    rating: Number(row.rating ?? 5),
-    distanceKm: Number(row.distance_km ?? 1),
+    rating: row.rating != null ? Number(row.rating) : null,
+    distanceKm: row.distance_km != null ? Number(row.distance_km) : null,
     availableFrom: (row.sell_window_start ?? '09:00').slice(0, 5),
     availableTo: (row.sell_window_end ?? '21:00').slice(0, 5),
     stockLabel:
@@ -46,8 +46,7 @@ function productToFoodItem(row: ProductRow): FoodItem {
     discountPercent: row.discount_percent ?? 0,
     expiresAt: row.expires_at ?? undefined,
     // tambahan untuk lookup robust foto makanan disukai (id slug vs uuid)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...({ slug: row.slug ?? row.id, rawId: row.id } as any),
+    ...({ slug: row.slug ?? row.id, rawId: row.id } as { slug: string; rawId: string }),
   } as FoodItem;
 }
 
@@ -61,7 +60,7 @@ function umkmToVendor(row: UmkmRow, itemCount: number): Vendor {
     isRescuePartner: row.is_rescue_partner ?? false,
     isVerified: row.is_verified ?? false,
     rating: Number(row.rating ?? 5),
-    distanceKm: Number(row.distance_km ?? 1),
+    distanceKm: row.distance_km != null ? Number(row.distance_km) : null,
     category: row.category ?? 'Makanan Berat',
     itemCount,
     address: row.address ?? '',
@@ -102,6 +101,7 @@ async function queryFoodItems(): Promise<FetchResult<FoodItem>> {
     .select('*, umkm:umkm_profiles(business_name)')
     .is('slot', null)
     .eq('status', 'available')
+    .eq('verification_status', 'approved')
     .order('created_at', { ascending: true });
   if (error) {
     console.error('[catalog] gagal memuat produk:', error.message);
@@ -120,6 +120,7 @@ async function queryUrgentItems(): Promise<FetchResult<UrgentItem>> {
     .select('*, umkm:umkm_profiles(business_name)')
     .not('slot', 'is', null)
     .eq('status', 'available')
+    .eq('verification_status', 'approved')
     .order('expires_at', { ascending: true });
   if (error) {
     console.error('[catalog] gagal memuat urgent deals:', error.message);
@@ -144,7 +145,8 @@ export async function fetchCategoryCounts(): Promise<Record<string, number>> {
   const { data, error } = await supabase
     .from('products')
     .select('category')
-    .eq('status', 'available');
+    .eq('status', 'available')
+    .eq('verification_status', 'approved');
   if (error) {
     console.error('[catalog] gagal memuat kategori:', error.message);
     return {};
@@ -161,7 +163,7 @@ export async function fetchCategoryCounts(): Promise<Record<string, number>> {
 async function queryVendors(): Promise<FetchResult<Vendor>> {
   const [umkmResult, productResult] = await Promise.all([
     supabase.from('umkm_profiles').select('*').order('rating', { ascending: false }),
-    supabase.from('products').select('umkm_id'),
+    supabase.from('products').select('umkm_id').eq('verification_status', 'approved'),
   ]);
   if (umkmResult.error) {
     console.error('[catalog] gagal memuat vendor:', umkmResult.error.message);

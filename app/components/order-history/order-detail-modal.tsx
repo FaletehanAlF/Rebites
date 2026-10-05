@@ -172,6 +172,14 @@ export function OrderDetailModal({
               )}
 
               {}
+              {order.fulfillment === 'delivery' && order.biteshipOrderId && (
+                <>
+                  <SectionTitle>Lacak Pengiriman</SectionTitle>
+                  <ShipmentTrackingSection order={order} />
+                </>
+              )}
+
+              {}
               {order.fulfillment === 'pickup' && orderStatus === 'ready_for_pickup' && (
                 <PickupReadyInfo order={order} />
               )}
@@ -469,6 +477,89 @@ function DeliveryTrackingInfo({ order }: { order: StoredOrder }) {
   );
 }
 
+/**
+ * 7C-3D: label display status Biteship (hanya status audit 7C-3A).
+ * Bukan order_status ReBites; tidak memengaruhi lifecycle.
+ */
+const SHIPMENT_STATUS_LABELS: Record<string, string> = {
+  confirmed: 'Pesanan dikonfirmasi',
+  scheduled: 'Terjadwal',
+  allocated: 'Kurir ditugaskan',
+  picking_up: 'Kurir menuju toko',
+  picked: 'Pesanan diambil kurir',
+  in_transit: 'Dalam perjalanan',
+  dropping_off: 'Kurir mengantar',
+  delivered: 'Telah diterima',
+  on_hold: 'Pengiriman ditahan',
+  return_in_transit: 'Dalam proses pengembalian',
+  returned: 'Pesanan dikembalikan',
+  rejected: 'Pengiriman ditolak',
+  cancelled: 'Pengiriman dibatalkan',
+  disposed: 'Pengiriman dihentikan',
+  courier_not_found: 'Kurir belum tersedia',
+};
+
+/**
+ * 7C-3D: section shipment buyer (display-only dari StoredOrder).
+ * Hanya dirender bila delivery + biteshipOrderId ada (guard di caller).
+ * shipmentError TIDAK PERNAH ditampilkan; tanpa API call; tanpa polling.
+ */
+function ShipmentTrackingSection({ order }: { order: StoredOrder }) {
+  const [copiedResi, setCopiedResi] = useState(false);
+
+  const courierLabel =
+    order.courierServiceName?.trim() || order.courierCode?.trim() || null;
+  const resi =
+    order.biteshipWaybillId?.trim() || order.biteshipTrackingId?.trim() || null;
+  const statusLabel =
+    (order.shipmentStatus && SHIPMENT_STATUS_LABELS[order.shipmentStatus]) ||
+    'Status pengiriman belum tersedia';
+
+  const handleCopyResi = async () => {
+    if (!resi) return;
+    try {
+      await navigator.clipboard.writeText(resi);
+      setCopiedResi(true);
+      window.setTimeout(() => setCopiedResi(false), 1600);
+      toast({ title: 'Nomor resi disalin' });
+    } catch {
+      toast({
+        title: 'Gagal menyalin',
+        description: `Salin manual: ${resi}`,
+      });
+    }
+  };
+
+  return (
+    <div className="mt-2 space-y-2 rounded-xl ring-1 ring-hairline p-3.5 text-sm">
+      {courierLabel && <Row label="Kurir" value={courierLabel} />}
+      <div className="flex items-start justify-between gap-4">
+        <dt className="shrink-0 text-charcoal-500">Nomor resi</dt>
+        {resi ? (
+          <dd className="flex min-w-0 items-center justify-end gap-2 text-right font-medium tabular-nums text-charcoal-900">
+            <span className="break-all">{resi}</span>
+            <button
+              type="button"
+              onClick={handleCopyResi}
+              aria-label="Salin nomor resi"
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-hairline bg-white text-charcoal-900 transition-colors hover:border-sage-500/50 hover:text-caramel"
+            >
+              {copiedResi ? (
+                <Check className="h-3.5 w-3.5 text-primary" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+            </button>
+          </dd>
+        ) : (
+          <dd className="text-right text-charcoal-500">Nomor resi belum tersedia</dd>
+        )}
+      </div>
+      <Row label="Status" value={statusLabel} />
+    </div>
+  );
+}
+
 function PickupReadyInfo({ order }: { order: StoredOrder }) {
   return (
     <div className="mt-3 rounded-xl bg-emerald-50 px-4 py-3 ring-1 ring-emerald-100">
@@ -549,6 +640,8 @@ function FulfillmentSection({ order }: { order: StoredOrder }) {
               <p className="break-words text-xs text-charcoal-500">
                 {order.addressSnapshot.fullAddress}, {order.addressSnapshot.district},{' '}
                 {order.addressSnapshot.city}, {order.addressSnapshot.province}
+                {/* 7B-1: kode pos jika ada; order lama tanpa postal tetap tampil. */}
+                {order.addressSnapshot.postalCode ? ` ${order.addressSnapshot.postalCode}` : ''}
               </p>
               {order.addressSnapshot.note && (
                 <p className="mt-0.5 text-xs italic text-charcoal-500">

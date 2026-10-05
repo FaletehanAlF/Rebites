@@ -44,9 +44,13 @@ function toFormValues(editing: DeliveryAddress | null): AddressFormValues {
       district: '',
       fullAddress: '',
       note: '',
+      // 7B-1: kode pos opsional; lat/lng selalu NULL (tanpa map-picker).
+      postalCode: null,
+      latitude: null,
+      longitude: null,
     };
   }
-  
+
   return {
     label: editing.label,
     receiverName: editing.receiverName,
@@ -56,6 +60,9 @@ function toFormValues(editing: DeliveryAddress | null): AddressFormValues {
     district: editing.district,
     fullAddress: editing.fullAddress,
     note: editing.note,
+    postalCode: editing.postalCode ?? null,
+    latitude: editing.latitude ?? null,
+    longitude: editing.longitude ?? null,
   };
 }
 
@@ -82,6 +89,11 @@ export function AddressFormView({
     if (!/^[0-9+\-\s]{9,16}$/.test(form.phone.trim()))
       return setError('Nomor telepon tidak valid (9â€“16 digit).');
     if (!form.district.trim()) return setError('Kecamatan wajib dipilih.');
+    // 7B-1: kode pos opsional; string kosong = NULL (bukan valid).
+    // Jika diisi harus 5 digit Indonesia.
+    const postalTrimmed = (form.postalCode ?? '').trim();
+    if (postalTrimmed !== '' && !/^[0-9]{5}$/.test(postalTrimmed))
+      return setError('Kode pos harus 5 digit angka (cth. 16424).');
     if (form.fullAddress.trim().length < 8)
       return setError('Alamat lengkap minimal 8 karakter.');
 
@@ -90,6 +102,10 @@ export function AddressFormView({
       receiverName: form.receiverName.trim(),
       fullAddress: form.fullAddress.trim(),
       note: form.note?.trim() || undefined,
+      postalCode: postalTrimmed === '' ? null : postalTrimmed,
+      // 7B-1: tanpa map-picker/geocoding -> selalu NULL, jangan karang koordinat.
+      latitude: null,
+      longitude: null,
     };
 
     if (editing) {
@@ -198,6 +214,23 @@ export function AddressFormView({
             </select>
             <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-sage-500" />
           </span>
+        </label>
+
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+            Kode Pos{' '}
+            <span className="normal-case text-sage-500">(opsional, 5 digit)</span>
+          </span>
+          <input
+            value={form.postalCode ?? ''}
+            onChange={(e) => setField('postalCode', e.target.value)}
+            placeholder="cth. 16424"
+            inputMode="numeric"
+            maxLength={5}
+            autoComplete="postal-code"
+            aria-label="Kode pos"
+            className={INPUT_CLASS}
+          />
         </label>
 
         <label className="block">

@@ -60,7 +60,9 @@ function sellerProductToFoodItem(
     vendorName: vendor.name,
     image: sp.image,
     category: sp.category as FoodItem["category"],
-    rating: 4.7,
+    // Rating asli dari database (products.rating). Null = belum ada rating
+    // tercatat; kartu produk menyembunyikannya (tidak mengarang angka).
+    rating: sp.rating ?? null,
     distanceKm: vendor.distanceKm,
     availableFrom: sp.startTime,
     availableTo: sp.endTime,
@@ -310,7 +312,7 @@ function StoreDetailContent() {
     setStoreError(null);
 
     const load = async () => {
-      const result = await getStoreProductsBySlug(storeId ?? "");
+      const result = await getStoreProductsBySlug(storeId ?? "", { onlyApproved: true });
       if (!mounted) return;
       setStoreProducts(result.products);
       setStoreError(result.error);

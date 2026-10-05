@@ -33,7 +33,10 @@ function applySort(key: FilterKey) {
   return (a: FoodItem, b: FoodItem) => {
     switch (key) {
       case "terdekat":
-        return a.distanceKm - b.distanceKm;
+        return (
+          (a.distanceKm ?? Number.MAX_SAFE_INTEGER) -
+          (b.distanceKm ?? Number.MAX_SAFE_INTEGER)
+        );
       case "diskon-terbesar":
         return b.discountPercent - a.discountPercent;
       case "segera-habis":
@@ -288,7 +291,8 @@ export function SearchFilterBar({
                               />
                             </p>
                             <p className="mt-0.5 truncate font-inter text-[11px] text-charcoal-500">
-                              {item.stockLabel} · {item.distanceKm} km
+                              {item.stockLabel}
+                              {item.distanceKm != null ? ` · ${item.distanceKm} km` : ''}
                             </p>
                           </div>
 

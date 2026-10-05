@@ -18,6 +18,7 @@ import { SmartImage } from '@/app/components/shared/SmartImage';
 import { formatRupiah } from '@/lib/data';
 import { getOrderById, rowToStoredOrder } from '@/lib/order-storage';
 import { supabase } from '@/lib/supabase';
+import { fetchWithAuth, getValidAuthHeader } from '@/lib/auth-token';
 import type { StoredOrder } from '@/lib/types';
 import { AnimatedNumber } from './animated-number';
 import {
@@ -81,14 +82,11 @@ export function OrderSuccessView() {
         if (mounted) setOrder(direct);
         return true;
       }
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (token) {
+      try {
+        const authHeader = await getValidAuthHeader();
         try {
-          const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}`, {
-            headers: { Authorization: `Bearer ${token}` },
+          const res = await fetchWithAuth(`/api/orders/${encodeURIComponent(orderId)}`, {
+            headers: { Authorization: authHeader },
           });
           if (res.ok) {
             const json = (await res.json().catch(() => null)) as
@@ -102,6 +100,8 @@ export function OrderSuccessView() {
         } catch {
           
         }
+      } catch {
+        // Tidak ada session valid — biarkan retry RLS/direct di bawah.
       }
       return false;
     };
@@ -140,20 +140,15 @@ export function OrderSuccessView() {
     const fetchStatus = async () => {
       
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token;
-        if (token) {
-          await fetch('/api/checkout/xendit/verify', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ orderCode: orderId }),
-          });
-        }
+        const authHeader = await getValidAuthHeader();
+        await fetchWithAuth('/api/checkout/xendit/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: authHeader,
+          },
+          body: JSON.stringify({ orderCode: orderId }),
+        });
       } catch {
         
       }
