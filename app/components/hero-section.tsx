@@ -21,7 +21,6 @@ import RotatingText from "@/app/components/RotatingText";
 
 const NAV_LINKS = [
   { href: "/#top", label: "Beranda", target: "top" },
-  { href: "/#rekomendasi", label: "Rekomendasi", target: "rekomendasi" },
   { href: "/#about", label: "Tentang", target: "about" },
   { href: "/#cara-kerja", label: "Cara Kerja", target: "cara-kerja" },
   { href: "/#langganan", label: "Langganan", target: "langganan" },
@@ -42,7 +41,6 @@ export function HeroSection() {
   const [open, setOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState<boolean>(false);
   const [activeNav, setActiveNav] = useState<string>("Beranda");
-  const [overDark, setOverDark] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
 
@@ -59,26 +57,10 @@ export function HeroSection() {
   useEffect(() => {
     if (!mounted) return;
 
-    const sections = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-nav]"),
-    );
-
-    if (sections.length === 0) {
-      setOverDark(false);
-      return;
-    }
-
     const probeY = 128;
 
     const update = () => {
       setScrolled(window.scrollY > 32);
-
-      const current = sections.find((section) => {
-        const rect = section.getBoundingClientRect();
-        return rect.top <= probeY && rect.bottom > probeY;
-      });
-
-      setOverDark(current?.dataset.nav === "green");
 
       let label = NAV_LINKS[0].label;
       let labelTarget: HTMLElement | null = null;
@@ -108,8 +90,6 @@ export function HeroSection() {
     };
   }, [mounted]);
 
-  const navIsDark = mounted && overDark;
-
   const scrollToTarget = (target: string) => {
     const el = target ? document.getElementById(target) : null;
     if (!el) return;
@@ -138,7 +118,7 @@ export function HeroSection() {
         new CustomEvent("rebites:hero-search", { detail: trimmed }),
       );
     }
-    setActiveNav("Rekomendasi");
+    setActiveNav("Beranda");
     scrollToTarget("rekomendasi");
   };
 
@@ -149,17 +129,10 @@ export function HeroSection() {
           <div className="mx-auto w-full">
             <nav
               className={cn(
-                "flex h-20 min-w-fit items-center justify-between px-5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-6 lg:px-8",
+                "flex h-20 min-w-fit items-center justify-between bg-cream px-5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-6 lg:px-8",
                 scrolled
-                  ? cn(
-                      "mx-auto w-full max-w-4xl rounded-full border px-6 shadow-[0_20px_44px_-26px_rgba(27,77,50,0.45)] backdrop-blur-xl sm:px-7 xl:max-w-5xl",
-                      navIsDark
-                        ? "border-white/15 bg-primary/70 text-white"
-                        : "border-hairline/70 bg-white/85 text-primary",
-                    )
-                  : cn(
-                      "mx-auto w-full max-w-7xl rounded-none border-b border-transparent bg-transparent",
-                    ),
+                  ? "mx-auto w-full max-w-4xl rounded-full border border-hairline/70 px-6 text-primary shadow-[0_20px_44px_-26px_rgba(27,77,50,0.35)] sm:px-7 xl:max-w-5xl"
+                  : "mx-auto w-full max-w-7xl rounded-none border-b border-transparent",
               )}
             >
               <Link
@@ -175,12 +148,7 @@ export function HeroSection() {
                   className="h-10 w-10 rounded-full object-cover"
                 />
 
-                <span
-                  className={cn(
-                    "font-display text-2xl font-medium tracking-tight transition-colors duration-500",
-                    navIsDark ? "text-white" : "text-primary",
-                  )}
-                >
+                <span className="font-display text-2xl font-medium tracking-tight text-primary transition-colors duration-500">
                   <span className="font-display text-2xl font-medium">Re</span>
                   <span className="font-display text-2xl font-light italic">
                     Bites
@@ -200,12 +168,8 @@ export function HeroSection() {
                       className={cn(
                         "relative py-1 font-inter text-sm transition-colors duration-300",
                         activeNav === link.label
-                          ? navIsDark
-                            ? "font-semibold text-white"
-                            : "font-semibold text-primary"
-                          : navIsDark
-                            ? "text-white/80 hover:text-white"
-                            : "text-primary/80 hover:text-caramel",
+                          ? "font-semibold text-primary"
+                          : "text-primary/80 hover:text-caramel",
                       )}
                     >
                       {link.label}
@@ -222,10 +186,7 @@ export function HeroSection() {
                 <Link
                   href="/auth/login"
                   className={cn(
-                    "hidden items-center gap-1.5 rounded-full px-5 py-2.5 font-inter text-sm font-semibold shadow-[0_14px_30px_-18px_rgba(27,77,50,0.65)] transition-colors duration-300 sm:flex",
-                    navIsDark
-                      ? "bg-white text-primary hover:bg-caramel hover:text-white"
-                      : "bg-primary text-white hover:bg-caramel hover:text-white",
+                    "hidden items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 font-inter text-sm font-semibold text-white shadow-[0_14px_30px_-18px_rgba(27,77,50,0.65)] transition-colors duration-300 hover:bg-caramel hover:text-white sm:flex",
                     FOCUS_RING,
                   )}
                 >
@@ -239,8 +200,7 @@ export function HeroSection() {
                   aria-label={open ? "Tutup menu" : "Buka menu"}
                   aria-expanded={open}
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center lg:hidden",
-                    navIsDark ? "text-white" : "text-forest",
+                    "flex h-10 w-10 items-center justify-center text-forest lg:hidden",
                     FOCUS_RING,
                   )}
                 >
@@ -260,7 +220,7 @@ export function HeroSection() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                  className="mt-2 overflow-hidden rounded-3xl border border-hairline/70 bg-white p-3 shadow-[0_28px_56px_-28px_rgba(27,77,50,0.5)] lg:hidden"
+                  className="mt-2 overflow-hidden rounded-3xl border border-hairline/70 bg-cream p-3 shadow-[0_28px_56px_-28px_rgba(27,77,50,0.5)] lg:hidden"
                 >
                   <ul className="flex flex-col">
                     {NAV_LINKS.map((link) => (
@@ -272,7 +232,7 @@ export function HeroSection() {
                             "flex items-center justify-between rounded-2xl px-4 py-3 font-inter text-sm transition-colors duration-300",
                             activeNav === link.label
                               ? "bg-caramel/10 font-semibold text-primary"
-                              : "text-primary hover:bg-cream",
+                              : "text-primary hover:bg-cream-100",
                           )}
                         >
                           {link.label}
