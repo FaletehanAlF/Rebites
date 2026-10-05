@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Bike, Check, LayoutGrid, MapPin } from 'lucide-react';
+import { ArrowRight, Check, LayoutGrid, MapPin } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
 import { CATEGORIES } from '@/lib/categories';
 import { scrollToSection } from '@/app/components/landing/scroll-to-section';
@@ -46,7 +46,7 @@ export function HeroSection() {
             </p>
           </Reveal>
 
-          <Reveal delay={0.24}>
+          <Reveal delay={0.24} className="w-full">
             <div className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
               <Link
                 href="/auth/register"
@@ -72,7 +72,7 @@ export function HeroSection() {
             </div>
           </Reveal>
 
-          <Reveal delay={0.3}>
+          <Reveal delay={0.3} className="w-full">
             <ul className="mt-10 flex w-full flex-col gap-3 border-t border-border/60 pt-6 sm:flex-row sm:flex-wrap sm:gap-x-7 sm:gap-y-3">
               {ASSURANCES.map((item) => (
                 <li
@@ -109,7 +109,7 @@ export function HeroSection() {
             {/* Secondary image: hidden on small phones to avoid clutter */}
             <div className="absolute -bottom-0 left-4 hidden aspect-square w-32 overflow-hidden rounded-2xl border-4 border-white shadow-[0_24px_44px_-24px_rgba(27,77,50,0.55)] min-[480px]:block sm:-bottom-2 sm:-left-5 sm:w-36 sm:rounded-3xl lg:-bottom-8 lg:-left-8 lg:w-40 xl:-left-10 xl:w-44">
               <Image
-                src="/makanan5.jpeg"
+                src="/makanan13.jpg"
                 alt="Salah satu menu surplus yang tersedia di ReBites"
                 fill
                 sizes="(min-width: 1280px) 11rem, (min-width: 640px) 9rem, 8rem"
@@ -129,14 +129,6 @@ export function HeroSection() {
               </span>
               <span className="whitespace-nowrap font-secondary text-xs text-muted-foreground">
                 kategori kuliner
-              </span>
-            </div>
-
-            {/* Delivery badge: tablet and up only */}
-            <div className="absolute bottom-10 right-5 hidden items-center gap-2 rounded-full bg-primary px-4 py-2.5 shadow-[0_18px_34px_-20px_rgba(27,77,50,0.8)] sm:flex lg:bottom-12 lg:right-6">
-              <Bike className="h-4 w-4 text-white" strokeWidth={2.2} aria-hidden />
-              <span className="whitespace-nowrap font-secondary text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
-                Diantar atau ambil sendiri
               </span>
             </div>
           </div>

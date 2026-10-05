@@ -53,7 +53,7 @@ export function FinalCTASection() {
               </Link>
             </div>
 
-            <p className="mt-8 flex items-center justify-center gap-2 text-xs text-white/55">
+            <p className="mt-8 flex items-center justify-center gap-2 text-xs text-white">
               <MapPin className="h-3.5 w-3.5" aria-hidden />
               Tersedia khusus untuk wilayah Kota Depok
             </p>

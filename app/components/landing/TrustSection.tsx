@@ -1,4 +1,3 @@
-import { MapPin } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
 
 const ASSURANCES = [
@@ -69,7 +68,7 @@ export function TrustSection() {
           {ASSURANCES.map((item, index) => (
             <Reveal key={item.num} delay={0.06 + index * 0.05}>
               <div className="border-t border-border pt-5">
-                <span className="font-display text-xs font-semibold tabular-nums tracking-[0.2em] text-primary/50">
+                <span className="font-display text-xs font-semibold tabular-nums tracking-[0.2em] text-primary">
                   {item.num}
                 </span>
                 <h3 className="mt-3 font-display text-lg font-semibold tracking-tight text-primary">
@@ -82,20 +81,6 @@ export function TrustSection() {
             </Reveal>
           ))}
         </div>
-
-        <Reveal delay={0.1}>
-          <p className="mt-12 flex items-start gap-3 rounded-2xl border border-border bg-white px-5 py-4 text-sm leading-[1.7] text-muted-foreground sm:mt-14 sm:items-center">
-            <MapPin
-              className="mt-0.5 h-4 w-4 shrink-0 text-primary sm:mt-0"
-              aria-hidden
-            />
-            <span>
-              Saat ini ReBites beroperasi di{' '}
-              <span className="font-semibold text-primary">Kota Depok</span>,
-              sebagai langkah awal sebelum ekosistem ini meluas ke kota lain.
-            </span>
-          </p>
-        </Reveal>
       </div>
     </section>
   );

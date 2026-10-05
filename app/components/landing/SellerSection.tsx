@@ -131,19 +131,12 @@ export function SellerSection() {
             <div className="relative">
               <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] border border-border bg-muted shadow-[0_40px_80px_-56px_rgba(27,77,50,0.7)] sm:rounded-[2.5rem]">
                 <Image
-                  src="/penjual-login.jpg"
-                  alt="Pelaku UMKM mendaftar dan mengelola usahanya di ReBites"
+                  src="/makanan14.jpg"
+                  alt="Pelaku UMKM menyiapkan hasil produksi makanan untuk dijual"
                   fill
                   sizes="(min-width: 1024px) 34rem, calc(100vw - 2rem)"
                   className="object-cover"
                 />
-              </div>
-
-              <div className="absolute -bottom-5 right-3 flex items-center gap-2.5 rounded-2xl border border-border bg-white px-4 py-3 shadow-[0_24px_44px_-26px_rgba(27,77,50,0.7)] sm:-bottom-6 sm:right-6">
-                <TrendingUp className="h-4 w-4 text-primary" aria-hidden />
-                <span className="font-secondary text-xs font-semibold text-primary">
-                  Dashboard penjualan
-                </span>
               </div>
             </div>
           </Reveal>

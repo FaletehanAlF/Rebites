@@ -43,7 +43,7 @@ export function Preloader() {
       return;
     }
 
-    const safety = setTimeout(() => finish(true), 3200);
+    const safety = setTimeout(() => finish(true), 2000);
     return () => clearTimeout(safety);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -53,7 +53,7 @@ export function Preloader() {
   // hydration, and animated `width` (a layout property) every frame.
   useEffect(() => {
     let raf = 0;
-    const DURATION = 2000;
+    const DURATION = 900;
     const start = performance.now();
 
     const tick = (now: number) => {
@@ -87,7 +87,7 @@ export function Preloader() {
             style={{ width: '200vmax', height: '200vmax', marginLeft: '-100vmax', marginTop: '-100vmax' }}
             initial={false}
             exit={{ y: '-160vh', scale: 0.5 }}
-            transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
+            transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
           >
             <div className="flex flex-col items-center px-6 text-center">
               {/* Tulisan timbul dari bawah ke atas */}

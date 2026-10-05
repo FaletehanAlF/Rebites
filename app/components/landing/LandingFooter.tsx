@@ -105,6 +105,7 @@ function BackToTop() {
         else window.scrollTo({ top: 0, behavior: 'smooth' });
       }}
       aria-label="Kembali ke atas"
+      tabIndex={visible ? 0 : -1}
       className={`flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-all duration-300 hover:bg-white hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary ${
         visible
           ? 'translate-y-0 opacity-100'

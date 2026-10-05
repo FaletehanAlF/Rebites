@@ -81,8 +81,8 @@ export function BuyerSection() {
               id="buyer-heading"
               className="mt-4 text-balance font-display text-[clamp(1.8rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary"
             >
-              Dari jelajah pertama sampai{' '}
-              <span className="font-light italic">pesanan sampai</span> di depan
+              Dari jelajah pertama hingga{' '}
+              <span className="font-light italic">pesanan tiba</span> di depan
               pintu.
             </h2>
             <p className="mt-5 max-w-xl text-[15px] leading-[1.8] text-muted-foreground">
@@ -100,7 +100,7 @@ export function BuyerSection() {
                 className="list-none border-b border-border"
               >
                 <div className="flex items-start gap-4 py-4 sm:gap-6 sm:py-5">
-                  <span className="font-display text-xs font-semibold tabular-nums tracking-[0.16em] text-primary/45">
+                  <span className="font-display text-xs font-semibold tabular-nums tracking-[0.16em] text-primary">
                     {step.num}
                   </span>
                   <div>
