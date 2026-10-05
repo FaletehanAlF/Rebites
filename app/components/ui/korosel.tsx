@@ -29,6 +29,7 @@ export interface OptionWheelProps {
   inset?: number;
   loop?: boolean;
   draggable?: boolean;
+  interactive?: boolean;
   className?: string;
   renderItem?: (index: number, item: string) => ReactNode;
   plateSize?: number;
@@ -76,6 +77,7 @@ const OptionWheel = ({
   inset = 80,
   loop = false,
   draggable = true,
+  interactive = true,
   className = '',
   renderItem,
   plateSize = 440,
@@ -259,12 +261,13 @@ const OptionWheel = ({
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
       wheelTimerRef.current = setTimeout(() => applyTarget(targetRef.current, true), 140);
     };
+    if (!interactive) return;
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => {
       el.removeEventListener('wheel', onWheel);
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
     };
-  }, [applyTarget, resetAutoTimer]);
+  }, [applyTarget, resetAutoTimer, interactive]);
 
   useEffect(() => {
     if (!apiRef) return;
@@ -359,10 +362,11 @@ const OptionWheel = ({
   return (
     <div
       ref={rootRef}
-      role="listbox"
-      tabIndex={0}
-      aria-label="Pilihan menu makanan"
-      className={`relative h-full w-full select-none overflow-hidden outline-none [touch-action:none]${isPlateMode ? ' py-16 sm:py-20' : ''} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}${className ? ` ${className}` : ''}`}
+      role={interactive ? 'listbox' : undefined}
+      tabIndex={interactive ? 0 : -1}
+      aria-label={interactive ? 'Pilihan menu makanan' : undefined}
+      aria-hidden={!interactive}
+      className={`relative h-full w-full select-none overflow-hidden outline-none [touch-action:none]${isPlateMode ? ' py-16 sm:py-20' : ''} ${interactive ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : 'pointer-events-none'}${className ? ` ${className}` : ''}`}
       style={
         {
           '--ow-text-color': textColor,
@@ -371,11 +375,11 @@ const OptionWheel = ({
           '--ow-inset': `${inset}px`
         } as CSSProperties
       }
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerEnd}
-      onPointerCancel={handlePointerEnd}
-      onKeyDown={handleKeyDown}
+      onPointerDown={interactive ? handlePointerDown : undefined}
+      onPointerMove={interactive ? handlePointerMove : undefined}
+      onPointerUp={interactive ? handlePointerEnd : undefined}
+      onPointerCancel={interactive ? handlePointerEnd : undefined}
+      onKeyDown={interactive ? handleKeyDown : undefined}
       onMouseEnter={pauseAutoTimer}
       onMouseLeave={resetAutoTimer}
     >
@@ -389,7 +393,7 @@ const OptionWheel = ({
           aria-selected={selectedIndex === index}
           className={
             cfgRef.current.plateMode
-              ? `absolute left-1/2 top-1/2 cursor-pointer will-change-[transform,opacity,filter] ${selectedIndex === index ? 'font-bold text-white' : 'font-light text-white/40'}`
+              ? `absolute left-1/2 top-1/2 will-change-[transform,opacity,filter] ${selectedIndex === index ? 'font-bold text-white' : 'font-light text-white/40'}`
               : `absolute top-1/2 cursor-pointer whitespace-nowrap leading-none will-change-[transform,opacity,filter] [font-size:var(--ow-font-size)] [color:color-mix(in_srgb,var(--ow-active-color)_calc(var(--ow-p,0)*100%),var(--ow-text-color))] ${
                   cfgRef.current.orientation === 'horizontal'
                     ? 'left-0 w-max'

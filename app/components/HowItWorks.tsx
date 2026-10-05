@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { Reveal } from "@/app/components/reveal";
 
 type Step = {
@@ -39,7 +38,6 @@ const steps: Step[] = [
 
 export default function HowItWorks() {
   const sectionRef = useRef<HTMLElement>(null);
-  const railRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -74,7 +72,7 @@ export default function HowItWorks() {
       ref={sectionRef}
       className="flex flex-col overflow-hidden bg-primary pt-20 pb-16 lg:pt-20 lg:pb-20"
     >
-      <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
         <Reveal delay={0.05}>
           <h2 className="text-center font-display text-[clamp(2rem,4vw,3.375rem)] font-light leading-[1.1] tracking-[-0.01em] text-primary-foreground">
             Cara Kerja ReBites
@@ -90,51 +88,72 @@ export default function HowItWorks() {
         </Reveal>
 
         <div className="relative mt-12 lg:mt-16">
+          {/* Center rail (md+) / left rail (mobile) */}
           <div
-            ref={railRef}
             aria-hidden
-            className="absolute bottom-6 left-4 top-6 w-px bg-primary-foreground/25 sm:left-5"
+            className="absolute bottom-6 left-4 top-6 w-px bg-primary-foreground/20 md:left-1/2"
           />
           <div
             aria-hidden
-            className="absolute left-4 top-6 w-px origin-top bg-primary-foreground transition-[height] duration-150 sm:left-5"
-            style={{
-              height: railRef.current
-                ? `${progress * (railRef.current.offsetHeight || 0)}px`
-                : "0px",
-            }}
+            className="absolute left-4 top-6 w-px bg-caramel transition-[height] duration-150 md:left-1/2"
+            style={{ height: `calc(${Math.min(progress, 1) * 100}% - 3rem)` }}
           />
 
-          <ol className="flex flex-col gap-10 lg:gap-14">
+          <ol className="flex flex-col gap-6 md:gap-8">
             {steps.map((step, i) => {
               const active = progress >= (i + 0.5) / steps.length - 0.05;
+              const right = i % 2 === 1;
               return (
-                <li key={step.title} className="relative pl-14 sm:pl-16">
+                <li
+                  key={step.title}
+                  className="relative pl-12 md:grid md:grid-cols-2 md:gap-12 md:pl-0"
+                >
                   <span
                     aria-hidden
-                    className={`absolute left-4 top-1.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full border-2 transition-colors duration-300 sm:left-5 ${
+                    className={`absolute left-4 top-2 h-4 w-4 -translate-x-1/2 rounded-full border-2 transition-colors duration-300 md:left-1/2 md:top-6 ${
                       active
-                        ? "border-primary-foreground bg-primary-foreground"
+                        ? "border-caramel bg-caramel"
                         : "border-primary-foreground/40 bg-primary"
                     }`}
                   />
-                  <Reveal delay={0.05 * i}>
-                    <h3 className="font-display text-xl font-medium text-primary-foreground">
-                      {step.title}
-                    </h3>
-                    <p className="mt-2 max-w-xl font-sans text-sm leading-[1.7] text-primary-foreground/70">
-                      {step.description}
-                    </p>
-                    <div className="relative mt-4 h-44 w-full overflow-hidden rounded-xl border border-primary-foreground/15 sm:h-56">
-                      <Image
-                        src={step.image}
-                        alt={step.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 640px"
-                        className="object-cover"
-                      />
-                    </div>
-                  </Reveal>
+
+                  <div
+                    className={`${
+                      right ? "md:col-start-2" : "md:col-start-1"
+                    }`}
+                  >
+                    <Reveal
+                      once={false}
+                      delay={0.08}
+                      duration={0.9}
+                      variants={{
+                        hidden: {
+                          opacity: 0,
+                          y: 48,
+                          scale: 0.96,
+                          filter: "blur(10px)",
+                        },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          scale: 1,
+                          filter: "blur(0px)",
+                        },
+                      }}
+                    >
+                      <div className="rounded-xl border border-primary-foreground/10 bg-white p-5 text-left shadow-[0_12px_40px_-24px_rgba(0,0,0,0.45)]">
+                        <span className="inline-block rounded bg-caramel px-2.5 py-1 font-sans text-[10px] font-bold uppercase tracking-wider text-white">
+                          Langkah {i + 1}
+                        </span>
+                        <h3 className="mt-3 font-display text-lg font-medium text-primary">
+                          {step.title}
+                        </h3>
+                        <p className="mt-1.5 font-sans text-sm leading-[1.6] text-muted-foreground">
+                          {step.description}
+                        </p>
+                      </div>
+                    </Reveal>
+                  </div>
                 </li>
               );
             })}

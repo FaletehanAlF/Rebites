@@ -1,8 +1,7 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { ArrowRight, Star, Quote } from "lucide-react";
 import { SmoothScroll } from "@/app/components/smooth-scroll";
 import { Preloader } from "@/app/components/preloader";
 import { SiteFooter } from "@/app/components/site-footer";
@@ -15,17 +14,7 @@ import { SmartImage } from "@/app/components/SmartImage";
 import { SubscriptionSection } from "@/app/components/subscription/subscription-section";
 import { FaqSection } from "@/app/components/faq-section";
 import { FlashSaleGrid } from "@/app/components/flash-sale-grid";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from "@/app/components/ui/carousel";
-import {
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-} from "@/app/components/ui/avatar";
+import { TestimonialsColumn } from "@/app/components/ui/testimonials";
 import { fetchVendors } from "@/lib/catalog";
 
 type Testimonial = {
@@ -113,9 +102,6 @@ const FALLBACK_STORES = [
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false);
-  const [testimonialApi, setTestimonialApi] = useState<CarouselApi>();
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const testimonialPaused = useRef(false);
   const handlePreloaderDone = useCallback(() => setLoaded(true), []);
   // Nama mitra diambil langsung dari daftar toko di database.
   const [partners, setPartners] = useState<string[]>([]);
@@ -144,35 +130,6 @@ export default function Home() {
     }
   }, [loaded]);
 
-  useEffect(() => {
-    if (!testimonialApi) return;
-
-    const onSelect = () =>
-      setActiveTestimonial(testimonialApi.selectedScrollSnap());
-
-    onSelect();
-    testimonialApi.on("select", onSelect);
-    testimonialApi.on("reInit", onSelect);
-
-    return () => {
-      testimonialApi.off("select", onSelect);
-      testimonialApi.off("reInit", onSelect);
-    };
-  }, [testimonialApi]);
-
-  // Auto-play carousel testimoni setiap 5 detik, pause saat hover.
-  useEffect(() => {
-    if (!testimonialApi || !testimonialApi.canScrollNext()) return;
-
-    const interval = setInterval(() => {
-      if (!testimonialPaused.current) {
-        testimonialApi.scrollNext();
-      }
-    }, 7000);
-
-    return () => clearInterval(interval);
-  }, [testimonialApi]);
-
   return (
     <SmoothScroll>
       <Preloader onDone={handlePreloaderDone} />
@@ -187,7 +144,7 @@ export default function Home() {
             <section
               data-nav="cream"
               aria-label="Mitra ReBites"
-              className="border-y border-hairline bg-cream py-5 lg:py-6"
+              className="border-y border-hairline bg-cream py-5 pb-0 lg:py-6 lg:pb-0"
             >
               <div className="[mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
                 <Marquee pauseOnHover>
@@ -204,6 +161,7 @@ export default function Home() {
                     </span>
                   ))}
                 </Marquee>
+              <HeroFoodCarousel />
               </div>
             </section>
           );
@@ -211,7 +169,6 @@ export default function Home() {
       </div>
 
       <div id="rekomendasi">
-        <HeroFoodCarousel />
 
         <FlashSaleGrid />
       </div>
@@ -383,7 +340,7 @@ export default function Home() {
 <section
         id="testimoni"
         data-nav="green"
-        className="grain-overlay relative scroll-mt-28 overflow-hidden bg-primary pt-24 pb-16 lg:scroll-mt-32 lg:pt-28 lg:pb-20"
+        className="grain-overlay relative scroll-mt-28 overflow-hidden bg-primary pt-16 pb-16 lg:scroll-mt-32 lg:pt-20 lg:pb-20"
       >
         <div className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-primary-foreground/[0.06] blur-3xl" />
 
@@ -407,120 +364,15 @@ export default function Home() {
           </div>
 
           <Reveal delay={0.1}>
-            <div
-              className="relative mt-12 lg:mt-16"
-              onMouseEnter={() => {
-                testimonialPaused.current = true;
-              }}
-              onMouseLeave={() => {
-                testimonialPaused.current = false;
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => testimonialApi?.scrollPrev()}
-                aria-label="Testimoni sebelumnya"
-                className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-caramel hover:bg-caramel hover:text-white sm:flex"
-              >
-                <ArrowRight className="h-4 w-4 rotate-180" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => testimonialApi?.scrollNext()}
-                aria-label="Testimoni berikutnya"
-                className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-caramel hover:bg-caramel hover:text-white sm:flex"
-              >
-                <ArrowRight className="h-4 w-4" />
-              </button>
-
-              <Carousel
-                opts={{ align: "start", loop: true }}
-                setApi={setTestimonialApi}
-              >
-                <CarouselContent className="-ml-4 lg:-ml-5">
-                  {TESTIMONIALS.map((t, i) => (
-                    <CarouselItem
-                      key={t.name}
-                      className="basis-full pl-4 sm:basis-1/2 sm:pl-4 lg:basis-1/3 lg:pl-5"
-                    >
-                      <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-8 shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-caramel/40 hover:shadow-[0_30px_60px_-28px_rgba(27,77,50,0.35)] lg:p-9">
-                        <span
-                          aria-hidden
-                          className="pointer-events-none absolute -top-3 right-4 select-none font-display text-[6rem] font-extralight leading-none text-caramel/[0.08] transition-colors duration-300 group-hover:text-caramel/15"
-                        >
-                          &ldquo;
-                        </span>
-
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: t.rating }).map((_, s) => (
-                            <Star
-                              key={s}
-                              className="h-4 w-4 fill-caramel text-caramel"
-                            />
-                          ))}
-                        </div>
-
-                        <Quote className="mt-5 h-5 w-5 text-caramel/40" />
-
-                        <blockquote className="mt-3 flex-1 font-sans text-sm leading-relaxed text-foreground/80">
-                          &ldquo;{t.quote}&rdquo;
-                        </blockquote>
-
-                        <div className="relative mt-7 flex items-center gap-3 pt-6">
-                          <span
-                            aria-hidden
-                            className="absolute inset-x-0 top-0 h-px"
-                            style={{
-                              background:
-                                "repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 10px)",
-                              opacity: 0.35,
-                            }}
-                          />
-
-                          <Avatar className="h-11 w-11 border border-caramel/30">
-                            <AvatarImage
-                              src={t.photo}
-                              alt={t.name}
-                              className="object-cover"
-                            />
-
-                            <AvatarFallback className="bg-caramel font-display text-sm font-medium text-white">
-                              {t.initials}
-                            </AvatarFallback>
-                          </Avatar>
-
-                          <div>
-                            <p className="font-display text-base font-medium text-primary">
-                              {t.name}
-                            </p>
-
-                            <p className="mt-0.5 font-sans text-xs text-muted-foreground">
-                              {t.role}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.15}>
-            <div className="mt-9 flex justify-center gap-2">
-              {TESTIMONIALS.map((t, i) => (
-                <button
-                  key={t.name}
-                  type="button"
-                  aria-label={`Ke testimoni ${i + 1}`}
-                  onClick={() => testimonialApi?.scrollTo(i)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    activeTestimonial === i
-                      ? "w-8 bg-primary-foreground"
-                      : "w-1.5 bg-primary-foreground/25 hover:bg-primary-foreground/50"
+            <div className="relative mt-12 flex max-h-[620px] justify-center gap-6 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)] lg:mt-16">
+              {[0, 1, 2].map((col) => (
+                <TestimonialsColumn
+                  key={col}
+                  className={`max-h-full w-full max-w-xs ${
+                    col === 1 ? "hidden sm:block" : col === 2 ? "hidden lg:block" : ""
                   }`}
+                  testimonials={TESTIMONIALS.filter((_, i) => i % 3 === col)}
+                  duration={col === 1 ? 14 : col === 2 ? 18 : 12}
                 />
               ))}
             </div>

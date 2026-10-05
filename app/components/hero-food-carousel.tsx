@@ -213,15 +213,15 @@ export function HeroFoodCarousel() {
 
   return (
     <section
-      className="grain-overlay relative flex min-h-[100svh] flex-col overflow-hidden bg-secondary pt-20 pb-12 lg:pt-20 lg:pb-16"
+      className="grain-overlay pointer-events-none relative flex flex-col overflow-hidden bg-secondary pt-0 pb-10 select-none lg:pb-14"
     >
 
 
-        <div className="mt-10 flex flex-col items-center gap-10 lg:mt-12">
+        <div className="mt-2 flex flex-col items-center gap-10 lg:mt-4">
           <Reveal className="relative w-full">
             <div
               className="relative mx-auto w-full max-w-3xl "
-              style={{ height: plateSize + 70 }}
+              style={{ height: plateSize + 30 }}
             >
               <div
                 aria-hidden
