@@ -213,53 +213,35 @@ export function HeroFoodCarousel() {
 
   return (
     <section
-      id="rekomendasi"
-      data-nav="cream"
       className="grain-overlay relative flex min-h-[100svh] flex-col overflow-hidden bg-secondary pt-20 pb-12 lg:pt-20 lg:pb-16"
     >
-      <div className="relative z-10 mx-auto w-full max-w-[min(100vw,1600px)] px-4 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-3xl text-center">
-          <div className="flex items-center justify-center gap-2">
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.22em] text-caramel">
-              Rekomendasi Makanan
-            </span>
-          </div>
-          <h2 className="mt-4 font-display text-[clamp(1.9rem,4vw,3rem)] font-light leading-[1.05] tracking-[-0.02em] text-forest-dark">
-            Pilihan terbaik untukmu hari ini
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl font-sans text-sm leading-[1.8] text-muted-foreground sm:text-base">
-            Putar piring dan temukan makanan favorit dari UMKM terbaik di Kota
-            Depok.
-          </p>
-        </Reveal>
+
 
         <div className="mt-10 flex flex-col items-center gap-10 lg:mt-12">
           <Reveal className="relative w-full">
             <div
-              className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-[2.5rem] border-2 border-white bg-green-700 shadow-[0_44px_80px_-42px_rgba(63,107,74,0.75)] ring-1 ring-inset ring-caramel/30"
+              className="relative mx-auto w-full max-w-3xl "
               style={{ height: plateSize + 70 }}
             >
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-y-0 left-0 w-1/2 rounded-l-full bg-[radial-gradient(130%_180%_at_12%_30%,rgba(255,253,248,0.18),transparent_55%)]"
               />
-              <LeafSprig className="left-7 top-1/2 h-12 w-12 -translate-y-1/2 rotate-12 text-white/30" />
-
+              
               <div className="absolute inset-0">
                 <OptionWheel
                   items={displayFoods.map((f) => f.name)}
                   defaultSelected={0}
-                  side="right"
-                  orientation="vertical"
-                  spacing={0.45}
+                  side="left"
+                  orientation="horizontal"
+                  spacing={1.2}
                   curve={10}
                   tilt={10}
-                  blur={8}
+                  blur={4}
                   fade={0.55}
                   minOpacity={0.12}
                   smoothing={200}
                   loop
-                  draggable
                   autoRotate={autoRotate}
                   autoRotateInterval={4200}
                   plateSize={plateSize}
@@ -267,19 +249,10 @@ export function HeroFoodCarousel() {
                   className="!py-0"
                   renderItem={(i) => <FoodPlate image={displayFoods[i].image} />}
                 />
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-green-700 to-transparent"
-                />
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-green-700 to-transparent"
-                />
               </div>
             </div>
           </Reveal>
         </div>
-      </div>
 
       </section>
   );

@@ -1,7 +1,14 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Reveal } from "@/app/components/reveal";
-import ReBitesStepCard, { type Step } from "@/app/components/ReBitesStepCard";
+
+type Step = {
+  title: string;
+  description: string;
+  image: string;
+};
 
 const steps: Step[] = [
   {
@@ -31,13 +38,43 @@ const steps: Step[] = [
 ];
 
 export default function HowItWorks() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const railRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const section = sectionRef.current;
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      const viewport = window.innerHeight;
+      const total = rect.height - viewport * 0.4;
+      const passed = viewport * 0.6 - rect.top;
+      setProgress(Math.min(1, Math.max(0, passed / Math.max(total, 1))));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <section
       id="cara-kerja"
       data-nav="green"
-      className="flex min-h-[100svh] flex-col overflow-hidden bg-primary pt-20 pb-16 lg:pt-20 lg:pb-20"
+      ref={sectionRef}
+      className="flex flex-col overflow-hidden bg-primary pt-20 pb-16 lg:pt-20 lg:pb-20"
     >
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8">
         <Reveal delay={0.05}>
           <h2 className="text-center font-display text-[clamp(2rem,4vw,3.375rem)] font-light leading-[1.1] tracking-[-0.01em] text-primary-foreground">
             Cara Kerja ReBites
@@ -52,15 +89,57 @@ export default function HowItWorks() {
           </p>
         </Reveal>
 
-        <Reveal delay={0.15}>
-          <div className="mt-10 lg:mt-12">
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {steps.map((step) => (
-                <ReBitesStepCard key={step.title} step={step} />
-              ))}
-            </div>
-          </div>
-        </Reveal>
+        <div className="relative mt-12 lg:mt-16">
+          <div
+            ref={railRef}
+            aria-hidden
+            className="absolute bottom-6 left-4 top-6 w-px bg-primary-foreground/25 sm:left-5"
+          />
+          <div
+            aria-hidden
+            className="absolute left-4 top-6 w-px origin-top bg-primary-foreground transition-[height] duration-150 sm:left-5"
+            style={{
+              height: railRef.current
+                ? `${progress * (railRef.current.offsetHeight || 0)}px`
+                : "0px",
+            }}
+          />
+
+          <ol className="flex flex-col gap-10 lg:gap-14">
+            {steps.map((step, i) => {
+              const active = progress >= (i + 0.5) / steps.length - 0.05;
+              return (
+                <li key={step.title} className="relative pl-14 sm:pl-16">
+                  <span
+                    aria-hidden
+                    className={`absolute left-4 top-1.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full border-2 transition-colors duration-300 sm:left-5 ${
+                      active
+                        ? "border-primary-foreground bg-primary-foreground"
+                        : "border-primary-foreground/40 bg-primary"
+                    }`}
+                  />
+                  <Reveal delay={0.05 * i}>
+                    <h3 className="font-display text-xl font-medium text-primary-foreground">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 max-w-xl font-sans text-sm leading-[1.7] text-primary-foreground/70">
+                      {step.description}
+                    </p>
+                    <div className="relative mt-4 h-44 w-full overflow-hidden rounded-xl border border-primary-foreground/15 sm:h-56">
+                      <Image
+                        src={step.image}
+                        alt={step.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 640px"
+                        className="object-cover"
+                      />
+                    </div>
+                  </Reveal>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       </div>
     </section>
   );
