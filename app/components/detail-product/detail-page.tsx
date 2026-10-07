@@ -1,10 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ProfileNavbar } from "@/app/components/shared/navbar";
-import { MobileNavbar } from "@/app/components/shared/MobileNavbar";
 import { SiteFooter } from "@/app/components/site-footer";
 import { CartProvider, useCart } from "./cart-context";
 import { PageOrnaments } from "./page-ornaments";
@@ -21,14 +19,34 @@ import type {
 } from "@/app/components/detail-product/data";
 import { EASE } from "./anim";
 
+/**
+ * Context shell for a product detail page.
+ *
+ * The route that renders `DetailProductContent` supplies it:
+ * `/detail/product` (application) passes the profile/mobile navbars,
+ * `/preview/product` (public showcase) passes the landing navbar. The shell is
+ * injected, never inferred from the pathname, so the public showcase can never
+ * inherit account UI and the application keeps the navbar it has always had.
+ */
+export interface DetailProductShell {
+  /** Fixed chrome rendered above the product content. */
+  header: ReactNode;
+  /** Route used to open another product inside the same context. */
+  productPath: string;
+  /** Target of the related-products "Lihat Semua" link. */
+  seeAllHref: string;
+}
+
 export default function DetailPage({
   product,
   reviews,
   relatedProducts,
+  shell,
 }: {
   product: ProductDetail;
   reviews: Review[];
   relatedProducts: RelatedProduct[];
+  shell: DetailProductShell;
 }) {
   return (
     <CartProvider>
@@ -36,6 +54,7 @@ export default function DetailPage({
         product={product}
         reviews={reviews}
         relatedProducts={relatedProducts}
+        shell={shell}
       />
     </CartProvider>
   );
@@ -45,10 +64,12 @@ function DetailPageContent({
   product,
   reviews,
   relatedProducts,
+  shell,
 }: {
   product: ProductDetail;
   reviews: Review[];
   relatedProducts: RelatedProduct[];
+  shell: DetailProductShell;
 }) {
   const router = useRouter();
   const rightColRef = useRef<HTMLDivElement>(null);
@@ -86,8 +107,7 @@ function DetailPageContent({
   return (
     <div className="relative min-h-screen overflow-x-clip bg-secondary text-foreground">
       <PageOrnaments />
-      <div className="lg:hidden"><MobileNavbar /></div>
-      <div className="hidden lg:block"><ProfileNavbar /></div>
+      {shell.header}
 
       <main className="relative mx-auto max-w-[1200px] px-4 pb-20 pt-[120px] sm:px-8 sm:pb-10 sm:pt-24 lg:pt-28">
         <ProductBreadcrumb product={product} onShare={handleShare} />
@@ -108,7 +128,11 @@ function DetailPageContent({
         </div>
 
         <ReviewSection reviews={reviews} product={product} />
-        <RelatedProducts products={relatedProducts} />
+        <RelatedProducts
+          products={relatedProducts}
+          productPath={shell.productPath}
+          seeAllHref={shell.seeAllHref}
+        />
       </main>
 
       <StickyMobileBar
