@@ -1,28 +1,33 @@
-# Implementation Plan: Cara Kerja Timeline Redesign
+# Implementation Plan: Cara Kerja Horizontal Scroll Redesign
 
 ## Overview
-Replace the 4-card grid in `HowItWorks` with a vertical timeline: left rail line, per-step dots, title + description + image per step, and a scroll-driven progress fill. Subtle foreground-on-green styling.
+Replace the vertical timeline in `HowItWorks` with a GSAP ScrollTrigger-scrubbed horizontal slider (pattern from howitworkss.tsx): vertical scrolling moves the slide sideways and each step (image, title, description) reveals in sequence. `howitworkss.tsx` is deleted after adaptation.
 
 ## Architecture Decisions
-- Keep `steps` data and section copy/id/nav unchanged.
-- Progress via section ref + scroll listener (rAF-throttled, passive).
-- Each dot activates once the fill passes its center.
+- Inline `useGSAP` helper (no @gsap/react dependency), copied from howitworkss.tsx.
+- Keep `steps` data (4 ReBites steps, each with its own image), `id="cara-kerja"`, `data-nav="green"`.
+- Sticky viewport section; horizontal flex slider; per-item reveal (line + dot + SplitText title/description).
+- ReBites theme: `bg-primary`, `text-primary-foreground`, `caramel` accent instead of `#ff5f00`.
+- Lenis sync: `ScrollTrigger.update` on `window.__lenis` scroll.
+- Reduced motion: `gsap.set` fallbacks.
+- Heading stays inside the slider as the first column (Product Storyline pattern).
 
 ## Task List
 
 ### Phase 1
-- [ ] Task 1: Timeline markup in HowItWorks.tsx
-- [ ] Task 2: Scroll progress fill + dot states
-- [ ] Task 3: Keep step images in timeline cards
+- [x] Task 1: Rewrite HowItWorks.tsx with GSAP sticky horizontal slider
+- [x] Task 2: Per-step reveal (line/dot/SplitText) + reduced-motion fallback + Lenis sync
+- [x] Task 3: ReBites styling, delete howitworkss.tsx, update plan files
 
 ### Checkpoint
-- [ ] tsc --noEmit, next lint, next build pass; manual scroll check
+- [x] `npm run typecheck`, `npm run lint`, `npm run build` pass; manual scroll check
 
 ## Risks and Mitigations
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Scroll listener perf | Low | rAF throttle, passive listener |
-| Mobile overflow | Med | min-w-0 content, small rail |
+| SplitText not registered | High | registerPlugin(ScrollTrigger, SplitText) |
+| Lenis/ScrollTrigger desync | Med | lenis.on('scroll', ScrollTrigger.update) |
+| Mobile overflow | Med | max-[600px]: breakpoints from howitworkss |
 
 ## Open Questions
 - None
