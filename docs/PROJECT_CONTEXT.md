@@ -49,7 +49,8 @@ Installed but not obviously used on the landing page: `gsap`, `recharts`
 
 ```
 app/
-  layout.tsx               # fonts, metadata, lang="id" (no providers)
+  layout.tsx               # fonts, metadata, favicon (logo.png), <noscript>
+                           #   fallback CSS, lang="id" (no providers)
   globals.css              # design tokens + utilities
   (landing)/               # PUBLIC showcase — no account UI allowed (see §5a)
     page.tsx               # landing page → `/` (Server Component)
@@ -161,6 +162,12 @@ with pathname checks:
 - **Recurring pattern**: duplicated `FOCUS_RING` constant in landing files
   (`focus-visible:ring-2 focus-visible:ring-primary …`) — consider extracting to
   `lib/utils.ts` if another refactor touches those files.
+- **Opacity modifiers**: only Tailwind's generated steps exist
+  (`5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95, 100`) — `text-white/65`,
+  `border-white/15` … are dead and silently render the wrong value. On green
+  backgrounds use `text-white/70` for body text (≥4.5:1) and `/20` for subtle
+  borders. WCAG target rule on the landing page: primary controls ≥44px,
+  secondary text links ≥36–40px.
 - **Section rhythm**: alternating white / `bg-secondary` / `bg-primary` bands;
   editorial two-column headers (eyebrow + heading + supporting paragraph).
 
@@ -198,29 +205,44 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 
 ## 10. Known issues / technical debt (verified)
 
-- Tailwind prints an `ambiguous` warning for
-  `ease-[cubic-bezier(0.22,1,0.36,1)]` (escape it or extract a token).
+- The Tailwind `ambiguous` warning for `ease-[cubic-bezier(0.22,1,0.36,1)]`
+  is **resolved** — the legacy `hero-section.tsx` that used it was deleted.
 - `next build` skips ESLint (`eslint.ignoreDuringBuilds: true` in
   `next.config.js`); run `npm run lint` separately. Remaining warnings are
   pre-existing (`<img>` in seller dashboard, hook deps in `detail/toko`).
 - **`public/makanan2.jpeg` and `public/makanan5.jpeg` have a baked-in
   transparency checkerboard** (rasterized PNG artifact) — do not use them in
   new UI. They may still be referenced by product rows in the database.
-- Unreferenced components left in place (not part of the current landing page):
-  `app/components/hero-section.tsx`, `app/components/HowItWorks.tsx`,
-  `public/ref-pg.jpeg`, `public/loading.mp4`.
-- Removed in the last cleanup: `landing/testimonial-section.tsx` (contained
-  fabricated testimonials), `landing/partner-marquee.tsx`,
-  `landing/catalog-sections.tsx`, `components/hero-food-carousel.tsx`,
-  `components/flash-sale-grid.tsx`, and `RevealWords` in `shared/reveal.tsx`.
-- No automated tests; visual verification is manual (browser at 320/375/768/
-  1024/1440/1920 — no horizontal overflow observed on `/`).
+- Unreferenced files left in place: `app/components/ReBitesStepCard.tsx`
+  (orphan component), `public/ref-pg.jpeg`, `public/loading.mp4`.
+- Removed in the landing QA pass (unreferenced since `app/(landing)/page.tsx`
+  took over; deletions are in the working tree): legacy `app/page.tsx` (it
+  shadowed the landing route), `components/{hero-section, HowItWorks,
+  hero-food-carousel, faq-section, flash-sale-grid, FoldText, RotatingText}.tsx`,
+  `components/ui/testimonials.tsx`,
+  `components/subscription/subscription-section.tsx`. Earlier cleanup removed
+  `landing/testimonial-section.tsx` (fabricated testimonials),
+  `landing/partner-marquee.tsx`, `landing/catalog-sections.tsx`, and
+  `RevealWords` in `shared/reveal.tsx`.
+- No automated tests; verification is scripted headless-Chrome + manual
+  screenshots: `/` checked at 320/375/390/430/768/1024/1280/1440/1920 — no
+  horizontal overflow, no console/network errors, WCAG AA text contrast
+  passes (category-tile text pixel-sampled over the photos, min 4.84:1), and
+  the page renders fully with JS disabled (`<noscript>` fallback).
 - Stale `/homePage` links: fixed inside `detail-product/` (breadcrumb,
   related-products); one remains in
   `app/(app)/makanan/[category]/not-found.tsx` (`/homePage` → should be
   `/home`) — pre-existing, out of scope for the separation refactor.
 - `npm run typecheck` reads generated `.next/types`; after moving routes, run
   `npm run build` first or stale types cause false TS2307 errors.
+- Dead Tailwind opacity classes remain **outside** the landing page (e.g.
+  `bg-primary/15` renders transparent on app pages) — only `app/layout.tsx`
+  and `app/components/landing/*` were cleaned; an app-wide sweep is pending.
+- FAQ answers are JS-only (client accordion); without scripts only the first
+  answer is reachable. `layout.tsx` ships a `<noscript>` CSS fallback that
+  reveals reveal-animated content and hides the preloader.
+- `sharp` is not installed (Next.js recommends it for production image
+  optimization; warning appears on `next start`).
 
 ## 11. Conventions for future work
 

@@ -19,7 +19,7 @@ const FOCUS_RING =
 export function HeroSection() {
   return (
     <section id="top" className="relative overflow-hidden bg-white">
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-14 px-5 pb-20 pt-28 sm:px-8 sm:pb-24 sm:pt-32 lg:grid-cols-[1fr_0.9fr] lg:gap-16 lg:px-10 lg:pb-28 lg:pt-36 xl:gap-24">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-14 px-4 pb-20 pt-28 sm:px-6 sm:pb-24 sm:pt-32 lg:grid-cols-[1fr_0.9fr] lg:gap-16 lg:px-8 lg:pb-28 lg:pt-36 xl:gap-24">
         {/* Copy */}
         <div className="flex max-w-2xl flex-col items-start">
           <Reveal delay={0.05}>
@@ -101,7 +101,7 @@ export function HeroSection() {
                 alt="Aneka hidangan dari pelaku UMKM yang dijual melalui ReBites"
                 fill
                 priority
-                sizes="(min-width: 1024px) 44rem, calc(100vw - 2.5rem)"
+                sizes="(min-width: 1024px) 44rem, calc(100vw - 2rem)"
                 className="object-cover"
               />
             </div>

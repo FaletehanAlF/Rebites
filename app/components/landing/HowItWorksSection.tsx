@@ -37,10 +37,10 @@ const STEPS = [
 ];
 
 /**
- * How ReBites works — the real two-sided flow already documented in
- * `app/components/HowItWorks.tsx`, restyled as a numbered rail instead of four
- * identical cards. The connector line only renders at `xl` where the four
- * steps sit on a single row.
+ * How ReBites works — the real two-sided flow of the platform (UMKM lists
+ * surplus food, buyers find and receive it), presented as a numbered rail
+ * instead of four identical cards. The connector line only renders at `xl`
+ * where the four steps sit on a single row.
  */
 export function HowItWorksSection() {
   return (
@@ -52,7 +52,7 @@ export function HowItWorksSection() {
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
           <Reveal>
-            <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/60">
+            <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/70">
               Alur ReBites
             </p>
             <h2
@@ -106,7 +106,7 @@ export function HowItWorksSection() {
               <h3 className="mt-5 font-display text-base font-semibold leading-snug tracking-tight text-primary-foreground sm:text-lg">
                 {step.title}
               </h3>
-              <p className="mt-2 text-sm leading-[1.75] text-primary-foreground/65">
+              <p className="mt-2 text-sm leading-[1.75] text-primary-foreground/70">
                 {step.description}
               </p>
             </Reveal>

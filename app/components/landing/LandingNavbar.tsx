@@ -120,7 +120,7 @@ export function LandingNavbar() {
           <Link
             href="/"
             aria-label="ReBites — beranda"
-            className="flex shrink-0 items-center gap-2.5"
+            className="flex min-h-[44px] shrink-0 items-center gap-2.5"
           >
             <Image
               src="/logo.png"
@@ -146,7 +146,7 @@ export function LandingNavbar() {
                       onClick={(event) => handleJump(event, item.id)}
                       aria-current={isActive ? 'true' : undefined}
                       className={cn(
-                        'relative inline-flex px-3 py-2 font-secondary text-sm transition-colors duration-200',
+                        'relative inline-flex min-h-[44px] items-center px-3 py-2 font-secondary text-sm transition-colors duration-200',
                         isActive
                           ? 'font-semibold text-primary'
                           : 'text-muted-foreground hover:text-primary',
@@ -157,7 +157,7 @@ export function LandingNavbar() {
                       <span
                         aria-hidden
                         className={cn(
-                          'absolute inset-x-3 bottom-1 h-0.5 origin-left rounded-full bg-primary transition-transform duration-300',
+                          'absolute inset-x-3 bottom-2 h-0.5 origin-left rounded-full bg-primary transition-transform duration-300',
                           isActive ? 'scale-x-100' : 'scale-x-0',
                         )}
                       />
@@ -172,7 +172,7 @@ export function LandingNavbar() {
             <Link
               href="/auth/login"
               className={cn(
-                'hidden items-center gap-1.5 rounded-full border border-border px-4 py-2 font-secondary text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-secondary sm:inline-flex',
+                'hidden min-h-[44px] items-center gap-1.5 rounded-full border border-border px-4 py-2 font-secondary text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-secondary sm:inline-flex',
                 FOCUS_RING,
               )}
             >
@@ -183,7 +183,7 @@ export function LandingNavbar() {
             <Link
               href="/auth/register"
               className={cn(
-                'group inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-secondary text-sm font-semibold text-white transition-colors duration-200 hover:bg-primary-dark sm:px-5',
+                'group inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-secondary text-sm font-semibold text-white transition-colors duration-200 hover:bg-primary-dark sm:px-5',
                 FOCUS_RING,
               )}
             >
@@ -216,6 +216,13 @@ export function LandingNavbar() {
       </div>
 
       <div className="px-4 sm:px-6 lg:hidden">
+        {open && (
+          <div
+            aria-hidden
+            className="fixed inset-0 -z-10 bg-foreground/10 lg:hidden"
+            onClick={() => setOpen(false)}
+          />
+        )}
         <AnimatePresence initial={false}>
           {open && (
             <motion.div

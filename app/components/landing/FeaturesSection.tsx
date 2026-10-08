@@ -96,7 +96,7 @@ export function FeaturesSection() {
               <div className="flex h-full flex-col rounded-3xl border border-border bg-white p-6 transition-colors duration-300 hover:border-primary/40 sm:p-7">
                 <span
                   aria-hidden
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/15 bg-secondary text-primary"
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/20 bg-secondary text-primary"
                 >
                   <feature.icon className="h-5 w-5" strokeWidth={2} />
                 </span>

@@ -136,7 +136,7 @@ export function LandingFooter() {
               </span>
             </Link>
 
-            <p className="mt-5 max-w-sm text-sm leading-[1.75] text-white/65">
+            <p className="mt-5 max-w-sm text-sm leading-[1.75] text-white/70">
               Marketplace khusus penjualan makanan surplus yang masih layak
               konsumsi dari pelaku UMKM, untuk mengurangi food loss dan food
               waste.
@@ -150,7 +150,7 @@ export function LandingFooter() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/80 transition-colors duration-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white/80 transition-colors duration-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
                   >
                     <Icon className="h-[17px] w-[17px]" />
                   </a>
@@ -158,11 +158,11 @@ export function LandingFooter() {
               ))}
             </ul>
 
-            <ul className="mt-6 space-y-3 text-sm text-white/65">
+            <ul className="mt-6 space-y-3 text-sm text-white/70">
               <li>
                 <a
                   href="mailto:halo@rebites.id"
-                  className="inline-flex items-center gap-2 transition-colors duration-300 hover:text-white"
+                  className="inline-flex min-h-[36px] items-center gap-2 transition-colors duration-300 hover:text-white"
                 >
                   <Mail className="h-4 w-4 shrink-0" aria-hidden />
                   halo@rebites.id
@@ -180,10 +180,10 @@ export function LandingFooter() {
 
           {COLUMNS.map((column) => (
             <nav key={column.title} aria-label={column.title}>
-              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-white/50">
+              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">
                 {column.title}
               </p>
-              <ul className="mt-4 space-y-2.5">
+              <ul className="mt-4 space-y-1">
                 {column.links.map((link) => (
                   <li key={link.href + link.label}>
                     <Link
@@ -196,7 +196,7 @@ export function LandingFooter() {
                             }
                           : undefined
                       }
-                      className="inline-flex min-h-[28px] items-center text-sm text-white/70 transition-colors duration-300 hover:text-white"
+                      className="inline-flex min-h-[40px] items-center text-sm text-white/70 transition-colors duration-300 hover:text-white"
                     >
                       {link.label}
                     </Link>
@@ -208,7 +208,7 @@ export function LandingFooter() {
         </div>
 
         <div className="mt-12 flex flex-col-reverse items-center gap-5 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-center text-xs leading-relaxed text-white/55 sm:text-left">
+          <p className="text-center text-xs leading-relaxed text-white/70 sm:text-left">
             © {new Date().getFullYear()} ReBites. Dibuat oleh{' '}
             <span className="text-white/80">Tim Sixquit</span> — SMK Taruna
             Bhakti.

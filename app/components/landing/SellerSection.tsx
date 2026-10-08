@@ -88,7 +88,7 @@ export function SellerSection() {
                   <div className="flex gap-3.5">
                     <span
                       aria-hidden
-                      className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-white text-primary"
+                      className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-white text-primary"
                     >
                       <item.icon className="h-4 w-4" strokeWidth={2} />
                     </span>
@@ -218,7 +218,7 @@ export function SellerSection() {
 
                   <Link
                     href={`/auth/register/penjual?plan=${plan.slug}&billing=monthly`}
-                    className={`mt-6 inline-flex min-h-[42px] items-center justify-center rounded-full border border-primary/30 font-secondary text-sm font-semibold text-primary transition-colors duration-300 hover:bg-primary hover:text-white ${FOCUS_RING}`}
+                    className={`mt-6 inline-flex min-h-[44px] items-center justify-center rounded-full border border-primary/30 font-secondary text-sm font-semibold text-primary transition-colors duration-300 hover:bg-primary hover:text-white ${FOCUS_RING}`}
                   >
                     {plan.cta}
                   </Link>

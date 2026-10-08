@@ -16,7 +16,7 @@ export function FinalCTASection() {
               className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/10"
             />
 
-            <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
+            <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
               Siap mulai
             </p>
 
@@ -47,7 +47,7 @@ export function FinalCTASection() {
 
               <Link
                 href="/auth/register/penjual"
-                className={`inline-flex items-center justify-center gap-2 rounded-full border border-white/35 px-7 py-3.5 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:border-white hover:bg-white/10 ${FOCUS_RING}`}
+                className={`inline-flex items-center justify-center gap-2 rounded-full border border-white/40 px-7 py-3.5 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:border-white hover:bg-white/10 ${FOCUS_RING}`}
               >
                 Daftar sebagai penjual
               </Link>

@@ -71,7 +71,7 @@ export function FoodDiscoverySection() {
               </p>
               <Link
                 href="/home"
-                className={`group mt-4 inline-flex items-center gap-1.5 font-secondary text-sm font-semibold text-primary ${FOCUS_RING}`}
+                className={`group mt-4 inline-flex min-h-[36px] items-center gap-1.5 font-secondary text-sm font-semibold text-primary ${FOCUS_RING}`}
               >
                 Buka katalog lengkap
                 <ArrowUpRight
@@ -103,13 +103,13 @@ export function FoodDiscoverySection() {
                 />
                 <span
                   aria-hidden
-                  className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/25 to-transparent"
+                  className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent"
                 />
                 <span className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
                   <span className="block font-display text-sm font-semibold leading-snug tracking-tight text-white sm:text-base">
                     {category.name}
                   </span>
-                  <span className="mt-1 hidden text-xs leading-snug text-white/75 line-clamp-2 sm:block">
+                  <span className="mt-1 hidden text-xs leading-snug text-white/90 line-clamp-2 sm:block">
                     {category.description}
                   </span>
                 </span>

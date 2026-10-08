@@ -27,7 +27,7 @@ export function BenefitsSection() {
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
         <Reveal>
-          <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/60">
+          <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/70">
             Kenapa layak
           </p>
           <h2
@@ -40,14 +40,14 @@ export function BenefitsSection() {
           </h2>
         </Reveal>
 
-        <dl className="mt-11 grid gap-8 border-t border-white/15 pt-9 sm:mt-14 sm:grid-cols-3 sm:gap-0">
+        <dl className="mt-11 grid gap-8 border-t border-white/20 pt-9 sm:mt-14 sm:grid-cols-3 sm:gap-0">
           {BENEFITS.map((benefit, index) => (
             <Reveal
               key={benefit.label}
               delay={0.05 + index * 0.06}
               className={
                 index > 0
-                  ? 'sm:border-l sm:border-white/15 sm:pl-8 lg:pl-10'
+                  ? 'sm:border-l sm:border-white/20 sm:pl-8 lg:pl-10'
                   : 'sm:pr-8 lg:pr-10'
               }
             >
