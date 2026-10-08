@@ -109,9 +109,9 @@ export default function CategoryView({
   return (
     <div className="flex min-h-screen flex-col bg-secondary">
       <main className="flex-1">
-        {}
+        { }
         <section className="relative overflow-hidden">
-          {}
+          { }
           {categoryImage && (
             <div className="absolute inset-0">
               <SmartImage
@@ -126,7 +126,7 @@ export default function CategoryView({
           )}
 
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {}
+            { }
             <div className="pt-6">
               <Link
                 href="/home"
@@ -140,7 +140,7 @@ export default function CategoryView({
               </Link>
             </div>
 
-            {}
+            { }
             <header className="mt-6 max-w-2xl pb-12 sm:pb-16 lg:pb-20">
               <h1 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
                 {name}
@@ -149,7 +149,7 @@ export default function CategoryView({
                 {description}
               </p>
 
-              {}
+              { }
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <span
                   aria-live="polite"
@@ -165,7 +165,7 @@ export default function CategoryView({
           </div>
         </section>
 
-        {}
+        { }
         <section className="border-b border-border bg-secondary">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="py-3 sm:py-4">
@@ -182,7 +182,7 @@ export default function CategoryView({
           </div>
         </section>
 
-        {}
+        { }
         <section className="mx-auto max-w-7xl px-4 pb-24 pt-4 sm:px-6 sm:pt-8 lg:px-8">
           {isLoading ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 sm:gap-5 xl:grid-cols-4">
@@ -195,7 +195,7 @@ export default function CategoryView({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: EASE }}
-              className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-white px-6 py-20 text-center"
+              className="flex flex-col items-center rounded-3xl border border-dashed border-border px-6 py-20 text-center"
             >
               <span className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                 <PackageOpen

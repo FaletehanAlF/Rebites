@@ -62,16 +62,16 @@ export function FoodCard({
           handleOpen();
         }
       }}
-      className="group flex cursor-pointer overflow-hidden rounded-2xl border border-zinc-200 bg-white outline-none transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg hover:shadow-primary/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-col sm:h-full sm:hover:-translate-y-1"
+      className="group cursor-pointer overflow-hidden rounded-2xl border border-zinc-200 bg-white outline-none transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg hover:shadow-primary/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-col sm:h-full sm:hover:-translate-y-1"
     >
       {/* Image: fixed 96x96 di mobile (horizontal), aspect 4/3 di desktop (vertical) */}
-      <div className="relative h-28 w-28 shrink-0 overflow-hidden bg-muted sm:h-auto sm:w-full sm:aspect-[4/3]">
+      <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-muted">
         <SmartImage
           src={item.image}
           alt={`Foto ${item.name} dari ${item.vendorName}`}
           sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 112px"
           className={cn(
-            "transition-transform duration-500 group-hover:scale-105",
+            "transition-transform duration-500 group-hover:scale-105 ",
             isUnavailable && "grayscale-[40%]",
           )}
         />
