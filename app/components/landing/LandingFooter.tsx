@@ -3,48 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowUp, Mail, MapPin } from 'lucide-react';
-import { scrollToSection } from '@/app/components/landing/scroll-to-section';
+import { ArrowUp, Mail } from 'lucide-react';
+import { handleSectionLinkClick } from '@/app/components/landing/scroll-to-section';
+import { PRIMARY_NAV } from '@/app/components/landing/nav-items';
 
 type FooterLink = { label: string; href: string; sectionId?: string };
 
-const EXPLORE_LINKS: FooterLink[] = [
-  { label: 'Cara Kerja', href: '/#cara-kerja', sectionId: 'cara-kerja' },
-  { label: 'Jelajahi Katalog', href: '/#rekomendasi', sectionId: 'rekomendasi' },
-  { label: 'Untuk UMKM', href: '/#umkm', sectionId: 'umkm' },
-  { label: 'Untuk Pembeli', href: '/#pembeli', sectionId: 'pembeli' },
-  { label: 'FAQ', href: '/#faq', sectionId: 'faq' },
-  { label: 'Paket Langganan', href: '/#langganan', sectionId: 'langganan' },
-];
-
-const BUYER_LINKS: FooterLink[] = [
-  { label: 'Beranda aplikasi', href: '/home' },
-  { label: 'Kategori makanan', href: '/makanan/makanan-berat' },
-  { label: 'Riwayat pesanan', href: '/riwayatPesanan' },
-  { label: 'Notifikasi', href: '/notifikasi/pembeli' },
-];
-
-const SELLER_LINKS: FooterLink[] = [
-  { label: 'Dashboard penjual', href: '/dashboard/penjual' },
-  { label: 'Tambah menu', href: '/dashboard/penjual/tambahMenu' },
-  { label: 'Pesanan masuk', href: '/dashboard/penjual/pesanan' },
-  { label: 'Ulasan pembeli', href: '/dashboard/penjual/ulasan' },
-  { label: 'Performa penjualan', href: '/dashboard/penjual/performa' },
-];
-
-const ACCOUNT_LINKS: FooterLink[] = [
+/** Ke halaman aplikasi: tempat pengunjung benar-benar bisa mulai memakai ReBites. */
+const PRODUCT_LINKS: FooterLink[] = [
+  { label: 'Jelajahi makanan', href: '/home' },
+  { label: 'Membership', href: '/#langganan', sectionId: 'langganan' },
   { label: 'Masuk', href: '/auth/login' },
-  { label: 'Daftar', href: '/auth/register' },
-  { label: 'Masuk penjual', href: '/auth/login/penjual' },
-  { label: 'Daftar penjual', href: '/auth/register/penjual' },
-  { label: 'Lupa sandi', href: '/auth/forgotPassword' },
-];
-
-const COLUMNS: { title: string; links: FooterLink[] }[] = [
-  { title: 'Jelajahi', links: EXPLORE_LINKS },
-  { title: 'Untuk pembeli', links: BUYER_LINKS },
-  { title: 'Untuk penjual', links: SELLER_LINKS },
-  { title: 'Akun', links: ACCOUNT_LINKS },
 ];
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -117,13 +86,28 @@ function BackToTop() {
   );
 }
 
+/**
+ * Footer situs publik. Sengaja ringkas: identitas + kanal kontak, navigasi
+ * halaman yang sama persis dengan navbar, dan tiga tautan menuju produk.
+ * Sitemap aplikasi tidak dicantumkan — semuanya masih bisa dicapai lewat
+ * aplikasi itu sendiri.
+ */
 export function LandingFooter() {
+  const columns: { title: string; links: FooterLink[] }[] = [
+    { title: 'Navigasi', links: PRIMARY_NAV },
+    { title: 'ReBites', links: PRODUCT_LINKS },
+  ];
+
   return (
     <footer className="grain-overlay bg-primary text-primary-foreground">
       <div className="mx-auto w-full max-w-7xl px-4 pb-8 pt-14 sm:px-6 sm:pt-16 lg:px-8 lg:pt-20">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr] lg:gap-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr] lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" aria-label="ReBites — beranda" className="inline-flex items-center gap-2.5">
+            <Link
+              href="/"
+              aria-label="ReBites — beranda"
+              className="inline-flex min-h-[44px] items-center gap-2.5"
+            >
               <Image
                 src="/logo.png"
                 alt=""
@@ -136,13 +120,20 @@ export function LandingFooter() {
               </span>
             </Link>
 
-            <p className="mt-5 max-w-sm text-sm leading-[1.75] text-white/70">
-              Marketplace khusus penjualan makanan surplus yang masih layak
-              konsumsi dari pelaku UMKM, untuk mengurangi food loss dan food
-              waste.
+            <p className="mt-4 max-w-sm text-sm leading-[1.75] text-white/70">
+              Marketplace makanan surplus yang masih layak konsumsi dari pelaku
+              UMKM — agar makanan berakhir di piring, bukan di tempat sampah.
             </p>
 
-            <ul className="mt-6 flex flex-wrap items-center gap-2.5">
+            <a
+              href="mailto:halo@rebites.id"
+              className="mt-5 inline-flex min-h-[40px] items-center gap-2 text-sm text-white/70 transition-colors duration-300 hover:text-white"
+            >
+              <Mail className="h-4 w-4 shrink-0" aria-hidden />
+              halo@rebites.id
+            </a>
+
+            <ul className="mt-4 flex flex-wrap items-center gap-2.5">
               {SOCIALS.map(({ label, href, Icon }) => (
                 <li key={label}>
                   <a
@@ -157,28 +148,9 @@ export function LandingFooter() {
                 </li>
               ))}
             </ul>
-
-            <ul className="mt-6 space-y-3 text-sm text-white/70">
-              <li>
-                <a
-                  href="mailto:halo@rebites.id"
-                  className="inline-flex min-h-[36px] items-center gap-2 transition-colors duration-300 hover:text-white"
-                >
-                  <Mail className="h-4 w-4 shrink-0" aria-hidden />
-                  halo@rebites.id
-                </a>
-              </li>
-              <li className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-                <span className="leading-relaxed">
-                  SMK Taruna Bhakti, Jl. Pekapuran, RT.02/RW.06, Curug, Kec.
-                  Cimanggis, Kota Depok, Jawa Barat 16953
-                </span>
-              </li>
-            </ul>
           </div>
 
-          {COLUMNS.map((column) => (
+          {columns.map((column) => (
             <nav key={column.title} aria-label={column.title}>
               <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">
                 {column.title}
@@ -190,10 +162,8 @@ export function LandingFooter() {
                       href={link.href}
                       onClick={
                         link.sectionId
-                          ? (event) => {
-                              event.preventDefault();
-                              scrollToSection(link.sectionId as string);
-                            }
+                          ? (event) =>
+                              handleSectionLinkClick(event, link.sectionId as string)
                           : undefined
                       }
                       className="inline-flex min-h-[40px] items-center text-sm text-white/70 transition-colors duration-300 hover:text-white"
