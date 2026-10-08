@@ -3,28 +3,24 @@
 import type { ReactNode } from 'react';
 import { MotionConfig } from 'framer-motion';
 import { SmoothScroll } from '@/app/components/smooth-scroll';
-import { Preloader } from '@/app/components/preloader';
 
 /**
- * Client boundary for the landing page.
+ * Client boundary untuk seluruh situs publik ReBites.
  *
- * `app/page.tsx` stays a Server Component (static markup never ships as client
- * JS and never has to be hydrated), while everything that genuinely needs the
- * browser — framer-motion's `MotionConfig`, Lenis, the intro overlay — is
- * isolated here. `children` come down from the server, so the sections in
- * between are rendered once on the server and passed through as payload.
+ * Halaman di `app/(landing)/` tetap Server Component (markup statis tidak
+ * pernah dikirim sebagai JS klien), dan hanya hal yang benar-benar butuh
+ * browser — framer-motion `MotionConfig` serta Lenis — yang dibatasi di
+ * sini. `children` datang dari server, jadi section di dalamnya dirender
+ * sekali di server dan dilewatkan sebagai payload.
  *
- * reducedMotion="user" makes all framer-motion animations (Reveal, marquees,
- * sparkles) respect prefers-reduced-motion — the global CSS rule only covers
- * CSS animations, not JS-driven ones.
+ * `reducedMotion="user"` membuat semua animasi framer-motion (Reveal,
+ * transisi tab) menghormati prefers-reduced-motion — aturan CSS global hanya
+ * menutup animasi CSS, bukan animasi berbasis JS.
  */
 export function LandingShell({ children }: { children: ReactNode }) {
   return (
     <MotionConfig reducedMotion="user">
-      <SmoothScroll>
-        <Preloader />
-        {children}
-      </SmoothScroll>
+      <SmoothScroll>{children}</SmoothScroll>
     </MotionConfig>
   );
 }

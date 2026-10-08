@@ -1,48 +1,77 @@
-import Image from 'next/image';
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Reveal } from '@/app/components/shared/reveal';
 
-const STEPS = [
-  {
-    num: '01',
-    title: 'Pelaku UMKM mendaftar & mengunggah',
-    description:
-      'Mendaftar akun, melengkapi profil usaha, lalu mengunggah makanan surplus yang masih layak konsumsi beserta harga, stok, dan waktu penjualannya.',
-    image: '/penjual-login.jpg',
-    alt: 'Pelaku UMKM mendaftar dan mengunggah menu di ReBites',
+const FOCUS_RING_ON_GREEN =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary';
+
+type PathKey = 'pembeli' | 'umkm';
+
+const PATHS: Record<
+  PathKey,
+  { label: string; heading: string; steps: { title: string; description: string }[]; cta: { label: string; href: string } }
+> = {
+  pembeli: {
+    label: 'Untuk pembeli',
+    heading: 'Tiga langkah sampai ke piring.',
+    steps: [
+      {
+        title: 'Temukan',
+        description:
+          'Cari makanan surplus dari UMKM di sekitarmu lewat kategori atau pencarian.',
+      },
+      {
+        title: 'Pilih',
+        description:
+          'Lihat makanan, harga, sisa stok, dan jam ketersediaannya sebelum menentukan pilihan.',
+      },
+      {
+        title: 'Pesan',
+        description:
+          'Diantar atau ambil sendiri, bayar, dan nikmati makanan berkualitas dengan harga lebih hemat.',
+      },
+    ],
+    cta: { label: 'Temukan Makanan', href: '/home' },
   },
-  {
-    num: '02',
-    title: 'Pembeli mencari & melihat detail',
-    description:
-      'Menjelajahi kategori dan pencarian, lalu memeriksa detail produk surplus di sekitarnya sebelum menentukan jumlah pembelian.',
-    image: '/pembeli-mencaro.jpg',
-    alt: 'Pembeli mencari makanan surplus di ReBites',
+  umkm: {
+    label: 'Untuk UMKM',
+    heading: 'Tiga langkah sampai pesanan masuk.',
+    steps: [
+      {
+        title: 'Daftar',
+        description:
+          'Gabung sebagai UMKM, lengkapi profil usaha, dan atur jam operasional toko.',
+      },
+      {
+        title: 'Tawarkan',
+        description:
+          'Tampilkan makanan surplus yang masih layak konsumsi beserta harga, stok, dan waktu penjualannya.',
+      },
+      {
+        title: 'Jangkau pembeli',
+        description:
+          'Menu tampil ke pembeli di Depok, dan setiap pesanan masuk bisa kamu pantau dari dashboard.',
+      },
+    ],
+    cta: { label: 'Gabung sebagai UMKM', href: '/auth/register/penjual' },
   },
-  {
-    num: '03',
-    title: 'Pilih metode penerimaan pesanan',
-    description:
-      'Memilih diantar atau diambil langsung di lokasi penjual, kemudian memilih metode pembayaran untuk menyelesaikan pesanan.',
-    image: '/penerimaan.jpg',
-    alt: 'Pilihan metode penerimaan pesanan di ReBites',
-  },
-  {
-    num: '04',
-    title: 'Makanan berhasil diselamatkan',
-    description:
-      'Menikmati makanan berkualitas dengan harga lebih terjangkau, sekaligus membantu mengurangi food loss dan food waste di Indonesia.',
-    image: '/terselamatkan.jpg',
-    alt: 'Makanan surplus yang berhasil diselamatkan',
-  },
-];
+};
 
 /**
- * How ReBites works — the real two-sided flow of the platform (UMKM lists
- * surplus food, buyers find and receive it), presented as a numbered rail
- * instead of four identical cards. The connector line only renders at `xl`
- * where the four steps sit on a single row.
+ * "Cara kerja" — maksimal tiga langkah untuk dua jalur (pembeli & UMKM),
+ * digabung lewat tab supaya section ini tidak mengulang section lain.
+ * Konten tiap tab diganti lewat key sehingga transisinya cukup satu fade
+ * pendek, tanpa AnimatePresence.
  */
 export function HowItWorksSection() {
+  const [active, setActive] = useState<PathKey>('pembeli');
+  const path = PATHS[active];
+
   return (
     <section
       id="cara-kerja"
@@ -53,65 +82,97 @@ export function HowItWorksSection() {
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
           <Reveal>
             <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/70">
-              Alur ReBites
+              Cara kerja
             </p>
             <h2
               id="how-heading"
-              className="mt-4 text-balance font-display text-[clamp(1.8rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary-foreground"
+              className="mt-4 text-balance font-display text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white"
             >
-              Empat langkah,{' '}
-              <span className="font-light italic">satu piring</span> yang
-              terselamatkan.
+              Dari niat baik ke piring,{' '}
+              <span className="font-light italic">tiga langkah saja.</span>
             </h2>
           </Reveal>
 
           <Reveal delay={0.08}>
-            <p className="max-w-xl text-[15px] leading-[1.8] text-primary-foreground/70 lg:pb-2">
-              Alurnya sama sederhananya untuk penjual maupun pembeli: dari
-              makanan diunggah, sampai piring terakhir dinikmati di rumah.
+            <p className="max-w-xl text-[15px] leading-[1.8] text-white/70 lg:pb-1.5">
+              Alurnya sama sederhananya untuk kedua sisi: penjual cukup
+              mengunggah, pembeli cukup memilih.
             </p>
           </Reveal>
         </div>
 
-        <ol className="mt-12 grid gap-10 sm:mt-14 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12 lg:gap-x-10 xl:grid-cols-4">
-          {STEPS.map((step, index) => (
-            <Reveal
-              as="li"
-              key={step.num}
-              delay={0.05 + index * 0.07}
-              className="list-none"
-            >
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/30 font-display text-[11px] font-bold tabular-nums text-white">
-                  {step.num}
-                </span>
-                {index < STEPS.length - 1 && (
-                  <span
-                    aria-hidden
-                    className="hidden h-px flex-1 bg-white/20 xl:block"
-                  />
+        <Reveal delay={0.06}>
+          <div
+            role="tablist"
+            aria-label="Alur penggunaan ReBites"
+            className="mt-8 inline-flex w-full flex-col gap-2 rounded-3xl border border-white/20 bg-white/10 p-1.5 sm:w-auto sm:flex-row sm:rounded-full sm:gap-0"
+          >
+            {(Object.keys(PATHS) as PathKey[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                id={`cara-tab-${key}`}
+                aria-selected={active === key}
+                aria-controls={`cara-panel-${key}`}
+                onClick={() => setActive(key)}
+                className={cn(
+                  'min-h-[44px] flex-1 rounded-full px-6 py-2.5 font-secondary text-sm font-semibold transition-colors duration-200 sm:flex-none',
+                  active === key
+                    ? 'bg-white text-primary'
+                    : 'text-white/70 hover:text-white',
+                  FOCUS_RING_ON_GREEN,
                 )}
-              </div>
+              >
+                {PATHS[key].label}
+              </button>
+            ))}
+          </div>
+        </Reveal>
 
-              <div className="relative mt-5 aspect-[4/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                <Image
-                  src={step.image}
-                  alt={step.alt}
-                  fill
-                  sizes="(min-width: 1280px) 18rem, (min-width: 640px) 44vw, calc(100vw - 2rem)"
-                  className="object-cover"
-                />
-              </div>
+        <motion.div
+          key={active}
+          role="tabpanel"
+          id={`cara-panel-${active}`}
+          aria-labelledby={`cara-tab-${active}`}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-10"
+        >
+          <p className="font-display text-base font-semibold tracking-tight text-white sm:text-lg">
+            {path.heading}
+          </p>
 
-              <h3 className="mt-5 font-display text-base font-semibold leading-snug tracking-tight text-primary-foreground sm:text-lg">
-                {step.title}
-              </h3>
-              <p className="mt-2 text-sm leading-[1.75] text-primary-foreground/70">
-                {step.description}
-              </p>
-            </Reveal>
-          ))}
-        </ol>
+          <ol className="mt-6 grid gap-7 sm:grid-cols-3 sm:gap-8">
+            {path.steps.map((step, index) => (
+              <li key={step.title} className="list-none border-t border-white/20 pt-5">
+                <span className="font-display text-xs font-semibold tabular-nums tracking-[0.2em] text-white/70">
+                  0{index + 1}
+                </span>
+                <h3 className="mt-2.5 font-display text-lg font-semibold tracking-tight text-white">
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-sm leading-[1.75] text-white/70">
+                  {step.description}
+                </p>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-9">
+            <Link
+              href={path.cta.href}
+              className={`group inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-white px-7 py-3 font-secondary text-sm font-semibold text-primary transition-colors duration-300 hover:bg-secondary ${FOCUS_RING_ON_GREEN}`}
+            >
+              {path.cta.label}
+              <ArrowRight
+                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                aria-hidden
+              />
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

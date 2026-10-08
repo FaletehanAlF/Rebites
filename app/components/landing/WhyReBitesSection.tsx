@@ -1,0 +1,104 @@
+import Image from 'next/image';
+import { Reveal } from '@/app/components/shared/reveal';
+
+const DIFFERENTIATORS = [
+  {
+    num: '01',
+    title: 'Surplus, bukan sekadar diskon',
+    description:
+      'Menu diambil dari kelebihan produksi atau yang belum terjual hari itu — masih layak konsumsi, bukan makanan yang kedaluwarsa.',
+  },
+  {
+    num: '02',
+    title: 'Menghubungkan dua sisi',
+    description:
+      'UMKM yang punya makanan bertemu pembeli yang mencari makanan terjangkau. ReBites berdiri di tengah, mempertemukan keduanya.',
+  },
+  {
+    num: '03',
+    title: 'Lebih hemat, tetap bernilai',
+    description:
+      'Pembeli membayar lebih sedikit untuk makanan yang sama. Penjual mendapat pendapatan tambahan dari menu yang tadinya tersisa.',
+  },
+  {
+    num: '04',
+    title: 'Dampak dari transaksi sederhana',
+    description:
+      'Setiap pesanan berarti satu porsi lebih banyak berakhir di piring — bukan di tempat sampah.',
+  },
+];
+
+/**
+ * "Kenapa ReBites?" — empat diferensiasi yang benar-benar melekat pada
+ * produk, disusun sebagai daftar bernomor berdampingan dengan satu foto
+ * agar hierarkinya kuat tanpa jatuh ke grid kartu yang seragam.
+ *
+ * Sengaja tidak memuat angka: aplikasi tidak punya statistik yang bisa
+ * diverifikasi.
+ */
+export function WhyReBitesSection() {
+  return (
+    <section
+      id="kenapa"
+      aria-labelledby="why-heading"
+      className="grain-overlay bg-secondary"
+    >
+      <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+          <Reveal>
+            <div>
+              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
+                Kenapa ReBites
+              </p>
+              <h2
+                id="why-heading"
+                className="mt-4 text-balance font-display text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary"
+              >
+                Makanan yang masih bernilai,{' '}
+                <span className="font-light italic">bukan sekadar murah.</span>
+              </h2>
+              <p className="mt-5 max-w-xl text-[15px] leading-[1.8] text-muted-foreground">
+                ReBites dibangun di sekitar satu ide sederhana: makanan yang
+                masih layak konsumsi seharusnya punya pembeli, bukan berakhir
+                di tempat sampah.
+              </p>
+
+              <div className="relative mt-8 aspect-[4/3] w-full overflow-hidden rounded-[1.5rem] border border-border/70 bg-muted sm:aspect-[3/2]">
+                <Image
+                  src="/terselamatkan.jpg"
+                  alt="Aneka hidangan dari dapur UMKM yang siap dinikmati pembeli"
+                  fill
+                  sizes="(min-width: 1024px) 24rem, calc(100vw - 2rem)"
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          </Reveal>
+
+          <ol className="border-t border-border">
+            {DIFFERENTIATORS.map((item, index) => (
+              <Reveal
+                key={item.num}
+                as="li"
+                delay={0.04 + index * 0.05}
+                className="flex items-start gap-4 border-b border-border py-6 sm:gap-6"
+              >
+                <span className="mt-1 font-display text-xs font-semibold tabular-nums tracking-[0.16em] text-primary">
+                  {item.num}
+                </span>
+                <div>
+                  <h3 className="font-display text-lg font-semibold tracking-tight text-primary sm:text-xl">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 max-w-xl text-sm leading-[1.75] text-muted-foreground">
+                    {item.description}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+  );
+}

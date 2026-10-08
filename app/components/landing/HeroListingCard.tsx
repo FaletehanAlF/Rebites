@@ -1,6 +1,3 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Clock, MapPin, Star } from 'lucide-react';
 import { SmartImage } from '@/app/components/shared/SmartImage';
@@ -12,44 +9,15 @@ const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 /**
- * Cuplikan katalog nyata di hero.
+ * Cuplikan satu listing katalog nyata untuk hero.
  *
- * Lazy-imports `@/lib/catalog` on mount (same pattern as
- * `FoodDiscoverySection`) so supabase-js stays out of the critical path.
- * Renders a single listing exactly as the app presents it — photo, discount,
- * price pair, rating, distance and pickup window. When the catalog is empty
- * or unreachable nothing is rendered: no placeholder product, no invented
- * price (AGENTS.md §11).
+ * Murni presentational: `HeroSection` yang memilih produknya (lihat
+ * `featured-products.ts`) sehingga komponen ini tidak pernah merender kartu
+ * ketika datanya kosong — tidak ada produk palsu, tidak ada harga karangan
+ * (AGENTS.md §11). Tautan menuju preview publik `/preview/product`, bukan
+ * rute aplikasi ber-akun.
  */
-export function HeroListingCard() {
-  const [item, setItem] = useState<FoodItem | null>(null);
-
-  useEffect(() => {
-    let active = true;
-
-    import('@/lib/catalog')
-      .then(({ fetchFoodItems }) => fetchFoodItems())
-      .then((foodItems) => {
-        if (!active || foodItems.length === 0) return;
-        const featured =
-          foodItems.find(
-            (candidate) =>
-              candidate.discountPercent > 0 &&
-              candidate.originalPrice > candidate.discountedPrice,
-          ) ?? foodItems[0];
-        setItem(featured);
-      })
-      .catch((error) => {
-        console.error('[landing] gagal memuat cuplikan katalog:', error);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  if (!item) return null;
-
+export function HeroListingCard({ item }: { item: FoodItem }) {
   const hasDiscount =
     item.originalPrice > 0 && item.originalPrice > item.discountedPrice;
 
@@ -58,7 +26,7 @@ export function HeroListingCard() {
       href={`/preview/product?id=${encodeURIComponent(item.id)}`}
       aria-label={`Lihat menu ${item.name} dari ${item.vendorName}`}
       className={cn(
-        'group flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-[0_30px_60px_-40px_rgba(11,63,36,0.75)] transition-colors duration-300 hover:border-primary/40',
+        'group flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-[0_30px_60px_-40px_rgba(27,77,50,0.75)] transition-colors duration-300 hover:border-primary/40',
         FOCUS_RING,
       )}
     >
@@ -66,7 +34,7 @@ export function HeroListingCard() {
         <SmartImage
           src={item.image}
           alt={item.name}
-          sizes="(min-width: 1024px) 19rem, calc(100vw - 2rem)"
+          sizes="(min-width: 1024px) 18rem, (min-width: 640px) 28rem, calc(100vw - 2rem)"
           className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
         />
         {item.discountPercent > 0 && (
@@ -98,7 +66,7 @@ export function HeroListingCard() {
           )}
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Star className="h-3.5 w-3.5 fill-primary text-primary" aria-hidden />
             <span className="font-medium text-primary">{item.rating}</span>

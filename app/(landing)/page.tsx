@@ -1,49 +1,41 @@
-﻿import { LandingShell } from '@/app/components/landing/landing-shell';
-import { LandingNavbar } from '@/app/components/landing/LandingNavbar';
+﻿import { PublicShell } from '@/app/components/landing/public-shell';
 import { HeroSection } from '@/app/components/landing/HeroSection';
-import { TrustSection } from '@/app/components/landing/TrustSection';
 import { HowItWorksSection } from '@/app/components/landing/HowItWorksSection';
+import { WhyReBitesSection } from '@/app/components/landing/WhyReBitesSection';
 import { FoodDiscoverySection } from '@/app/components/landing/FoodDiscoverySection';
-import { SellerSection } from '@/app/components/landing/SellerSection';
-import { BuyerSection } from '@/app/components/landing/BuyerSection';
-import { FeaturesSection } from '@/app/components/landing/FeaturesSection';
-import { BenefitsSection } from '@/app/components/landing/BenefitsSection';
+import { TestimonialsSection } from '@/app/components/landing/TestimonialsSection';
+import { MembershipSection } from '@/app/components/landing/MembershipSection';
 import { FAQSection } from '@/app/components/landing/FAQSection';
-import { FinalCTASection } from '@/app/components/landing/FinalCTASection';
-import { LandingFooter } from '@/app/components/landing/LandingFooter';
+import { ContactCTASection } from '@/app/components/landing/ContactCTASection';
 
 /**
- * The public landing page.
+ * Halaman landing publik (`/`).
  *
- * It stays a Server Component: every section below renders to static HTML on
- * the server, so only the parts that genuinely need the browser — navbar,
- * catalog fetch, accordion, footer controls — ship as client JavaScript. The
- * client boundary for Lenis, `MotionConfig` and the intro overlay lives in
- * `LandingShell`.
+ * Tetap Server Component: tiap section di bawah dirender ke HTML statis di
+ * server, sehingga hanya bagian yang benar-benar butuh browser — navbar,
+ * pengambilan katalog, akordeon, tab, footer, dan intro — yang dikirim
+ * sebagai JavaScript klien. Batas klien untuk Lenis dan `MotionConfig` ada di
+ * `LandingShell` (layout route group), preloader di `PublicShell`.
  *
- * Section ids are part of the public contract: `/home`, the shared footers and
- * the flash-sale grid all deep-link to `#cara-kerja`, `#umkm`, `#pembeli`,
- * `#langganan` and `#rekomendasi`.
+ * Alur ceritanya: apa ini → cara kerja → kenapa ReBites → buktikan produknya
+ * → kata pengguna → membership → pertanyaan → ajakan menghubungi.
+ *
+ * Id section adalah kontrak tautan dalam: `/home`, footer aplikasi, halaman
+ * sukses langganan, dan preview produk publik semuanya deep-link ke
+ * `#cara-kerja`, `#rekomendasi`, `#langganan`, dan `#faq`. Id `umkm` dan
+ * `pembeli` pindah ke halaman `/fitur`.
  */
 export default function Home() {
   return (
-    <LandingShell>
-      <LandingNavbar />
-
-      <main>
-        <HeroSection />
-        <TrustSection />
-        <HowItWorksSection />
-        <FoodDiscoverySection />
-        <SellerSection />
-        <BuyerSection />
-        <FeaturesSection />
-        <BenefitsSection />
-        <FAQSection />
-        <FinalCTASection />
-      </main>
-
-      <LandingFooter />
-    </LandingShell>
+    <PublicShell intro>
+      <HeroSection />
+      <HowItWorksSection />
+      <WhyReBitesSection />
+      <FoodDiscoverySection />
+      <TestimonialsSection />
+      <MembershipSection />
+      <FAQSection />
+      <ContactCTASection />
+    </PublicShell>
   );
 }
