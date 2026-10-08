@@ -83,11 +83,13 @@ deliberately no `(app)/layout.tsx` and no `(landing)/layout.tsx`: app chrome
 (MobileNavbar/ProfileNavbar) is rendered per page today, so layouts would be
 dead structure.
 
-## 4. Routes (from `npm run build`, 48 pages)
+## 4. Routes (from `npm run build`, 52 pages)
 
-Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
-`/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`,
-`/langganan/pembayaran`, **`/preview/product`** (public product detail).
+Static (○): `/`, **`/tentang-kami`**, **`/fitur`**, **`/dampak`**,
+**`/hubungi-kami`** (the four public content pages), `/home`, `/auth/*`,
+`/detail/*`, `/riwayatPesanan`, `/notifikasi/pembeli`, `/profile`, `/toko`,
+`/dashboard/penjual/*`, `/langganan/pembayaran`, **`/preview/product`**
+(public product detail, lives in `app/(preview)/`).
 SSG (●): `/makanan/[category]` (8 paths).
 Dynamic (ƒ): `/langganan/sukses`, `/api/checkout/xendit(+verify)`,
 `/api/orders/[code]`, `/api/profile(+addresses|avatar)`,
@@ -97,27 +99,45 @@ Note: bare `/langganan` has never existed (404 by design — only
 
 ## 5. Landing page architecture (`/`)
 
-`app/(landing)/page.tsx` stays a **Server Component**; `LandingShell` (client) wraps
-`MotionConfig` + Lenis + `Preloader`. Section order:
+`app/(landing)/layout.tsx` wraps the whole route group in `LandingShell`
+(client) = `MotionConfig` + Lenis. Each page is a **Server Component** that
+wraps its content in `PublicShell` (`LandingNavbar` + `<main>` + `LandingFooter`);
+only `/` passes `intro`, so the `Preloader` runs exactly once, on the landing
+page. Section order:
 
 | Component | Section id (navigation contract) | Client? |
 | --- | --- | --- |
-| `LandingNavbar` | — (fixed, active-section highlight) | yes |
+| `LandingNavbar` | — (fixed, **route-aware** `aria-current`, no scroll-spy) | yes |
 | `HeroSection` | `top` | yes |
-| `TrustSection` | `about` | no |
-| `HowItWorksSection` | `cara-kerja` | no |
+| `HowItWorksSection` | `cara-kerja` (tabs *Untuk pembeli* / *Untuk UMKM*) | yes |
+| `WhyReBitesSection` | `kenapa` | no |
 | `FoodDiscoverySection` | `rekomendasi` | yes (lazy `lib/catalog` fetch) |
-| `SellerSection` | `umkm` + `langganan` (anchor span) | no |
-| `BuyerSection` | `pembeli` | no |
-| `FeaturesSection` | `fitur` | no |
-| `BenefitsSection` | `manfaat` | no |
-| `FAQSection` | `faq` (accordion + contact form) | yes |
-| `FinalCTASection` | heading id `final-cta-heading` | no |
-| `LandingFooter` | — (anchor links + back-to-top) | yes |
+| `TestimonialsSection` | `ulasan` (demo data + on-page disclaimer, see §10 `EX-01`) | no |
+| `MembershipSection` | `langganan` (real `SUBSCRIPTION_PLANS`, CTA → `/langganan/pembayaran?plan=…`) | no |
+| `FAQSection` | `faq` (accordion only — contact form moved to `/hubungi-kami`) | yes |
+| `ContactCTASection` | `kontak` | no |
+| `LandingFooter` | — (route links + section links + back-to-top) | yes |
 
-**Do not rename or remove ids** `cara-kerja`, `umkm`, `pembeli`, `langganan`,
-`rekomendasi`, `faq`: navbar, footer and other pages deep-link to them
-(`app/components/landing/scroll-to-section.ts` delegates to Lenis).
+**Do not rename or remove ids** `top`, `cara-kerja`, `rekomendasi`,
+`langganan`, `faq`: navbar, footer and other pages deep-link to them
+(`app/components/landing/scroll-to-section.ts` delegates to Lenis, with a
+`scrollIntoView` fallback). The former `#pembeli` / `#umkm` / `#about` /
+`#manfaat` anchors are **gone**: `pembeli` and `umkm` are now section ids on
+`/fitur`, and both app footers link there (`app/components/site-footer.tsx`,
+`app/components/shared/site-footer.tsx`).
+
+Navigation source of truth is `app/components/landing/nav-items.ts`
+(`PRIMARY_NAV`, `isCurrentPath`): `Beranda → /`, `Tentang Kami →
+/tentang-kami`, `Fitur Unggulan → /fitur`, `Dampak → /dampak`, `Hubungi Kami →
+/hubungi-kami`, plus `Masuk → /auth/login` and `Daftar → /auth/register`.
+Adding a public page means adding it there once; navbar and footer both read it.
+
+Public content pages (`/tentang-kami`, `/fitur`, `/dampak`, `/hubungi-kami`)
+share `PublicPageHero` (breadcrumb + eyebrow + `h1`) and end with
+`ContactCTASection`. `/hubungi-kami` owns the contact form
+(`contact-form.tsx`), which posts to the same pre-existing Formspree endpoint
+the old FAQ form used (`https://formspree.io/f/xdeoorwd`, verified in
+`FAQSection.tsx` at `HEAD`).
 
 Live catalog row in `FoodDiscoverySection` lazy-imports `@/lib/catalog` on
 mount and renders nothing when empty (no placeholder products).
@@ -127,7 +147,10 @@ mount and renders nothing when empty (no placeholder products).
 The public showcase and the application are separated **architecturally**, not
 with pathname checks:
 
-- **Public side** (`app/(landing)/`): `/` and `/preview/product`. No auth
+- **Public side**: `app/(landing)/` holds the five public routes — `/`,
+  `/tentang-kami`, `/fitur`, `/dampak`, `/hubungi-kami` — plus
+  `app/(preview)/preview/product` (public product detail, moved out of
+  `(landing)` so it does not inherit the landing route group's layout). No auth
   context, no account navbar, no app chrome. Landing product cards
   (`FoodDiscoverySection`) link to `/preview/product?id=…`.
 - **Application side** (`app/(app)/`): everything else, URLs unchanged.
@@ -136,7 +159,7 @@ with pathname checks:
   (`DetailProductShell` in `app/components/detail-product/detail-page.tsx`:
   `header`, `productPath`, `seeAllHref`). Each route picks its own chrome —
   `app/(app)/detail/product/page.tsx` passes MobileNavbar/ProfileNavbar,
-  `app/(landing)/preview/product/page.tsx` passes `LandingNavbar`.
+  `app/(preview)/preview/product/page.tsx` passes `LandingNavbar`.
   `detail-page.tsx` therefore imports **no** navbar components, which is what
   keeps supabase/account code out of the public route's bundle.
 - **Rule**: never infer chrome from the pathname and never re-add
@@ -180,7 +203,9 @@ with pathname checks:
 - Local photos in `public/`: `hero-makanan.jpeg`, `makanan1–15`, step photos
   `penjual-login.jpg`, `pembeli-mencaro.jpg`, `penerimaan.jpg`,
   `terselamatkan.jpg`, `logo.png`.
-- FAQ contact form posts to a Formspree endpoint from `FAQSection.tsx`.
+- Contact form posts to the pre-existing Formspree endpoint
+  (`https://formspree.io/f/xdeoorwd`); it moved from `FAQSection.tsx` to
+  `app/(landing)/hubungi-kami/contact-form.tsx` in the public-site redesign.
 - **Assumption**: footer social links (`instagram.com/rebites` etc.) and
   `halo@rebites.id` were not verified as real accounts.
 
@@ -215,15 +240,23 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   new UI. They may still be referenced by product rows in the database.
 - Unreferenced files left in place: `app/components/ReBitesStepCard.tsx`
   (orphan component), `public/ref-pg.jpeg`, `public/loading.mp4`.
-- Removed in the landing QA pass (unreferenced since `app/(landing)/page.tsx`
-  took over; deletions are in the working tree): legacy `app/page.tsx` (it
-  shadowed the landing route), `components/{hero-section, HowItWorks,
+- Removed by the public-site redesign (deletions are in the working tree):
+  `landing/{TrustSection,CategoryMarquee,FinalCTASection,BenefitsSection,
+  BuyerSection,FeaturesSection,SellerSection}.tsx`, replaced by
+  `WhyReBitesSection`, `TestimonialsSection`, `MembershipSection`
+  and `ContactCTASection`. Earlier QA passes removed legacy `app/page.tsx`
+  (it shadowed the landing route), `components/{hero-section, HowItWorks,
   hero-food-carousel, faq-section, flash-sale-grid, FoldText, RotatingText}.tsx`,
   `components/ui/testimonials.tsx`,
-  `components/subscription/subscription-section.tsx`. Earlier cleanup removed
+  `components/subscription/subscription-section.tsx`, and earlier cleanup removed
   `landing/testimonial-section.tsx` (fabricated testimonials),
   `landing/partner-marquee.tsx`, `landing/catalog-sections.tsx`, and
   `RevealWords` in `shared/reveal.tsx`.
+- **Recorded exception**: `app/components/landing/testimonials.ts` holds
+  clearly-labelled demo testimonials (on-page disclaimer: "Cerita di atas
+  adalah contoh tampilan (data demo), bukan ulasan pelanggan terverifikasi." +
+  file comment) — allowed for this redesign per `CONSTRAINTS.md` → Exceptions
+  `EX-01`. It is the only fabricated content permitted anywhere in the UI.
 - No automated tests; verification is scripted headless-Chrome + manual
   screenshots: `/` checked at 320/375/390/430/768/1024/1280/1440/1920 — no
   horizontal overflow, no console/network errors, WCAG AA text contrast
@@ -243,6 +276,20 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   reveals reveal-animated content and hides the preloader.
 - `sharp` is not installed (Next.js recommends it for production image
   optimization; warning appears on `next start`).
+- **Pre-existing, unchanged by the redesign**: the "Produk tidak ditemukan"
+  branch of `app/components/detail-product/detail-product-content.tsx`
+  returns without the `shell.header`, so `/preview/product?id=…` with an
+  unknown id shows no navbar (the same component backs the in-app
+  `/detail/product`). Fixed routes and known products render the landing
+  navbar correctly (verified).
+- **Pre-existing, unchanged by the redesign**: public pages have no
+  skip-to-content link; landmarks are otherwise correct
+  (`header`/`nav[aria-label]`/`main`/`footer`).
+- **Pre-existing, outside the landing**: app pages still contain off-brand
+  colors such as `text-purple-700`
+  (`app/components/order-history/order-detail-modal.tsx`) — the white/green
+  system is only enforced on `app/(landing)`, `app/(preview)` and
+  `app/components/landing/*` so far.
 
 ## 11. Conventions for future work
 
@@ -251,7 +298,40 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 - Respect the landing/app boundary (§5a): public pages under `app/(landing)/`
   must never render account UI; route-supplied shells, not pathname checks.
 - Reuse the design tokens; do not introduce new fonts, palettes or gradients.
-- Preserve landing section ids and navbar/footer anchor behavior.
-- Do not fabricate stats, testimonials, partners or logos anywhere in the UI.
+- Preserve the landing section ids (§5) and the route-based navbar/footer
+  links; new public pages go in `app/components/landing/nav-items.ts`.
+- Do not fabricate stats, partners or logos anywhere in the UI. The single
+  allowed exception is the clearly-labelled demo testimonials in
+  `landing/testimonials.ts` (`CONSTRAINTS.md` → Exceptions `EX-01`); no other
+  testimonials, reviews or numbers may be invented.
 - Validate with `npm run typecheck`, `npm run lint`, `npm run build`, and a
   visual pass before calling UI work done.
+
+## 12. Verification performed on the public-site redesign (2026-10-09)
+
+- `npm run typecheck` ✅, `npm run lint` ✅ (0 errors, 4 warnings = the
+  recorded pre-existing baseline), `npm run build` ✅ (52 pages; the five
+  public routes are static).
+- Headless Chrome (CDP) against `next start -p 3100`:
+  - 6 routes × 10 widths (320→1440): zero horizontal overflow, zero broken
+    images, zero console errors.
+  - Interactions: mobile menu opens (5 links + `Masuk`, `aria-expanded`,
+    `aria-controls="landing-mobile-menu"`), menu link navigates and updates
+    `aria-current`; FAQ accordion exposes `aria-expanded`/`aria-controls` and
+    toggles; all seven navbar routes resolve with the correct `h1` and active
+    state; hero CTAs point to `/home` and `/auth/register/penjual`.
+  - The preloader briefly renders a `200vmax` circle; it is clipped by
+    `overflow-hidden` and `documentElement.scrollWidth` never exceeds
+    `clientWidth` (measured at 400–4000 ms), so it is not an overflow bug.
+  - Followed a real landing product card into `/preview/product?id=…`:
+    landing navbar present, `h1` present, no overflow at 390px.
+  - `prefers-reduced-motion: reduce`: preloader skipped, `body` scroll never
+    locked, every section heading rendered at full opacity.
+  - Keyboard: the first six tab stops (logo, `Daftar`, hamburger, both hero
+    CTAs, first product card) all show a visible focus ring; landmarks are
+    `header` + 3 labelled `nav` + `main` + `footer`.
+- **Known harness gotchas**: `ui-check.mjs` defaults to `BASE_URL=
+  http://127.0.0.1:3000`; testing a different port silently measures another
+  server. Always set `BASE_URL`. The root has CSS `scroll-behavior: smooth`
+  (Lenis sets `auto` only while it is alive), so scripted `window.scrollTo`
+  is asynchronous — read positions or capture screenshots only after a delay.

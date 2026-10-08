@@ -70,7 +70,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/#umkm"
+                  href="/fitur#umkm"
                   className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-primary"
                 >
                   Untuk UMKM
@@ -78,7 +78,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/#pembeli"
+                  href="/fitur#pembeli"
                   className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-primary"
                 >
                   Untuk Pembeli

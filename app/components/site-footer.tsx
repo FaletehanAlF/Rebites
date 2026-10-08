@@ -50,8 +50,8 @@ const SOCIALS = [
 
 const EXPLORE_LINKS = [
   { label: 'Cara Kerja', href: '/#cara-kerja' },
-  { label: 'Untuk UMKM', href: '/#umkm' },
-  { label: 'Untuk Pembeli', href: '/#pembeli' },
+  { label: 'Untuk UMKM', href: '/fitur#umkm' },
+  { label: 'Untuk Pembeli', href: '/fitur#pembeli' },
   { label: 'Paket Langganan', href: '/#langganan' },
 ];
 
