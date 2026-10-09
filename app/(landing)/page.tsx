@@ -8,23 +8,6 @@ import { MembershipSection } from '@/app/components/landing/MembershipSection';
 import { FAQSection } from '@/app/components/landing/FAQSection';
 import { ContactCTASection } from '@/app/components/landing/ContactCTASection';
 
-/**
- * Halaman landing publik (`/`).
- *
- * Tetap Server Component: tiap section di bawah dirender ke HTML statis di
- * server, sehingga hanya bagian yang benar-benar butuh browser — navbar,
- * pengambilan katalog, akordeon, tab, footer, dan intro — yang dikirim
- * sebagai JavaScript klien. Batas klien untuk Lenis dan `MotionConfig` ada di
- * `LandingShell` (layout route group), preloader di `PublicShell`.
- *
- * Alur ceritanya: apa ini → cara kerja → kenapa ReBites → buktikan produknya
- * → kata pengguna → membership → pertanyaan → ajakan menghubungi.
- *
- * Id section adalah kontrak tautan dalam: `/home`, footer aplikasi, halaman
- * sukses langganan, dan preview produk publik semuanya deep-link ke
- * `#cara-kerja`, `#rekomendasi`, `#langganan`, dan `#faq`. Id `umkm` dan
- * `pembeli` pindah ke halaman `/fitur`.
- */
 export default function Home() {
   return (
     <PublicShell intro>

@@ -1,54 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, LayoutGrid, MapPin } from 'lucide-react';
+import { ArrowRight, LayoutGrid, MapPin, Store } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
-import { HeroListingCard } from '@/app/components/landing/HeroListingCard';
-import { fetchFeaturedProducts } from '@/app/components/landing/featured-products';
 import { CATEGORIES } from '@/lib/categories';
-import type { FoodItem } from '@/lib/types';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 /**
- * Hero: satu layar yang menjelaskan apa itu ReBites dalam lima detik —
- * marketplace makanan surplus dari UMKM di Kota Depok, untuk pembeli yang
- * ingin lebih hemat sekaligus penjual yang ingin makanannya tidak terbuang.
- * Kartu menu hanya dirender bila datanya ada; kalau katalog kosong hero
- * tetap utuh (foto + badge kategori), tanpa produk palsu.
+ * Hero: satu layar yang menjelaskan apa itu ReBites — marketplace makanan
+ * surplus dari UMKM di Kota Depok — lewat copy pendek dan foto hidangan
+ * UMKM. Cuplikan produk asli ditampilkan di section `#rekomendasi`, bukan di
+ * sini, supaya hero tetap ringan dan tidak bergantung pada fetch katalog.
  */
 export function HeroSection() {
-  const [featured, setFeatured] = useState<FoodItem | null>(null);
-
-  useEffect(() => {
-    let active = true;
-
-    fetchFeaturedProducts(1)
-      .then(([item]) => {
-        if (active) setFeatured(item ?? null);
-      })
-      .catch((error) => {
-        console.error('[landing] gagal memuat cuplikan katalog:', error);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
   return (
     <section id="top" className="relative overflow-hidden bg-white">
       <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8 lg:pb-24 lg:pt-36">
-        {/* Salinan */}
-        <div className="flex max-w-2xl flex-col items-start">
+        <div className="flex max-w-2xl flex-col items-start mb-10">
           <Reveal delay={0.05}>
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3.5 py-1.5">
               <MapPin className="h-3.5 w-3.5 text-primary" aria-hidden />
               <span className="font-secondary text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-                Makanan surplus &middot; Kota Depok
+                Makanan surplus Sekota Depok
               </span>
             </span>
           </Reveal>
@@ -69,7 +45,7 @@ export function HeroSection() {
             <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
               <Link
                 href="/home"
-                className={`group inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 font-secondary text-sm font-semibold text-white shadow-[0_18px_30px_-18px_rgba(27,77,50,0.8)] transition-colors duration-300 hover:bg-primary-dark sm:w-auto ${FOCUS_RING}`}
+                className={`group inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-3.5 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-dark sm:w-auto ${FOCUS_RING}`}
               >
                 Temukan Makanan
                 <ArrowRight
@@ -77,18 +53,18 @@ export function HeroSection() {
                   aria-hidden
                 />
               </Link>
-
               <Link
                 href="/auth/register/penjual"
-                className={`inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full border border-border px-8 py-3.5 font-secondary text-sm font-semibold text-primary transition-colors duration-300 hover:border-primary hover:bg-secondary sm:w-auto ${FOCUS_RING}`}
+                className={`inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 px-8 py-3.5 font-secondary text-sm font-semibold text-primary transition-all duration-200 ease-out hover:scale-105 sm:w-auto ${FOCUS_RING}`}
               >
-                Gabung sebagai UMKM
+                <Store className="h-4 w-4 shrink-0" aria-hidden />
+                <span>Gabung sebagai UMKM</span>
               </Link>
             </div>
           </Reveal>
         </div>
 
-        {/* Visual: foto UMKM + satu listing katalog asli */}
+        {/* Visual: foto hidangan UMKM + badge kategori */}
         <Reveal delay={0.16} className="w-full">
           <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[1.5rem] border border-border/70 bg-muted shadow-[0_40px_80px_-56px_rgba(27,77,50,0.65)] sm:aspect-[5/4] sm:rounded-[2rem] lg:aspect-square">
@@ -111,12 +87,6 @@ export function HeroSection() {
                 kategori kuliner
               </span>
             </div>
-
-            {featured && (
-              <div className="relative z-10 -mt-8 w-full max-w-md sm:-mt-10 lg:absolute lg:-bottom-8 lg:-left-8 lg:mt-0 lg:w-[18rem] lg:max-w-none xl:-left-12">
-                <HeroListingCard item={featured} />
-              </div>
-            )}
           </div>
         </Reveal>
       </div>

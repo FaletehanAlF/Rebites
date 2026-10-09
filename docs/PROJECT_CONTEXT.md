@@ -43,7 +43,8 @@ Two-sided product:
 | Testing | **None configured** | no test script in `package.json` |
 
 Installed but not obviously used on the landing page: `gsap`, `recharts`
-(seller pages only), `embla-carousel-react` (carousel components).
+(seller pages only), `embla-carousel-react` (carousel components), and
+`lottie-react` (only imported by the temporary `/test` experiment — see §10).
 
 ## 3. Repository structure
 
@@ -53,8 +54,12 @@ app/
                            #   fallback CSS, lang="id" (no providers)
   globals.css              # design tokens + utilities
   (landing)/               # PUBLIC showcase — no account UI allowed (see §5a)
+    layout.tsx             # route-group layout: `LandingShell` (MotionConfig + Lenis)
     page.tsx               # landing page → `/` (Server Component)
-    preview/product/       # public product detail → `/preview/product`
+    tentang-kami/ fitur/ dampak/ hubungi-kami/   # the four content pages
+    test/                  # TEMPORARY lottie experiment → `/test` (see §10)
+  (preview)/               # public product detail, outside the landing group
+    preview/product/       # → `/preview/product`
   (app)/                   # application routes (URLs unchanged by the group)
     home/                  # buyer app home
     makanan/[category]/    # SSG category pages (8 categories)
@@ -78,12 +83,13 @@ supabase/migrations/       # SQL schema + RLS
 public/                    # images (makanan*.jpg, hero-makanan.jpeg, logo.png, …)
 ```
 
-Route groups `(landing)` / `(app)` do **not** affect URLs. There is
-deliberately no `(app)/layout.tsx` and no `(landing)/layout.tsx`: app chrome
-(MobileNavbar/ProfileNavbar) is rendered per page today, so layouts would be
-dead structure.
+Route groups `(landing)` / `(app)` / `(preview)` do **not** affect URLs. There is
+deliberately no `(app)/layout.tsx`: app chrome (MobileNavbar/ProfileNavbar) is
+rendered per page today. `(landing)/layout.tsx` exists because the five public
+pages now genuinely share a shell (client boundary only — navbar/`main`/footer
+come from each page's `PublicShell`, see §5).
 
-## 4. Routes (from `npm run build`, 52 pages)
+## 4. Routes (from `npm run build`, 53 pages)
 
 Static (○): `/`, **`/tentang-kami`**, **`/fitur`**, **`/dampak`**,
 **`/hubungi-kami`** (the four public content pages), `/home`, `/auth/*`,
@@ -257,6 +263,20 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   adalah contoh tampilan (data demo), bukan ulasan pelanggan terverifikasi." +
   file comment) — allowed for this redesign per `CONSTRAINTS.md` → Exceptions
   `EX-01`. It is the only fabricated content permitted anywhere in the UI.
+- **Temporary route in the working tree**: `app/(landing)/test/page.tsx` serves
+  `/test` — a Lottie experiment (`lottie-react` + `public/lottie_animation/`).
+  It is public, adds ~82 kB of first-load JS to the route table, and is not
+  part of the website's information architecture. Remove it (and the
+  `lottie-react` dependency) once the animation experiment is settled.
+- Fixed after the 2026-10-09 pass (2026-10-10): the rewritten
+  `HowItWorksSection.tsx` had invalid ARIA ids (`"cara - tab - pembeli "`
+  with spaces, so `aria-controls`/`aria-labelledby` pointed at nothing) and
+  dead Tailwind opacity steps (`text-white/55`, `text-white/65`,
+  `bg-white/15`, `bg-white/65` — not in the generated scale, so the step
+  progress line rendered invisible); `HeroSection.tsx` still fetched a
+  featured product for the deleted `HeroListingCard` (dead Supabase request
+  per landing visit). All three are fixed; the hero badge keeps its
+  `border-border bg-secondary` pill.
 - No automated tests; verification is scripted headless-Chrome + manual
   screenshots: `/` checked at 320/375/390/430/768/1024/1280/1440/1920 — no
   horizontal overflow, no console/network errors, WCAG AA text contrast
@@ -335,3 +355,25 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   server. Always set `BASE_URL`. The root has CSS `scroll-behavior: smooth`
   (Lenis sets `auto` only while it is alive), so scripted `window.scrollTo`
   is asynchronous — read positions or capture screenshots only after a delay.
+
+### Re-verification after the 2026-10-10 fixes (production build on :3100)
+
+- `npm run build` ✅ (53 pages incl. `/test`), `npm run typecheck` ✅,
+  `npm run lint` ✅ (0 errors, 4 baseline warnings).
+- CDP sweep against `next start -p 3100`: 5 public routes × widths 320→1440 →
+  zero horizontal overflow (also zero after the intro preloader settles),
+  zero console errors, zero failed network requests; all 19 internal link
+  targets return 200; `/home` renders no landing navbar (route separation
+  intact).
+- `aria-current="page"` matches the route on all five pages; landing
+  deep-link ids `top`, `cara-kerja`, `rekomendasi`, `langganan`, `faq` all
+  present; cara-kerja tabs now have valid ids (`cara-tab-pembeli`/`cara-tab-umkm`)
+  with `aria-controls="cara-panel"` and the panel's `aria-labelledby` follows
+  the selected tab; FAQ accordion (6 items) toggles one-open-at-a-time;
+  mobile menu opens with 5 links + `Masuk`, closes on Escape; Tab-key focus
+  rings visible on the first six stops.
+- Membership section renders the three real `SUBSCRIPTION_PLANS` names;
+  testimonials carry the on-page demo disclaimer; `/hubungi-kami` form posts
+  to the existing Formspree endpoint (`formspree.io/f/xdeoorwd`) via `fetch`,
+  with labels for all three fields. Heading order: one `h1` per page, no
+  level jumps.
