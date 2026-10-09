@@ -55,16 +55,13 @@ export function HeroSection() {
 
           <Reveal delay={0.12}>
             <h1 className="mt-6 text-balance font-display text-[clamp(2.1rem,5vw,3.75rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-primary">
-              Masih layak. Lebih hemat.{' '}
-              <span className="font-light italic">Tidak terbuang.</span>
+              Selamatkan Makanan, Nikmati Harga Lebih Hemat.
             </h1>
           </Reveal>
 
           <Reveal delay={0.18}>
-            <p className="mt-5 max-w-[34rem] text-base leading-[1.75] text-muted-foreground sm:text-[1.0625rem]">
-              Temukan makanan surplus yang masih layak konsumsi dari UMKM di
-              sekitarmu dengan harga lebih terjangkau — sekaligus membantu
-              penjualnya menjual menu yang seharusnya tidak terbuang.
+            <p className="mt-5 max-w-[34rem] text-base leading-[1.5] text-muted-foreground sm:text-[1.0625rem]">
+              Temukan dan beli makanan surplus yang masih layak konsumsi dari UMKM di sekitarmu dengan harga lebih hemat. Bantu kurangi makanan terbuang sekaligus dukung usaha kuliner lokal.
             </p>
           </Reveal>
 
