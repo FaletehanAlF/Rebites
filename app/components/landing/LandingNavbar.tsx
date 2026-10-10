@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Menu, User, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PRIMARY_NAV, isCurrentPath } from '@/app/components/landing/nav-items';
+import { PRIMARY_NAV, isCurrentPath } from './nav-items';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
@@ -26,15 +26,7 @@ const FOCUS_RING =
  */
 export function LandingNavbar() {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   // Menu selalu tertutup setelah pindah halaman dan saat viewport melewati
   // breakpoint desktop, supaya tidak menyimpan state menu yang basi.
@@ -62,14 +54,7 @@ export function LandingNavbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      <div
-        className={cn(
-          'border-b transition-all duration-300',
-          scrolled
-            ? 'border-border/80 bg-white/90 shadow-[0_12px_32px_-26px_rgba(27,77,50,0.55)] backdrop-blur-xl'
-            : 'border-transparent bg-white/70 backdrop-blur-sm',
-        )}
-      >
+      <div className="border-b border-border bg-white">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:h-[72px] sm:px-6 lg:grid lg:grid-cols-[auto_1fr_auto] lg:gap-4 lg:px-8">
           <Link
             href="/"
@@ -90,7 +75,7 @@ export function LandingNavbar() {
           </Link>
 
           <nav aria-label="Navigasi utama" className="hidden lg:block">
-            <ul className="flex items-center justify-center gap-0.5">
+            <ul className="flex items-center justify-center gap-3">
               {PRIMARY_NAV.map((item) => {
                 const isActive = isCurrentPath(pathname, item.href);
                 return (

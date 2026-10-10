@@ -5,16 +5,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowUp, Mail } from 'lucide-react';
 import { handleSectionLinkClick } from '@/app/components/landing/scroll-to-section';
-import { PRIMARY_NAV } from '@/app/components/landing/nav-items';
 
 type FooterLink = { label: string; href: string; sectionId?: string };
 
-/** Ke halaman aplikasi: tempat pengunjung benar-benar bisa mulai memakai ReBites. */
-const PRODUCT_LINKS: FooterLink[] = [
-  { label: 'Jelajahi makanan', href: '/home' },
-  { label: 'Membership', href: '/#langganan', sectionId: 'langganan' },
-  { label: 'Masuk', href: '/auth/login' },
-];
+
+
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -75,65 +70,100 @@ function BackToTop() {
       }}
       aria-label="Kembali ke atas"
       tabIndex={visible ? 0 : -1}
-      className={`flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-all duration-300 hover:bg-white hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary ${
-        visible
-          ? 'translate-y-0 opacity-100'
-          : 'pointer-events-none translate-y-3 opacity-0'
-      }`}
+      className={`flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-muted-foreground transition-all duration-300 hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${visible
+        ? 'translate-y-0 opacity-100'
+        : 'pointer-events-none translate-y-3 opacity-0'
+        }`}
     >
       <ArrowUp className="h-5 w-5" aria-hidden />
     </button>
   );
 }
 
-/**
- * Footer situs publik. Sengaja ringkas: identitas + kanal kontak, navigasi
- * halaman yang sama persis dengan navbar, dan tiga tautan menuju produk.
- * Sitemap aplikasi tidak dicantumkan — semuanya masih bisa dicapai lewat
- * aplikasi itu sendiri.
- */
+
+
 export function LandingFooter() {
   const columns: { title: string; links: FooterLink[] }[] = [
-    { title: 'Navigasi', links: PRIMARY_NAV },
-    { title: 'ReBites', links: PRODUCT_LINKS },
+    {
+      title: 'Jelajahi',
+      links: [
+        { label: 'Beranda', href: '/' },
+        { label: 'Jelajahi makanan', href: '/home' },
+        { label: 'Kategori makanan', href: '/kategori' },
+        { label: 'Fitur unggulan', href: '/fitur' },
+        { label: 'Membership', href: '/membership' },
+      ],
+    },
+    {
+      title: 'Tentang',
+      links: [
+        { label: 'Tentang Kami', href: '/tentang-kami' },
+        { label: 'Cara Kerja', href: '/cara-kerja' },
+        { label: 'Dampak lingkungan', href: '/dampak' },
+        { label: 'Untuk Pembeli', href: '/untuk-pembeli' },
+        { label: 'Untuk UMKM', href: '/untuk-umkm' },
+      ],
+    },
+    {
+      title: 'Akun & Layanan',
+      links: [
+        { label: 'Masuk', href: '/auth/login' },
+        { label: 'Daftar akun', href: '/auth/register' },
+        { label: 'Riwayat pesanan', href: '/riwayatPesanan' },
+        { label: 'Profil saya', href: '/profile' },
+        { label: 'Notifikasi', href: '/notifikasi' },
+        { label: 'Gabung sebagai UMKM', href: '/auth/register/penjual' },
+      ],
+    },
+    {
+      title: 'Bantuan',
+      links: [
+        { label: 'Pertanyaan umum', href: '/pertanyaan-umum' },
+        { label: 'Pusat bantuan', href: '/bantuan' },
+        { label: 'Hubungi Kami', href: '/hubungi-kami' },
+        { label: 'Kebijakan privasi', href: '/kebijakan-privasi' },
+        { label: 'Syarat dan ketentuan', href: '/syarat-ketentuan' },
+      ],
+    },
   ];
 
   return (
-    <footer className="grain-overlay bg-primary text-primary-foreground">
-      <div className="mx-auto w-full max-w-7xl px-4 pb-8 pt-14 sm:px-6 sm:pt-16 lg:px-8 lg:pt-20">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr] lg:gap-8">
-          <div className="sm:col-span-2 lg:col-span-1">
+    <footer className="bg-white text-foreground">
+      <div className="mx-auto w-full max-w-7xl px-5 pb-6 pt-12 sm:px-8 sm:pt-14 lg:px-10 lg:pt-16">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-[1.5fr_repeat(4,minmax(0,1fr))] lg:gap-x-8">
+          {/* Brand */}
+          <div className="col-span-2 max-w-sm md:col-span-1">
             <Link
               href="/"
               aria-label="ReBites — beranda"
-              className="inline-flex min-h-[44px] items-center gap-2.5"
+              className="inline-flex min-h-10 items-center gap-2"
             >
               <Image
                 src="/logo.png"
                 alt=""
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-full object-cover ring-1 ring-white/20"
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-full object-cover"
               />
-              <span className="font-display text-2xl font-semibold tracking-tight text-white">
-                Re<span className="font-light italic">Bites</span>
+              <span className="font-display text-xl font-semibold tracking-tight text-primary">
+                ReBites
               </span>
             </Link>
 
-            <p className="mt-4 max-w-sm text-sm leading-[1.75] text-white/70">
-              Marketplace makanan surplus yang masih layak konsumsi dari pelaku
-              UMKM — agar makanan berakhir di piring, bukan di tempat sampah.
+            <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
+              Makanan surplus, kesempatan baru. Temukan makanan layak konsumsi
+              dari UMKM lokal dengan harga yang lebih bersahabat.
             </p>
 
             <a
               href="mailto:halo@rebites.id"
-              className="mt-5 inline-flex min-h-[40px] items-center gap-2 text-sm text-white/70 transition-colors duration-300 hover:text-white"
+              className="mt-3 inline-flex min-h-9 items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-primary"
             >
               <Mail className="h-4 w-4 shrink-0" aria-hidden />
               halo@rebites.id
             </a>
 
-            <ul className="mt-4 flex flex-wrap items-center gap-2.5">
+            <ul className="mt-3 flex items-center gap-1">
               {SOCIALS.map(({ label, href, Icon }) => (
                 <li key={label}>
                   <a
@@ -141,21 +171,23 @@ export function LandingFooter() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
-                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white/80 transition-colors duration-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
                   >
-                    <Icon className="h-[17px] w-[17px]" />
+                    <Icon className="h-4 w-4" />
                   </a>
                 </li>
               ))}
             </ul>
           </div>
 
+          {/* Menu groups */}
           {columns.map((column) => (
             <nav key={column.title} aria-label={column.title}>
-              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">
+              <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground">
                 {column.title}
-              </p>
-              <ul className="mt-4 space-y-1">
+              </h2>
+
+              <ul className="space-y-0.5">
                 {column.links.map((link) => (
                   <li key={link.href + link.label}>
                     <Link
@@ -163,10 +195,10 @@ export function LandingFooter() {
                       onClick={
                         link.sectionId
                           ? (event) =>
-                              handleSectionLinkClick(event, link.sectionId as string)
+                            handleSectionLinkClick(event, link.sectionId!)
                           : undefined
                       }
-                      className="inline-flex min-h-[40px] items-center text-sm text-white/70 transition-colors duration-300 hover:text-white"
+                      className="inline-flex min-h-8 items-center text-[12px] leading-5 text-muted-foreground transition-colors hover:text-primary sm:text-[13px]"
                     >
                       {link.label}
                     </Link>
@@ -177,14 +209,20 @@ export function LandingFooter() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col-reverse items-center gap-5 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-center text-xs leading-relaxed text-white/70 sm:text-left">
+        {/* Bottom row */}
+        <div className="mt-10 flex flex-col gap-3 border-t border-border/60 pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[11px] leading-5 text-muted-foreground">
             © {new Date().getFullYear()} ReBites. Dibuat oleh{' '}
-            <span className="text-white/80">Tim Sixquit</span> — SMK Taruna
+            <span className="text-foreground">Tim Sixquit</span> — SMK Taruna
             Bhakti.
           </p>
 
-          <BackToTop />
+          <div className="flex items-center justify-between gap-4 sm:justify-end">
+            <span className="text-[11px] text-muted-foreground">
+              Better food, less waste.
+            </span>
+            <BackToTop />
+          </div>
         </div>
       </div>
     </footer>

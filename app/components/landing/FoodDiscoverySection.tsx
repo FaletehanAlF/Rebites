@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, MapPin, Star } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
+import { SectionHeading } from '@/app/components/landing/SectionHeading';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { CATEGORIES } from '@/lib/categories';
 import { formatRupiah } from '@/lib/data';
@@ -42,45 +43,32 @@ export function FoodDiscoverySection() {
     <section
       id="rekomendasi"
       aria-labelledby="discovery-heading"
-      className="grain-overlay bg-white"
+      className="border-t border-border bg-white"
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
-          <Reveal>
-            <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
-              Yang bisa kamu temukan
-            </p>
-            <h2
-              id="discovery-heading"
-              className="mt-4 text-balance font-display text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary"
-            >
-              Temukan makanan yang{' '}
-              <span className="font-light italic">masih bernilai.</span>
-            </h2>
-          </Reveal>
+        <SectionHeading
+          id="discovery-heading"
+          heading="Temukan Favoritmu, Lebih Hemat."
+          description="Jelajahi pilihan makanan surplus dari pelaku UMKM dan temukan kuliner yang sesuai dengan seleramu."
+        />
 
-          <Reveal delay={0.08}>
-            <div className="lg:pb-1">
-              <p className="max-w-xl text-[15px] leading-[1.8] text-muted-foreground">
-                Cuplikan menu yang sedang ditawarkan pelaku UMKM di sekitarmu —
-                lengkap dengan harga, sisa stok, dan penjualnya.
-              </p>
-              <Link
-                href="/home"
-                className={`group mt-4 inline-flex min-h-[40px] items-center gap-1.5 font-secondary text-sm font-semibold text-primary ${FOCUS_RING}`}
-              >
-                Lihat semua makanan
-                <ArrowUpRight
-                  className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                  aria-hidden
-                />
-              </Link>
-            </div>
-          </Reveal>
-        </div>
+        <Reveal delay={0.06}>
+          <div className="mt-6 flex justify-center">
+            <Link
+              href="/home"
+              className={`group inline-flex min-h-[40px] items-center gap-1.5 font-secondary text-sm font-semibold text-primary ${FOCUS_RING}`}
+            >
+              Lihat semua makanan
+              <ArrowUpRight
+                className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                aria-hidden
+              />
+            </Link>
+          </div>
+        </Reveal>
 
         {items.length > 0 && (
-          <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+          <ul className="mt-10 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-4 lg:grid-cols-3">
             {items.map((item, index) => {
               const hasDiscount =
                 item.originalPrice > 0 &&
@@ -94,7 +82,7 @@ export function FoodDiscoverySection() {
                 >
                   <Link
                     href={`/preview/product?id=${encodeURIComponent(item.id)}`}
-                    className={`group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white transition-all duration-300 hover:border-primary/40 hover:shadow-[0_24px_48px_-34px_rgba(27,77,50,0.7)] ${FOCUS_RING}`}
+                    className={`group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white transition-colors duration-300 hover:border-primary ${FOCUS_RING}`}
                   >
                     <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-muted">
                       <SmartImage

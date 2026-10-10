@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Reveal } from '@/app/components/shared/reveal';
+import { SectionHeading } from '@/app/components/landing/SectionHeading';
 
 const DIFFERENTIATORS = [
   {
@@ -41,37 +42,25 @@ export function WhyReBitesSection() {
     <section
       id="kenapa"
       aria-labelledby="why-heading"
-      className="grain-overlay bg-secondary"
+      className="border-t border-border bg-white"
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
-          <Reveal>
-            <div>
-              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
-                Kenapa ReBites
-              </p>
-              <h2
-                id="why-heading"
-                className="mt-4 text-balance font-display text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary"
-              >
-                Makanan yang masih bernilai,{' '}
-                <span className="font-light italic">bukan sekadar murah.</span>
-              </h2>
-              <p className="mt-5 max-w-xl text-[15px] leading-[1.8] text-muted-foreground">
-                ReBites dibangun di sekitar satu ide sederhana: makanan yang
-                masih layak konsumsi seharusnya punya pembeli, bukan berakhir
-                di tempat sampah.
-              </p>
+        <SectionHeading
+          id="why-heading"
+          heading="Pilihan Hemat, Manfaat Lebih Besar."
+          description="Manfaatkan makanan yang masih layak konsumsi sambil membantu mengurangi makanan terbuang dan mendukung UMKM lokal."
+        />
 
-              <div className="relative mt-8 aspect-[4/3] w-full overflow-hidden rounded-[1.5rem] border border-border/70 bg-muted sm:aspect-[3/2]">
-                <Image
-                  src="/terselamatkan.jpg"
-                  alt="Aneka hidangan dari dapur UMKM yang siap dinikmati pembeli"
-                  fill
-                  sizes="(min-width: 1024px) 24rem, calc(100vw - 2rem)"
-                  className="object-cover"
-                />
-              </div>
+        <div className="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+          <Reveal>
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[1.5rem] border border-border/70 bg-muted sm:aspect-[3/2]">
+              <Image
+                src="/terselamatkan.jpg"
+                alt="Aneka hidangan dari dapur UMKM yang siap dinikmati pembeli"
+                fill
+                sizes="(min-width: 1024px) 24rem, calc(100vw - 2rem)"
+                className="object-cover"
+              />
             </div>
           </Reveal>
 

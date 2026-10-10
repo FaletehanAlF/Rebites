@@ -44,13 +44,10 @@ export function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-[1.75rem] border border-border bg-secondary p-6 sm:p-8"
+      className="rounded-2xl border border-border bg-white p-6 sm:p-8"
     >
-      <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-        Kirim pesan
-      </p>
-      <h2 className="mt-3 font-display text-xl font-semibold tracking-tight text-primary sm:text-2xl">
-        Tulis pertanyaanmu di sini.
+      <h2 className="font-display text-xl font-semibold tracking-tight text-primary sm:text-3xl">
+        Kirim Pesan
       </h2>
       <p className="mt-2 text-sm leading-[1.75] text-muted-foreground">
         Kami akan membalas ke email yang kamu cantumkan.

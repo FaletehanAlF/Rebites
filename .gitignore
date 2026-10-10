@@ -42,3 +42,5 @@ next-env.d.ts
 #skills
 .agents
 skills-lock.json
+
+.twscan.tmp

@@ -43,8 +43,8 @@ Two-sided product:
 | Testing | **None configured** | no test script in `package.json` |
 
 Installed but not obviously used on the landing page: `gsap`, `recharts`
-(seller pages only), `embla-carousel-react` (carousel components), and
-`lottie-react` (only imported by the temporary `/test` experiment — see §10).
+(seller pages only), `embla-carousel-react` (carousel components).
+(`lottie-react` was removed on 2026-10-11 — see §10.)
 
 ## 3. Repository structure
 
@@ -57,7 +57,6 @@ app/
     layout.tsx             # route-group layout: `LandingShell` (MotionConfig + Lenis)
     page.tsx               # landing page → `/` (Server Component)
     tentang-kami/ fitur/ dampak/ hubungi-kami/   # the four content pages
-    test/                  # TEMPORARY lottie experiment → `/test` (see §10)
   (preview)/               # public product detail, outside the landing group
     preview/product/       # → `/preview/product`
   (app)/                   # application routes (URLs unchanged by the group)
@@ -89,7 +88,7 @@ rendered per page today. `(landing)/layout.tsx` exists because the five public
 pages now genuinely share a shell (client boundary only — navbar/`main`/footer
 come from each page's `PublicShell`, see §5).
 
-## 4. Routes (from `npm run build`, 53 pages)
+## 4. Routes (from `npm run build`, 52 pages — `/test` removed 2026-10-11)
 
 Static (○): `/`, **`/tentang-kami`**, **`/fitur`**, **`/dampak`**,
 **`/hubungi-kami`** (the four public content pages), `/home`, `/auth/*`,
@@ -139,11 +138,31 @@ Navigation source of truth is `app/components/landing/nav-items.ts`
 Adding a public page means adding it there once; navbar and footer both read it.
 
 Public content pages (`/tentang-kami`, `/fitur`, `/dampak`, `/hubungi-kami`)
-share `PublicPageHero` (breadcrumb + eyebrow + `h1`) and end with
-`ContactCTASection`. `/hubungi-kami` owns the contact form
+open with `PageIntro` (`app/components/landing/PageIntro.tsx`) — a centered
+`h1` + optional lead on plain white, **no eyebrow, no panel, no wrapper
+decoration** (the `PublicPageHero` component was deleted on 2026-10-11) — and
+end with `ContactCTASection`. `/hubungi-kami` owns the contact form
 (`contact-form.tsx`), which posts to the same pre-existing Formspree endpoint
 the old FAQ form used (`https://formspree.io/f/xdeoorwd`, verified in
 `FAQSection.tsx` at `HEAD`).
+
+**Shared public-page conventions (2026-10-10 rewrite, tightened 2026-10-11):**
+
+- Section titles on these four pages use `SectionHeading`
+  (`app/components/landing/SectionHeading.tsx`) — centered `h2` +
+  description, **no eyebrow label** (the `eyebrow` prop was removed
+  everywhere on 2026-10-11; hierarchy comes from typography and spacing).
+- The four pages contain **no decorative italics**. The only italic left is
+  the *Bites* wordmark in `LandingNavbar`/`LandingFooter` (brand identity).
+- `/fitur` keeps the section ids `pembeli` and `umkm` (linked from both app
+  footers) — task-oriented numbered lists, one photo per group, no icon grid.
+- `/dampak` is intentionally photo-free: narrative → three outcomes as a
+  white editorial numbered list (hairline `border-t`, since the 2026-10-11
+  neutral-band pass) → a 3-step flat chain diagram → an honest qualitative
+  note. No invented statistics.
+- Only content-verified photos are used (`public/hero-makanan.jpeg`,
+  `public/terselamatkan.jpg`, `public/penerimaan.jpg`); see §10 for why other
+  filenames cannot be trusted.
 
 Live catalog row in `FoodDiscoverySection` lazy-imports `@/lib/catalog` on
 mount and renders nothing when empty (no placeholder products).
@@ -184,8 +203,10 @@ with pathname checks:
   --success`; `--radius: 0.25rem`. No cream/beige/caramel surfaces.
 - **Tailwind** (`tailwind.config.ts`): `font-display`/`font-sans` → Plus Jakarta
   Sans, `font-secondary` → Be Vietnam Pro; `bg-sale` shares the destructive hue.
-- **Utilities**: `.text-balance`, `.grain-overlay` (3.5% noise texture used on
-  landing sections), `[id] { scroll-margin-top: 6.5rem }` for anchor offsets.
+- **Utilities**: `.text-balance`, `[id] { scroll-margin-top: 6.5rem }` for
+  anchor offsets. (`.grain-overlay` still exists in `globals.css` and is used
+  by app-side components, but **landing pages no longer use it** — removed
+  2026-10-11.)
 - **Motion**: `app/components/shared/reveal.tsx` (`Reveal`, framer in-view);
   global CSS + `MotionConfig` respect `prefers-reduced-motion`.
 - **Recurring pattern**: duplicated `FOCUS_RING` constant in landing files
@@ -197,8 +218,17 @@ with pathname checks:
   backgrounds use `text-white/70` for body text (≥4.5:1) and `/20` for subtle
   borders. WCAG target rule on the landing page: primary controls ≥44px,
   secondary text links ≥36–40px.
-- **Section rhythm**: alternating white / `bg-secondary` / `bg-primary` bands;
-  editorial two-column headers (eyebrow + heading + supporting paragraph).
+- **Section rhythm (all-white contract, 2026-10-11)**: every public page and
+  every landing section sits on `bg-white`; adjacent sections are separated by
+  a hairline `border-t border-border` and generous vertical padding — **no
+  colored bands, no `bg-secondary` section fills, no green panels** on the
+  public surface. Green (`--primary`) is reserved for foreground accents only:
+  buttons, links, icons, small labels, active states. `bg-secondary`/`bg-accent`
+  remain fine for small interactive elements (hover states, chips, icon
+  tiles), just never as full-width section backgrounds. Section headings are
+  centered `h2` + description via `SectionHeading` (no eyebrow labels).
+  Radii: buttons/pills `rounded-full`, cards/images/panels `rounded-2xl`,
+  inputs/small tiles `rounded-xl`.
 
 ## 7. Data, integrations and assets
 
@@ -263,11 +293,13 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   adalah contoh tampilan (data demo), bukan ulasan pelanggan terverifikasi." +
   file comment) — allowed for this redesign per `CONSTRAINTS.md` → Exceptions
   `EX-01`. It is the only fabricated content permitted anywhere in the UI.
-- **Temporary route in the working tree**: `app/(landing)/test/page.tsx` serves
-  `/test` — a Lottie experiment (`lottie-react` + `public/lottie_animation/`).
-  It is public, adds ~82 kB of first-load JS to the route table, and is not
-  part of the website's information architecture. Remove it (and the
-  `lottie-react` dependency) once the animation experiment is settled.
+- **Removed 2026-10-11**: the temporary `/test` Lottie experiment route
+  (`app/(landing)/test/page.tsx`) is gone from the route table. Later the same
+  day the FAQ decorative illustration was also removed
+  (`app/components/landing/faq-illustration.tsx` deleted, `lottie-react`
+  uninstalled) as part of the minimalist all-white pass — the FAQ is now a
+  single centered column. The orphaned `public/lottie_animation/*.json` assets
+  remain on disk and can be deleted with any future cleanup.
 - Fixed after the 2026-10-09 pass (2026-10-10): the rewritten
   `HowItWorksSection.tsx` had invalid ARIA ids (`"cara - tab - pembeli "`
   with spaces, so `aria-controls`/`aria-labelledby` pointed at nothing) and
@@ -275,8 +307,23 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   `bg-white/15`, `bg-white/65` — not in the generated scale, so the step
   progress line rendered invisible); `HeroSection.tsx` still fetched a
   featured product for the deleted `HeroListingCard` (dead Supabase request
-  per landing visit). All three are fixed; the hero badge keeps its
-  `border-border bg-secondary` pill.
+  per landing visit). All three are fixed; the hero's floating category badge
+  and `bg-secondary` pill were removed in the 2026-10-11 minimalist pass (the
+  location line is now plain text with a `MapPin` icon).
+- **`whileInView` on the cara-kerja step list never resolved** (verified
+  2026-10-10 via CDP on `b4fa38d` + `next start`): the three `motion.li`
+  steps stayed at inline `opacity:0; transform:translateY(16px)` at
+  1440/375, in normal *and* `prefers-reduced-motion: reduce`, after real
+  wheel-event scrolling brought the `ol` fully into view (own
+  IntersectionObserver confirmed the geometry; `scrollY` landed, section
+  visible). Under reduced motion a tab-click remount (`key={active}`) also
+  stayed at 0 — the large empty green band in full-page screenshots is
+  this bug, not a layout gap. The in-flight working-tree
+  fix replaces panel `whileInView` with mount-time `animate` + the shared
+  `Reveal`, so the content always ends visible regardless of observer
+  timing. Lesson: on this landing page prefer `Reveal`/`animate` over
+  `whileInView` for content that must be visible in static captures and
+  under reduced motion.
 - No automated tests; verification is scripted headless-Chrome + manual
   screenshots: `/` checked at 320/375/390/430/768/1024/1280/1440/1920 — no
   horizontal overflow, no console/network errors, WCAG AA text contrast
@@ -377,3 +424,147 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   to the existing Formspree endpoint (`formspree.io/f/xdeoorwd`) via `fetch`,
   with labels for all three fields. Heading order: one `h1` per page, no
   level jumps.
+
+### Public content pages rewritten (2026-10-10)
+
+Scope: `/tentang-kami`, `/fitur`, `/dampak`, `/hubungi-kami` only (`/` and
+`/test` untouched, except `ContactCTASection` which lost a decorative italic
+span).
+
+- `npm run typecheck` ✅, `npm run lint` ✅ (0 errors, **4 warnings = the
+  recorded baseline, unchanged**), `npm run build` ✅ (53 pages; all four
+  routes static; route table unchanged, `/test` still present).
+- CDP sweep vs `next start -p 3100`:
+  - Pass 1 — 4 routes × 8 widths (320/360/375/390/414/640/768/1024/1440):
+    zero horizontal overflow, zero console errors/exceptions, exactly one
+    `h1` per page, no `italic` element inside `<main>`, correct
+    `aria-current="page"` per route, all 9 internal link targets → 200.
+  - Pass 2 — 4 routes × 5 widths with a scroll-through to trigger the
+    `Reveal` animations: zero overflow, zero broken images, zero text stuck
+    below `opacity` 0.9, zero console errors.
+  - Full-page screenshots at 1440 and 375 for all four routes reviewed by
+    eye: hierarchy, spacing, image crops and green sections all render as
+    intended at both sizes.
+- Design-rule checks on the diff: no `italic`, `gradient`, `blur-*` or
+  `backdrop-*` class in `app/(landing)/`; every opacity modifier used in the
+  rewritten files is a real Tailwind step (e.g. `/70`, `/20`, `/10`, `/25`).
+
+### Neutral bands, `/test` removal, FAQ Lottie (2026-10-11)
+
+Changes (all uncommitted in the working tree at the time of writing):
+
+- **`/hubungi-kami/page.tsx`** restored to the standard public shell
+  (`PublicShell` + `PublicPageHero` with the page `h1`); the stray app-side
+  `SiteFooter` import and unused imports removed; sr-only `h2` for the
+  channels section. Leftover `mt-3` on the form `h2`
+  (`hubungi-kami/contact-form.tsx`) removed.
+- **`HowItWorksSection.tsx`**: dead hex colors `bg-[#f4f5f2]`/`bg-[#f7f8f6]`
+  replaced with the `bg-muted`/`bg-secondary` tokens; leading/trailing blank
+  lines stripped in it and `FAQSection.tsx`.
+- **FAQ illustration**: new
+  `app/components/landing/faq-illustration.tsx` — `lottie-react` loaded via
+  `next/dynamic` only when the section nears the viewport (IntersectionObserver),
+  `role="img"` + Indonesian `aria-label`, no autoplay under
+  `prefers-reduced-motion`. `FAQSection.tsx` lost ~90 lines of manual JSON
+  fetch/effect code and the `scale-[1.4]`/`hover:scale-[1.1]` overflow hacks.
+- **Green bands removed**: the full-width `bg-primary` sections "Tiga hasil"
+  (`/dampak`) and "Pendekatan" (`/tentang-kami`) are now white bands with a
+  hairline `border-t border-border`; all `text-white`/`border-white/20`
+  styles inside them were converted to tokens (`text-primary`,
+  `text-muted-foreground`, `border-border`, image frames
+  `border-border/70 bg-muted`). `SectionHeading`'s now-unused `variant="inverse"`
+  was deleted. Green remains only on action buttons, the CTA card and footer.
+- **`HeroSection.tsx`**: secondary CTA lost `hover:scale-105` (now
+  `rounded-2xl border border-border` + `hover:border-primary hover:bg-secondary`,
+  matching the navbar secondary style); photo badge lost `bg-white/95 +
+  backdrop-blur` → solid `bg-white`.
+- **`/test` route deleted** (`app/(landing)/test/`); `lottie-react` kept for
+  the FAQ illustration, orphaned `basket.json` left on disk.
+
+Verification (production build, `next start -p 3100`, scripted headless
+Chrome):
+
+- `npm run build` ✅ (52 pages; `/test` gone; all five public routes static),
+  `npm run typecheck` ✅, `npm run lint` ✅ (0 errors, the same 4 baseline
+  warnings — all in app-side files).
+- CDP sweep: 5 routes × widths 320/375/390/430/768/1024/1280/1440 → zero
+  horizontal overflow, zero console errors/exceptions, zero failed requests,
+  zero local responses ≥400, exactly one `h1` per page, correct
+  `aria-current="page"` per route, no `section` whose background equals the
+  brand green (the CTA card is a `div`, not a section band).
+- Interactions: FAQ accordion toggles one-open-at-a-time (`aria-expanded`
+  tracked); the lazy Lottie mounts an SVG after scrolling `#faq` into view;
+  cara-kerja tabs switch `aria-selected`; mobile menu (375) opens and closes
+  on Escape.
+- Keyboard: real Tab-key sweep on `/` — `:focus-visible` triggers on all first
+  10 stops; every nav/CTA shows the 2px `ring-primary` + white offset ring.
+- Reduced motion: with `prefers-reduced-motion: reduce` emulated, the open FAQ
+  panel renders instantly at full opacity/height.
+- Full-page screenshots at 1440 and 375 for all five routes (after a
+  scroll-through so `Reveal` animations fire; `stillHidden: []` everywhere)
+  reviewed by eye — the converted neutral bands render as intended.
+- Caveat: `/#langganan` and `/#faq` cross-page anchor links were reported
+  "missing" by the harness on non-landing pages, but both ids exist on `/`
+  (false positive — the check tested the wrong document).
+
+### All-white minimalist pass, `PublicPageHero` removal (2026-10-11, later)
+
+Follow-up pass applying a stricter brief: **every public surface is white**,
+no `bg-secondary` section fills, no eyebrow labels, no hero wrapper, green
+only as foreground accent. Changes (all uncommitted, layered on the pass
+above):
+
+- **`PageIntro` added** (`app/components/landing/PageIntro.tsx`): centered
+  `h1` + optional `lead` on plain white — replaces `PublicPageHero` on all
+  four content pages; **`PublicPageHero.tsx` deleted**. No eyebrow, no panel,
+  no breadcrumb.
+- **`SectionHeading`**: `eyebrow` prop removed (component now takes only
+  `id`/`heading`/`description`); every `eyebrow="…"` call site updated across
+  the five landing sections and four content pages.
+- **Navbar** (`LandingNavbar.tsx`): always solid `bg-white border-b
+  border-border` — the translucent `backdrop-blur` scroll state and the
+  `scrolled` state/effect are gone (no glassmorphism anywhere).
+- **Footer** (`LandingFooter.tsx`): converted from `bg-primary` green to
+  white with `border-t border-border`; all `text-white/70` etc. converted to
+  `text-muted-foreground`/`text-foreground`; social circles and back-to-top
+  button now `border-border bg-white` with green hover.
+- **`ContactCTASection`**: the green rounded card is gone — now a white
+  section (`border-t`) with centered heading and the same two CTAs (green
+  primary pill + bordered secondary pill).
+- **Homepage sections**: Why/Testimonials/FAQ lost `grain-overlay
+  bg-secondary` → white + `border-t`; HowItWorks step cards lost
+  `bg-secondary` card chrome → borderless numbered columns with a top
+  hairline, and the tablist container is now `border border-border bg-white`;
+  Membership's green "popular" card is now white with `border-primary` +
+  accent "Populer" pill; product cards lost the heavy hover shadow
+  (border-color change only); hero lost the floating category-count badge,
+  the `bg-secondary` pill (now a plain `MapPin` line), the oversized photo
+  shadow and `rounded-[1.5rem]/[2rem]` radii.
+- **FAQ illustration removed**: `faq-illustration.tsx` deleted,
+  `lottie-react` uninstalled (`npm uninstall`), FAQ is a single centered
+  `max-w-3xl` column; orphaned `public/lottie_animation/*.json` left on disk.
+- **Contact form**: panel `bg-secondary` → `bg-white border border-border`;
+  the small-caps eyebrow above the channel list removed.
+- **Radius standard**: buttons/pills `rounded-full`, cards/images/panels
+  `rounded-2xl`, inputs/icon tiles `rounded-xl` (the last `rounded-[1.5rem]`
+  images on `/tentang-kami` and `/fitur` were converted).
+
+Verification (production build, `next start -p 3100`, scripted headless
+Chrome):
+
+- `npm run build` ✅ (52 pages, all five public routes static),
+  `npm run typecheck` ✅, `npm run lint` ✅ (0 errors, same 4 baseline
+  app-side warnings).
+- CDP sweep: 5 routes × 8 widths (320/375/390/430/768/1024/1280/1440) → zero
+  overflow, zero console errors, zero failed requests, one `h1` per page,
+  correct `aria-current`, zero green `section` bands.
+- Interactions: FAQ one-open-at-a-time, cara-kerja tabs switch
+  `aria-selected`, mobile menu opens/closes on Escape. (`lottieSvg: true` in
+  the harness output is a false positive — the probe matches any `#faq svg`,
+  including the accordion's Plus icon.)
+- Keyboard: real Tab-key sweep — 2px `ring-primary` + white offset on all
+  first 10 stops. Reduced motion: open FAQ panel renders instantly at full
+  opacity.
+- Full-page scrolled screenshots (`stillHidden: []` everywhere) at 1440 and
+  375 for all five routes reviewed by eye: all-white bands, hairline
+  dividers, green accents only, white footer — renders as intended.

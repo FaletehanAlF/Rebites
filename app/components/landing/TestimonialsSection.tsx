@@ -1,5 +1,6 @@
 import { Quote } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
+import { SectionHeading } from '@/app/components/landing/SectionHeading';
 import { TESTIMONIALS } from '@/app/components/landing/testimonials';
 
 /**
@@ -15,31 +16,16 @@ export function TestimonialsSection() {
     <section
       id="ulasan"
       aria-labelledby="testimonials-heading"
-      className="grain-overlay bg-secondary"
+      className="border-t border-border bg-white"
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        <Reveal>
-          <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
-            <div>
-              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
-                Umpan balik
-              </p>
-              <h2
-                id="testimonials-heading"
-                className="mt-4 text-balance font-display text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary"
-              >
-                Dari dua sisi{' '}
-                <span className="font-light italic">yang sama-sama untung.</span>
-              </h2>
-            </div>
-            <p className="max-w-xl text-[15px] leading-[1.8] text-muted-foreground lg:pb-1">
-              Pembeli yang mencari makanan terjangkau, penjual yang punya menu
-              tersisa. Ceritanya berbeda, hasil akhirnya sama.
-            </p>
-          </div>
-        </Reveal>
+        <SectionHeading
+          id="testimonials-heading"
+          heading="Cerita dari Pembeli dan UMKM."
+          description="Dua perspektif tentang makanan surplus: pembeli yang mencari pilihan hemat, dan penjual yang ingin mengurangi sisa produksi."
+        />
 
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 sm:gap-5">
+        <ul className="mt-10 grid gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-5">
           {TESTIMONIALS.map((item, index) => (
             <Reveal key={item.name} as="li" delay={Math.min(index, 3) * 0.06}>
               <figure className="flex h-full flex-col rounded-2xl border border-border bg-white p-6 sm:p-7">

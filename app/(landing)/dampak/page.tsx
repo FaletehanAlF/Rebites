@@ -1,7 +1,8 @@
-import Image from 'next/image';
 import type { Metadata } from 'next';
+import { ArrowRight } from 'lucide-react';
 import { PublicShell } from '@/app/components/landing/public-shell';
-import { PublicPageHero } from '@/app/components/landing/PublicPageHero';
+import { PageIntro } from '@/app/components/landing/PageIntro';
+import { SectionHeading } from '@/app/components/landing/SectionHeading';
 import { ContactCTASection } from '@/app/components/landing/ContactCTASection';
 import { Reveal } from '@/app/components/shared/reveal';
 
@@ -11,18 +12,18 @@ export const metadata: Metadata = {
     'Dampak yang ingin dibuat ReBites: makanan surplus tidak terbuang, UMKM memperoleh pendapatan tambahan, dan pembeli mendapat makanan terjangkau di Kota Depok.',
 };
 
-const THEMES = [
+const OUTCOMES = [
   {
     num: '01',
     title: 'Makanan yang tidak terbuang',
     description:
-      'Setiap porsi yang berpindah tangan adalah satu porsi lebih sedikit yang berakhir di tempat sampah.',
+      'Setiap porsi yang berpindah tangan adalah satu porsi lebih sedikit yang berakhir di tempat sampah. Sisa produksi hari itu tetap berakhir di piring.',
   },
   {
     num: '02',
     title: 'Pendapatan tambahan untuk UMKM',
     description:
-      'Menu yang tadinya hanya menambah beban produksi kembali menghasilkan — sekaligus membuka toko ke pembeli baru.',
+      'Menu yang tadinya hanya menambah beban produksi kembali menghasilkan — sekaligus membuka toko ke pembeli baru di sekitarnya.',
   },
   {
     num: '03',
@@ -30,132 +31,143 @@ const THEMES = [
     description:
       'Kualitas yang sama dengan harga lebih masuk akal, tanpa perlu menunggu promo atau waktu tertentu.',
   },
+];
+
+const CHAIN = [
   {
-    num: '04',
-    title: 'Ekosistem lokal yang lebih rapat',
+    num: '01',
+    title: 'UMKM menawarkan surplus',
     description:
-      'Transaksi terjadi antar warga di wilayah yang sama: dapurnya dekat, pembelinya dekat, dan makanannya tidak jauh berpindah.',
+      'Menu yang belum terjual hari itu diunggah lengkap dengan harga, sisa stok, dan waktu penerimaannya.',
+  },
+  {
+    num: '02',
+    title: 'Pembeli menemukan dan memesan',
+    description:
+      'Informasi terlihat sebelum transaksi, lalu pesanan dipilih diantar atau diambil sendiri di lokasi penjual.',
+  },
+  {
+    num: '03',
+    title: 'Makanan berpindah tangan',
+    description:
+      'Satu porsi berakhir di piring, dan ketiga hasil di atas terjadi pada waktu yang bersamaan.',
   },
 ];
 
+/**
+ * `/dampak` — disengaja lebih naratif daripada `/fitur`: satu cerita,
+ * tiga hasil yang saling terkait, lalu rantai pendek yang membentuknya.
+ * Tidak ada angka kumulatif di halaman ini karena aplikasi belum
+ * menyimpan data dampak yang bisa diverifikasi.
+ */
 export default function DampakPage() {
   return (
     <PublicShell>
-      <PublicPageHero
-        eyebrow="Dampak"
-        title={
-          <>
-            Satu transaksi kecil,{' '}
-            <span className="font-light italic">sesuatu yang lebih.</span>
-          </>
-        }
-        lead="Ketika makanan surplus menemukan pembelinya, satu transaksi kecil bisa berarti lebih banyak dari sekadar makanan."
-      />
 
       {/* Narasi */}
-      <section aria-labelledby="narrative-heading" className="bg-white">
+      <section aria-labelledby="narrative-heading" className="border-t border-border bg-white">
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <div className="grid gap-10 lg:grid-cols-[0.85fr_1fr] lg:items-center lg:gap-16">
-            <Reveal>
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[1.5rem] border border-border/70 bg-muted lg:aspect-[3/4]">
-                <Image
-                  src="/daun1072179.jpg"
-                  alt="Rimbun daun tropis yang lebat"
-                  fill
-                  sizes="(min-width: 1024px) 24rem, calc(100vw - 2rem)"
-                  className="object-cover"
-                />
-              </div>
-            </Reveal>
+          <SectionHeading
+            id="narrative-heading"
+            heading="Dampaknya tidak mulai dari kebijakan, tapi dari pesanan berikutnya."
+            description="Kami tidak memulai dari angka besar. Kami memulai dari satu warung yang punya nasi tersisa, dan satu orang yang sedang mencari makan siang."
+          />
 
-            <Reveal delay={0.08}>
-              <div>
-                <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
-                  Cerita dampak
-                </p>
-                <h2
-                  id="narrative-heading"
-                  className="mt-4 text-balance font-display text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary"
-                >
-                  Dampaknya tidak mulai dari kebijakan,{' '}
-                  <span className="font-light italic">
-                    tapi dari pesanan berikutnya.
-                  </span>
-                </h2>
-
-                <div className="mt-5 space-y-4 text-[15px] leading-[1.8] text-muted-foreground">
-                  <p>
-                    Kami tidak memulai dari angka besar. Kami memulai dari satu
-                    warung yang punya nasi tersisa, dan satu orang yang sedang
-                    mencari makan siang.
-                  </p>
-                  <p>
-                    Kalau keduanya bertemu, makanannya tidak terbuang,
-                    penjualnya mendapat tambahan, dan pembelinya membayar
-                    lebih sedikit untuk hal yang sama. Tidak ada yang harus
-                    mengorbankan yang lain.
-                  </p>
-                  <p>
-                    Di situlah ReBites ingin berada: di tengah percakapan
-                    sehari-hari soal makanan, harga, dan sisa — bukan di
-                    presentasi yang jauh dari dapur.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-          </div>
+          <Reveal delay={0.06}>
+            <div className="mt-10 grid gap-6 border-t border-border pt-8 text-[15px] leading-[1.8] text-muted-foreground sm:mt-12 lg:grid-cols-2 lg:gap-14">
+              <p>
+                Kalau keduanya bertemu, makanannya tidak terbuang, penjualnya
+                mendapat tambahan, dan pembelinya membayar lebih sedikit untuk
+                hal yang sama. Tidak ada yang harus mengorbankan yang lain.
+              </p>
+              <p>
+                Di situlah ReBites ingin berada: di tengah percakapan
+                sehari-hari soal makanan, harga, dan sisa — bukan di
+                presentasi yang jauh dari dapur.
+              </p>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* Tema dampak */}
+      {/* Tiga hasil */}
       <section
-        aria-labelledby="themes-heading"
-        className="grain-overlay bg-primary text-primary-foreground"
+        aria-labelledby="outcomes-heading"
+        className="border-t border-border bg-white"
       >
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <Reveal>
-            <div className="max-w-2xl">
-              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/70">
-                Yang kami kejar
-              </p>
-              <h2
-                id="themes-heading"
-                className="mt-4 text-balance font-display text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white"
-              >
-                Empat hal yang ingin{' '}
-                <span className="font-light italic">kami ubah.</span>
-              </h2>
-            </div>
-          </Reveal>
+          <SectionHeading
+            id="outcomes-heading"
+            heading="Tiga hasil dari satu kebiasaan kecil."
+            description="Tiga hasil ini saling terkait. Satu pesanan yang selesai menyalakan ketiganya sekaligus, bukan satu per satu."
+          />
 
-          <ul className="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2">
-            {THEMES.map((theme, index) => (
+          <ol className="mt-10 border-t border-border sm:mt-12">
+            {OUTCOMES.map((outcome, index) => (
               <Reveal
-                key={theme.num}
+                key={outcome.num}
                 as="li"
-                delay={Math.min(index, 3) * 0.05}
-                className="border-t border-white/20 pt-5"
+                delay={index * 0.06}
+                className="grid gap-3 border-b border-border py-7 sm:py-8 lg:grid-cols-[3rem_1fr_1.15fr] lg:items-baseline lg:gap-10"
               >
-                <span className="font-display text-xs font-semibold tabular-nums tracking-[0.2em] text-white/70">
-                  {theme.num}
+                <span className="font-display text-xs font-semibold tabular-nums tracking-[0.2em] text-muted-foreground">
+                  {outcome.num}
                 </span>
-                <h3 className="mt-2.5 font-display text-lg font-semibold tracking-tight text-white sm:text-xl">
-                  {theme.title}
+                <h3 className="font-display text-xl font-semibold leading-snug tracking-[-0.02em] text-primary sm:text-2xl">
+                  {outcome.title}
                 </h3>
-                <p className="mt-2 text-sm leading-[1.75] text-white/70">
-                  {theme.description}
+                <p className="max-w-2xl text-sm leading-[1.75] text-muted-foreground">
+                  {outcome.description}
                 </p>
               </Reveal>
             ))}
-          </ul>
+          </ol>
 
           <Reveal delay={0.05}>
-            <p className="mt-10 max-w-2xl border-t border-white/20 pt-6 text-sm leading-[1.75] text-white/70">
+            <p className="mt-8 max-w-2xl text-sm leading-[1.75] text-muted-foreground">
               Angka dampak kumulatifnya masih kami kumpulkan. Untuk sekarang,
               yang bisa kami tunjukkan dengan jujur adalah cerita di balik
               setiap transaksi.
             </p>
           </Reveal>
+        </div>
+      </section>
+
+      {/* Rantai */}
+      <section aria-labelledby="chain-heading" className="border-t border-border bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+          <SectionHeading
+            id="chain-heading"
+            heading="Satu rantai yang pendek dan jelas."
+            description="ReBites tidak menambah rantai pasok. Perannya hanya mempertemukan dua pihak yang sudah berada di lokasi yang sama."
+          />
+
+          <ol className="mt-10 flex flex-col gap-4 sm:mt-12 sm:flex-row sm:items-stretch sm:gap-3">
+            {CHAIN.map((step, index) => (
+              <li key={step.num} className="flex w-full items-stretch gap-3 sm:flex-1">
+                <Reveal delay={index * 0.06} className="flex-1">
+                  <div className="h-full rounded-2xl border border-border bg-white p-5 sm:p-6">
+                    <span className="font-secondary text-sm font-semibold tabular-nums text-primary">
+                      {step.num}
+                    </span>
+                    <h3 className="mt-6 font-display text-lg font-semibold leading-snug tracking-[-0.02em] text-primary sm:text-xl">
+                      {step.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-[1.75] text-muted-foreground">
+                      {step.description}
+                    </p>
+                  </div>
+                </Reveal>
+
+                {index < CHAIN.length - 1 && (
+                  <ArrowRight
+                    className="hidden h-5 w-5 shrink-0 self-center text-muted-foreground sm:block"
+                    aria-hidden
+                  />
+                )}
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
