@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -8,61 +9,70 @@ import { Reveal } from '@/app/components/shared/reveal';
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
-/**
- * Hero: komposisi asimetris (teks kiri, foto hidangan UMKM kanan) yang
- * menjelaskan apa itu ReBites dalam satu layar — tanpa panel berwarna,
- * tanpa kartu melayang, tanpa bayangan berat. Cuplikan produk asli tetap di
- * section `#rekomendasi`, supaya hero tidak bergantung pada fetch katalog.
- */
 export function HeroSection() {
   return (
     <section id="top" className="bg-white">
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8 lg:pb-24 lg:pt-36">
-        <div className="flex max-w-2xl flex-col items-start">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-10 px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8 lg:pb-24 lg:pt-36">
+        {/* Hero content */}
+        <div className="flex min-w-0 max-w-2xl flex-col items-center text-center lg:items-start lg:text-left">
           <Reveal delay={0.05}>
-            <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4 text-primary" aria-hidden />
-              Makanan surplus Sekota Depok
+            <p className="inline-flex max-w-full items-center justify-center gap-1.5 text-sm font-medium text-primary lg:justify-start">
+              <MapPin
+                className="h-4 w-4 shrink-0"
+                aria-hidden="true"
+              />
+              <span>Makanan surplus se-Kota Depok</span>
             </p>
           </Reveal>
 
           <Reveal delay={0.12}>
-            <h1 className="mt-5 text-balance font-display text-[clamp(2.1rem,5vw,3.5rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-primary">
-              Selamatkan Makanan, Nikmati Harga Lebih Hemat.
+            <h1 className="mt-5 w-full text-balance font-display text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.08] tracking-[-0.035em] text-primary text-[#202820]">
+              TEMUKAN NILAI LEBIH DARI{' '}
+              <span className="text-[#E99A32]">
+                SETIAP MAKANAN.
+              </span>
             </h1>
           </Reveal>
 
           <Reveal delay={0.18}>
-            <p className="mt-5 max-w-[34rem] text-base leading-[1.75] text-muted-foreground sm:text-[1.0625rem]">
-              Temukan dan beli makanan surplus yang masih layak konsumsi dari UMKM di sekitarmu dengan harga lebih hemat. Bantu kurangi makanan terbuang sekaligus dukung usaha kuliner lokal.
+            <p className="mt-5 w-full max-w-[34rem] text-sm leading-[1.75] text-muted-foreground sm:text-base">
+              Temukan dan beli makanan surplus yang masih layak
+              konsumsi dari UMKM di sekitarmu dengan harga lebih
+              hemat. Bantu kurangi makanan terbuang sekaligus
+              dukung usaha kuliner lokal.
             </p>
           </Reveal>
 
+          {/* Responsive CTA */}
           <Reveal delay={0.24} className="w-full">
-            <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
+            <div className="mt-8 grid w-full grid-cols-1 gap-3 min-[480px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-4">
               <Link
                 href="/home"
-                className={`group inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-dark sm:w-auto ${FOCUS_RING}`}
+                className={`group inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3.5 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-dark min-[480px]:px-3 sm:w-auto sm:px-8 ${FOCUS_RING}`}
               >
-                Temukan Makanan
+                <span>Temukan Makanan</span>
                 <ArrowRight
-                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-                  aria-hidden
+                  className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1"
+                  aria-hidden="true"
                 />
               </Link>
+
               <Link
                 href="/auth/register/penjual"
-                className={`inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full border border-border px-8 py-3.5 font-secondary text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-secondary sm:w-auto ${FOCUS_RING}`}
+                className={`inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-3.5 font-secondary text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-secondary min-[480px]:px-3 sm:w-auto sm:px-8 ${FOCUS_RING}`}
               >
-                <Store className="h-4 w-4 shrink-0" aria-hidden />
+                <Store
+                  className="h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                />
                 <span>Gabung sebagai UMKM</span>
               </Link>
             </div>
           </Reveal>
         </div>
 
-        {/* Visual: foto hidangan UMKM */}
-        <Reveal delay={0.16} className="w-full">
+        {/* Food image: preserve original aspect ratios */}
+        <Reveal delay={0.16} className="w-full min-w-0">
           <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted sm:aspect-[5/4] lg:aspect-square">
               <Image
