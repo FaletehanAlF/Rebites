@@ -105,7 +105,8 @@ Note: bare `/langganan` has never existed (404 by design — only
 ## 5. Landing page architecture (`/`)
 
 `app/(landing)/layout.tsx` wraps the whole route group in `LandingShell`
-(client) = `MotionConfig` + Lenis. Each page is a **Server Component** that
+(client) = `MotionConfig` + Lenis + a `.theme-landing` wrapper (the colour
+theme scope, see §6). Each page is a **Server Component** that
 wraps its content in `PublicShell` (`LandingNavbar` + `<main>` + `LandingFooter`);
 only `/` passes `intro`, so the `Preloader` runs exactly once, on the landing
 page. Section order:
@@ -201,6 +202,24 @@ with pathname checks:
   brand green `--primary: 148 41% 23%` (+ `--primary-dark`); neutrals
   `--secondary`, `--muted`, `--border`; semantic `--destructive/--warning/
   --success`; `--radius: 0.25rem`. No cream/beige/caramel surfaces.
+- **Brand palette** (`app/globals.css`, exact values): `--brand-forest:
+  153 44% 25%` = `#245C43` (+ `--brand-forest-dark` for hover),
+  `--brand-charcoal: 120 11% 14%` = `#202820`, `--brand-amber: 34.1 80.6% 55.5%`
+  = `#E99A32`, `--brand-sage: 84 22% 95.5%` = `#F4F6F1`, `--brand-muted:
+  126.7 4.4% 40.2%` = `#626B63`. `tailwind.config.ts` exposes them as
+  `brand.*` utilities (used e.g. by the amber hero highlight).
+- **Landing colour scope**: `.theme-landing` (declared in `app/globals.css`,
+  applied by the wrapper in `landing-shell.tsx`) maps those palette tokens
+  onto the role tokens (`--primary`, `--foreground`, `--muted-foreground`,
+  `--secondary`, `--muted`, `--accent`, `--ring`, …) for the five
+  `app/(landing)/` routes only. The `:root` values above are deliberately
+  unchanged, so buyer, seller and auth routes render exactly as before.
+  `/preview/product` lives outside the group and keeps the `:root` tokens.
+- **Landing typography roles**: `h1`/`h2`/`h3` use `text-foreground`
+  (Charcoal Green in the landing scope); Forest Green stays on buttons,
+  links, navigation, numbers, chips, icons and other brand accents;
+  descriptions use `text-muted-foreground`; Warm Amber only on the hero
+  word highlight.
 - **Tailwind** (`tailwind.config.ts`): `font-display`/`font-sans` → Plus Jakarta
   Sans, `font-secondary` → Be Vietnam Pro; `bg-sale` shares the destructive hue.
 - **Utilities**: `.text-balance`, `[id] { scroll-margin-top: 6.5rem }` for

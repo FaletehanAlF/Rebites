@@ -5,9 +5,56 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, MapPin, Store } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
+
+const FOOD_WORDS = [
+  'MAKANAN.',
+  'MINUMAN.'
+];
+
+function AnimatedFoodText() {
+  const [index, setIndex] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+
+    const interval = window.setInterval(() => {
+      setIndex((current) => (current + 1) % FOOD_WORDS.length);
+    }, 2500);
+
+    return () => window.clearInterval(interval);
+  }, [prefersReducedMotion]);
+
+  return (
+    <span className="inline-flex max-w-full overflow-hidden align-bottom text-primary">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={FOOD_WORDS[index]}
+          initial={
+            prefersReducedMotion
+              ? false
+              : { opacity: 0, y: 14 }
+          }
+          animate={{ opacity: 1, y: 0 }}
+          exit={
+            prefersReducedMotion
+              ? { opacity: 1 }
+              : { opacity: 0, y: -14 }
+          }
+          transition={{ duration: 0.35, ease: 'easeInOut' }}
+          className="inline-block"
+        >
+          {FOOD_WORDS[index]}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
 
 export function HeroSection() {
   return (
@@ -17,20 +64,15 @@ export function HeroSection() {
         <div className="flex min-w-0 max-w-2xl flex-col items-center text-center lg:items-start lg:text-left">
           <Reveal delay={0.05}>
             <p className="inline-flex max-w-full items-center justify-center gap-1.5 text-sm font-medium text-primary lg:justify-start">
-              <MapPin
-                className="h-4 w-4 shrink-0"
-                aria-hidden="true"
-              />
+              <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>Makanan surplus se-Kota Depok</span>
             </p>
           </Reveal>
 
           <Reveal delay={0.12}>
-            <h1 className="mt-5 w-full text-balance font-display text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.08] tracking-[-0.035em] text-primary text-[#202820]">
+            <h1 className="mt-5 w-full text-balance font-display text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.08] tracking-[-0.035em] text-foreground">
               TEMUKAN NILAI LEBIH DARI{' '}
-              <span className="text-[#E99A32]">
-                SETIAP MAKANAN.
-              </span>
+              <AnimatedFoodText />
             </h1>
           </Reveal>
 
@@ -59,7 +101,7 @@ export function HeroSection() {
 
               <Link
                 href="/auth/register/penjual"
-                className={`inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-3.5 font-secondary text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-secondary min-[480px]:px-3 sm:w-auto sm:px-8 ${FOCUS_RING}`}
+                className={`inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-3.5 font-secondary text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-secondary min-[480px]:px-3 sm:w-auto sm:px-8 ${FOCUS_RING}`}
               >
                 <Store
                   className="h-4 w-4 shrink-0"
@@ -71,7 +113,7 @@ export function HeroSection() {
           </Reveal>
         </div>
 
-        {/* Food image: preserve original aspect ratios */}
+        {/* Food image */}
         <Reveal delay={0.16} className="w-full min-w-0">
           <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted sm:aspect-[5/4] lg:aspect-square">

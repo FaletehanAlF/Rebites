@@ -76,7 +76,7 @@ export default function TentangKamiPage() {
                 <span className="font-display text-xs font-semibold tabular-nums tracking-[0.16em] text-primary">
                   0{index + 1}
                 </span>
-                <h3 className="mt-3 font-display text-lg font-semibold tracking-tight text-primary sm:text-xl">
+                <h3 className="mt-3 font-display text-lg font-semibold tracking-tight text-foreground sm:text-xl">
                   {problem.title}
                 </h3>
                 <p className="mt-2 text-sm leading-[1.75] text-muted-foreground">
@@ -153,7 +153,7 @@ export default function TentangKamiPage() {
                 <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Untuk pembeli
                 </p>
-                <h3 className="mt-3 font-display text-xl font-semibold tracking-tight text-primary sm:text-2xl">
+                <h3 className="mt-3 font-display text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                   Makanan berkualitas dengan harga lebih hemat.
                 </h3>
                 <ul className="mt-5 space-y-3">
@@ -180,7 +180,7 @@ export default function TentangKamiPage() {
                 <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Untuk UMKM
                 </p>
-                <h3 className="mt-3 font-display text-xl font-semibold tracking-tight text-primary sm:text-2xl">
+                <h3 className="mt-3 font-display text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                   Ubah makanan surplus menjadi peluang pendapatan.
                 </h3>
                 <ul className="mt-5 space-y-3">

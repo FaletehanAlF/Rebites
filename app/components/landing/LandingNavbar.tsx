@@ -173,7 +173,7 @@ export function LandingNavbar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-2 overflow-hidden rounded-2xl border border-border bg-white p-2 shadow-[0_24px_48px_-28px_rgba(27,77,50,0.5)]"
+              className="mt-2 overflow-hidden rounded-2xl border border-border bg-white p-2 shadow-[0_24px_48px_-28px_rgba(36,92,67,0.5)]"
             >
               <ul className="flex flex-col">
                 {PRIMARY_NAV.map((item) => {

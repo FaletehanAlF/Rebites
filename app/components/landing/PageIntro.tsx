@@ -16,7 +16,7 @@ export function PageIntro({
   return (
     <section className="bg-white">
       <div className="mx-auto w-full max-w-3xl px-4 pb-10 pt-28 text-center sm:px-6 sm:pb-12 sm:pt-32 lg:px-8 lg:pt-36">
-        <h1 className="text-balance font-display text-[clamp(2rem,4.4vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary">
+        <h1 className="text-balance font-display text-[clamp(2rem,4.4vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-foreground">
           {title}
         </h1>
         {lead && (

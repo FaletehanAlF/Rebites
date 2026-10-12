@@ -8,9 +8,6 @@ import { handleSectionLinkClick } from '@/app/components/landing/scroll-to-secti
 
 type FooterLink = { label: string; href: string; sectionId?: string };
 
-
-
-
 function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
@@ -70,17 +67,13 @@ function BackToTop() {
       }}
       aria-label="Kembali ke atas"
       tabIndex={visible ? 0 : -1}
-      className={`flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-muted-foreground transition-all duration-300 hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${visible
-        ? 'translate-y-0 opacity-100'
-        : 'pointer-events-none translate-y-3 opacity-0'
+      className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-white text-muted-foreground shadow-sm transition-all duration-300 hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
         }`}
     >
-      <ArrowUp className="h-5 w-5" aria-hidden />
+      <ArrowUp className="h-4 w-4" aria-hidden />
     </button>
   );
 }
-
-
 
 export function LandingFooter() {
   const columns: { title: string; links: FooterLink[] }[] = [
@@ -128,42 +121,75 @@ export function LandingFooter() {
   ];
 
   return (
-    <footer className="bg-white text-foreground">
-      <div className="mx-auto w-full max-w-7xl px-5 pb-6 pt-12 sm:px-8 sm:pt-14 lg:px-10 lg:pt-16">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-[1.5fr_repeat(4,minmax(0,1fr))] lg:gap-x-8">
+    <footer className="relative overflow-hidden bg-white text-foreground border-t border-border/40">
+      {/* Background Decorative Elements (+, x, o, diamond, dots) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 select-none overflow-hidden"
+      >
+
+
+        {/* Diamond / Square Element (Inline SVG) */}
+        <svg
+          className="absolute bottom-12 right-[5%] h-5 w-5 text-foreground/15 rotate-12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+        </svg>
+
+        {/* Subtle Grid Dot Pattern Canvas */}
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
+            backgroundSize: '24px 24px',
+          }}
+        />
+
+        {/* Big Watermark Brand Typography */}
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[14vw] font-extrabold uppercase leading-none tracking-tighter text-foreground/[0.02] sm:-bottom-10 lg:-bottom-14">
+          ReBites.
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-8 pt-16 sm:px-8 lg:px-10">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))] lg:gap-x-8">
           {/* Brand */}
           <div className="col-span-2 max-w-sm md:col-span-1">
             <Link
               href="/"
               aria-label="ReBites — beranda"
-              className="inline-flex min-h-10 items-center gap-2"
+              className="inline-flex items-center gap-2.5 group"
             >
               <Image
                 src="/logo.png"
                 alt=""
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-full object-cover"
+                width={34}
+                height={34}
+                className="h-8 w-8 rounded-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
               <span className="font-display text-xl font-semibold tracking-tight text-primary">
                 ReBites
               </span>
             </Link>
 
-            <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
-              Makanan surplus, kesempatan baru. Temukan makanan layak konsumsi
-              dari UMKM lokal dengan harga yang lebih bersahabat.
+            <p className="mt-3.5 text-[13px] leading-relaxed text-muted-foreground">
+              Makanan surplus, kesempatan baru. Temukan makanan layak konsumsi dari UMKM lokal dengan harga yang lebih bersahabat.
             </p>
 
             <a
               href="mailto:halo@rebites.id"
-              className="mt-3 inline-flex min-h-9 items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-primary"
+              className="mt-4 inline-flex items-center gap-2 text-[13px] font-medium text-muted-foreground transition-colors hover:text-primary"
             >
-              <Mail className="h-4 w-4 shrink-0" aria-hidden />
+              <Mail className="h-4 w-4 shrink-0 text-muted-foreground/70" aria-hidden />
               halo@rebites.id
             </a>
 
-            <ul className="mt-3 flex items-center gap-1">
+            <ul className="mt-4 flex items-center gap-1.5">
               {SOCIALS.map(({ label, href, Icon }) => (
                 <li key={label}>
                   <a
@@ -171,7 +197,7 @@ export function LandingFooter() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/40 bg-secondary/30 text-muted-foreground transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
                   >
                     <Icon className="h-4 w-4" />
                   </a>
@@ -183,22 +209,21 @@ export function LandingFooter() {
           {/* Menu groups */}
           {columns.map((column) => (
             <nav key={column.title} aria-label={column.title}>
-              <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground">
+              <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-foreground/90">
                 {column.title}
               </h2>
 
-              <ul className="space-y-0.5">
+              <ul className="space-y-2">
                 {column.links.map((link) => (
                   <li key={link.href + link.label}>
                     <Link
                       href={link.href}
                       onClick={
                         link.sectionId
-                          ? (event) =>
-                            handleSectionLinkClick(event, link.sectionId!)
+                          ? (event) => handleSectionLinkClick(event, link.sectionId!)
                           : undefined
                       }
-                      className="inline-flex min-h-8 items-center text-[12px] leading-5 text-muted-foreground transition-colors hover:text-primary sm:text-[13px]"
+                      className="inline-flex text-[13px] leading-snug text-muted-foreground transition-colors hover:text-primary"
                     >
                       {link.label}
                     </Link>
@@ -210,15 +235,14 @@ export function LandingFooter() {
         </div>
 
         {/* Bottom row */}
-        <div className="mt-10 flex flex-col gap-3 border-t border-border/60 pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[11px] leading-5 text-muted-foreground">
-            © {new Date().getFullYear()} ReBites. Dibuat oleh{' '}
-            <span className="text-foreground">Tim Sixquit</span> — SMK Taruna
-            Bhakti.
+        <div className="mt-14 flex flex-col gap-4 border-t border-border/40 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[12px] text-muted-foreground">
+            © {new Date().getFullYear()} ReBites. Dibuat dengan penuh kepedulian oleh{' '}
+            <span className="font-medium text-foreground">Tim Sixquit</span> — SMK Taruna Bhakti.
           </p>
 
-          <div className="flex items-center justify-between gap-4 sm:justify-end">
-            <span className="text-[11px] text-muted-foreground">
+          <div className="flex items-center justify-between gap-6 sm:justify-end">
+            <span className="text-[12px] font-medium tracking-wide text-muted-foreground/80">
               Better food, less waste.
             </span>
             <BackToTop />

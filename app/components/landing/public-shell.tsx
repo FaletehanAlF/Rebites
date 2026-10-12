@@ -22,7 +22,7 @@ export function PublicShell({
     <>
       {intro && <Preloader />}
       <LandingNavbar />
-      <main>{children}</main>
+      <main className='mt-3'>{children}</main>
       <LandingFooter />
     </>
   );

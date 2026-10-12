@@ -15,7 +15,7 @@ export function SectionHeading({
     <Reveal className="mx-auto max-w-2xl text-center">
       <h2
         id={id}
-        className="text-balance font-display text-[clamp(1.75rem,3.4vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-primary"
+        className="text-balance font-display text-[clamp(1.75rem,3.4vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-foreground"
       >
         {heading}
       </h2>

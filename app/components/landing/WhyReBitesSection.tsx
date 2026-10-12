@@ -76,7 +76,7 @@ export function WhyReBitesSection() {
                   {item.num}
                 </span>
                 <div>
-                  <h3 className="font-display text-lg font-semibold tracking-tight text-primary sm:text-xl">
+                  <h3 className="font-display text-lg font-semibold tracking-tight text-foreground sm:text-xl">
                     {item.title}
                   </h3>
                   <p className="mt-2 max-w-xl text-sm leading-[1.75] text-muted-foreground">

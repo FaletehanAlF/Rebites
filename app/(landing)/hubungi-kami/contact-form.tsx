@@ -46,7 +46,7 @@ export function ContactForm() {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-border bg-white p-6 sm:p-8"
     >
-      <h2 className="font-display text-xl font-semibold tracking-tight text-primary sm:text-3xl">
+      <h2 className="font-display text-xl font-semibold tracking-tight text-foreground sm:text-3xl">
         Kirim Pesan
       </h2>
       <p className="mt-2 text-sm leading-[1.75] text-muted-foreground">

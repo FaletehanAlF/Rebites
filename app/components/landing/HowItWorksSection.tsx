@@ -151,7 +151,7 @@ export function HowItWorksSection() {
                   {step.number}
                 </span>
 
-                <h3 className="mt-4 font-display text-xl font-semibold leading-snug tracking-[-0.02em] text-primary sm:text-2xl">
+                <h3 className="mt-4 font-display text-xl font-semibold leading-snug tracking-[-0.02em] text-foreground sm:text-2xl">
                   {step.title}
                 </h3>
 

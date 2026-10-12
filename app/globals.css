@@ -12,7 +12,19 @@
     --popover: 0 0% 100%;
     --popover-foreground: 150 25% 10%;
 
-    /* Brand — the ReBites deep green */
+    /* ReBites brand palette — source of truth for the public landing pages
+       (`app/(landing)/`). HSL triplets so they fit the `hsl(var(--…))`
+       mapping in tailwind.config.ts; the hex in each comment is the exact
+       brand value each token resolves to. White (#FFFFFF) is already
+       `--background` above and stays the primary surface. */
+    --brand-forest: 153 44% 25%;        /* #245C43 Primary Forest Green */
+    --brand-forest-dark: 153 44% 20%;   /* hover/active shade of the forest green */
+    --brand-charcoal: 120 11% 14%;      /* #202820 Charcoal Green */
+    --brand-amber: 34.1 80.6% 55.5%;    /* #E99A32 Warm Amber */
+    --brand-sage: 84 22% 95.5%;         /* #F4F6F1 Soft Sage */
+    --brand-muted: 126.7 4.4% 40.2%;    /* #626B63 Muted Text */
+
+    /* Brand — the ReBites deep green (default tokens, used by every route) */
     --primary: 148 41% 23%;
     --primary-dark: 148 42% 17%;
     --primary-foreground: 0 0% 100%;
@@ -49,6 +61,42 @@
     --chart-5: 150 6% 40%;
 
     --radius: 0.25rem;
+  }
+
+  /**
+   * Landing theme scope.
+   *
+   * The five public routes in `app/(landing)/` render their entire tree
+   * (navbar, sections, footer) inside `.theme-landing` — see
+   * `app/components/landing/landing-shell.tsx` — so the brand palette above
+   * replaces the default role tokens there and nowhere else. Buyer pages,
+   * the seller dashboard and the auth screens keep the `:root` tokens
+   * untouched, which is why this is a scope instead of a global edit.
+   *
+   * Surfaces stay light: white `--background` remains the dominant page
+   * colour, every light surface role resolves to the same Soft Sage value,
+   * and `--border` already renders as a neutral, sage-toned hairline.
+   */
+  .theme-landing {
+    /* Charcoal Green — headings and readable text */
+    --foreground: var(--brand-charcoal);
+    --card-foreground: var(--brand-charcoal);
+    --popover-foreground: var(--brand-charcoal);
+
+    /* Primary Forest Green — buttons, links, navigation, brand accents */
+    --primary: var(--brand-forest);
+    --primary-dark: var(--brand-forest-dark);
+    --ring: var(--brand-forest);
+
+    /* Soft Sage — subtle surfaces (chips, hover states, icon tiles, placeholders) */
+    --secondary: var(--brand-sage);
+    --secondary-foreground: var(--brand-forest);
+    --muted: var(--brand-sage);
+    --accent: var(--brand-sage);
+    --accent-foreground: var(--brand-forest);
+
+    /* Muted Text — descriptions and supporting copy */
+    --muted-foreground: var(--brand-muted);
   }
 
   * {

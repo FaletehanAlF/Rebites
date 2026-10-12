@@ -113,7 +113,7 @@ export default function DampakPage() {
                 <span className="font-display text-xs font-semibold tabular-nums tracking-[0.2em] text-muted-foreground">
                   {outcome.num}
                 </span>
-                <h3 className="font-display text-xl font-semibold leading-snug tracking-[-0.02em] text-primary sm:text-2xl">
+                <h3 className="font-display text-xl font-semibold leading-snug tracking-[-0.02em] text-foreground sm:text-2xl">
                   {outcome.title}
                 </h3>
                 <p className="max-w-2xl text-sm leading-[1.75] text-muted-foreground">
@@ -150,7 +150,7 @@ export default function DampakPage() {
                     <span className="font-secondary text-sm font-semibold tabular-nums text-primary">
                       {step.num}
                     </span>
-                    <h3 className="mt-6 font-display text-lg font-semibold leading-snug tracking-[-0.02em] text-primary sm:text-xl">
+                    <h3 className="mt-6 font-display text-lg font-semibold leading-snug tracking-[-0.02em] text-foreground sm:text-xl">
                       {step.title}
                     </h3>
                     <p className="mt-3 text-sm leading-[1.75] text-muted-foreground">

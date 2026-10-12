@@ -1,9 +1,8 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowUpRight } from 'lucide-react';
+import { Lottie } from 'lottie-react';
 import { PublicShell } from '@/app/components/landing/public-shell';
-import { PageIntro } from '@/app/components/landing/PageIntro';
 import { SectionHeading } from '@/app/components/landing/SectionHeading';
 import { ContactCTASection } from '@/app/components/landing/ContactCTASection';
 import { Reveal } from '@/app/components/shared/reveal';
@@ -60,21 +59,22 @@ const SELLER_TASKS: Task[] = [
 
 function TaskList({ items }: { items: Task[] }) {
   return (
-    <ol className="">
+    <ol className="space-y-6">
       {items.map((item, index) => (
         <Reveal
           key={item.title}
           as="li"
           delay={index * 0.06}
-          className="flex items-start gap-4 border-b border-border py-6 sm:gap-6"
+          className="flex items-start gap-4 border-b border-border pb-6 sm:gap-6"
         >
-          <span className="mt-1 shrink-0 font-display text-xs font-semibold tabular-nums tracking-[0.16em] text-primary">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-sm font-bold text-primary">
             0{index + 1}
           </span>
           <div>
-            <h3 className="font-display text-lg font-semibold tracking-tight text-primary sm:text-xl">
+            <h3 className="font-display text-lg font-semibold tracking-tight text-foreground sm:text-xl">
               {item.title}
             </h3>
+
             <p className="mt-2 max-w-2xl text-sm leading-[1.75] text-muted-foreground">
               {item.description}
             </p>
@@ -85,36 +85,54 @@ function TaskList({ items }: { items: Task[] }) {
   );
 }
 
-/**
- * `/fitur` — dua kelompok kemampuan yang benar-benar tersedia hari ini
- * (id `pembeli` dan `umkm` dipakai footer aplikasi, jangan diubah).
- * Tiap kelompok disusun sebagai daftar tugas pengguna berdampingan dengan
- * satu foto hidangan, bukan grid kartu berikon.
- */
+
+function LottieIllustration({
+  src,
+  label,
+}: {
+  src: string;
+  label: string;
+}) {
+  return (
+    <div
+      role="img"
+      aria-label={label}
+      className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden sm:aspect-[3/2] lg:aspect-[4/5]"
+    >
+      <Lottie
+        src={src}
+        autoplay
+        loop
+        className="h-auto w-full"
+      />
+    </div>
+  );
+}
+
 export default function FiturPage() {
   return (
     <PublicShell>
-
       {/* Pembeli */}
-      <section id="pembeli" aria-labelledby="buyer-heading" className="bg-white">
+      <section
+        id="pembeli"
+        aria-labelledby="buyer-heading"
+        className="bg-background"
+      >
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <SectionHeading
             id="buyer-heading"
-            heading="Temukan, bandingkan, lalu pesan."
-            description="Semua informasi yang kamu butuhkan untuk memutuskan sudah terlihat sebelum memesan — bukan setelah makanannya tiba."
+            heading="Makan enak, hemat, dan minim sisa."
+            description="Semua pilihan kuliner surplus di sekitarmu terangkum dalam satu tempat. Cari, bandingkan, lalu pesan sebelum kehabisan."
           />
 
-          <div className="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-14">
+          <div className="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-14">
             <TaskList items={BUYER_TASKS} />
 
             <Reveal delay={0.08}>
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border/70 bg-muted sm:aspect-[3/2] lg:aspect-[4/5]">
-                <Image
-                  src="/hero-makanan.jpeg"
-                  alt="Aneka hidangan dari pelaku UMKM yang dijual melalui ReBites"
-                  fill
-                  sizes="(min-width: 1024px) 22rem, calc(100vw - 2rem)"
-                  className="object-cover"
+              <div className="mx-auto w-full max-w-xl lg:max-w-none lg:scale-110">
+                <LottieIllustration
+                  src="/lottie_animation/blocks.json"
+                  label="Ilustrasi pengalaman pembeli ReBites"
                 />
               </div>
             </Reveal>
@@ -129,7 +147,7 @@ export default function FiturPage() {
                 Mulai jelajahi katalog
                 <ArrowUpRight
                   className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none"
-                  aria-hidden
+                  aria-hidden="true"
                 />
               </Link>
             </div>
@@ -151,17 +169,14 @@ export default function FiturPage() {
           />
 
           <div className="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-14">
-            <Reveal>
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border/70 bg-muted sm:aspect-[3/2] lg:aspect-[4/5]">
-                <Image
-                  src="/terselamatkan.jpg"
-                  alt="Aneka hidangan dari dapur UMKM yang siap dinikmati pembeli"
-                  fill
-                  sizes="(min-width: 1024px) 22rem, calc(100vw - 2rem)"
-                  className="object-cover"
+            <div className='scale-125'>
+              <Reveal>
+                <LottieIllustration
+                  src="/lottie_animation/toko.json"
+                  label="Ilustrasi UMKM menawarkan makanan surplus"
                 />
-              </div>
-            </Reveal>
+              </Reveal>
+            </div>
 
             <div>
               <TaskList items={SELLER_TASKS} />
@@ -186,7 +201,7 @@ export default function FiturPage() {
                     Daftar sebagai penjual
                     <ArrowUpRight
                       className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none"
-                      aria-hidden
+                      aria-hidden="true"
                     />
                   </Link>
                 </div>

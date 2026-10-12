@@ -22,7 +22,7 @@ export function ContactCTASection() {
         <Reveal>
           <h2
             id="contact-cta-heading"
-            className="text-balance font-display text-[clamp(1.75rem,3.4vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-primary"
+            className="text-balance font-display text-[clamp(1.75rem,3.4vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-foreground"
           >
             Masih punya pertanyaan?
           </h2>
