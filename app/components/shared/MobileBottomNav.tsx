@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Home, LayoutGrid, ShoppingBag, Store, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSellerStatus } from "@/hooks/use-seller-status";
+import { useSellerStatus } from "@/hooks/seller/use-seller-status";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -29,7 +29,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 backdrop-blur-lg lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white lg:hidden"
       aria-label="Navigasi bawah"
     >
       <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-1.5">

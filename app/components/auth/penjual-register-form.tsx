@@ -48,7 +48,7 @@ import {
 } from "@/app/components/ui/popover";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/use-seller-status";
+import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/seller/use-seller-status";
 import { SUBSCRIPTION_PLANS, getPlanPrice, type BillingCycle } from "@/lib/subscription-plans";
 import { formatRupiah } from "@/lib/data";
 

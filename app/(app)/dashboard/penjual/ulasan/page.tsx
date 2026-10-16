@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, Star, Store } from "lucide-react";
-import { SellerShell } from "@/app/components/dashboard-penjual/SellerShell";
-import { Card } from "@/app/components/dashboard-penjual/Card";
-import { StoreRatingCard } from "@/app/components/dashboard-penjual/StoreRatingCard";
+import { SellerShell } from "@/app/components/seller/dashboard-penjual/SellerShell";
+import { Card } from "@/app/components/seller/dashboard-penjual/Card";
+import { StoreRatingCard } from "@/app/components/seller/dashboard-penjual/StoreRatingCard";
 import { getSellerUmkm } from "@/lib/product-storage";
 import {
   getSellerReviews,
@@ -38,7 +38,7 @@ function Stars({ rating }: { rating: number }) {
             "h-3.5 w-3.5",
             n <= rating
               ? "fill-primary text-primary"
-              : "fill-border-100 text-primary-foreground",
+              : "fill-border text-border",
           )}
         />
       ))}
@@ -72,14 +72,14 @@ function ReviewItem({ review }: { review: SellerReview }) {
         </div>
         <p className="mt-1 text-xs font-medium text-muted-foreground">
           {review.menuName || "Menu"} ·{" "}
-          <span className="font-mono">#{review.orderCode}</span>
+          <span>#{review.orderCode}</span>
         </p>
         {review.comment ? (
           <p className="mt-2 break-words rounded-xl bg-secondary px-3 py-2 text-[13px] leading-relaxed text-foreground">
             {review.comment}
           </p>
         ) : (
-          <p className="mt-2 text-xs italic text-muted-foreground-400">Tanpa komentar</p>
+          <p className="mt-2 text-xs text-muted-foreground">Tanpa komentar</p>
         )}
       </div>
     </li>
@@ -135,7 +135,7 @@ export default function UlasanPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
       >
-        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
+        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
           Ulasan Pelanggan
         </h1>
       </motion.div>

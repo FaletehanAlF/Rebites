@@ -6,26 +6,26 @@ import dynamic from 'next/dynamic';
 import { motion, MotionConfig } from 'framer-motion';
 import { Crown } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
-import { DashboardDecor } from '@/app/components/dashboard-penjual/decor';
-import { Sidebar } from '@/app/components/dashboard-penjual/Sidebar';
-import { Topbar } from '@/app/components/dashboard-penjual/Topbar';
-import { DetailedReportCard, type StatsPeriod } from '@/app/components/dashboard-penjual/DetailedReportCard';
-import { DemandAnalyticsCard } from '@/app/components/dashboard-penjual/DemandAnalyticsCard';
-import { FeaturedPromoCard } from '@/app/components/dashboard-penjual/FeaturedPromoCard';
-import { StoreCard } from '@/app/components/dashboard-penjual/StoreCard';
-import { StoreRatingCard } from '@/app/components/dashboard-penjual/StoreRatingCard';
+import { Sidebar } from '@/app/components/seller/dashboard-penjual/Sidebar';
+import { Topbar } from '@/app/components/seller/dashboard-penjual/Topbar';
+import { MobileSellerNav } from '@/app/components/seller/dashboard-penjual/MobileSellerNav';
+import { DetailedReportCard, type StatsPeriod } from '@/app/components/seller/dashboard-penjual/DetailedReportCard';
+import { DemandAnalyticsCard } from '@/app/components/seller/dashboard-penjual/DemandAnalyticsCard';
+import { FeaturedPromoCard } from '@/app/components/seller/dashboard-penjual/FeaturedPromoCard';
+import { StoreCard } from '@/app/components/seller/dashboard-penjual/StoreCard';
+import { StoreRatingCard } from '@/app/components/seller/dashboard-penjual/StoreRatingCard';
 import { useSellerPlan } from '@/lib/seller-plan';
-import { useRequireSeller } from '@/hooks/use-require-seller';
+import { useRequireSeller } from '@/hooks/seller/use-require-seller';
 
 const SalesStatsCard = dynamic(
   () =>
-    import('@/app/components/dashboard-penjual/SalesStatsCard').then(
+    import('@/app/components/seller/dashboard-penjual/SalesStatsCard').then(
       (m) => m.SalesStatsCard
     ),
   {
     ssr: false,
     loading: () => (
-      <div className="h-[300px] animate-pulse rounded-3xl border border-border/60 bg-muted/40" />
+      <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-muted/40" />
     ),
   }
 );
@@ -65,8 +65,6 @@ export default function VendorDashboardPage() {
   return (
     <MotionConfig reducedMotion="user">
       <div className="relative min-h-screen bg-secondary font-sans text-foreground">
-        <DashboardDecor />
-
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <div className="relative z-10 lg:pl-[280px]">
@@ -80,8 +78,8 @@ export default function VendorDashboardPage() {
             >
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
-                    Halo, <span className="font-extralight italic">{firstName}</span>
+                  <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
+                    Halo, <span className="font-normal">{firstName}</span>
                   </h1>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Pantau penjualan dan pesanan masuk tokomu 
@@ -135,6 +133,8 @@ export default function VendorDashboardPage() {
             </div>
           </main>
         </div>
+
+        <MobileSellerNav />
       </div>
     </MotionConfig>
   );

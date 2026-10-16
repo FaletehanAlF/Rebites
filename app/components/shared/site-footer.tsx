@@ -9,7 +9,7 @@ export function SiteFooter() {
   return (
     <footer
       data-nav="green"
-      className="grain-overlay relative overflow-hidden bg-primary text-primary-foreground"
+      className="relative overflow-hidden bg-primary text-primary-foreground"
     >
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <Reveal className="grid gap-8 sm:gap-12 lg:grid-cols-[1.1fr_0.8fr_1fr_1.3fr]">
@@ -20,13 +20,13 @@ export function SiteFooter() {
                 alt="ReBites"
                 width={48}
                 height={48}
-                className="h-10 w-10 rounded-full object-cover shadow-[0_10px_24px_-12px_rgba(0,0,0,0.5)] ring-1 ring-primary-foreground/20 sm:h-12 sm:w-12"
+                className="h-10 w-10 rounded-full object-cover ring-1 ring-primary-foreground/20 sm:h-12 sm:w-12"
               />
               <span className="flex items-baseline gap-0.5">
                 <span className="font-display text-3xl font-medium text-primary-foreground-strong">
                   Re
                 </span>
-                <span className="font-display text-3xl font-light italic text-primary-foreground-strong">
+                <span className="font-display text-3xl font-light text-primary-foreground-strong">
                   Bites
                 </span>
               </span>
@@ -114,7 +114,7 @@ export function SiteFooter() {
           <div className="lg:text-right">
             <p className="font-display text-[clamp(3.5rem,6.5vw,6rem)] font-medium leading-none tracking-tight text-primary-foreground-strong">
               Re
-              <span className="font-light italic">Bites</span>
+              <span className="font-light">Bites</span>
             </p>
 
             <div className="mt-6 flex flex-col items-start gap-4 lg:items-end">

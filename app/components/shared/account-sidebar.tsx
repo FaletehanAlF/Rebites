@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LogOut, Coins, Receipt, Settings, Store, User, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useRebitesCoins } from '@/hooks/use-rebites-coins';
-import { useSellerStatus } from '@/hooks/use-seller-status';
+import { useRebitesCoins } from '@/hooks/buyer/use-rebites-coins';
+import { useSellerStatus } from '@/hooks/seller/use-seller-status';
 import { useProfile } from '@/hooks/use-profile';
 
 export interface SidebarUser {
@@ -81,7 +81,7 @@ export function AccountSidebar({
             transition={{ duration: 0.25 }}
             onClick={onClose}
             aria-hidden
-            className="fixed inset-0 z-[70] bg-primary/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[70] bg-primary/40"
           />
 
           <motion.aside
@@ -92,7 +92,7 @@ export function AccountSidebar({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ duration: 0.3, ease: EASE }}
-            className="fixed right-0 top-0 z-[80] flex h-full w-[88vw] max-w-[92vw] flex-col overflow-y-auto bg-secondary shadow-2xl md:w-[360px] md:max-w-none lg:w-[400px]"
+            className="fixed right-0 top-0 z-[80] flex h-full w-[88vw] max-w-[92vw] flex-col overflow-y-auto bg-secondary md:w-[360px] md:max-w-none lg:w-[400px]"
           >
             { }
             <header className="flex items-center justify-between px-8 pb-5 pt-7">
@@ -162,7 +162,7 @@ export function AccountSidebar({
                     href="/dashboard/penjual"
                     onClick={onClose}
                     className={cn(
-                      'inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-secondary text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors duration-200 hover:bg-primary-dark',
+                      'inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-secondary text-sm font-semibold text-white transition-colors duration-200 hover:bg-primary-dark',
                       FOCUS_RING,
                     )}
                   >
@@ -212,7 +212,7 @@ export function AccountSidebar({
                   type="button"
                   onClick={onLogout}
                   className={cn(
-                    'inline-flex w-full items-center justify-center gap-2.5 rounded-2xl bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-destructive transition-colors duration-200 hover:bg-destructive',
+                    'inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-destructive-foreground transition-colors duration-200 hover:bg-destructive/90',
                     FOCUS_RING,
                   )}
                 >
@@ -223,7 +223,7 @@ export function AccountSidebar({
                 <Link
                   href="/auth/login"
                   className={cn(
-                    'inline-flex w-full items-center justify-center rounded-2xl bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-200 hover:bg-destructive active:scale-[0.98]',
+                    'inline-flex w-full items-center justify-center rounded-full bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-destructive-foreground transition-all duration-200 hover:bg-destructive/90 active:scale-[0.98]',
                     FOCUS_RING,
                   )}
                 >

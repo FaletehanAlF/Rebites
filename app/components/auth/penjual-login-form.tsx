@@ -14,7 +14,7 @@ import {
   Mail,
   Lock,
 } from "lucide-react";
-import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/use-seller-status";
+import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/seller/use-seller-status";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 

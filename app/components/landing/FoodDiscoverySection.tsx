@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, MapPin, Star } from 'lucide-react';
+import { ArrowUpRight, MapPin, RefreshCw, Star } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
 import { SectionHeading } from '@/app/components/landing/SectionHeading';
 import { SmartImage } from '@/app/components/shared/SmartImage';
@@ -14,30 +14,56 @@ import type { FoodItem } from '@/lib/types';
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
-/**
- * Cuplikan katalog: memperlihatkan produknya, bukan hanya bicara tentang
- * produknya. Enam menu asli diambil dari Supabase lewat `featured-products`
- * (satu request dibagi dengan hero); bila katalog kosong, section ini tetap
- * utuh lewat baris kategori + tautan katalog — tidak ada kartu palsu.
- */
 export function FoodDiscoverySection() {
-  const [items, setItems] = useState<FoodItem[]>([]);
+  const [allProducts, setAllProducts] = useState<FoodItem[]>([]);
+  const [displayedItems, setDisplayedItems] = useState<FoodItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [, startTransition] = useTransition();
+
+  // Helper untuk mengambil N item secara acak tanpa duplikasi langsung jika memungkinkan
+  const getRandomItems = (pool: FoodItem[], count: number, excludeIds: string[] = []): FoodItem[] => {
+    if (pool.length === 0) return [];
+
+    // Filter out recently shown items if we have enough alternatives
+    const available = pool.filter((item) => !excludeIds.includes(item.id));
+    const source = available.length >= count ? available : pool;
+
+    const shuffled = [...source].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  };
 
   useEffect(() => {
     let active = true;
 
-    fetchFeaturedProducts(6)
+    fetchFeaturedProducts(20)
       .then((featured) => {
-        if (active) setItems(featured);
+        if (!active) return;
+        setAllProducts(featured);
+        const initialRandom = getRandomItems(featured, 3);
+        setDisplayedItems(initialRandom);
       })
       .catch((error) => {
         console.error('[landing] gagal memuat katalog:', error);
+      })
+      .finally(() => {
+        if (active) {
+          setIsLoading(false);
+        }
       });
 
     return () => {
       active = false;
     };
   }, []);
+
+  const handleShuffle = () => {
+    if (allProducts.length === 0) return;
+    const currentIds = displayedItems.map((item) => item.id);
+    const newRandom = getRandomItems(allProducts, 3, currentIds);
+    startTransition(() => {
+      setDisplayedItems(newRandom);
+    });
+  };
 
   return (
     <section
@@ -53,7 +79,7 @@ export function FoodDiscoverySection() {
         />
 
         <Reveal delay={0.06}>
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-6">
             <Link
               href="/home"
               className={`group inline-flex min-h-[40px] items-center gap-1.5 font-secondary text-sm font-semibold text-primary ${FOCUS_RING}`}
@@ -64,24 +90,50 @@ export function FoodDiscoverySection() {
                 aria-hidden
               />
             </Link>
+
+            {allProducts.length > 3 && (
+              <button
+                type="button"
+                onClick={handleShuffle}
+                className={`group inline-flex min-h-[40px] items-center gap-1.5 font-secondary text-sm font-semibold text-muted-foreground transition-colors hover:text-primary ${FOCUS_RING}`}
+              >
+                <RefreshCw className="h-4 w-4 transition-transform duration-500 group-hover:rotate-180" aria-hidden />
+                Acak
+              </button>
+            )}
           </div>
         </Reveal>
 
-        {items.length > 0 && (
+        {isLoading ? (
+          <div className="mt-10 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-4 lg:grid-cols-3">
+            {[1, 2, 3].map((skeletonId) => (
+              <div
+                key={skeletonId}
+                className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-muted/30 p-4 animate-pulse"
+              >
+                <div className="aspect-[4/3] w-full rounded-xl bg-muted" />
+                <div className="mt-4 h-3 w-1/3 rounded bg-muted" />
+                <div className="mt-2 h-4 w-3/4 rounded bg-muted" />
+                <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
+                <div className="mt-6 h-5 w-1/3 rounded bg-muted" />
+              </div>
+            ))}
+          </div>
+        ) : displayedItems.length > 0 ? (
           <ul className="mt-10 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-4 lg:grid-cols-3">
-            {items.map((item, index) => {
+            {displayedItems.map((item, index) => {
               const hasDiscount =
                 item.originalPrice > 0 &&
                 item.originalPrice > item.discountedPrice;
 
               return (
                 <Reveal
-                  key={item.id}
+                  key={`${item.id}-${index}`}
                   as="li"
                   delay={Math.min(index, 3) * 0.05}
                 >
                   <Link
-                    href={`/preview/product?id=${encodeURIComponent(item.id)}`}
+                    href={`/auth/login`}
                     className={`group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white transition-colors duration-300 hover:border-primary ${FOCUS_RING}`}
                   >
                     <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-muted">
@@ -147,7 +199,7 @@ export function FoodDiscoverySection() {
               );
             })}
           </ul>
-        )}
+        ) : null}
 
         <div className="mt-12 border-t border-border pt-8">
           <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -157,7 +209,7 @@ export function FoodDiscoverySection() {
             {CATEGORIES.map((category) => (
               <li key={category.id}>
                 <Link
-                  href={`/makanan/${category.id}`}
+                  href={`/auth/login`}
                   className={`inline-flex min-h-[40px] items-center rounded-full border border-border bg-secondary px-4 font-secondary text-sm font-medium text-foreground transition-colors duration-200 hover:border-primary hover:bg-accent hover:text-primary ${FOCUS_RING}`}
                 >
                   {category.name}

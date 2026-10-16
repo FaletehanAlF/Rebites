@@ -31,12 +31,12 @@ Two-sided product:
 | UI | React `18.2.0`, Server Components by default, `"use client"` only where needed | e.g. `app/(landing)/page.tsx` is a Server Component |
 | Styling | Tailwind CSS `3.3.3` + tokens in `app/globals.css` | `tailwind.config.ts` maps every color to an `hsl(var(--…))` token |
 | Components | shadcn-style UI primitives (`components.json`), Radix UI primitives | `app/components/ui/*` |
-| Animation | framer-motion `^13` (wrapped in `MotionConfig reducedMotion="user"`), Lenis smooth scroll | `app/components/landing/landing-shell.tsx`, `app/components/smooth-scroll.tsx`, `app/components/shared/reveal.tsx` |
+| Animation | framer-motion `^13` (wrapped in `MotionConfig reducedMotion="user"`), Lenis smooth scroll | `app/components/landing/landing-shell.tsx`, `app/components/landing/smooth-scroll.tsx`, `app/components/shared/reveal.tsx` |
 | Icons | lucide-react `^0.446` | throughout |
 | Forms/validation | react-hook-form `^7.53`, zod `^3.23`, @hookform/resolvers | auth/profile forms |
 | Data | Supabase (`@supabase/supabase-js` `^2.58`) | client `lib/supabase.ts`, server `lib/server/supabase.ts`, SQL migrations in `supabase/migrations/` |
 | Payments | Xendit (invoices + webhooks) | `lib/server/xendit.ts`, `app/api/checkout/xendit`, `app/api/webhooks/xendit` |
-| Charts | recharts `^2.12` | seller analytics (`hooks/use-seller-analytics.ts`) |
+| Charts | recharts `^2.12` | seller analytics (`hooks/seller/use-seller-analytics.ts`) |
 | Carousel | embla-carousel-react `^8.3` | shadcn carousel |
 | Fonts | next/font/google: **Plus Jakarta Sans** (`--font-sans`) + **Be Vietnam Pro** (`--font-secondary`) | `app/layout.tsx` — only two families allowed |
 | Images | next/image, remote hosts `images.pexels.com` and `*.supabase.co` | `next.config.js` |
@@ -71,13 +71,37 @@ app/
                            #   forgotPassword, buat-sandi-baru, callback
   api/                     # xendit checkout+verify, orders/[code], profile,
                            #   subscriptions, webhooks/xendit
-  components/              # shared components (not routes)
-    landing/               # landing sections (see §5)
-    detail-product/        # shell-injected product detail (see §5a)
-    dashboard-penjual/ home/ shared/ ui/
-hooks/                     # data hooks (orders, products, reviews, …)
+  components/              # UI components (not routes), grouped by owner
+                           #   (reorganized 2026-10-14, see docs/ARCHITECTURE.md)
+    ui/                    # shadcn primitives (button, dialog, form, …)
+    shared/                # cross-actor: navbar, MobileNavbar, reveal,
+                           #   SmartImage, FoodCard, notification/, decor,
+                           #   site-footer.tsx + app-footer.tsx (two distinct
+                           #   footer implementations, both export SiteFooter)
+    auth/                  # auth forms used by app/auth/*
+    landing/               # landing sections + preloader + smooth-scroll
+                           #   (see §5)
+    buyer/                 # buyer-only feature groups:
+                           #   checkout/ detail-product/ (shell-injected, see
+                           #   §5a) detail-toko/ home/ makanan-category/
+                           #   order-history/
+    seller/                # seller-only feature groups:
+                           #   dashboard-penjual/ tambahMenu/ subscription/
+hooks/                     # React hooks, grouped by owner:
+    buyer/                 #   use-addresses, use-followed-stores,
+                           #   use-liked-foods, use-orders, use-rebites-coins,
+                           #   use-countdown, use-order-calculation
+    seller/                #   use-require-seller, use-seller-*,
+                           #   use-store-products
+    use-notifications.ts   # shared hooks stay at the root: notifications,
+    use-profile.ts         #   profile, toast
+    use-toast.ts
 lib/                       # categories, catalog, data, types, supabase, pricing,
                            #   subscription plans, store settings/hours, xendit
+                           #   (flat by design — filename prefixes carry the
+                           #   domain: order-*, store-*, notification-*, …)
+  server/                  # server-only: supabase admin, xendit, pricing,
+                           #   order-settlement, subscription-activation
 supabase/migrations/       # SQL schema + RLS
 public/                    # images (makanan*.jpg, hero-makanan.jpeg, logo.png, …)
 ```
@@ -129,7 +153,7 @@ page. Section order:
 (`app/components/landing/scroll-to-section.ts` delegates to Lenis, with a
 `scrollIntoView` fallback). The former `#pembeli` / `#umkm` / `#about` /
 `#manfaat` anchors are **gone**: `pembeli` and `umkm` are now section ids on
-`/fitur`, and both app footers link there (`app/components/site-footer.tsx`,
+`/fitur`, and both app footers link there (`app/components/shared/app-footer.tsx`,
 `app/components/shared/site-footer.tsx`).
 
 Navigation source of truth is `app/components/landing/nav-items.ts`
@@ -182,7 +206,7 @@ with pathname checks:
 - **Application side** (`app/(app)/`): everything else, URLs unchanged.
   `/detail/product?id=…` is the in-app product detail.
 - **Shell injection**: `DetailProductContent` takes a required `shell` prop
-  (`DetailProductShell` in `app/components/detail-product/detail-page.tsx`:
+  (`DetailProductShell` in `app/components/buyer/detail-product/detail-page.tsx`:
   `header`, `productPath`, `seeAllHref`). Each route picks its own chrome —
   `app/(app)/detail/product/page.tsx` passes MobileNavbar/ProfileNavbar,
   `app/(preview)/preview/product/page.tsx` passes `LandingNavbar`.
@@ -363,7 +387,7 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 - `sharp` is not installed (Next.js recommends it for production image
   optimization; warning appears on `next start`).
 - **Pre-existing, unchanged by the redesign**: the "Produk tidak ditemukan"
-  branch of `app/components/detail-product/detail-product-content.tsx`
+  branch of `app/components/buyer/detail-product/detail-product-content.tsx`
   returns without the `shell.header`, so `/preview/product?id=…` with an
   unknown id shows no navbar (the same component backs the in-app
   `/detail/product`). Fixed routes and known products render the landing
@@ -373,7 +397,7 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   (`header`/`nav[aria-label]`/`main`/`footer`).
 - **Pre-existing, outside the landing**: app pages still contain off-brand
   colors such as `text-purple-700`
-  (`app/components/order-history/order-detail-modal.tsx`) — the white/green
+  (`app/components/buyer/order-history/order-detail-modal.tsx`) — the white/green
   system is only enforced on `app/(landing)`, `app/(preview)` and
   `app/components/landing/*` so far.
 

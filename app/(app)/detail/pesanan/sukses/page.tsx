@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { OrderSuccessView } from '@/app/components/checkout/order-success-view';
+import { OrderSuccessView } from '@/app/components/buyer/checkout/order-success-view';
 
 export const metadata: Metadata = {
   title: 'Pesanan Berhasil - ReBites',

@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { DetailProductContent } from '@/app/components/detail-product/detail-product-content';
+import { DetailProductContent } from '@/app/components/buyer/detail-product/detail-product-content';
 import { ProfileNavbar } from '@/app/components/shared/navbar';
 import { MobileNavbar } from '@/app/components/shared/MobileNavbar';
 

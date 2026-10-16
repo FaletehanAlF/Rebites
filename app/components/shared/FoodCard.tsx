@@ -5,7 +5,7 @@ import { formatRupiah } from "@/lib/data";
 import { SmartImage } from "@/app/components/shared/SmartImage";
 import type { FoodItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { useLikedFoods } from "@/hooks/use-liked-foods";
+import { useLikedFoods } from "@/hooks/buyer/use-liked-foods";
 import { isStoreOpen } from "@/lib/store-hours";
 import { openStoreClosedModal } from "@/lib/store-closed-modal-store";
 import { useCurrentUser } from "@/lib/current-user";
@@ -62,7 +62,7 @@ export function FoodCard({
           handleOpen();
         }
       }}
-      className="group cursor-pointer overflow-hidden rounded-2xl border border-zinc-200 bg-white outline-none transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg hover:shadow-primary/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-col sm:h-full sm:hover:-translate-y-1"
+      className="group cursor-pointer overflow-hidden rounded-2xl border border-border bg-white outline-none transition-colors duration-300 hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-col sm:h-full"
     >
       {/* Image: fixed 96x96 di mobile (horizontal), aspect 4/3 di desktop (vertical) */}
       <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-muted">
@@ -77,13 +77,13 @@ export function FoodCard({
         />
         {isUnavailable && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-foreground/40 p-2 text-center">
-            <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold leading-none text-foreground shadow-lg sm:px-3 sm:py-1 sm:text-xs">
+            <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold leading-none text-foreground shadow-sm sm:px-3 sm:py-1 sm:text-xs">
               {item.stockLabel === "Habis" ? "Stok Habis" : "Tidak Tersedia"}
             </span>
           </div>
         )}
         {item.discountPercent > 0 && (
-          <div className="absolute left-2 top-2 z-20 rounded-full bg-sale px-2 py-0.5 text-[10px] font-bold leading-none text-white shadow-md sm:left-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-[11px]">
+          <div className="absolute left-2 top-2 z-20 rounded-full bg-sale px-2 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm sm:left-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-[11px]">
             Hemat {item.discountPercent}%
           </div>
         )}
@@ -96,7 +96,7 @@ export function FoodCard({
             toggle(item.id);
           }}
           className={cn(
-            "absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-zinc-500 shadow-md backdrop-blur-sm transition-colors hover:bg-white hover:text-sale sm:right-3 sm:top-3 sm:h-8 sm:w-8",
+            "absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white text-muted-foreground shadow-sm transition-colors hover:text-sale sm:right-3 sm:top-3 sm:h-8 sm:w-8",
             liked && "bg-white text-sale",
             FOCUS_RING,
           )}
@@ -149,7 +149,7 @@ export function FoodCard({
           </div>
 
           {isUnavailable ? (
-            <div className="inline-flex shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1.5 text-[11px] font-semibold leading-none text-zinc-400 sm:mt-3 sm:w-full sm:px-4 sm:py-2.5 sm:text-sm">
+            <div className="inline-flex shrink-0 items-center justify-center rounded-full border border-border bg-muted px-3 py-1.5 text-[11px] font-semibold leading-none text-muted-foreground sm:mt-3 sm:w-full sm:px-4 sm:py-2.5 sm:text-sm">
               {item.stockLabel === "Habis" ? "Habis" : "Tutup"}
             </div>
           ) : (

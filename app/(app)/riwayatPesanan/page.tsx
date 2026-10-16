@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { OrderHistoryView } from '@/app/components/order-history/order-history-view';
-import { RiwayatSidebarShell } from '@/app/components/order-history/riwayat-sidebar-shell';
+import { OrderHistoryView } from '@/app/components/buyer/order-history/order-history-view';
+import { RiwayatSidebarShell } from '@/app/components/buyer/order-history/riwayat-sidebar-shell';
 
 export const metadata: Metadata = {
   title: 'Pesanan Saya | ReBites',

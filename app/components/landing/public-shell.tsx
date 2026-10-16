@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Preloader } from '@/app/components/preloader';
+import { Preloader } from '@/app/components/landing/preloader';
 import { LandingNavbar } from '@/app/components/landing/LandingNavbar';
 import { LandingFooter } from '@/app/components/landing/LandingFooter';
 

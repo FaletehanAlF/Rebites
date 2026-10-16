@@ -29,14 +29,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { useSellerStatus } from "@/hooks/use-seller-status";
+import { useSellerStatus } from "@/hooks/seller/use-seller-status";
 import { useCurrentUser } from "@/lib/current-user";
 import { useProfile, uploadAvatar, updateProfileName } from "@/hooks/use-profile";
 import { getUserOrders } from "@/lib/order-storage";
-import { useAddresses } from "@/hooks/use-addresses";
-import { useRebitesCoins } from "@/hooks/use-rebites-coins";
-import { useFollowedStores } from "@/hooks/use-followed-stores";
-import { useLikedFoods } from "@/hooks/use-liked-foods";
+import { useAddresses } from "@/hooks/buyer/use-addresses";
+import { useRebitesCoins } from "@/hooks/buyer/use-rebites-coins";
+import { useFollowedStores } from "@/hooks/buyer/use-followed-stores";
+import { useLikedFoods } from "@/hooks/buyer/use-liked-foods";
 import { useCatalog } from "@/lib/catalog";
 import { formatOrderDateTime } from "@/lib/order-utils";
 import { formatRupiah } from "@/lib/data";
@@ -54,11 +54,9 @@ import {
   DialogFooter,
 } from "@/app/components/ui/dialog";
 import {
-  ArcLines,
   DotPattern,
   FloatingLeaf,
   LeafSprig,
-  SoftBlob,
 } from "@/app/components/shared/ornaments";
 
 const BANNER_IMAGE =
@@ -201,7 +199,7 @@ function ProfileSidebar() {
 
   return (
     <aside className="space-y-5 lg:sticky lg:top-28 lg:h-fit">
-      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-white p-6 text-center shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]">
+      <section className="relative overflow-hidden rounded-2xl border border-border/70 bg-white p-6 text-center shadow-sm">
         <FloatingLeaf
           className="right-5 top-5 hidden h-4 w-4 text-muted-foreground/50 lg:block"
           delay={0.8}
@@ -209,7 +207,7 @@ function ProfileSidebar() {
         <div className="relative mx-auto h-24 w-24">
           <span className="absolute -inset-1.5 rounded-full border border-primary/30" />
           <span className="absolute -inset-3 rounded-full border border-dashed border-primary/30" />
-          <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-primary-deep font-display text-2xl font-semibold text-white ring-4 ring-primary-foreground">
+          <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary font-display text-2xl font-semibold text-white ring-4 ring-primary-foreground">
             {sidebarAvatarUrl ? (
               <Image src={sidebarAvatarUrl} alt={displayName} fill className="object-cover" unoptimized />
             ) : initials ? (
@@ -247,8 +245,7 @@ function ProfileSidebar() {
         </span>
       </section>
 
-      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-white p-6 shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]">
-        <SoftBlob className="-right-10 -top-12 h-32 w-32 bg-muted/70" />
+      <section className="relative overflow-hidden rounded-2xl border border-border/70 bg-white p-6 shadow-sm">
         <h3 className="relative font-display text-base font-semibold text-primary">
           Data Akun
         </h3>
@@ -284,7 +281,7 @@ function EcoImpactBanner({ savedPorsi }: { savedPorsi: number }) {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
-      className="relative overflow-hidden rounded-3xl border border-border/70 shadow-[0_32px_64px_-40px_rgba(42,55,49,0.6)]"
+      className="relative overflow-hidden rounded-2xl border border-border/70 shadow-sm"
     >
       <Image
         src={BANNER_IMAGE}
@@ -294,9 +291,8 @@ function EcoImpactBanner({ savedPorsi }: { savedPorsi: number }) {
         sizes="(min-width: 1024px) 70vw, 100vw"
         className="object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary-deep/95 via-primary to-primary-deep/25" />
+      <div className="absolute inset-0 bg-primary" />
 
-      <Sparkles className="pointer-events-none absolute right-10 top-8 h-5 w-5 text-primary/60" />
       <FloatingLeaf
         className="bottom-10 right-16 hidden h-5 w-5 text-primary/50 lg:block"
         delay={1.4}
@@ -307,11 +303,11 @@ function EcoImpactBanner({ savedPorsi }: { savedPorsi: number }) {
       />
 
       <div className="relative px-7 py-12 sm:px-10 sm:py-16 lg:px-14">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 font-secondary text-xs font-semibold tracking-wide text-primary-foreground backdrop-blur-sm">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 font-secondary text-xs font-semibold tracking-wide text-primary-foreground">
           <Leaf className="h-3.5 w-3.5 text-primary" />
           Dampak Pribadimu
         </span>
-        <h2 className="mt-5 max-w-2xl font-display text-[clamp(1.6rem,3vw,2.4rem)] font-semibold leading-[1.15] tracking-[-0.02em] text-primary-foreground [text-shadow:0_2px_24px_rgba(15,26,20,0.5)]">
+        <h2 className="mt-5 max-w-2xl font-display text-[clamp(1.6rem,3vw,2.4rem)] font-semibold leading-[1.15] tracking-[-0.02em] text-primary-foreground">
           &ldquo;Setiap porsi yang kamu selamatkan adalah napas baru bagi
           bumi.&rdquo;
         </h2>
@@ -366,7 +362,7 @@ function ImpactStats({
         : co2eKg.toLocaleString("id-ID", { maximumFractionDigits: 1 }),
       unit: "kg",
       label: "CO₂e Terselamatkan",
-      chip: "bg-primary/10/15 text-primary",
+      chip: "bg-primary/15 text-primary",
     },
   ];
 
@@ -377,15 +373,13 @@ function ImpactStats({
       initial="hidden"
       whileInView="visible"
       viewport={VIEWPORT}
-      className="grain-overlay relative scroll-mt-28 overflow-hidden rounded-3xl bg-primary p-6 shadow-[0_32px_64px_-40px_rgba(42,55,49,0.7)] sm:p-8"
+      className="relative scroll-mt-28 overflow-hidden rounded-2xl bg-primary p-6 shadow-sm sm:p-8"
     >
-      <SoftBlob className="-left-20 -top-20 h-64 w-64 bg-white/5" />
-      <SoftBlob className="-bottom-24 -right-20 h-72 w-72 bg-primary/25" />
       <DotPattern className="right-8 top-8 hidden h-20 w-20 text-white/10 lg:block" />
       <FloatingLeaf className="left-6 top-6 hidden h-5 w-5 text-primary/60 lg:block" />
 
       <motion.div variants={fadeUp} className="relative">
-        <p className="font-secondary text-xs font-semibold uppercase tracking-widest text-primary">
+        <p className="font-secondary text-xs font-semibold uppercase tracking-widest text-primary-foreground">
           Dampak Lingkungan
         </p>
         <h3 className="mt-2 font-display text-xl font-semibold text-primary-foreground sm:text-2xl">
@@ -417,7 +411,7 @@ function ImpactStats({
               <motion.div
                 key={stat.label}
                 variants={fadeUp}
-                className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm"
+                className="rounded-2xl border border-white/10 bg-white/10 p-5"
               >
                 <span
                   className={cn(
@@ -459,7 +453,6 @@ function CoinsAndAddress() {
 
   return (
     <div className="relative">
-      <SoftBlob className="-bottom-16 -left-16 hidden h-56 w-56 bg-primary/15/50 lg:block" />
       <motion.section
         variants={stagger}
         initial="hidden"
@@ -469,18 +462,17 @@ function CoinsAndAddress() {
       >
         <motion.div
           variants={fadeUp}
-          className="grain-overlay relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground shadow-[0_20px_40px_-32px_rgba(42,55,49,0.7)]"
+          className="relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground shadow-sm"
         >
-          <Sparkles className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 text-white/10" />
           <FloatingLeaf
             className="right-8 bottom-8 hidden h-5 w-5 text-primary/50 lg:block"
             delay={1.1}
           />
           <div className="flex items-start justify-between gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15/20 text-primary">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary-foreground">
               <Coins className="h-5 w-5" />
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-secondary text-xs font-semibold text-primary">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-secondary text-xs font-semibold text-primary-foreground">
               <Sparkles className="h-3 w-3" />
               ReBites Coins
             </span>
@@ -502,7 +494,7 @@ function CoinsAndAddress() {
 
         <motion.div
           variants={fadeUp}
-          className="rounded-2xl border border-border/70 bg-white p-6 shadow-[0_20px_40px_-32px_rgba(42,55,49,0.35)]"
+          className="rounded-2xl border border-border/70 bg-white p-6 shadow-sm"
         >
           <div className="flex items-start justify-between gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -568,7 +560,7 @@ function OrderHistory({
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.12 }}
-        className="relative scroll-mt-28 rounded-3xl border border-border/70 bg-white shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]"
+        className="relative scroll-mt-28 rounded-2xl border border-border/70 bg-white shadow-sm"
       >
         <div className="flex items-center justify-between px-6 pt-6">
           <h3 className="font-display text-lg font-semibold text-primary">
@@ -604,7 +596,7 @@ function OrderHistory({
             </div>
             <Link
               href="/home#umkm"
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark"
             >
               Jelajahi Toko
               <ArrowRight className="h-3.5 w-3.5" />
@@ -697,7 +689,7 @@ function FollowedStoresSection() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.12 }}
-      className="relative scroll-mt-28 rounded-3xl border border-border/70 bg-white p-6 shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]"
+      className="relative scroll-mt-28 rounded-2xl border border-border/70 bg-white p-6 shadow-sm"
     >
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -748,7 +740,7 @@ function FollowedStoresSection() {
             <li key={store.umkmId || store.slug || store.name}>
               <Link
                 href={`/detail/toko?id=${store.slug ?? store.umkmId}`}
-                className="group flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-white p-2 transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="group flex items-center gap-2.5 rounded-xl border border-border bg-white p-2 transition-colors duration-150 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted ring-1 ring-border">
                   {store.logoUrl ? (
@@ -804,7 +796,7 @@ function LikedFoodsSection() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.12 }}
-      className="relative scroll-mt-28 rounded-3xl border border-border/70 bg-white p-6 shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]"
+      className="relative scroll-mt-28 rounded-2xl border border-border/70 bg-white p-6 shadow-sm"
     >
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -868,7 +860,7 @@ function LikedFoodsSection() {
               <li key={fav.id || fav.productId}>
                 <Link
                   href={href}
-                  className="group flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-white p-2 transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="group flex items-center gap-2.5 rounded-xl border border-border bg-white p-2 transition-colors duration-150 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted ring-1 ring-border">
                     {image ? (
@@ -1043,12 +1035,12 @@ export function UserProfile() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: EASE }}
-            className="mt-4 flex flex-col gap-4 rounded-[20px] border border-zinc-100 bg-white p-4 shadow-sm sm:mt-6 sm:gap-6 sm:p-6 lg:flex-row lg:items-center lg:justify-between"
+            className="mt-4 flex flex-col gap-4 rounded-2xl border border-border bg-white p-4 shadow-sm sm:mt-6 sm:gap-6 sm:p-6 lg:flex-row lg:items-center lg:justify-between"
           >
             <div className="flex items-center gap-5">
               <div className="relative h-20 w-20 shrink-0 sm:h-24 sm:w-24 group/avatar">
                 <span className="absolute -inset-1 rounded-full border border-border/70" />
-                <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-primary-deep text-xl font-semibold text-white ring-4 ring-primary-foreground sm:h-24 sm:w-24 sm:text-2xl">
+                <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-primary text-xl font-semibold text-white ring-4 ring-primary-foreground sm:h-24 sm:w-24 sm:text-2xl">
                   {globalAvatarUrl ? (
                     <Image
                       src={globalAvatarUrl}
@@ -1068,7 +1060,7 @@ export function UserProfile() {
                   type="button"
                   aria-label="Ubah foto profil"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-white text-primary shadow-md ring-1 ring-black/5 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-8 sm:w-8"
+                  className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-border transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-8 sm:w-8"
                 >
                   <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
@@ -1128,9 +1120,9 @@ export function UserProfile() {
               <button
                 type="button"
                 onClick={() => setIsIkutiTokoDialogOpen(true)}
-                className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white"
+                className="group flex flex-col items-start gap-2 rounded-2xl border border-border bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-zinc-100 group-hover:bg-primary-dark group-hover:text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-border group-hover:bg-primary-dark group-hover:text-white">
                   <Store className="h-4 w-4" />
                 </span>
                 <span className="font-secondary text-sm font-semibold text-primary">
@@ -1147,9 +1139,9 @@ export function UserProfile() {
               <button
                 type="button"
                 onClick={() => setIsSukaiMakananDialogOpen(true)}
-                className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white"
+                className="group flex flex-col items-start gap-2 rounded-2xl border border-border bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sale shadow-sm ring-1 ring-zinc-100 group-hover:bg-sale group-hover:text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sale shadow-sm ring-1 ring-border group-hover:bg-sale group-hover:text-white">
                   <Heart className="h-4 w-4" />
                 </span>
                 <span className="font-secondary text-sm font-semibold text-primary">
@@ -1163,8 +1155,8 @@ export function UserProfile() {
                 </span>
               </button>
 
-              <div className="col-span-2 flex flex-col items-start gap-2 rounded-2xl border border-warning/50 bg-primary/15 p-4 sm:col-span-1">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-warning/50">
+              <div className="col-span-2 flex flex-col items-start gap-2 rounded-2xl border border-border bg-secondary p-4 sm:col-span-1">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-border">
                   <Coins className="h-4 w-4" />
                 </span>
                 <span className="font-secondary text-sm font-semibold text-primary">
@@ -1204,7 +1196,7 @@ export function UserProfile() {
                 </DialogHeader>
 
                 <div className="mt-4 flex flex-col items-center gap-4">
-                  <div className="relative h-28 w-28 overflow-hidden rounded-full bg-gradient-to-br from-primary to-primary-deep ring-4 ring-primary-foreground sm:h-32 sm:w-32">
+                  <div className="relative h-28 w-28 overflow-hidden rounded-full bg-primary ring-4 ring-primary-foreground sm:h-32 sm:w-32">
                     {avatarPreview ? (
                       <Image src={avatarPreview} alt="Preview foto profil" fill className="object-cover" unoptimized />
                     ) : globalAvatarUrl ? (
@@ -1221,7 +1213,7 @@ export function UserProfile() {
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={uploadingAvatar}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-zinc-50 disabled:opacity-50"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
                     >
                       <Camera className="h-4 w-4" />
                       {avatarFile ? "Ganti Foto" : "Pilih Foto"}
@@ -1246,7 +1238,7 @@ export function UserProfile() {
                       setAvatarError(null);
                     }}
                     disabled={uploadingAvatar}
-                    className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-zinc-50 disabled:opacity-50"
+                    className="rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
                   >
                     Batal
                   </button>
@@ -1309,7 +1301,7 @@ export function UserProfile() {
                 <button
                   type="button"
                   onClick={() => setIsIkutiTokoDialogOpen(false)}
-                  className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-zinc-50"
+                  className="rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
                 >
                   Tutup
                 </button>
@@ -1336,7 +1328,7 @@ export function UserProfile() {
                 <button
                   type="button"
                   onClick={() => setIsSukaiMakananDialogOpen(false)}
-                  className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-zinc-50"
+                  className="rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
                 >
                   Tutup
                 </button>
@@ -1350,7 +1342,7 @@ export function UserProfile() {
             initial="hidden"
             whileInView="visible"
             viewport={VIEWPORT}
-            className="mt-6 rounded-[20px] border border-zinc-100 bg-white p-6 shadow-sm sm:p-7"
+            className="mt-6 rounded-2xl border border-border bg-white p-6 shadow-sm sm:p-7"
           >
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-display text-base font-semibold text-primary">
@@ -1436,7 +1428,7 @@ export function UserProfile() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder="Nama lengkap"
-                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 font-secondary text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="mt-1.5 w-full rounded-xl border border-border bg-white px-3 py-2.5 font-secondary text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div>
@@ -1448,7 +1440,7 @@ export function UserProfile() {
                     onChange={(e) => setEditPhone(e.target.value)}
                     placeholder="08xxxxxxxxxx"
                     inputMode="numeric"
-                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 font-secondary text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="mt-1.5 w-full rounded-xl border border-border bg-white px-3 py-2.5 font-secondary text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div>
@@ -1460,7 +1452,7 @@ export function UserProfile() {
                     onChange={(e) => setEditFullAddress(e.target.value)}
                     placeholder="Jl. Contoh No. 123, RT/RW, Kelurahan..."
                     rows={3}
-                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 font-secondary text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="mt-1.5 w-full rounded-xl border border-border bg-white px-3 py-2.5 font-secondary text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
               </div>
@@ -1470,7 +1462,7 @@ export function UserProfile() {
                   type="button"
                   onClick={() => setIsEditDialogOpen(false)}
                   disabled={savingPersonal}
-                  className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-zinc-50 disabled:opacity-50"
+                  className="rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
                 >
                   Batal
                 </button>

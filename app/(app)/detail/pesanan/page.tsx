@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { CheckoutView } from '@/app/components/checkout/checkout-view';
+import { CheckoutView } from '@/app/components/buyer/checkout/checkout-view';
 
 export const metadata: Metadata = {
   title: 'Detail Pesanan - ReBites',

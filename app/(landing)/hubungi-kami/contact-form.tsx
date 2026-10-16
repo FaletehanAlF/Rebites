@@ -8,14 +8,6 @@ import { cn } from '@/lib/utils';
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
-/**
- * Formulir kontak di `/hubungi-kami`.
- *
- * Menggunakan endpoint Formspree yang sama seperti bekas formulir di
- * halaman landing — tidak ada API route baru yang dibuat hanya untuk
- * redesign ini. status `idle | sending | success | error` ditampilkan lewat
- * pesan yang di-`aria-live`, jadi pengguna pembaca layar ikut tahu hasilnya.
- */
 export function ContactForm() {
   const [status, setStatus] = useState<
     'idle' | 'sending' | 'success' | 'error'
@@ -44,9 +36,9 @@ export function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl border border-border bg-white p-6 sm:p-8"
+      className="rounded-2xl bg-background p-6 sm:p-8 border border-border"
     >
-      <h2 className="font-display text-xl font-semibold tracking-tight text-foreground sm:text-3xl">
+      <h2 className="mt-3 font-display text-xl font-semibold tracking-tight text-primary sm:text-3xl">
         Kirim Pesan
       </h2>
       <p className="mt-2 text-sm leading-[1.75] text-muted-foreground">

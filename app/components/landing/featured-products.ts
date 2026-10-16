@@ -3,27 +3,6 @@
 import { CATEGORIES } from '@/lib/categories';
 import type { FoodItem } from '@/lib/types';
 
-/**
- * Seleksi produk unggulan untuk halaman landing.
- *
- * Landing hanya menampilkan produk asli dari Supabase — tidak ada placeholder,
- * tidak ada harga karangan. `@/lib/catalog` di-import secara dinamis di dalam
- * fungsi supaya supabase-js tetap keluar dari critical path; promise hasil
- * fetch di-cache di tingkat modul sehingga hero dan section katalog berbagi
- * satu request.
- *
- * Urutan seleksi:
- *  1. hanya kategori yang benar-benar bisa dibuka pengunjung lewat
- *     `/makanan/[category]` (menyaring baris uji / kategori liar di DB);
- *  2. tier gambar — aset foto makanan milik proyek (`/makanan*`) lebih dulu,
- *     karena foto unggahan penjual bisa berisi gambar yang salah dan tidak
- *     bisa diverifikasi dari sini; gambar eksternal hanya dipakai bila tier
- *     pertama tidak cukup;
- *  3. di dalam tier yang sama, diskon terbesar lebih dulu, dengan satu
- *     produk per penjual supaya showcase memperlihatkan lebih dari satu UMKM;
- *  4. `skip` memakai urutan yang sama sehingga hero dan showcase tidak
- *     menampilkan menu yang berulang.
- */
 const BROWSABLE_CATEGORIES = new Set(CATEGORIES.map((category) => category.name));
 
 function imageTier(item: FoodItem): number {
@@ -86,11 +65,6 @@ function pick(items: FoodItem[], count: number, skip: number): FoodItem[] {
     .sort((a, b) => b.discountPercent - a.discountPercent);
 }
 
-/**
- * @param count berapa menu yang dikembalikan
- * @param skip  lewati menu pertama (dipakai showcase agar tidak mengulang
- *              menu unggulan yang sudah tampil di hero)
- */
 export async function fetchFeaturedProducts(
   count: number,
   skip = 0,

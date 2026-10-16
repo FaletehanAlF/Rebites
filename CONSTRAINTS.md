@@ -2,7 +2,9 @@
 
 Last reviewed: 2026-10-07 — created during the "landing vs application separation"
 task. 2026-10-09 — `EX-01` added during the public-site redesign (labelled demo
-testimonials only; nothing else in this file changed). Apply the floor to every
+testimonials only; nothing else in this file changed). 2026-10-14 — paths
+updated for the structure reorganization (`app/components/{buyer,seller}`,
+`hooks/{buyer,seller}`); rule strength unchanged. Apply the floor to every
 change; the measured dimensions use the repository's existing scripts only (no
 new tooling, no new dependencies).
 
@@ -26,7 +28,7 @@ Read this file before writing code. Do not weaken it to make a change pass.
 | Lint | Zero lint errors, and no new warnings above the recorded baseline | `npm run lint` | task end |
 | Build | Production build succeeds | `npm run build` | task end |
 | Routes | Public and application routes keep their URLs: `/`, `/home`, `/detail/*`, `/makanan/*`, `/auth/*`, `/dashboard/*` | `npm run build` route table + manual route checks | task end |
-| Boundary | `app/(landing)/**` must not import application chrome: `components/shared/navbar` (ProfileNavbar), `MobileNavbar`, `MobileBottomNav`, `account-sidebar`, `lib/current-user`, `lib/supabase`, `hooks/use-*` | import review of `app/(landing)` at review time | every change to `(landing)` |
+| Boundary | `app/(landing)/**` must not import application chrome: `app/components/shared/navbar` (ProfileNavbar), `MobileNavbar`, `MobileBottomNav`, `account-sidebar`, `lib/current-user`, `lib/supabase`, any hook under `hooks/` (`use-*`, `buyer/use-*`, `seller/use-*`) | import review of `app/(landing)` at review time | every change to `(landing)` |
 
 A dimension with a number and no command in this column is an aspiration, not a
 constraint.
@@ -35,7 +37,7 @@ constraint.
 
 | Metric | Today | Direction |
 | --- | --- | --- |
-| `npm run lint` warnings | 4 (pre-existing: `<img>` in `dashboard-penjual/Topbar.tsx`, `dashboard/penjual/pengaturan/page.tsx`, `dashboard/penjual/ulasan/page.tsx`; hook deps in `app/components/detail-toko` usage via `detail/toko/page.tsx`) | must not grow |
+| `npm run lint` warnings | 4 (pre-existing: `<img>` in `app/components/seller/dashboard-penjual/Topbar.tsx`, `dashboard/penjual/pengaturan/page.tsx`, `dashboard/penjual/ulasan/page.tsx`; hook deps in `app/components/buyer/detail-toko` usage via `detail/toko/page.tsx`) | must not grow |
 | Test coverage | no test runner configured | none to hold |
 
 ## Exceptions

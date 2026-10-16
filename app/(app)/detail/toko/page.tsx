@@ -18,10 +18,10 @@ import {
 import { cn } from "@/lib/utils";
 import { useCatalog } from "@/lib/catalog";
 import type { FoodItem, Vendor } from "@/lib/types";
-import { SiteFooter } from "@/app/components/site-footer";
+import { SiteFooter } from "@/app/components/shared/app-footer";
 import { ProductDetailModal } from "@/app/components/shared/ProductDetailModalLazy";
-import { CategoryRow } from "@/app/components/detail-toko/category-row";
-import { useProductDetail } from "@/app/components/detail-product/use-product-detail";
+import { CategoryRow } from "@/app/components/buyer/detail-toko/category-row";
+import { useProductDetail } from "@/app/components/buyer/detail-product/use-product-detail";
 import {
   Avatar,
   AvatarImage,
@@ -33,7 +33,7 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/app/components/ui/carousel";
-import { StoreHeroCard } from "@/app/components/detail-toko/store-hero-card";
+import { StoreHeroCard } from "@/app/components/buyer/detail-toko/store-hero-card";
 import { getServiceReviews } from "@/lib/review-storage";
 import {
   getStoreProductsBySlug,
@@ -141,7 +141,7 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Review Pelanggan
         </p>
-        <h2 className="mt-1.5 font-display text-2xl font-medium tracking-tight text-primary sm:text-3xl">
+        <h2 className="mt-1.5 font-display text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
           Kata Pelanggan tentang Pelayanan {vendor.name}
         </h2>
       </div>
@@ -151,7 +151,7 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
           type="button"
           onClick={() => carouselApi?.scrollPrev()}
           aria-label="Review sebelumnya"
-          className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex"
+          className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-sm transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex"
         >
           <ArrowRight className="h-4 w-4 rotate-180" />
         </button>
@@ -160,7 +160,7 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
           type="button"
           onClick={() => carouselApi?.scrollNext()}
           aria-label="Review berikutnya"
-          className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex"
+          className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-sm transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex"
         >
           <ArrowRight className="h-4 w-4" />
         </button>
@@ -172,14 +172,7 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
                 key={review.id}
                 className="basis-full pl-4 sm:basis-1/2 sm:pl-4 lg:basis-1/3 lg:pl-5"
               >
-                <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-8 shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_30px_60px_-28px_rgba(34,81,56,0.35)] lg:p-9">
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute -top-3 right-4 select-none font-display text-[6rem] font-extralight leading-none text-primary/[0.08] transition-colors duration-300 group-hover:text-primary/15"
-                  >
-                    &ldquo;
-                  </span>
-
+                <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white p-8 transition-colors duration-300 hover:border-primary/40 lg:p-9">
                   <div className="flex items-center gap-1">
                     {Array.from({ length: review.rating }).map((_, s) => (
                       <Star
@@ -198,15 +191,10 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
                   <div className="relative mt-7 flex items-center gap-3 pt-6">
                     <span
                       aria-hidden
-                      className="absolute inset-x-0 top-0 h-px"
-                      style={{
-                        background:
-                          "repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 10px)",
-                        opacity: 0.35,
-                      }}
+                      className="absolute inset-x-0 top-0 border-t border-dashed border-border"
                     />
 
-                    <Avatar className="h-11 w-11 border border-primary/30">
+                    <Avatar className="h-11 w-11">
                       <AvatarImage
                         src={review.avatar}
                         alt={review.name}
@@ -257,12 +245,12 @@ function StoreServiceReviews({ vendor }: { vendor: Vendor }) {
 function StoreNotFound() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-secondary px-5 font-sans text-foreground">
-      <div className="flex w-full max-w-md flex-col items-center gap-5 rounded-2xl border border-border bg-white p-10 text-center shadow-md shadow-primary/5">
+      <div className="flex w-full max-w-md flex-col items-center gap-5 rounded-2xl border border-border bg-white p-10 text-center shadow-sm">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
           <Utensils className="h-6 w-6" />
         </span>
         <div>
-          <h1 className="font-display text-xl font-medium tracking-tight text-primary">
+          <h1 className="font-display text-xl font-semibold tracking-tight text-primary">
             Toko tidak ditemukan
           </h1>
           <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
@@ -272,7 +260,7 @@ function StoreNotFound() {
         </div>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
         >
           <ArrowLeft className="h-4 w-4" />
           Kembali ke Beranda
@@ -430,7 +418,7 @@ function StoreDetailContent() {
       { }
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
         <section id="menu-surplus" className="pt-9">
-          <h2 className="mt-1.5 font-display text-2xl font-medium tracking-tight text-primary sm:text-3xl">
+          <h2 className="mt-1.5 font-display text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
             Menu Surplus dari {vendor.name}
           </h2>
 
@@ -443,7 +431,7 @@ function StoreDetailContent() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={`Cari menu di ${vendor.name}...`}
                 aria-label="Cari menu di toko ini"
-                className="w-full rounded-full border border-border bg-secondary py-2.5 pl-11 pr-10 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:bg-white"
+                className="w-full rounded-xl border border-border bg-secondary py-2.5 pl-11 pr-10 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:bg-white"
               />
               {query && (
                 <button
@@ -486,7 +474,7 @@ function StoreDetailContent() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-border bg-white p-2 shadow-lg shadow-primary/10"
+                    className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-border bg-white p-2 shadow-lg"
                   >
                     {displayCategories.map((cat) => {
                       const isActive = activeCategory === cat;
@@ -500,7 +488,7 @@ function StoreDetailContent() {
                             setIsCategoryOpen(false);
                           }}
                           className={cn(
-                            "flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors duration-200",
+                            "flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition-colors duration-200",
                             isActive
                               ? "bg-primary font-semibold text-white"
                               : "text-muted-foreground hover:bg-muted",
@@ -522,7 +510,7 @@ function StoreDetailContent() {
                 <div
                   key={i}
                   aria-hidden
-                  className="h-64 animate-pulse rounded-2xl bg-white shadow-md shadow-primary/5"
+                  className="h-64 animate-pulse rounded-2xl bg-white shadow-sm"
                 />
               ))}
             </div>
@@ -532,7 +520,7 @@ function StoreDetailContent() {
                 <SearchX className="h-6 w-6" />
               </span>
               <div>
-                <p className="text-sm font-bold text-foreground">
+                <p className="text-sm font-semibold text-foreground">
                   Menu gagal dimuat
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -542,18 +530,18 @@ function StoreDetailContent() {
               <button
                 type="button"
                 onClick={() => setReloadKey((k) => k + 1)}
-                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark"
+                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
               >
                 Coba Lagi
               </button>
             </div>
           ) : loadsOwnProducts && storeProducts.length === 0 ? (
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border bg-white p-10 text-center">
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
                 <Utensils className="h-6 w-6" />
               </span>
               <div>
-                <p className="text-sm font-bold text-foreground">
+                <p className="text-sm font-semibold text-foreground">
                   Belum ada menu surplus
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -585,12 +573,12 @@ function StoreDetailContent() {
               </div>
 
               {!hasResults && (
-                <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
+                <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border bg-white p-10 text-center">
                   <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
                     <SearchX className="h-6 w-6" />
                   </span>
                   <div>
-                    <p className="text-sm font-bold text-foreground">
+                    <p className="text-sm font-semibold text-foreground">
                       Menu tidak ditemukan
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-muted-foreground">

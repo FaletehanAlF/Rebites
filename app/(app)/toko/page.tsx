@@ -6,7 +6,7 @@ import { Store } from "lucide-react";
 import { useCatalog } from "@/lib/catalog";
 import { MobileNavbar } from "@/app/components/shared/MobileNavbar";
 import { MobileBottomNav } from "@/app/components/shared/MobileBottomNav";
-import { VendorCard } from "@/app/components/home/VendorCard";
+import { VendorCard } from "@/app/components/buyer/home/VendorCard";
 import { useSellerPlan } from "@/lib/seller-plan";
 import { SELLER_VENDOR_SLUG } from "@/lib/product-storage";
 
@@ -42,7 +42,7 @@ export default function TokoPage() {
           </div>
 
           <div className="mt-4 lg:hidden">
-            <h1 className="font-display text-lg font-bold tracking-tight text-primary">
+            <h1 className="font-display text-lg font-semibold tracking-tight text-primary">
               Semua Toko
             </h1>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -65,7 +65,7 @@ export default function TokoPage() {
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 <Store className="h-6 w-6" />
               </span>
-              <p className="mt-4 font-sans text-sm font-bold text-foreground">
+              <p className="mt-4 font-sans text-sm font-semibold text-foreground">
                 Belum ada toko tersedia
               </p>
               <p className="mt-1 max-w-xs font-secondary text-xs text-muted-foreground">

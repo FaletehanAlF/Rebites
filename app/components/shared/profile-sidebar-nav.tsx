@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DotPattern } from '@/app/components/dashboard-penjual/decor';
 
 interface SidebarProps {
   open: boolean;
@@ -92,13 +91,11 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
       transition={{ duration: 0.3 }}
       className="relative flex h-full flex-col overflow-y-auto"
     >
-      <DotPattern className="left-0 top-0 h-36 w-36 text-primary-foreground" />
-
       <div className="relative flex items-center gap-2.5 px-6 pb-6 pt-7">
         <Link
           href="/home"
           aria-label="Ke beranda ReBites"
-          className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full ring-1 ring-black/5 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full ring-1 ring-border transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           <Image src="/logo.png" alt="ReBites" width={40} height={40} className="h-10 w-10 object-cover" />
         </Link>
@@ -149,7 +146,7 @@ export function ProfileSidebarNav({ open, onClose }: SidebarProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-foreground/40 lg:hidden"
             aria-hidden
           />
         )}

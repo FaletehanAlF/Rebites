@@ -1,5 +1,5 @@
 import type { StoredOrder } from './types';
-import { paymentMethods } from '@/app/components/checkout/payment-methods';
+import { paymentMethods } from '@/app/components/buyer/checkout/payment-methods';
 
 export function paymentMethodName(id?: string): string {
   if (!id) return '-';

@@ -10,7 +10,7 @@ export default function HomeLoading() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-64 animate-pulse rounded-[var(--radius)] bg-white shadow-sm"
+              className="h-64 animate-pulse rounded-2xl bg-white shadow-sm"
               style={{ animationDelay: `${i * 91}ms` }}
             />
           ))}

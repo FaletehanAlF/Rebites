@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { MotionConfig } from 'framer-motion';
-import { SmoothScroll } from '@/app/components/smooth-scroll';
+import { SmoothScroll } from '@/app/components/landing/smooth-scroll';
 
 export function LandingShell({ children }: { children: ReactNode }) {
   return (

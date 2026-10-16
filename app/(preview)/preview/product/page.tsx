@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { DetailProductContent } from '@/app/components/detail-product/detail-product-content';
+import { DetailProductContent } from '@/app/components/buyer/detail-product/detail-product-content';
 import { LandingNavbar } from '@/app/components/landing/LandingNavbar';
 
 export const metadata: Metadata = {

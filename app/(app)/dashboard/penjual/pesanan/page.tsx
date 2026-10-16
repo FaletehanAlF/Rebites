@@ -36,8 +36,8 @@ import {
   getStatusColor,
   getValidActions,
 } from '@/lib/order-state-machine';
-import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
-import { Card } from '@/app/components/dashboard-penjual/Card';
+import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
+import { Card } from '@/app/components/seller/dashboard-penjual/Card';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 
 type OrderTab = 'berlangsung' | 'selesai' | 'semua';
@@ -170,7 +170,7 @@ function OrderRow({
           <p className="text-sm font-bold text-foreground">
             {order.productName}
             {order.quantity > 1 && (
-              <span className="font-medium text-muted-foreground"> Ã- {order.quantity}</span>
+              <span className="font-medium text-muted-foreground"> × {order.quantity}</span>
             )}
           </p>
           <StatusChip order={order} />
@@ -201,14 +201,14 @@ function OrderRow({
                 disabled={processing}
                 onClick={() => handleAction(action.targetStatus)}
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                  'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                   action.targetStatus === 'processing'
-                    ? 'bg-primary shadow-primary/25 hover:bg-primary-dark'
+                    ? 'bg-primary hover:bg-primary-dark'
                     : action.targetStatus === 'ready_for_pickup'
-                      ? 'bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-700'
+                      ? 'bg-success hover:bg-success/90'
                       : action.targetStatus === 'out_for_delivery'
-                        ? 'bg-purple-600 shadow-purple-600/25 hover:bg-purple-700'
-                        : 'bg-primary shadow-primary/25 hover:bg-primary-dark'
+                        ? 'bg-primary hover:bg-primary-dark'
+                        : 'bg-primary hover:bg-primary-dark'
                 )}
               >
                 {action.targetStatus === 'processing' && <Package className="h-3.5 w-3.5" />}
@@ -223,7 +223,7 @@ function OrderRow({
             <button
               type="button"
               onClick={() => onAdvance(order)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
             >
               <AdvanceIcon className="h-3.5 w-3.5" />
               {advanceLabel}
@@ -232,7 +232,7 @@ function OrderRow({
             <button
               type="button"
               onClick={() => onComplete(order.orderId)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
             >
               <CheckCheck className="h-3.5 w-3.5" />
               Tandai Selesai
@@ -333,7 +333,7 @@ export default function PesananMasukPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
       >
-        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
+        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
           Pesanan Masuk
         </h1>
       </motion.div>
@@ -349,7 +349,7 @@ export default function PesananMasukPage() {
             className={cn(
               'rounded-full px-4 py-2 text-xs font-semibold transition-colors',
               tab === item.value
-                ? 'bg-primary text-white shadow-sm shadow-primary/25'
+                ? 'bg-primary text-white'
                 : 'border border-border bg-white text-muted-foreground hover:text-foreground'
             )}
           >

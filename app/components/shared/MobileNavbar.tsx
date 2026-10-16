@@ -19,7 +19,7 @@ import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
 import { useProfile } from "@/hooks/use-profile";
 import { useNotifications } from "@/hooks/use-notifications";
-import { useSellerStatus } from "@/hooks/use-seller-status";
+import { useSellerStatus } from "@/hooks/seller/use-seller-status";
 
 const LOCATIONS = ["Depok", "Jakarta Selatan", "Bekasi", "Bogor", "Tangerang"];
 
@@ -113,7 +113,7 @@ export function MobileNavbar() {
     <>
       {/* Mobile-only sticky header */}
       <header className="fixed inset-x-0 top-0 z-50 lg:hidden">
-        <div className="bg-white/95 backdrop-blur-lg border-b border-border">
+        <div className="bg-white border-b border-border">
           <div className="flex items-center gap-3 px-4 py-2.5">
             <Link href="/home" className="flex shrink-0 items-center gap-2">
               <Image
@@ -148,7 +148,7 @@ export function MobileNavbar() {
                 className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
               >
                 {avatarUrl ? (
-                  <span className="relative h-7 w-7 overflow-hidden rounded-full ring-1 ring-black/5">
+                  <span className="relative h-7 w-7 overflow-hidden rounded-full ring-1 ring-border">
                     <Image
                       src={avatarUrl}
                       alt="Foto profil"
@@ -191,14 +191,14 @@ export function MobileNavbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDrawerOpen(false)}
-              className="fixed inset-0 z-[55] bg-primary/40 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-[55] bg-foreground/40 lg:hidden"
             />
             <motion.aside
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[60] flex h-full w-[85vw] max-w-[320px] flex-col bg-secondary shadow-2xl lg:hidden"
+              className="fixed right-0 top-0 z-[60] flex h-full w-[85vw] max-w-[320px] flex-col bg-secondary lg:hidden"
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                 <span className="flex items-center gap-2">

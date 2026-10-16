@@ -3,18 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, ImageIcon, Store, Trash2 } from "lucide-react";
-import { SellerShell } from "@/app/components/dashboard-penjual/SellerShell";
-import { Card } from "@/app/components/dashboard-penjual/Card";
+import { SellerShell } from "@/app/components/seller/dashboard-penjual/SellerShell";
+import { Card } from "@/app/components/seller/dashboard-penjual/Card";
 import {
   getSellerStoreSettings,
   updateStoreSettings,
   STORE_SETTINGS_UPDATED_EVENT,
 } from "@/lib/store-settings-storage";
-import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/use-seller-status";
+import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/seller/use-seller-status";
 import { supabase } from "@/lib/supabase";
 
 function inputClass() {
-  return "w-full rounded-xl border border-border bg-white px-3 py-1.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary";
+  return "w-full rounded-xl border border-border bg-white px-3 py-1.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20";
 }
 
 export default function PengaturanTokoPage() {
@@ -183,7 +183,7 @@ export default function PengaturanTokoPage() {
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Pengaturan
         </p>
-        <h1 className="mt-0.5 font-display text-[clamp(1.5rem,3vw,2rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
+        <h1 className="mt-0.5 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
           Pengaturan Toko
         </h1>
         <p className="mt-0.5 text-xs text-muted-foreground">
@@ -274,7 +274,7 @@ export default function PengaturanTokoPage() {
                   required
                   className={inputClass()}
                 />
-                <p className="mt-1 text-[10px] text-muted-foreground/60">
+                <p className="mt-1 text-[10px] text-muted-foreground">
                   Wajib diisi. Contoh: 09.00–21.00
                 </p>
               </div>
@@ -284,7 +284,7 @@ export default function PengaturanTokoPage() {
                   Logo / Foto Toko
                 </span>
                 <div className="flex items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-border bg-secondary">
+                  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-secondary">
                     {logoPreview || imageUrl ? (
                       
                       <img
@@ -293,18 +293,18 @@ export default function PengaturanTokoPage() {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
                     )}
                   </div>
                   <div>
                     <button
                       type="button"
                       onClick={() => logoInputRef.current?.click()}
-                      className="rounded-md border border-border bg-secondary px-3 py-1.5 text-[10px] font-medium text-primary transition-colors hover:bg-muted/40"
+                      className="rounded-full border border-border bg-secondary px-3 py-1.5 text-[10px] font-medium text-primary transition-colors hover:bg-muted/40"
                     >
                       {logoFile ? "Ganti Logo" : "Pilih Logo"}
                     </button>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground/60">
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">
                       PNG/JPG, maks 2MB
                     </p>
                   </div>
@@ -333,7 +333,7 @@ export default function PengaturanTokoPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-70 lg:col-span-2"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-70 lg:col-span-2"
               >
                 {saving ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
@@ -362,7 +362,7 @@ export default function PengaturanTokoPage() {
               {deleteError && (
                 <p
                   role="alert"
-                  className="mt-2 rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-[12px] text-destructive"
+                  className="mt-2 rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-[12px] text-destructive"
                 >
                   {deleteError}
                 </p>
@@ -375,7 +375,7 @@ export default function PengaturanTokoPage() {
                     setDeleteError("");
                     setConfirmingDelete(true);
                   }}
-                  className="mt-3 inline-flex items-center gap-2 rounded-md border border-destructive/35 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-destructive transition-colors hover:bg-destructive/10"
+                  className="mt-3 inline-flex items-center gap-2 rounded-full border border-destructive/35 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-destructive transition-colors hover:bg-destructive/10"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Hapus Toko
@@ -391,7 +391,7 @@ export default function PengaturanTokoPage() {
                       type="button"
                       disabled={deleting}
                       onClick={() => void handleDeleteStore()}
-                      className="inline-flex items-center gap-2 rounded-md bg-destructive px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-destructive disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-full bg-destructive px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                       {deleting ? "Menghapus..." : "Ya, Hapus Permanen"}
@@ -400,7 +400,7 @@ export default function PengaturanTokoPage() {
                       type="button"
                       disabled={deleting}
                       onClick={() => setConfirmingDelete(false)}
-                      className="rounded-md border border-destructive/25 bg-white px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+                      className="rounded-full border border-destructive/25 bg-white px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Batal
                     </button>

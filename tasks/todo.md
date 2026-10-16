@@ -79,3 +79,42 @@ Plan: `tasks/plan.md`. Constraints: `CONSTRAINTS.md`.
 - [x] Checkpoint: typecheck, build pass; manual scroll check recommended
 - [x] Restore original howitworkss look: two-row timeline, growing journey-line, ReBites content, Lenis sync
 - [x] Reduce to 3 steps (1 top-left, 2 bottom, 4 top-right), 3 scroll positions, kill stale dev server
+
+---
+
+# Tasks — Repository structure reorganization (buyer / seller / shared)
+
+Plan: `tasks/plan.md` (third plan, appended 2026-10-14). Constraints: `CONSTRAINTS.md`.
+
+## Task 1: Baseline
+- [x] Import graph audited (routes, components, hooks, lib); `npm run typecheck` ✅ exit 0, `npm run lint` ✅ exit 0 (4 baseline warnings), `npm run build` ✅ exit 0; route table saved
+
+## Task 2: seller/ batch
+**Acceptance criteria**
+- [x] `dashboard-penjual/`, `tambahMenu/`, `subscription/` live under `app/components/seller/`; all imports updated; no export renamed
+
+**Verification:** `npm run typecheck` exits 0 ✅ — **Dependencies:** Task 1
+
+## Task 3: buyer/ batch
+**Acceptance criteria**
+- [x] `checkout/`, `detail-product/`, `detail-toko/`, `home/`, `makanan-category/`, `order-history/` live under `app/components/buyer/`; all imports updated (incl. `lib/order-utils.ts`, `lib/review-storage.ts`)
+
+**Verification:** `npm run typecheck` exits 0 ✅ — **Dependencies:** Task 2
+
+## Task 4: shared/ + landing/ batch
+**Acceptance criteria**
+- [x] `notification/` → `shared/notification/`; `decor.tsx` → `shared/decor.tsx`; root `site-footer.tsx` → `shared/app-footer.tsx` (export `SiteFooter` unchanged); `preloader.tsx` + `smooth-scroll.tsx` → `landing/`
+
+**Verification:** `npm run typecheck` exits 0 ✅ (after fixing two relative `decor` imports to `@/app/components/shared/decor`) — **Dependencies:** Task 3
+
+## Task 5: hooks/ batch
+**Acceptance criteria**
+- [x] Buyer hooks under `hooks/buyer/` (+ `lib/useCountdown.ts` → `hooks/buyer/use-countdown.ts`, `lib/useOrderCalculation.ts` → `hooks/buyer/use-order-calculation.ts`); seller hooks under `hooks/seller/`; `use-notifications`/`use-profile`/`use-toast` stay shared at root
+
+**Verification:** `npm run typecheck` exits 0 ✅ (after fixing `use-order-calculation.ts`'s relative `./types` import to `@/lib/types`) — **Dependencies:** Task 4
+
+## Task 6: Final verification
+- [x] `npm run typecheck` ✅ exit 0; `npm run lint` ✅ exit 0 (0 errors, same 4 baseline warnings); `npm run build` ✅ exit 0 — route table identical to baseline (all 52 routes, same render modes; only ±1-byte size rounding on 5 lines); stale-import sweep clean; `git diff` reviewed (import-path lines only; pre-existing user changes untouched)
+
+## Task 7: Documentation
+- [x] `docs/PROJECT_CONTEXT.md` structure + path references updated; `CONSTRAINTS.md` boundary paths updated (same strength); `docs/ARCHITECTURE.md` added; final report

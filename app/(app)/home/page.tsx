@@ -5,18 +5,18 @@ import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ProfileNavbar } from "@/app/components/shared/navbar";
 import { MobileNavbar } from "@/app/components/shared/MobileNavbar";
 import { MobileBottomNav } from "@/app/components/shared/MobileBottomNav";
-import { Hero } from "@/app/components/home/Hero";
-import { UrgentDealsSection } from "@/app/components/home/UrgentDealsSection";
-import { FlashSaleSection } from "@/app/components/home/FlashSaleSection";
-import { CategorySection } from "@/app/components/home/CategorySection";
-import { VendorSection } from "@/app/components/home/VendorSection";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Hero } from "@/app/components/buyer/home/Hero";
+import { UrgentDealsSection } from "@/app/components/buyer/home/UrgentDealsSection";
+import { FlashSaleSection } from "@/app/components/buyer/home/FlashSaleSection";
+import { CategorySection } from "@/app/components/buyer/home/CategorySection";
+import { VendorSection } from "@/app/components/buyer/home/VendorSection";
+import { SiteFooter } from "@/app/components/shared/app-footer";
 import { Reveal } from "@/app/components/shared/reveal";
 import { MagneticButton } from "@/app/components/shared/magnetic-button";
 import { ProductDetailModal } from "@/app/components/shared/ProductDetailModalLazy";
 import { StoreClosedModal } from "@/app/components/shared/StoreClosedModal";
 import { useStoreClosedModal } from "@/lib/store-closed-modal-store";
-import { useProductDetail } from "@/app/components/detail-product/use-product-detail";
+import { useProductDetail } from "@/app/components/buyer/detail-product/use-product-detail";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 import { useCurrentUser } from "@/lib/current-user";
 import { getSellerStoreSettings } from "@/lib/store-settings-storage";
@@ -75,14 +75,12 @@ export default function HomePage() {
         <section
           id="langganan"
           data-nav="neutral"
-          className="grain-overlay relative overflow-hidden bg-secondary py-10 sm:py-16 lg:py-20"
+          className="relative overflow-hidden bg-secondary py-10 sm:py-16 lg:py-20"
         >
-          <div className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-primary/[0.06] blur-3xl" />
-
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
               <Reveal delay={0.1}>
-                <h2 className="mt-4 font-sans text-[clamp(1.5rem,4.5vw,3.5rem)] font-medium leading-[1.02] tracking-[-0.02em] text-primary sm:mt-6">
+                <h2 className="mt-4 font-sans text-[clamp(1.5rem,4.5vw,3.5rem)] font-semibold leading-[1.02] tracking-[-0.03em] text-primary sm:mt-6">
                   Kembangkan usaha bersama{" "}
                   <span className="text-primary">ReBites.</span>
                 </h2>
@@ -164,7 +162,7 @@ export default function HomePage() {
 
                 return (
                   <Reveal key={plan.name} delay={i * 0.1} className="h-full min-w-[280px] snap-start sm:min-w-0">
-                    <div className="relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-background p-8 shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-primary lg:p-9">
+                    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-background p-8 transition-colors duration-300 hover:border-primary/30 lg:p-9">
                       {plan.popular && (
                         <div className="absolute right-5 top-5 rounded-full bg-primary px-3 py-1 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
                           Paling Populer
@@ -172,16 +170,16 @@ export default function HomePage() {
                       )}
 
                       <div className="relative flex items-center justify-between">
-                        <span className="font-sans text-sm italic tracking-[0.2em] text-primary">
+                        <span className="font-sans text-sm tracking-[0.2em] text-primary">
                           0{i + 1}
                         </span>
                       </div>
 
-                      <h3 className="mt-4 font-sans text-2xl font-bold tracking-tight text-primary">
+                      <h3 className="mt-4 font-sans text-2xl font-semibold tracking-tight text-primary">
                         ReBites {plan.name}
                       </h3>
 
-                      <p className="mt-2 min-h-[2.5rem] max-w-[250px] font-sans text-xs leading-relaxed italic text-muted-foreground">
+                      <p className="mt-2 min-h-[2.5rem] max-w-[250px] font-sans text-xs leading-relaxed text-muted-foreground">
                         {plan.tagline}
                       </p>
 
@@ -207,7 +205,7 @@ export default function HomePage() {
                                   duration: 0.3,
                                   ease: [0.22, 1, 0.36, 1],
                                 }}
-                                className="block whitespace-nowrap font-sans text-[clamp(2.4rem,3vw,3rem)] font-light leading-[3rem] tracking-tight tabular-nums"
+                                className="block whitespace-nowrap font-sans text-[clamp(2.4rem,3vw,3rem)] font-semibold leading-[3rem] tracking-tight tabular-nums"
                               >
                                 {priceLabel}
                               </motion.span>
@@ -226,15 +224,10 @@ export default function HomePage() {
                         {subLine}
                       </p>
 
-                      <div className="relative mt-7 pt-7 text-foreground/75">
+                      <div className="relative mt-7 pt-7">
                         <span
                           aria-hidden
-                          className="absolute inset-x-0 top-0 h-px"
-                          style={{
-                            background:
-                              "repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 10px)",
-                            opacity: 0.35,
-                          }}
+                          className="absolute inset-x-0 top-0 border-t border-dashed border-border"
                         />
 
                         <span

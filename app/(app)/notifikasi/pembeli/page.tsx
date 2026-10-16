@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { BuyerNotificationView } from '@/app/components/notification/buyer-notification-view';
-import { NotificationSidebarShell } from '@/app/components/notification/notification-shell';
+import { BuyerNotificationView } from '@/app/components/shared/notification/buyer-notification-view';
+import { NotificationSidebarShell } from '@/app/components/shared/notification/notification-shell';
 
 export const metadata: Metadata = {
   title: 'Notifikasi | ReBites',

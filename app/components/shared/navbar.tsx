@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, ChevronDown, MapPin, Menu, User, X } from "lucide-react";
+import { Bell, ChevronDown, MapPin, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
@@ -124,7 +124,7 @@ export function ProfileNavbar({
         <div className="mx-auto w-full max-w-[1400px]">
           <nav
             className={cn(
-              "flex min-w-fit items-center justify-between rounded-full border border-border/70 bg-white px-5 text-primary shadow-[0_20px_44px_-26px_rgba(47,66,53,0.45)] backdrop-blur-xl transition-colors duration-500 lg:h-16 lg:px-6",
+              "flex min-w-fit items-center justify-between rounded-full border border-border bg-white px-5 text-primary shadow-sm transition-colors duration-500 lg:h-16 lg:px-6",
             )}
           >
             <Link
@@ -139,7 +139,7 @@ export function ProfileNavbar({
                 alt="ReBites"
                 width={36}
                 height={36}
-                className="h-9 w-9 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-black/5"
+                className="h-9 w-9 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-border"
               />
               <span
                 className={cn(
@@ -215,7 +215,7 @@ export function ProfileNavbar({
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -6 }}
                           transition={{ duration: 0.18 }}
-                          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-1.5 text-primary shadow-xl"
+                          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-1.5 text-primary shadow-lg"
                         >
                           {LOCATIONS.map((loc) => (
                             <li key={loc}>
@@ -259,7 +259,7 @@ export function ProfileNavbar({
                   onClick={() => setProfileOpen(true)}
                 >
                   {avatarUrl ? (
-                    <span className="relative h-7 w-7 overflow-hidden rounded-full ring-1 ring-black/5">
+                    <span className="relative h-7 w-7 overflow-hidden rounded-full ring-1 ring-border">
                       <Image
                         src={avatarUrl}
                         alt="Foto profil"
@@ -274,22 +274,6 @@ export function ProfileNavbar({
                 </IconButton>
               </div>
 
-              <button
-                type="button"
-                aria-label="Buka menu navigasi"
-                aria-expanded={drawerOpen}
-                onClick={() => setDrawerOpen((v) => !v)}
-                className={cn(
-                  "hidden h-10 w-10 items-center justify-center rounded-full text-primary transition-colors duration-200 lg:hidden",
-                  FOCUS_RING,
-                )}
-              >
-                {drawerOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-              </button>
             </div>
           </nav>
         </div>
@@ -303,14 +287,14 @@ export function ProfileNavbar({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDrawerOpen(false)}
-              className="fixed inset-0 z-[55] bg-primary/40 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-[55] bg-foreground/40 lg:hidden"
             />
             <motion.aside
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[60] flex h-full w-72 flex-col bg-secondary p-5 shadow-2xl lg:hidden"
+              className="fixed right-0 top-0 z-[60] flex h-full w-72 flex-col bg-secondary p-5 lg:hidden"
             >
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
@@ -319,7 +303,7 @@ export function ProfileNavbar({
                     alt="ReBites"
                     width={36}
                     height={36}
-                    className="h-9 w-9 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-black/5"
+                    className="h-9 w-9 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-border"
                   />
                   <span className="font-sans text-xl font-bold text-primary">
                     ReBites

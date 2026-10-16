@@ -12,12 +12,12 @@ export default function SellerDashboardLoading() {
 
         <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-6">
           <div className="space-y-5 lg:col-span-8">
-            <div className="h-[300px] animate-pulse rounded-3xl border border-border/60 bg-muted/40" />
-            <div className="h-48 animate-pulse rounded-3xl border border-border/60 bg-muted/30" />
+            <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-muted/40" />
+            <div className="h-48 animate-pulse rounded-2xl border border-border/60 bg-muted/30" />
           </div>
           <div className="space-y-5 lg:col-span-4">
-            <div className="h-52 animate-pulse rounded-3xl border border-border/60 bg-muted/30" />
-            <div className="h-44 animate-pulse rounded-3xl border border-border/60 bg-muted/30" />
+            <div className="h-52 animate-pulse rounded-2xl border border-border/60 bg-muted/30" />
+            <div className="h-44 animate-pulse rounded-2xl border border-border/60 bg-muted/30" />
           </div>
         </div>
       </div>
