@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
-import { useEffect, useState, useId } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, User, Menu, X, MapPin } from "lucide-react";
 import {
@@ -9,6 +9,7 @@ import {
   motion,
   useScroll,
   useTransform,
+  type MotionValue,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FoldText from "@/app/components/FoldText";
@@ -25,7 +26,7 @@ const NAV_LINKS = [
 ];
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-caramel focus-visible:ring-offset-2 focus-visible:ring-offset-cream";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export function HeroSection() {
   const [open, setOpen] = useState<boolean>(false);
@@ -58,32 +59,41 @@ export function HeroSection() {
 
     const probeY = 128;
 
+    // Coalesce scroll/resize events to one measurement pass per frame:
+    // each pass reads ~8-21 getBoundingClientRect()s, which would otherwise
+    // force layout on every scroll event (competing with Lenis' own rAF loop).
+    let rafId: number | null = null;
     const update = () => {
-      setScrolled(window.scrollY > 32);
+      if (rafId != null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        setScrolled(window.scrollY > 32);
 
-      const current = sections.find((section) => {
-        const rect = section.getBoundingClientRect();
-        return rect.top <= probeY && rect.bottom > probeY;
-      });
-
-      setOverDark(current?.dataset.nav === "green");
-
-      let label = NAV_LINKS[0].label;
-      let labelTarget: HTMLElement | null = null;
-      for (const link of NAV_LINKS) {
-        const el = link.target
-          ? document.getElementById(link.target)
-          : null;
-        if (!el) continue;
-        const rect = el.getBoundingClientRect();
-        if (rect.top <= probeY && rect.bottom > probeY) {
-          if (!labelTarget || rect.top >= labelTarget.getBoundingClientRect().top) {
-            label = link.label;
-            labelTarget = el;
+        let currentNav: string | undefined;
+        for (const section of sections) {
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= probeY && rect.bottom > probeY) {
+            currentNav = section.dataset.nav;
+            break;
           }
         }
-      }
-      setActiveNav(label);
+        setOverDark(currentNav === "green");
+
+        let label = NAV_LINKS[0].label;
+        let bestTop = -Infinity;
+        for (const link of NAV_LINKS) {
+          const el = link.target
+            ? document.getElementById(link.target)
+            : null;
+          if (!el) continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= probeY && rect.bottom > probeY && rect.top >= bestTop) {
+            label = link.label;
+            bestTop = rect.top;
+          }
+        }
+        setActiveNav(label);
+      });
     };
 
     update();
@@ -91,6 +101,7 @@ export function HeroSection() {
     window.addEventListener("resize", update);
 
     return () => {
+      if (rafId != null) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
@@ -117,7 +128,7 @@ export function HeroSection() {
   };
 
   return (
-    <div className="overflow-x-hidden bg-cream" data-nav="cream">
+    <div className="overflow-x-hidden bg-secondary" data-nav="neutral">
       <header className="fixed inset-x-0 top-0 z-50">
         <div className="px-4 pt-3 sm:px-6 lg:px-8 sm:pt-4">
           <div className="mx-auto w-full">
@@ -180,20 +191,20 @@ export function HeroSection() {
                         activeNav === link.label ? "page" : undefined
                       }
                       className={cn(
-                        "relative py-1 font-inter text-sm transition-colors duration-300",
+                        "relative py-1 font-secondary text-sm transition-colors duration-300",
                         activeNav === link.label
                           ? navIsDark
                             ? "font-semibold text-white"
                             : "font-semibold text-primary"
                           : navIsDark
                             ? "text-white/80 hover:text-white"
-                            : "text-primary/80 hover:text-caramel",
+                            : "text-primary/80 hover:text-primary",
                       )}
                     >
                       {link.label}
 
                       {activeNav === link.label && (
-                        <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-caramel" />
+                        <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-primary" />
                       )}
                     </Link>
                   </li>
@@ -204,10 +215,10 @@ export function HeroSection() {
                 <Link
                   href="/auth/login"
                   className={cn(
-                    "hidden items-center gap-1.5 rounded-full px-5 py-2.5 font-inter text-sm font-semibold shadow-[0_14px_30px_-18px_rgba(27,77,50,0.65)] transition-colors duration-300 sm:flex",
+                    "hidden items-center gap-1.5 rounded-full px-5 py-2.5 font-secondary text-sm font-semibold shadow-[0_14px_30px_-18px_rgba(27,77,50,0.65)] transition-colors duration-300 sm:flex",
                     navIsDark
-                      ? "bg-white text-primary hover:bg-caramel hover:text-white"
-                      : "bg-primary text-white hover:bg-caramel hover:text-white",
+                      ? "bg-white text-primary hover:bg-primary-dark hover:text-white"
+                      : "bg-primary text-white hover:bg-primary-dark hover:text-white",
                     FOCUS_RING,
                   )}
                 >
@@ -222,7 +233,7 @@ export function HeroSection() {
                   aria-expanded={open}
                   className={cn(
                     "flex h-10 w-10 items-center justify-center lg:hidden",
-                    navIsDark ? "text-white" : "text-forest",
+                    navIsDark ? "text-white" : "text-primary",
                     FOCUS_RING,
                   )}
                 >
@@ -242,7 +253,7 @@ export function HeroSection() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                  className="mt-2 overflow-hidden rounded-3xl border border-hairline/70 bg-white p-3 shadow-[0_28px_56px_-28px_rgba(27,77,50,0.5)] lg:hidden"
+                  className="mt-2 overflow-hidden rounded-3xl border border-border/70 bg-white p-3 shadow-[0_28px_56px_-28px_rgba(27,77,50,0.5)] lg:hidden"
                 >
                   <ul className="flex flex-col">
                     {NAV_LINKS.map((link) => (
@@ -251,10 +262,10 @@ export function HeroSection() {
                           href={link.href}
                           onClick={(e) => scrollToSection(e, link.label, link.target)}
                           className={cn(
-                            "flex items-center justify-between rounded-2xl px-4 py-3 font-inter text-sm transition-colors duration-300",
+                            "flex items-center justify-between rounded-2xl px-4 py-3 font-secondary text-sm transition-colors duration-300",
                             activeNav === link.label
-                              ? "bg-caramel/10 font-semibold text-primary"
-                              : "text-primary hover:bg-cream",
+                              ? "bg-primary/10 font-semibold text-primary"
+                              : "text-primary hover:bg-secondary",
                           )}
                         >
                           {link.label}
@@ -263,11 +274,11 @@ export function HeroSection() {
                     ))}
                   </ul>
 
-                  <div className="mt-2 flex border-t border-hairline/70 pt-3">
+                  <div className="mt-2 flex border-t border-border/70 pt-3">
                     <Link
                       href="/auth/login"
                       onClick={() => setOpen(false)}
-                      className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary py-3 font-inter text-sm font-semibold text-white transition-colors duration-300 hover:bg-caramel"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary py-3 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-dark"
                     >
                       <User className="h-3.5 w-3.5" />
                       {t("Masuk", "Log In")}
@@ -282,7 +293,7 @@ export function HeroSection() {
 
       <section
         id="top"
-        className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-cream px-4 pb-14 pt-28 sm:px-6 lg:px-8 lg:pt-28"
+        className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-secondary px-4 pb-14 pt-28 sm:px-6 lg:px-8 lg:pt-28"
       >
         <HeroFoodBackdrop />
 
@@ -316,7 +327,7 @@ export function HeroSection() {
               <div className="flex w-full items-baseline justify-center">
                 <RotatingText
                   texts={["makanan.", "UMKM.", "masyarakat.", "lingkungan."]}
-                  mainClassName="font-display font-light italic text-caramel"
+                  mainClassName="font-display font-light italic text-primary"
                   style={{
                     fontSize: "clamp(2rem, 4.5vw, 3.5rem)",
                     lineHeight: 1.05,
@@ -340,12 +351,12 @@ export function HeroSection() {
               <Link
                 href="/auth/register"
                 className={cn(
-                  "group inline-flex items-center gap-2 rounded-full bg-primary px-9 py-4 font-inter text-base font-semibold text-white shadow-[0_16px_32px_-16px_rgba(27,77,50,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-caramel",
+                  "group inline-flex items-center gap-2 rounded-full bg-primary px-9 py-4 font-secondary text-base font-semibold text-white shadow-[0_16px_32px_-16px_rgba(27,77,50,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-dark",
                   FOCUS_RING,
                 )}
               >
                 Mulai Sekarang
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-forest-dark shadow-sm transition-all duration-300 group-hover:translate-x-1">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary-dark shadow-sm transition-all duration-300 group-hover:translate-x-1">
                   <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
@@ -356,7 +367,7 @@ export function HeroSection() {
                     {Array.from({ length: 5 }).map((_, i) => (
                       <svg
                         key={i}
-                        className="h-4 w-4 fill-caramel text-caramel"
+                        className="h-4 w-4 fill-primary text-primary"
                         viewBox="0 0 20 20"
                         aria-hidden
                       >
@@ -364,11 +375,11 @@ export function HeroSection() {
                       </svg>
                     ))}
                   </div>
-                  <span className="font-sans text-sm font-bold leading-none text-forest-dark">
+                  <span className="font-sans text-sm font-bold leading-none text-primary-dark">
                     5.0
                   </span>
                 </div>
-                <span className="font-sans text-[11px] font-medium leading-none text-forest-dark/70">
+                <span className="font-sans text-[11px] font-medium leading-none text-primary-dark/70">
                   dari 500+ ulasan
                 </span>
               </div>
@@ -377,332 +388,6 @@ export function HeroSection() {
         </div>
       </section>
     </div>
-  );
-}
-
-function HeroOrganicArt() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 1440 560"
-      preserveAspectRatio="none"
-      className="
-        pointer-events-none
-        absolute
-        left-1/2
-        top-[90px]
-        z-0
-        h-[470px]
-        w-screen
-        -translate-x-1/2
-        overflow-visible
-        text-forest
-        opacity-50
-      "
-    >
-      <g
-        fill="none"
-        stroke="hsl(var(--primary))"
-        strokeOpacity="0.55"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path
-          d="
-            M -220 330
-            C -40 220, 120 175, 300 215
-            C 465 252, 545 350, 700 330
-            C 850 310, 925 190, 1080 175
-            C 1245 160, 1370 220, 1660 70
-          "
-          strokeWidth="2.8"
-          opacity="0.72"
-        />
-
-        <path
-          d="
-            M -220 365
-            C -35 255, 125 215, 305 248
-            C 470 280, 560 375, 710 355
-            C 855 335, 935 220, 1090 205
-            C 1250 188, 1380 245, 1660 105
-          "
-          strokeWidth="1.7"
-          opacity="0.52"
-        />
-
-        <path
-          d="
-            M -220 393
-            C -30 290, 140 252, 315 278
-            C 485 305, 570 397, 720 380
-            C 870 363, 950 250, 1100 235
-            C 1265 218, 1395 265, 1660 135
-          "
-          strokeWidth="1"
-          opacity="0.34"
-        />
-
-        {/* Hanging stems, each with 3 leaves hanging below the top thread */}
-
-        {/* Stem 1 */}
-        <path
-          d="M 160 4 C 158 30, 161 62, 160 98"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="160"
-          cy="124"
-          rx="9"
-          ry="27"
-          transform="rotate(0 160 124)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="143"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 143 108)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="177"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(45 177 108)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 2 */}
-        <path
-          d="M 360 8 C 362 34, 359 66, 360 102"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="360"
-          cy="128"
-          rx="9"
-          ry="27"
-          transform="rotate(0 360 128)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="343"
-          cy="112"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 343 112)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="377"
-          cy="112"
-          rx="8"
-          ry="22"
-          transform="rotate(45 377 112)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 3 */}
-        <path
-          d="M 565 4 C 567 30, 564 60, 565 96"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="565"
-          cy="120"
-          rx="9"
-          ry="27"
-          transform="rotate(0 565 120)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="548"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 548 105)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="582"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(45 582 105)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 4 */}
-        <path
-          d="M 770 10 C 768 34, 771 62, 770 98"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="770"
-          cy="124"
-          rx="9"
-          ry="27"
-          transform="rotate(0 770 124)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="753"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 753 108)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="787"
-          cy="108"
-          rx="8"
-          ry="22"
-          transform="rotate(45 787 108)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 5 */}
-        <path
-          d="M 985 6 C 987 32, 984 62, 985 100"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="985"
-          cy="126"
-          rx="9"
-          ry="27"
-          transform="rotate(0 985 126)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="968"
-          cy="110"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 968 110)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="1002"
-          cy="110"
-          rx="8"
-          ry="22"
-          transform="rotate(45 1002 110)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        {/* Stem 6 */}
-        <path
-          d="M 1200 10 C 1202 34, 1199 62, 1200 96"
-          strokeWidth="2.6"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="1200"
-          cy="120"
-          rx="9"
-          ry="27"
-          transform="rotate(0 1200 120)"
-          strokeWidth="2"
-          opacity="0.6"
-        />
-        <ellipse
-          cx="1183"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(-45 1183 105)"
-          strokeWidth="2"
-          opacity="0.55"
-        />
-        <ellipse
-          cx="1217"
-          cy="105"
-          rx="8"
-          ry="22"
-          transform="rotate(45 1217 105)"
-          strokeWidth="2"
-          opacity="0.5"
-        />
-
-        <circle
-          cx="255"
-          cy="310"
-          r="4"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.46"
-        />
-
-        <circle
-          cx="355"
-          cy="350"
-          r="2.5"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.36"
-        />
-
-        <circle
-          cx="665"
-          cy="250"
-          r="4"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.42"
-        />
-
-        <circle
-          cx="830"
-          cy="300"
-          r="2.5"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.34"
-        />
-
-        <circle
-          cx="1120"
-          cy="340"
-          r="4"
-          fill="hsl(var(--primary))"
-          stroke="none"
-          opacity="0.40"
-        />
-
-        <path d="M 430 150 V 170" strokeWidth="1.5" opacity="0.38" />
-
-        <path d="M 420 160 H 440" strokeWidth="1.5" opacity="0.38" />
-
-        <path d="M 930 365 V 383" strokeWidth="1.3" opacity="0.34" />
-
-        <path d="M 921 374 H 939" strokeWidth="1.3" opacity="0.34" />
-      </g>
-    </svg>
   );
 }
 
@@ -719,6 +404,8 @@ type LeafProps = {
   speedY: number;
   speedX: number;
   radius: string;
+  /** Satu `useScroll()` dipakai bersama oleh semua daun. */
+  scrollY: MotionValue<number>;
 };
 
 function Leaf({
@@ -734,8 +421,10 @@ function Leaf({
   speedY,
   speedX,
   radius,
+  scrollY,
 }: LeafProps) {
-  const { scrollY } = useScroll();
+  // transform-only (no layout/repaint), di-subscribe dari satu scroll value
+  // bersama alih-alih 6 listener window terpisah.
   const y = useTransform(scrollY, (v) => v * speedY);
   const x = useTransform(scrollY, (v) => v * speedX);
 
@@ -827,86 +516,20 @@ function HeroFoodBackdrop() {
       // transform scroll aktif; 4 daun memberi komposisi yang sama dengan beban lebih ringan.
   ];
 
+  // Satu subscription scroll untuk 6 daun parallax, bukan satu per daun.
+  const { scrollY } = useScroll();
+
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
     >
       {leaves.map((leaf, i) => (
-        <Leaf key={`${leaf.src}-${i}`} {...leaf} />
+        <Leaf key={`${leaf.src}-${i}`} {...leaf} scrollY={scrollY} />
       ))}
 
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-cream to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-secondary to-transparent" />
     </div>
   );
 }
 
-function FoodPlate({ image }: { image: string }) {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const gradId = `plate-surface-${uid}`;
-  const clipId = `plate-cut-${uid}`;
-
-  return (
-    <svg
-      viewBox="0 0 200 200"
-      role="img"
-      aria-label="Piring makanan"
-      className="h-full w-full drop-shadow-[0_16px_22px_-14px_rgba(27,77,50,0.55)]"
-    >
-      <defs>
-        <radialGradient id={gradId} cx="50%" cy="42%">
-          <stop offset="0%" stopColor="hsl(var(--secondary))" />
-          <stop offset="72%" stopColor="hsl(var(--muted))" />
-          <stop offset="100%" stopColor="hsl(var(--border))" />
-        </radialGradient>
-
-        <clipPath id={clipId}>
-          <circle cx="100" cy="100" r="84" />
-        </clipPath>
-      </defs>
-
-      <circle cx="100" cy="100" r="92" fill={`url(#${gradId})`} />
-
-      <circle
-        cx="100"
-        cy="100"
-        r="92"
-        fill="none"
-        stroke="hsl(var(--border))"
-        strokeWidth="2.5"
-      />
-
-      <circle
-        cx="100"
-        cy="100"
-        r="88"
-        fill="none"
-        stroke="hsl(var(--border))"
-        strokeWidth="1.5"
-      />
-
-      <circle cx="100" cy="100" r="86" fill="hsl(var(--secondary))" />
-
-      <image
-        href={image}
-        x="0"
-        y="0"
-        width="200"
-        height="200"
-        preserveAspectRatio="xMidYMid slice"
-        clipPath={`url(#${clipId})`}
-      />
-
-      <circle
-        cx="100"
-        cy="100"
-        r="84"
-        fill="none"
-        stroke="hsl(var(--secondary))"
-        strokeWidth="4"
-      />
-
-      <ellipse cx="80" cy="66" rx="46" ry="22" fill="#FFFFFF" opacity="0.16" />
-    </svg>
-  );
-}

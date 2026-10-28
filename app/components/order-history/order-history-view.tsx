@@ -12,6 +12,8 @@ import { OrderToolbar, type StatusFilter, type FulfillmentFilter } from './order
 import { OrderCard } from './order-card';
 import { Toaster } from '@/app/components/ui/toaster';
 
+const EMPTY_LIST: StoredOrder[] = [];
+
 export function OrderHistoryView() {
   const {
     orders,
@@ -46,24 +48,33 @@ export function OrderHistoryView() {
   const [reviewsTick, setReviewsTick] = useState(0);
   const [reviewedMap, setReviewedMap] = useState<Set<string>>(new Set());
 
+  // Key on order IDs rather than the array identity: useOrders replaces the
+  // array reference every 15s sweep even when contents are unchanged, which
+  // previously re-ran the sequential review lookups on every tick.
+  const reviewKey = useMemo(
+    () => completedOrders.map((order) => order.orderId).join('|'),
+    [completedOrders],
+  );
+
   useEffect(() => {
     let mounted = true;
     if (!userId) {
       setReviewedMap(new Set());
       return;
     }
+    const orderIds = reviewKey ? reviewKey.split('|') : [];
     (async () => {
       const map = new Set<string>();
-      for (const order of completedOrders) {
-        const review = await getReviewFor(order.orderId, userId);
-        if (review) map.add(order.orderId);
+      for (const orderId of orderIds) {
+        const review = await getReviewFor(orderId, userId);
+        if (review) map.add(orderId);
       }
       if (mounted) setReviewedMap(map);
     })();
     return () => {
       mounted = false;
     };
-  }, [completedOrders, reviewsTick, userId]);
+  }, [reviewKey, reviewsTick, userId]);
 
   // Setiap tab punya sumber datanya sendiri — sebelumnya "Dibatalkan" selalu
   // mengembalikan [] sehingga tombolnya tidak pernah menampilkan apa pun.

@@ -49,7 +49,7 @@ const DEPOK_DISTRICTS = [
 ];
 
 const INPUT_CLASS =
-  'w-full rounded-xl border border-sage-100 bg-white px-3.5 py-2.5 text-sm text-charcoal-900 placeholder:text-sage-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
+  'w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 
 /** tampilkan koordinat tersimpan sebagai teks input; kosong = belum ada. */
 function coordinateToInput(value: number | null | undefined): string {
@@ -170,10 +170,10 @@ export function AddressFormView({
   return (
     <>
       <DialogHeader className="pr-10 text-left">
-        <DialogTitle className="font-display text-xl font-semibold text-charcoal-900">
+        <DialogTitle className="font-display text-xl font-semibold text-foreground">
           {editing ? 'Ubah Alamat' : 'Tambah Alamat Baru'}
         </DialogTitle>
-        <DialogDescription className="text-sm text-charcoal-500">
+        <DialogDescription className="text-sm text-muted-foreground">
           Alamat aktif akan dipakai untuk pengantaran pesanan ini.
         </DialogDescription>
       </DialogHeader>
@@ -182,7 +182,7 @@ export function AddressFormView({
       <div className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-0.5">
         { }
         <fieldset>
-          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Label Alamat
           </legend>
           <div className="flex flex-wrap gap-2">
@@ -196,7 +196,7 @@ export function AddressFormView({
                   'rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200',
                   form.label === label
                     ? 'bg-primary text-white shadow-md shadow-primary/20'
-                    : 'border border-sage-100 bg-white text-charcoal-500 hover:border-sage-500/60 hover:text-caramel',
+                    : 'border border-border bg-white text-muted-foreground hover:border-primary/30 hover:text-primary',
                 )}
               >
                 {label}
@@ -207,7 +207,7 @@ export function AddressFormView({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Nama Penerima
             </span>
             <input
@@ -221,7 +221,7 @@ export function AddressFormView({
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Nomor Telepon
             </span>
             <input
@@ -237,9 +237,9 @@ export function AddressFormView({
         </div>
 
         <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Kecamatan{' '}
-            <span className="normal-case text-sage-500">
+            <span className="normal-case text-muted-foreground">
               (wilayah Kota Depok)
             </span>
           </span>
@@ -251,7 +251,7 @@ export function AddressFormView({
               className={cn(
                 INPUT_CLASS,
                 'appearance-none pr-10',
-                !form.district && 'text-sage-500',
+                !form.district && 'text-muted-foreground',
               )}
             >
               <option value="" disabled>
@@ -263,7 +263,7 @@ export function AddressFormView({
                 </option>
               ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-sage-500" />
+            <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           </span>
         </label>
 
@@ -379,9 +379,9 @@ export function AddressFormView({
         </label>
 
         <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Catatan untuk Kurir{' '}
-            <span className="normal-case text-sage-500">(opsional)</span>
+            <span className="normal-case text-muted-foreground">(opsional)</span>
           </span>
           <input
             value={form.note ?? ''}
@@ -394,7 +394,7 @@ export function AddressFormView({
       </div>
 
       { }
-      <div className="mt-3 shrink-0 border-t border-sage-100 pt-3">
+      <div className="mt-3 shrink-0 border-t border-border pt-3">
         {error && (
           <p role="alert" className="mb-2.5 text-xs font-medium text-destructive">
             {error}
@@ -404,14 +404,14 @@ export function AddressFormView({
           <button
             type="button"
             onClick={onDone}
-            className="flex-1 rounded-full border border-sage-100 px-5 py-3 text-sm font-semibold text-charcoal-500 transition-colors hover:bg-cream-100"
+            className="flex-1 rounded-full border border-border px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted"
           >
             Batal
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-colors hover:bg-caramel"
+            className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-colors hover:bg-primary-dark"
           >
             {editing ? 'Simpan Perubahan' : 'Simpan Alamat'}
           </button>

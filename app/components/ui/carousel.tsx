@@ -116,7 +116,10 @@ const Carousel = React.forwardRef<
       api.on("select", onSelect);
 
       return () => {
-        api?.off("select", onSelect);
+        api.off("select", onSelect);
+        // "reInit" was registered above but never removed: every embla
+        // re-layout (resize, opts change) left another stale listener behind.
+        api.off("reInit", onSelect);
       };
     }, [api, onSelect]);
 

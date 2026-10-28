@@ -25,7 +25,7 @@ export default function TokoPage() {
     : vendors;
 
   return (
-    <div className="min-h-screen bg-cream-50">
+    <div className="min-h-screen bg-secondary">
       <div className="lg:hidden">
         <MobileNavbar />
       </div>
@@ -36,7 +36,7 @@ export default function TokoPage() {
             <h1 className="font-display text-2xl font-semibold tracking-tight text-primary">
               Semua Toko
             </h1>
-            <p className="mt-1 text-sm text-stone">
+            <p className="mt-1 text-sm text-muted-foreground">
               Jelajahi toko UMKM yang menyelamatkan makanan surplus.
             </p>
           </div>
@@ -45,7 +45,7 @@ export default function TokoPage() {
             <h1 className="font-display text-lg font-bold tracking-tight text-primary">
               Semua Toko
             </h1>
-            <p className="mt-1 text-xs text-stone">
+            <p className="mt-1 text-xs text-muted-foreground">
               Jelajahi toko UMKM yang menyelamatkan makanan surplus.
             </p>
           </div>
@@ -61,14 +61,14 @@ export default function TokoPage() {
               ))}
             </div>
           ) : sortedVendors.length === 0 ? (
-            <div className="mt-10 flex flex-col items-center justify-center rounded-2xl border border-dashed border-sage-200 bg-white px-6 py-16 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-sage-100 text-sage-500">
+            <div className="mt-10 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-6 py-16 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 <Store className="h-6 w-6" />
               </span>
-              <p className="mt-4 font-sans text-sm font-bold text-charcoal-900">
+              <p className="mt-4 font-sans text-sm font-bold text-foreground">
                 Belum ada toko tersedia
               </p>
-              <p className="mt-1 max-w-xs font-inter text-xs text-stone">
+              <p className="mt-1 max-w-xs font-secondary text-xs text-muted-foreground">
                 Toko UMKM akan muncul di sini setelah terdaftar.
               </p>
             </div>

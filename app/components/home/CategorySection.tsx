@@ -19,7 +19,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { fetchCategoryCounts } from "@/lib/catalog";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "makanan-berat": Beef,
@@ -57,15 +57,15 @@ export function CategorySection() {
   return (
     <section
       id="kategori"
-      data-nav="cream"
-      className="relative scroll-mt-20 bg-cream-50 py-10 lg:py-20"
+      data-nav="neutral"
+      className="relative scroll-mt-20 bg-secondary py-10 lg:py-20"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div>
-          <h2 className="font-sans text-lg font-bold tracking-tight text-charcoal-900 sm:text-[22px] lg:text-[28px]">
+          <h2 className="font-sans text-lg font-bold tracking-tight text-foreground sm:text-[22px] lg:text-[28px]">
             Jelajahi Kategori
           </h2>
-          <p className="mt-1 max-w-md font-sans text-xs text-charcoal-500 sm:text-sm">
+          <p className="mt-1 max-w-md font-sans text-xs text-muted-foreground sm:text-sm">
             Temukan berbagai makanan sesuai seleramu yang masih layak dinikmati
           </p>
         </div>
@@ -102,10 +102,10 @@ export function CategorySection() {
                     FOCUS_RING,
                   )}
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cream-100 text-primary transition-colors group-hover:bg-primary group-hover:text-white sm:h-10 sm:w-10">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-primary transition-colors group-hover:bg-primary group-hover:text-white sm:h-10 sm:w-10">
                     <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                   </span>
-                  <span className="font-sans text-[11px] font-semibold leading-tight text-charcoal-900 sm:text-[13px]">
+                  <span className="font-sans text-[11px] font-semibold leading-tight text-foreground sm:text-[13px]">
                     {category.name}
                   </span>
                 </Link>

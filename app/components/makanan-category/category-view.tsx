@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -23,14 +23,14 @@ import { getCategoryBySlug } from "@/lib/categories";
 import { useProductDetail } from "@/app/components/detail-product/use-product-detail";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 function FoodCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-md shadow-primary/5">
-      <Skeleton className="aspect-[4/3] w-full rounded-none bg-sage-100" />
+      <Skeleton className="aspect-[4/3] w-full rounded-none bg-muted" />
       <div className="space-y-2.5 p-4">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-3.5 w-1/2" />
@@ -92,6 +92,11 @@ export default function CategoryView({
 
   const selectedProduct = useProductDetail(selectedProductId);
 
+  // Stable identities: ProductDetailModal re-runs its whole effect suite
+  // (keydown listener, body scroll lock, focus restore) whenever onClose changes.
+  const handleViewDetail = useCallback((id: string) => setSelectedProductId(id), []);
+  const handleCloseProduct = useCallback(() => setSelectedProductId(null), []);
+
   const resetSearch = () => {
     setSearchQuery("");
   };
@@ -102,7 +107,7 @@ export default function CategoryView({
     !isLoading && !isCategoryEmpty && filteredItems.length === 0;
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream-50">
+    <div className="flex min-h-screen flex-col bg-secondary">
       <main className="flex-1">
         {}
         <section className="relative overflow-hidden">
@@ -116,7 +121,7 @@ export default function CategoryView({
                 className="object-cover"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-cream-50" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-secondary" />
             </div>
           )}
 
@@ -161,7 +166,7 @@ export default function CategoryView({
         </section>
 
         {}
-        <section className="border-b border-sage-100 bg-cream-50">
+        <section className="border-b border-border bg-secondary">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="py-3 sm:py-4">
               <SearchFilterBar
@@ -190,24 +195,24 @@ export default function CategoryView({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: EASE }}
-              className="flex flex-col items-center rounded-3xl border border-dashed border-sage-200 bg-white px-6 py-20 text-center"
+              className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-white px-6 py-20 text-center"
             >
-              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-cream-100">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                 <PackageOpen
-                  className="h-8 w-8 text-charcoal-500"
+                  className="h-8 w-8 text-muted-foreground"
                   aria-hidden
                 />
               </span>
-              <h2 className="mt-5 font-display text-xl font-bold text-charcoal-900">
+              <h2 className="mt-5 font-display text-xl font-bold text-foreground">
                 Belum ada makanan di kategori ini
               </h2>
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-charcoal-500">
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
                 Coba pilih kategori lain atau cek kembali beberapa saat lagi.
               </p>
               <Link
                 href="/toko"
                 className={cn(
-                  "mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-caramel active:scale-[0.98]",
+                  "mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark active:scale-[0.98]",
                   FOCUS_RING,
                 )}
               >
@@ -219,22 +224,22 @@ export default function CategoryView({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: EASE }}
-              className="flex flex-col items-center rounded-3xl border border-dashed border-sage-200 bg-white px-6 py-20 text-center"
+              className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-white px-6 py-20 text-center"
             >
-              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-cream-100">
-                <SearchX className="h-8 w-8 text-charcoal-500" aria-hidden />
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                <SearchX className="h-8 w-8 text-muted-foreground" aria-hidden />
               </span>
-              <h2 className="mt-5 font-display text-xl font-bold text-charcoal-900">
+              <h2 className="mt-5 font-display text-xl font-bold text-foreground">
                 Tidak ada makanan yang cocok
               </h2>
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-charcoal-500">
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
                 Coba ubah kata kunci pencarian kamu.
               </p>
               <button
                 type="button"
                 onClick={resetSearch}
                 className={cn(
-                  "mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-caramel active:scale-[0.98]",
+                  "mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark active:scale-[0.98]",
                   FOCUS_RING,
                 )}
               >
@@ -264,10 +269,7 @@ export default function CategoryView({
                     },
                   }}
                 >
-                  <FoodCard
-                    item={item}
-                    onViewDetail={(id) => setSelectedProductId(id)}
-                  />
+                  <FoodCard item={item} onViewDetail={handleViewDetail} />
                 </motion.div>
               ))}
             </motion.div>
@@ -282,7 +284,7 @@ export default function CategoryView({
         {selectedProduct && (
           <ProductDetailModal
             product={selectedProduct}
-            onClose={() => setSelectedProductId(null)}
+            onClose={handleCloseProduct}
           />
         )}
       </AnimatePresence>

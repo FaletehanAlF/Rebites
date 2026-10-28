@@ -169,7 +169,7 @@ export default function BuatSandiBaruForm() {
       {success ? (
         <motion.div
           variants={itemVariants}
-          className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-border bg-[#FCFCF9] px-6 py-8 text-center"
+          className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-border bg-secondary px-6 py-8 text-center"
         >
           <motion.span
             initial={{ scale: 0.5, opacity: 0 }}
@@ -179,7 +179,7 @@ export default function BuatSandiBaruForm() {
           >
             <CheckCircle2 className="h-6 w-6" />
           </motion.span>
-          <h1 className="mt-4 font-display text-[22px] font-bold tracking-[-0.02em] text-[#14261E]">
+          <h1 className="mt-4 font-display text-[22px] font-bold tracking-[-0.02em] text-foreground">
             Kata Sandi Diperbarui
           </h1>
           <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground">
@@ -198,7 +198,7 @@ export default function BuatSandiBaruForm() {
         <>
           <motion.h1
             variants={itemVariants}
-            className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-[#14261E] flex-shrink-0"
+            className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-foreground flex-shrink-0"
           >
             Buat Kata
             <br />
@@ -242,7 +242,7 @@ export default function BuatSandiBaruForm() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-[#1B3F2C] outline-none placeholder:text-muted-foreground"
+                  className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </FieldBox>
 
@@ -269,12 +269,12 @@ export default function BuatSandiBaruForm() {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-[#1B3F2C] outline-none placeholder:text-muted-foreground"
+                  className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </FieldBox>
 
               {error && (
-                <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700">
+                <p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive">
                   {error}
                 </p>
               )}

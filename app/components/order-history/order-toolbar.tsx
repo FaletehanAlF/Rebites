@@ -78,7 +78,7 @@ export function OrderToolbar({
               <span
                 className={cn(
                   'rounded-full px-1.5 py-0.5 text-[10px] tabular-nums',
-                  active ? 'bg-white/20 text-white' : 'bg-cream-100 text-charcoal-500'
+                  active ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
                 )}
               >
                 {count}
@@ -92,7 +92,7 @@ export function OrderToolbar({
         <label className="relative w-full sm:max-w-[320px]">
           <span className="sr-only">Cari pesanan</span>
           <Search
-            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-500"
+            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden
           />
           <input
@@ -100,7 +100,7 @@ export function OrderToolbar({
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder="Cari kode pesanan, produk, atau toko"
-            className="h-10 w-full rounded-full border border-hairline bg-white pl-10 pr-4 text-sm text-charcoal-900 outline-none placeholder:text-charcoal-500/70 focus:border-primary focus:ring-2 focus:ring-primary/25"
+            className="h-10 w-full rounded-full border border-border bg-white pl-10 pr-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/25"
           />
         </label>
 
@@ -120,7 +120,7 @@ export function OrderToolbar({
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
                 fulfillment === f.key
                   ? 'bg-white text-primary shadow-sm'
-                  : 'text-charcoal-500 hover:text-charcoal-900'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {f.label}

@@ -4,8 +4,8 @@ import { useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Mail, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Reveal } from "./reveal";
-import { SmartImage } from "@/app/components/SmartImage";
+import { Reveal } from "@/app/components/shared/reveal";
+import { SmartImage } from "@/app/components/shared/SmartImage";
 
 const FAQS = [
   {
@@ -70,23 +70,23 @@ export function FaqSection() {
   return (
     <section
       id="faq"
-      data-nav="cream"
-      className="grain-overlay relative scroll-mt-28 overflow-hidden bg-cream lg:scroll-mt-32"
+      data-nav="neutral"
+      className="grain-overlay relative scroll-mt-28 overflow-hidden bg-secondary lg:scroll-mt-32"
     >
       <div className="relative mx-auto max-w-7xl px-5 pt-20 pb-12 sm:px-8 lg:px-12 lg:pb-12 lg:pt-28">
         {/* Section label & heading */}
         <div className="mx-auto max-w-2xl text-center">
           <Reveal delay={0.05}>
-            <span className="inline-flex items-center rounded-full border border-hairline bg-white px-5 py-2 font-sans text-xs font-bold uppercase tracking-[0.25em] text-forest">
+            <span className="inline-flex items-center rounded-full border border-border bg-white px-5 py-2 font-sans text-xs font-bold uppercase tracking-[0.25em] text-primary">
               FAQ
             </span>
           </Reveal>
 
           <Reveal delay={0.1}>
-            <h2 className="mt-6 font-display font-light leading-[1.05] tracking-[-0.02em] text-forest-dark [font-size:clamp(1.9rem,3.8vw,2.9rem)]">
+            <h2 className="mt-6 font-display font-light leading-[1.05] tracking-[-0.02em] text-primary-dark [font-size:clamp(1.9rem,3.8vw,2.9rem)]">
               Pertanyaan yang Sering
             </h2>
-            <p className="mt-1 font-display italic leading-[1.05] text-caramel [font-size:clamp(2.4rem,5vw,4rem)]">
+            <p className="mt-1 font-display italic leading-[1.05] text-primary [font-size:clamp(2.4rem,5vw,4rem)]">
               Diajukan
             </p>
           </Reveal>
@@ -95,7 +95,7 @@ export function FaqSection() {
         <div className="mt-14 grid items-start gap-8 lg:grid-cols-[55fr_45fr] lg:items-stretch lg:gap-10">
           {/* Left - contact form */}
           <Reveal delay={0.15} className="h-full">
-            <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-6 shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-caramel/40 hover:shadow-[0_30px_60px_-28px_rgba(27,77,50,0.35)] sm:p-8 lg:p-9">
+            <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-6 shadow-[0_10px_30px_-24px_rgba(27,77,50,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_30px_60px_-28px_rgba(27,77,50,0.35)] sm:p-8 lg:p-9">
               <div>
                 <p className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   Hubungi Kami
@@ -123,7 +123,7 @@ export function FaqSection() {
                       name="nama"
                       required
                       placeholder="Nama Anda"
-                      className="rounded-xl border border-hairline bg-cream px-4 py-3 font-sans text-sm text-primary placeholder:text-stone focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/30"
+                      className="rounded-xl border border-border bg-secondary px-4 py-3 font-sans text-sm text-primary placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                   </label>
 
@@ -136,7 +136,7 @@ export function FaqSection() {
                       name="email"
                       required
                       placeholder="nama@email.com"
-                      className="rounded-xl border border-hairline bg-cream px-4 py-3 font-sans text-sm text-primary placeholder:text-stone focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/30"
+                      className="rounded-xl border border-border bg-secondary px-4 py-3 font-sans text-sm text-primary placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                   </label>
                 </div>
@@ -150,14 +150,14 @@ export function FaqSection() {
                     required
                     rows={5}
                     placeholder="Tulis pertanyaan atau pesan Anda di sini…"
-                    className="flex-1 resize-none rounded-xl border border-hairline bg-cream px-4 py-3 font-sans text-sm text-primary placeholder:text-stone focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/30"
+                    className="flex-1 resize-none rounded-xl border border-border bg-secondary px-4 py-3 font-sans text-sm text-primary placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                 </label>
 
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-primary px-7 py-3.5 font-sans text-sm font-semibold text-cream transition-all duration-300 hover:-translate-y-0.5 hover:bg-caramel hover:text-white disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:bg-primary"
+                  className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-primary px-7 py-3.5 font-sans text-sm font-semibold text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-dark hover:text-white disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:bg-primary"
                 >
                   <Mail className="h-4 w-4" />
                   {status === "sending" ? "Mengirim…" : "Kirim Pesan"}
@@ -169,7 +169,7 @@ export function FaqSection() {
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
-                      className="font-sans text-sm font-medium text-forest"
+                      className="font-sans text-sm font-medium text-primary"
                     >
                       Terima kasih! Pesan Anda sudah terkirim. Tim kami akan
                       segera menghubungi Anda.
@@ -204,8 +204,8 @@ export function FaqSection() {
                       className={cn(
                         "overflow-hidden rounded-2xl bg-white",
                         isOpen
-                          ? "shadow-[0_18px_40px_-28px_rgba(30,43,32,0.35)] ring-1 ring-caramel/40 transition-shadow duration-300"
-                          : "hover:ring-1 hover:ring-caramel/30 transition-shadow duration-300",
+                          ? "shadow-[0_18px_40px_-28px_rgba(30,43,32,0.35)] ring-1 ring-primary/40 transition-shadow duration-300"
+                          : "hover:ring-1 hover:ring-primary/30 transition-shadow duration-300",
                       )}
                     >
                       <button
@@ -220,7 +220,7 @@ export function FaqSection() {
 
                         <span
                           className={cn(
-                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-cream transition-transform duration-300 ease-out",
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-300 ease-out",
                             isOpen && "rotate-45",
                           )}
                         >
@@ -256,7 +256,7 @@ export function FaqSection() {
         {/* Signature */}
         <Reveal delay={0.15}>
           <div className="mt-16 text-center lg:mt-20">
-            <p className="font-script text-primary [font-size:clamp(2.2rem,4vw,3.2rem)]">
+            <p className="font-display italic text-primary [font-size:clamp(2.2rem,4vw,3.2rem)]">
               dibuat dengan rasa
             </p>
             <p className="mt-3 font-sans text-[11px] font-semibold uppercase tracking-[0.35em] text-muted-foreground">

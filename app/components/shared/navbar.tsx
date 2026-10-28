@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
 import { useProfile } from "@/hooks/use-profile";
 import { useNotifications } from "@/hooks/use-notifications";
-import { AccountSidebar, type SidebarUser } from "./account-sidebar";
+import { AccountSidebar } from "./account-sidebar";
 
 const LOCATIONS = ["Depok", "Jakarta Selatan", "Bekasi", "Bogor", "Tangerang"];
 
@@ -24,16 +24,48 @@ const NAV_LINKS = [
 ];
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+// Module scope so React keeps the same component type across renders —
+// defining it inside ProfileNavbar remounted both buttons (losing focus,
+// restarting transitions) on every navbar render.
+function IconButton({
+  label,
+  children,
+  onClick,
+  badge,
+}: {
+  label: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+  badge?: number;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={cn(
+        "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200",
+        "text-muted-foreground hover:bg-muted hover:text-primary",
+        FOCUS_RING,
+      )}
+    >
+      {children}
+      {badge !== undefined && badge > 0 && (
+        <span
+          className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white"
+        >
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
 
 function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-interface AuthSessionUser {
-  email?: string;
-  user_metadata?: { full_name?: string };
 }
 
 interface ProfileNavbarProps {
@@ -48,54 +80,15 @@ export function ProfileNavbar({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [location, setLocation] = useState(LOCATIONS[0]);
-  const [overDark, setOverDark] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [sessionUser, setSessionUser] = useState<SidebarUser | null>(null);
-  const { userId } = useCurrentUser();
+  // Single source of truth for the session: useCurrentUser already subscribes
+  // to auth changes; a second getSession/onAuthStateChange pair was removed.
+  const { user: sessionUser, userId } = useCurrentUser();
   const { avatarUrl } = useProfile();
   const { unreadCount: unreadNotifCount } = useNotifications(userId, "buyer");
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const readUser = ({
-      data,
-    }: {
-      data: { session: { user: AuthSessionUser | null } | null };
-    }) => {
-      if (cancelled) return;
-      const user = data.session?.user;
-      if (!user) {
-        setSessionUser(null);
-        return;
-      }
-      setSessionUser({
-        fullName: user.user_metadata?.full_name ?? "",
-        email: user.email ?? "",
-      });
-    };
-
-    supabase.auth.getSession().then(readUser);
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      readUser({
-        data: { session } as {
-          session: { user: AuthSessionUser | null } | null;
-        },
-      });
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, []);
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setSessionUser(null);
     setProfileOpen(false);
     router.push("/auth/login");
   };
@@ -119,75 +112,11 @@ export function ProfileNavbar({
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const sections = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-nav]"),
-    );
-    if (sections.length === 0) return;
-
-    const probeY = 44;
-
-    const update = () => {
-      const current = sections.find((s) => {
-        const r = s.getBoundingClientRect();
-        return r.top <= probeY && r.bottom > probeY;
-      });
-      setOverDark(current?.dataset.nav === "green");
-    };
-
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
-  }, []);
-
   const handleNav = (id: string) => {
     setDrawerOpen(false);
     setActive(id);
     scrollToId(id);
   };
-
-  const IconButton = ({
-    label,
-    children,
-    onClick,
-    badge,
-  }: {
-    label: string;
-    children: React.ReactNode;
-    onClick?: () => void;
-    badge?: number;
-  }) => (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className={cn(
-        "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200",
-        overDark
-          ? "text-white/80 hover:bg-white/10 hover:text-white"
-          : "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
-        FOCUS_RING,
-      )}
-    >
-      {children}
-      {badge !== undefined && badge > 0 && (
-        <span
-          className={cn(
-            "absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold transition-colors duration-500",
-            overDark
-              ? "bg-caramel text-charcoal-900"
-              : "bg-primary text-white",
-          )}
-        >
-          {badge}
-        </span>
-      )}
-    </button>
-  );
 
   return (
     <>
@@ -195,10 +124,7 @@ export function ProfileNavbar({
         <div className="mx-auto w-full max-w-[1400px]">
           <nav
             className={cn(
-              "flex min-w-fit items-center justify-between rounded-full border px-5 shadow-[0_20px_44px_-26px_rgba(47,66,53,0.45)] backdrop-blur-xl transition-colors duration-500 lg:h-16 lg:px-6",
-              overDark
-                ? "border-white/15 bg-primary/75 text-white"
-                : "border-hairline/70 bg-cream/80 text-primary",
+              "flex min-w-fit items-center justify-between rounded-full border border-border/70 bg-white px-5 text-primary shadow-[0_20px_44px_-26px_rgba(47,66,53,0.45)] backdrop-blur-xl transition-colors duration-500 lg:h-16 lg:px-6",
             )}
           >
             <Link
@@ -217,8 +143,7 @@ export function ProfileNavbar({
               />
               <span
                 className={cn(
-                  "font-sans text-xl font-bold tracking-tight transition-colors duration-500",
-                  overDark ? "text-white" : "text-primary",
+                  "font-sans text-xl font-bold tracking-tight text-primary transition-colors duration-500",
                 )}
               >
                 ReBites
@@ -236,14 +161,10 @@ export function ProfileNavbar({
                     }}
                     aria-current={active === link.id ? "page" : undefined}
                     className={cn(
-                      "rounded-full px-3 py-2 font-inter text-sm transition-colors duration-200 xl:px-4",
+                      "rounded-full px-3 py-2 font-secondary text-sm transition-colors duration-200 xl:px-4",
                       active === link.id
-                        ? overDark
-                          ? "bg-white/15 font-semibold text-white"
-                          : "bg-cream-100 font-semibold text-primary"
-                        : overDark
-                          ? "text-white/75 hover:text-white"
-                          : "text-charcoal-500 hover:text-caramel",
+                        ? "bg-muted font-semibold text-primary"
+                        : "text-muted-foreground hover:text-primary",
                       FOCUS_RING,
                     )}
                   >
@@ -263,17 +184,12 @@ export function ProfileNavbar({
                     onClick={() => setLocationOpen((v) => !v)}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition-colors duration-200",
-                      overDark
-                        ? "text-white/80 hover:bg-white/10 hover:text-white"
-                        : "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
+                      "text-muted-foreground hover:bg-muted hover:text-primary",
                       FOCUS_RING,
                     )}
                   >
                     <MapPin
-                      className={cn(
-                        "h-4 w-4 transition-colors duration-500",
-                        overDark ? "text-caramel" : "text-primary",
-                      )}
+                      className="h-4 w-4 text-primary transition-colors duration-500"
                     />
                     <span className="max-w-[100px] truncate">{location}</span>
                     <ChevronDown
@@ -299,7 +215,7 @@ export function ProfileNavbar({
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -6 }}
                           transition={{ duration: 0.18 }}
-                          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-sage-100 bg-white p-1.5 text-primary shadow-xl"
+                          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-1.5 text-primary shadow-xl"
                         >
                           {LOCATIONS.map((loc) => (
                             <li key={loc}>
@@ -312,8 +228,8 @@ export function ProfileNavbar({
                                 className={cn(
                                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors duration-150",
                                   loc === location
-                                    ? "bg-cream-100 font-semibold text-primary"
-                                    : "text-charcoal-500 hover:bg-cream-50 hover:text-caramel",
+                                    ? "bg-muted font-semibold text-primary"
+                                    : "text-muted-foreground hover:bg-secondary hover:text-primary",
                                 )}
                               >
                                 <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -364,8 +280,7 @@ export function ProfileNavbar({
                 aria-expanded={drawerOpen}
                 onClick={() => setDrawerOpen((v) => !v)}
                 className={cn(
-                  "hidden h-10 w-10 items-center justify-center rounded-full transition-colors duration-200 lg:hidden",
-                  overDark ? "text-white" : "text-primary",
+                  "hidden h-10 w-10 items-center justify-center rounded-full text-primary transition-colors duration-200 lg:hidden",
                   FOCUS_RING,
                 )}
               >
@@ -395,7 +310,7 @@ export function ProfileNavbar({
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[60] flex h-full w-72 flex-col bg-cream-50 p-5 shadow-2xl lg:hidden"
+              className="fixed right-0 top-0 z-[60] flex h-full w-72 flex-col bg-secondary p-5 shadow-2xl lg:hidden"
             >
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
@@ -414,7 +329,7 @@ export function ProfileNavbar({
                   type="button"
                   aria-label="Tutup menu"
                   onClick={() => setDrawerOpen(false)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal-900 hover:bg-cream-100"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -430,10 +345,10 @@ export function ProfileNavbar({
                         handleNav(link.id);
                       }}
                       className={cn(
-                        "block rounded-xl px-4 py-3 font-inter text-sm transition-colors duration-150",
+                        "block rounded-xl px-4 py-3 font-secondary text-sm transition-colors duration-150",
                         active === link.id
-                          ? "bg-cream-100 font-semibold text-primary"
-                          : "text-charcoal-500 hover:bg-cream-100 hover:text-caramel",
+                          ? "bg-muted font-semibold text-primary"
+                          : "text-muted-foreground hover:bg-muted hover:text-primary",
                       )}
                     >
                       {link.label}
@@ -442,11 +357,11 @@ export function ProfileNavbar({
                 ))}
               </ul>
 
-                <div className="mt-4 border-t border-sage-100 pt-4">
+                <div className="mt-4 border-t border-border pt-4">
                 <Link
                   href="/notifikasi/pembeli"
                   onClick={() => setDrawerOpen(false)}
-                  className="flex items-center justify-between rounded-xl px-4 py-3 font-inter text-sm text-charcoal-500 hover:bg-cream-100 hover:text-caramel"
+                  className="flex items-center justify-between rounded-xl px-4 py-3 font-secondary text-sm text-muted-foreground hover:bg-muted hover:text-primary"
                 >
                   <span className="flex items-center gap-2">
                     <Bell className="h-4 w-4" />
@@ -460,8 +375,8 @@ export function ProfileNavbar({
                 </Link>
               </div>
 
-              <div className="mt-4 border-t border-sage-100 pt-4">
-                <p className="font-inter text-xs font-semibold uppercase tracking-wider text-charcoal-500">
+              <div className="mt-4 border-t border-border pt-4">
+                <p className="font-secondary text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Lokasi
                 </p>
                 <button

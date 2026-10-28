@@ -120,11 +120,5 @@ export async function activateSubscriptionPaid(
     }
   }
 
-  console.log('[subscription-activation] activated', {
-    subscriptionId: subId,
-    invoiceId,
-    periodEnd: periodEnd.toISOString(),
-  });
-
   return { reason: 'activated', subscriptionId: subId, periodEnd };
 }

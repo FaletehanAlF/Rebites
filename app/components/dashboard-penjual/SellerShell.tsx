@@ -20,7 +20,7 @@ export function SellerShell({ children }: SellerShellProps) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-cream-50">
+      <div className="flex min-h-screen items-center justify-center bg-secondary">
         <div
           role="status"
           aria-label="Memuat dashboard penjual"
@@ -34,7 +34,7 @@ export function SellerShell({ children }: SellerShellProps) {
   // lagi, bukan isi dashboard.
   if (status === 'error') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-cream-50 p-6">
+      <div className="flex min-h-screen items-center justify-center bg-secondary p-6">
         <div className="w-full max-w-md rounded-[var(--radius)] border border-border bg-white p-6 text-center shadow-admin-card">
           <WifiOff aria-hidden className="mx-auto h-10 w-10 text-destructive" />
           <h1 className="mt-3 font-display text-lg font-semibold text-charcoal-900">
@@ -58,7 +58,7 @@ export function SellerShell({ children }: SellerShellProps) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative min-h-screen bg-cream-50 font-sans text-charcoal-900">
+      <div className="relative min-h-screen bg-secondary font-sans text-foreground">
         <DashboardDecor />
 
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

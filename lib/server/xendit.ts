@@ -116,12 +116,6 @@ export async function createXenditInvoice(
     throw makeXenditHttpError(msg, res.status);
   }
 
-  console.log('[xendit] invoice created', {
-    external_id: params.externalId,
-    amount: params.amount,
-    invoice_url: (json as XenditInvoice).invoice_url,
-  });
-
   return json as XenditInvoice;
 }
 

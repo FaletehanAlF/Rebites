@@ -34,7 +34,7 @@ export function PartnerScoreGauge() {
   return (
     <section aria-label={`Skor Mitra ${data.score} persen`}>
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-bold text-charcoal-900">Skor Mitra</h3>
+        <h3 className="text-sm font-bold text-foreground">Skor Mitra</h3>
         <FilterDropdown
           value={period}
           onChange={setPeriod}
@@ -99,18 +99,18 @@ export function PartnerScoreGauge() {
           <p className="font-display text-[30px] font-medium leading-none tracking-tight text-primary">
             <span ref={ref}>{value}%</span>
           </p>
-          <p className="mt-1 text-[10px] font-medium text-sage-500">Skor Mitra</p>
+          <p className="mt-1 text-[10px] font-medium text-muted-foreground">Skor Mitra</p>
         </div>
       </div>
 
-      <p className="mt-3 text-center text-xs font-medium text-charcoal-900">
+      <p className="mt-3 text-center text-xs font-medium text-foreground">
         Tokomu mengungguli{' '}
         <span className="font-bold text-primary">{data.score}%</span> toko lain bulan ini
       </p>
-      <p className="mt-1 text-center text-[11px] leading-relaxed text-sage-500">
+      <p className="mt-1 text-center text-[11px] leading-relaxed text-muted-foreground">
         Berdasarkan kecepatan respons, tingkat keterjualan, dan ulasan pelanggan
       </p>
-      <p className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-cream-50 px-3 py-1.5 text-[11px] font-semibold text-primary">
+      <p className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-[11px] font-semibold text-primary">
         <TrendingUp className="h-3.5 w-3.5" />
         +{data.deltaPercent}% dari bulan lalu
       </p>

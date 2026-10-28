@@ -10,7 +10,7 @@ import type { Vendor } from '@/lib/types';
 import { isVendorReallyOpen } from '@/lib/store-status';
 
 const FOCUS_RING =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 export function VendorCard({
   vendor,
@@ -37,7 +37,7 @@ export function VendorCard({
         aria-label={`Lihat detail ${vendor.name}`}
         className="block"
       >
-        <div className="relative aspect-[4/3] overflow-hidden bg-sage-100">
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           <SmartImage
             src={vendor.image}
             alt={`Foto tampilan ${vendor.name}`}
@@ -56,7 +56,7 @@ export function VendorCard({
           </div>
 
           {badgeLabel ? (
-            <div className="absolute left-3 top-10 flex items-center gap-1 rounded-full bg-caramel px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-charcoal-900 shadow-md">
+            <div className="absolute left-3 top-10 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-foreground shadow-md">
               <Crown className="h-3 w-3" />
               {badgeLabel}
             </div>
@@ -66,31 +66,31 @@ export function VendorCard({
 
       <div className="flex flex-1 flex-col p-4">
         <Link href={`/detail/toko?id=${vendor.id}`} className="group/title">
-          <h3 className="line-clamp-1 font-sans text-[15px] font-bold leading-snug text-charcoal-900 group-hover/title:text-primary">
+          <h3 className="line-clamp-1 font-sans text-[15px] font-bold leading-snug text-foreground group-hover/title:text-primary">
             {vendor.name}
           </h3>
         </Link>
-        <p className="mt-0.5 line-clamp-1 font-sans text-[13px] text-charcoal-500">{vendor.category}</p>
+        <p className="mt-0.5 line-clamp-1 font-sans text-[13px] text-muted-foreground">{vendor.category}</p>
 
-        <div className="mt-2 flex items-center gap-2 text-xs text-charcoal-500">
-          <span className="flex items-center gap-1 font-medium text-charcoal-900">
-            <Star className="h-3.5 w-3.5 fill-caramel text-caramel" />
+        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1 font-medium text-foreground">
+            <Star className="h-3.5 w-3.5 fill-primary text-primary" />
             {vendor.rating.toFixed(1)}
           </span>
           <span className="hidden h-3 w-px bg-zinc-200 sm:block" />
           <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5 text-sage-500" />
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             {vendor.openHours}
           </span>
         </div>
-        <p className="mt-1.5 flex items-start gap-1 text-xs leading-relaxed text-charcoal-500">
-          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sage-500" />
+        <p className="mt-1.5 flex items-start gap-1 text-xs leading-relaxed text-muted-foreground">
+          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <span className="line-clamp-2">{vendor.address}</span>
         </p>
 
         <Link
           href={`/detail/toko?id=${vendor.id}`}
-          className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-caramel"
+          className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark"
         >
           Lihat Toko
         </Link>

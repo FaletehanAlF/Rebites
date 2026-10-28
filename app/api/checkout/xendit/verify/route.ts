@@ -197,9 +197,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ orderCode, paymentStatus: currentStatus, invoiceStatus });
   } catch (e: unknown) {
-    
-    const msg = e instanceof Error ? e.message : 'Gagal verifikasi invoice.';
-    console.error('[checkout/xendit/verify] error', msg, { orderCode });
-    return NextResponse.json({ orderCode, paymentStatus: currentStatus, verifyError: msg });
+    console.error('[checkout/xendit/verify] error', e, { orderCode });
+    return NextResponse.json({
+      orderCode,
+      paymentStatus: currentStatus,
+      verifyError: 'Gagal memverifikasi invoice.',
+    });
   }
 }

@@ -45,20 +45,20 @@ export function ProductInfo({
         >
           <a
             href="#ulasan"
-            className="inline-flex items-center gap-1.5 text-charcoal-500 transition-colors hover:text-caramel"
+            className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-primary"
           >
             <Stars rating={product.rating} />
-            <span className="font-semibold text-charcoal-900">
+            <span className="font-semibold text-foreground">
               {product.rating.toFixed(1)}
             </span>
             <span>({product.reviewCount} ulasan)</span>
           </a>
-          <span aria-hidden className="text-sage-500">
+          <span aria-hidden className="text-muted-foreground">
             ·
           </span>
           {/* jarak hanya tampil jika angka nyata; NULL disembunyikan. */}
           {typeof product.distanceKm === 'number' && (
-            <span className="inline-flex items-center gap-1 text-charcoal-500">
+            <span className="inline-flex items-center gap-1 text-muted-foreground">
               <MapPin className="h-4 w-4 text-primary" />
               {product.distanceKm.toLocaleString("id-ID")} km dari kamu
             </span>
@@ -67,7 +67,7 @@ export function ProductInfo({
 
         <motion.div
           variants={fadeUpSmall}
-          className="mt-5 border-t border-sage-100"
+          className="mt-5 border-t border-border"
         />
 
         <motion.div
@@ -77,17 +77,17 @@ export function ProductInfo({
           <span className="font-display text-4xl font-semibold tracking-tight text-primary">
             Rp{formatIDR(product.discountedPrice)}
           </span>
-          <span className="font-sans text-lg text-charcoal-500 line-through">
+          <span className="font-sans text-lg text-muted-foreground line-through">
             Rp{formatIDR(product.originalPrice)}
           </span>
-          <span className="rounded-full bg-sage-100 px-3 py-1 text-xs font-semibold text-primary">
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-primary">
             Hemat Rp{formatIDR(savings)}
           </span>
         </motion.div>
 
         <motion.p
           variants={fadeUpSmall}
-          className="mt-5 max-w-xl font-inter text-sm leading-relaxed text-charcoal-500"
+          className="mt-5 max-w-xl font-secondary text-sm leading-relaxed text-muted-foreground"
         >
           {product.description}
         </motion.p>
@@ -112,7 +112,7 @@ export function ProductInfo({
       <div ref={ctaRef}>
         <SectionReveal amount={0.4}>
           <CTAButtons product={product} onOrder={onOrder} notify={notify} />
-          <p className="mt-3 flex items-center gap-1.5 font-inter text-xs text-charcoal-500">
+          <p className="mt-3 flex items-center gap-1.5 font-secondary text-xs text-muted-foreground">
             <Lock className="h-3.5 w-3.5 text-primary" />
             Pembayaran aman via QRIS &amp; e-wallet · Ambil sendiri di lokasi
             mitra

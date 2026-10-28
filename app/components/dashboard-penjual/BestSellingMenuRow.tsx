@@ -52,9 +52,9 @@ export function BestSellingMenuRow() {
   return (
     <Card>
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-bold text-charcoal-900">Menu Terlaris</h2>
+        <h2 className="text-sm font-bold text-foreground">Menu Terlaris</h2>
         {!hydrated ? null : !hasAccess ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-caramel/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-charcoal-900">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
             <Lock className="h-3 w-3" />
             Premium
           </span>
@@ -64,7 +64,7 @@ export function BestSellingMenuRow() {
               <button
                 type="button"
                 aria-label="Menu lainnya"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-sage-500 transition-colors hover:bg-sage-100 hover:text-charcoal-900"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <MoreVertical className="h-4 w-4" />
               </button>
@@ -94,35 +94,35 @@ export function BestSellingMenuRow() {
         <div className="mt-4 flex flex-wrap items-start gap-x-3 gap-y-4">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="flex flex-col items-center gap-1.5">
-              <span className="block h-12 w-12 animate-pulse rounded-2xl bg-sage-100" />
-              <span className="block h-3 w-12 animate-pulse rounded-full bg-cream-100" />
+              <span className="block h-12 w-12 animate-pulse rounded-2xl bg-muted" />
+              <span className="block h-3 w-12 animate-pulse rounded-full bg-muted" />
             </div>
           ))}
         </div>
       ) : !hasAccess ? (
-        <div className="mt-4 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-sage-100 bg-cream-50/70 p-5 sm:flex-row sm:items-center">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-100 text-charcoal-500">
+        <div className="mt-4 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-secondary/70 p-5 sm:flex-row sm:items-center">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <Lock className="h-4 w-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="inline-flex items-center rounded-full bg-caramel/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-charcoal-900">
+            <p className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
               Fitur Premium
             </p>
-            <p className="mt-1.5 text-xs leading-relaxed text-sage-500">
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
               Lihat menu paling laris di tokomu untuk mengatur stok lebih tepat.
               Tersedia setelah upgrade ke paket berbayar.
             </p>
           </div>
           <Link
             href="/dashboard/penjual/langganan"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
           >
             <ShieldCheck className="h-3.5 w-3.5" />
             Upgrade Sekarang
           </Link>
         </div>
       ) : topMenus.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-dashed border-sage-100 bg-cream-50/70 p-6 text-center text-xs leading-relaxed text-sage-500">
+        <p className="mt-4 rounded-2xl border border-dashed border-border bg-secondary/70 p-6 text-center text-xs leading-relaxed text-muted-foreground">
           Belum ada menu untuk diperingkat. Tambahkan menu di halaman Menu Saya.
         </p>
       ) : (
@@ -133,13 +133,13 @@ export function BestSellingMenuRow() {
               className="group relative flex flex-col items-center gap-1.5"
               aria-label={`${menu.name} · ${menu.terjual} terjual`}
             >
-              <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-charcoal-900 px-2 py-1 text-[11px] font-medium text-cream-50 opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+              <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-primary-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
                 {menu.name} · {menu.terjual} terjual
               </span>
-              <span className="relative block h-12 w-12 overflow-hidden rounded-2xl ring-2 ring-sage-100 transition-transform duration-150 group-hover:scale-105">
+              <span className="relative block h-12 w-12 overflow-hidden rounded-2xl ring-2 ring-border transition-transform duration-150 group-hover:scale-105">
                 <SmartImage src={menu.image} alt={`Foto ${menu.name}`} />
               </span>
-              <span className="max-w-[64px] truncate text-[10px] font-semibold text-charcoal-900">
+              <span className="max-w-[64px] truncate text-[10px] font-semibold text-foreground">
                 {formatRupiah(menu.surplusPrice)}
               </span>
             </div>

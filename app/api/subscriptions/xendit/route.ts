@@ -73,9 +73,11 @@ export async function POST(req: NextRequest) {
         failureRedirectUrl: failureUrl,
       });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Gagal membuat invoice.';
-      console.error('[subscriptions/xendit] xendit error', msg);
-      return NextResponse.json({ error: `Gagal membuat invoice: ${msg}` }, { status: 502 });
+      console.error('[subscriptions/xendit] xendit error', e instanceof Error ? e.message : e);
+      return NextResponse.json(
+        { error: 'Gagal membuat invoice. Silakan coba lagi.' },
+        { status: 502 },
+      );
     }
 
     const { error: insertErr } = await service.from('subscriptions').insert({
@@ -90,8 +92,13 @@ export async function POST(req: NextRequest) {
     } as Record<string, unknown>);
 
     if (insertErr) {
+      // Surface the failure: without a pending row the webhook has nothing to
+      // activate, so the customer would pay but never be subscribed.
       console.error('[subscriptions/xendit] insert pending error', insertErr.message);
-      return NextResponse.json({ error: 'Gagal menyimpan langganan.' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Gagal menyimpan langganan. Silakan coba lagi.' },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({
@@ -104,7 +111,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: unknown) {
     console.error('[subscriptions/xendit] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan.';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan saat membuat langganan.' },
+      { status: 500 },
+    );
   }
 }

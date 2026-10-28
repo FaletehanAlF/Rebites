@@ -1600,8 +1600,6 @@ export async function POST(req: NextRequest) {
       }
       if (notifErr) console.error('[checkout/xendit] notif free error', notifErr.message);
 
-      console.log('[checkout/xendit] free order created', { orderCode, total: 0, coinUsed: pricing.coinUsed });
-
       const freeStoredOrder = {
         orderId: orderCode,
         userId: user.id,
@@ -1852,7 +1850,12 @@ export async function POST(req: NextRequest) {
             { orderCode, invoiceState: after?.invoice_state ?? null }
           );
         }
-        return NextResponse.json({ error: `Gagal membuat invoice: ${msg}` }, { status: 502 });
+        // Detail error internal HANYA ke server log; respons klien generik
+        // agar tidak membocorkan pesan Xendit ke buyer.
+        return NextResponse.json(
+          { error: 'Gagal membuat invoice pembayaran. Silakan coba lagi.' },
+          { status: 502 },
+        );
       }
       // I1 (legacy invoice): klasifikasi yang sama dengan jalur keyed.
       // Konservatif: hasil yang tidak dapat dipastikan TIDAK dianggap invoice
@@ -1890,7 +1893,11 @@ export async function POST(req: NextRequest) {
         refundCoins: pricing.coinUsed > 0,
         phase: 'post_gate',
       });
-      return NextResponse.json({ error: `Gagal membuat invoice: ${msg}` }, { status: 502 });
+      // Detail error internal HANYA ke server log; respons klien generik.
+      return NextResponse.json(
+        { error: 'Gagal membuat invoice pembayaran. Silakan coba lagi.' },
+        { status: 502 },
+      );
     }
 
     if (keyedFlow) {

@@ -143,18 +143,6 @@ export async function getUserOrders(userId: string | null | undefined): Promise<
   return (data ?? []).map(rowToStoredOrder);
 }
 
-export async function getAllOrders(): Promise<StoredOrder[]> {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (error) {
-    console.error('[order-storage] gagal memuat semua pesanan:', error.message);
-    return [];
-  }
-  return (data ?? []).map(rowToStoredOrder);
-}
-
 export async function getSellerOrders(): Promise<StoredOrder[]> {
   const umkm = await getSellerUmkm();
   

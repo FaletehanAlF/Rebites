@@ -68,10 +68,10 @@ export function ProductGallery({
       role="region"
       aria-label="Galeri foto produk"
       onKeyDown={handleKeyDown}
-      className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50"
+      className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
-      <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-sage-100 shadow-[0_28px_60px_-30px_rgba(47,66,53,0.45)]">
-        <div className="absolute left-4 top-4 z-20 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-cream-50 shadow-lg">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-muted shadow-[0_28px_60px_-30px_rgba(47,66,53,0.45)]">
+        <div className="absolute left-4 top-4 z-20 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-lg">
           Hemat {product.discountPercent}%
         </div>
 
@@ -80,7 +80,7 @@ export function ProductGallery({
           aria-label="Foto sebelumnya"
           onClick={prev}
           className={cn(
-            "absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-cream-50/90 text-primary shadow-md transition-all duration-200 hover:scale-105 hover:bg-white sm:flex",
+            "absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-secondary/90 text-primary shadow-md transition-all duration-200 hover:scale-105 hover:bg-white sm:flex",
             "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
           )}
         >
@@ -91,7 +91,7 @@ export function ProductGallery({
           aria-label="Foto berikutnya"
           onClick={next}
           className={cn(
-            "absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-cream-50/90 text-primary shadow-md transition-all duration-200 hover:scale-105 hover:bg-white sm:flex",
+            "absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-secondary/90 text-primary shadow-md transition-all duration-200 hover:scale-105 hover:bg-white sm:flex",
             "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
           )}
         >
@@ -140,7 +140,7 @@ export function ProductGallery({
               ? { duration: 2, repeat: Infinity, ease: "easeInOut" }
               : undefined
           }
-          className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5 rounded-full bg-primary/70 px-3 py-1.5 text-xs font-medium text-cream-50 backdrop-blur-sm"
+          className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5 rounded-full bg-primary/70 px-3 py-1.5 text-xs font-medium text-primary-foreground backdrop-blur-sm"
         >
           <Package className="h-3.5 w-3.5" />
           {product.stockLabel}
@@ -158,7 +158,7 @@ export function ProductGallery({
                 "h-2 rounded-full transition-all duration-300",
                 i === index
                   ? "w-6 bg-primary"
-                  : "w-2 bg-cream-50/70 hover:bg-cream-50",
+                  : "w-2 bg-secondary/70 hover:bg-secondary",
               )}
             />
           ))}
@@ -177,7 +177,7 @@ export function ProductGallery({
             aria-label={`Tampilkan foto ${i + 1}`}
             onClick={() => setIndex(i)}
             className={cn(
-              "relative aspect-square overflow-hidden rounded-xl border-2 bg-cream-100 transition-all duration-200",
+              "relative aspect-square overflow-hidden rounded-xl border-2 bg-muted transition-all duration-200",
               i === index
                 ? "border-primary ring-2 ring-primary/20"
                 : "border-transparent opacity-70 hover:opacity-100",

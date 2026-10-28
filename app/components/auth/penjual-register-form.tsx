@@ -178,7 +178,7 @@ function PasswordVisibilityButton({
 }
 
 function inputClass(additional?: string) {
-  return `w-full bg-transparent py-1 font-sans text-[14px] leading-none text-[#1B3F2C] outline-none placeholder:text-muted-foreground ${additional ?? ""}`;
+  return `w-full bg-transparent py-1 font-sans text-[14px] leading-none text-foreground outline-none placeholder:text-muted-foreground ${additional ?? ""}`;
 }
 
 function slugify(text: string): string {
@@ -549,7 +549,7 @@ export default function PenjualRegisterForm() {
         <div className="flex items-center gap-1.5">
           <div
             className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
-              step >= 1 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-[#EDE9DE] text-muted-foreground"
+              step >= 1 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-muted text-muted-foreground"
             }`}
           >
             {step > 1 ? <CheckCircle2 className="h-3.5 w-3.5" /> : "1"}
@@ -557,7 +557,7 @@ export default function PenjualRegisterForm() {
           <div className={`h-px flex-1 transition-colors ${step >= 2 ? "bg-[hsl(var(--primary))]" : "bg-border"}`} />
           <div
             className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
-              step >= 2 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-[#EDE9DE] text-muted-foreground"
+              step >= 2 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-muted text-muted-foreground"
             }`}
           >
             {step > 2 ? <CheckCircle2 className="h-3.5 w-3.5" /> : "2"}
@@ -565,7 +565,7 @@ export default function PenjualRegisterForm() {
           <div className={`h-px flex-1 transition-colors ${step >= 3 ? "bg-[hsl(var(--primary))]" : "bg-border"}`} />
           <div
             className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
-              step >= 3 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-[#EDE9DE] text-muted-foreground"
+              step >= 3 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-muted text-muted-foreground"
             }`}
           >
             3
@@ -580,7 +580,7 @@ export default function PenjualRegisterForm() {
 
       <motion.h1
         variants={itemVariants}
-        className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-[#14261E] flex-shrink-0"
+        className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-foreground flex-shrink-0"
       >
         {step === 1 ? "Buat Akun Penjual" : step === 2 ? "Data Usaha" : "Pilih Paket Langganan"}
       </motion.h1>
@@ -723,7 +723,7 @@ export default function PenjualRegisterForm() {
                   {error && (
                     <p
                       role="alert"
-                      className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700"
+                      className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive"
                     >
                       {error}
                     </p>
@@ -812,7 +812,7 @@ export default function PenjualRegisterForm() {
                                     className={cn(
                                       "flex w-full items-center justify-between gap-2 bg-transparent text-left font-sans text-[14px] outline-none",
                                       selected.length > 0
-                                        ? "text-[#1B3F2C]"
+                                        ? "text-foreground"
                                         : "text-muted-foreground",
                                     )}
                                   >
@@ -843,7 +843,7 @@ export default function PenjualRegisterForm() {
                                             }
                                             className="data-[state=checked]:border-primary data-[state=checked]:bg-[hsl(var(--primary))]"
                                           />
-                                          <span className="font-sans text-sm text-[#1B3F2C]">
+                                          <span className="font-sans text-sm text-foreground">
                                             {k}
                                           </span>
                                         </label>
@@ -875,7 +875,7 @@ export default function PenjualRegisterForm() {
                               onValueChange={field.onChange}
                               value={field.value}
                             >
-                              <SelectTrigger className="w-full border-0 bg-transparent p-0 font-sans text-[14px] text-[#1B3F2C] shadow-none focus:ring-0 focus:ring-offset-0 h-auto py-1 [&>span]:text-left">
+                              <SelectTrigger className="w-full border-0 bg-transparent p-0 font-sans text-[14px] text-foreground shadow-none focus:ring-0 focus:ring-offset-0 h-auto py-1 [&>span]:text-left">
                                 <SelectValue placeholder="Pilih kecamatan di Depok" />
                               </SelectTrigger>
                               <SelectContent>
@@ -938,7 +938,7 @@ export default function PenjualRegisterForm() {
                               id="description"
                               placeholder="Ceritakan tentang usaha Anda..."
                               rows={2}
-                              className="min-h-[56px] resize-none border-0 bg-transparent p-0 py-1 font-sans text-[14px] leading-relaxed text-[#1B3F2C] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground"
+                              className="min-h-[56px] resize-none border-0 bg-transparent p-0 py-1 font-sans text-[14px] leading-relaxed text-foreground shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground"
                               {...field}
                             />
                           </div>
@@ -957,7 +957,7 @@ export default function PenjualRegisterForm() {
                         Opsional
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 rounded-lg border border-dashed border-border bg-[#FCFCF9] px-3 py-2.5">
+                    <div className="flex items-center gap-3 rounded-lg border border-dashed border-border bg-secondary px-3 py-2.5">
                       <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-white">
                         {logoPreview ? (
                           <Image
@@ -996,7 +996,7 @@ export default function PenjualRegisterForm() {
                   {error && (
                     <p
                       role="alert"
-                      className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700"
+                      className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive"
                     >
                       {error}
                     </p>
@@ -1038,7 +1038,7 @@ export default function PenjualRegisterForm() {
               {existingStoreNotice && (
                 <p
                   role="status"
-                  className="rounded-lg border border-primary/25 bg-[#F0F4EC] px-3 py-2 font-sans text-[12px] leading-relaxed text-[hsl(var(--primary))]"
+                  className="rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 font-sans text-[12px] leading-relaxed text-[hsl(var(--primary))]"
                 >
                   {existingStoreNotice}
                 </p>
@@ -1072,7 +1072,7 @@ export default function PenjualRegisterForm() {
                       key={plan.slug}
                       type="button"
                       onClick={() => setSelectedPlan(plan.slug)}
-                      className={cn('relative flex flex-col rounded-2xl border bg-white p-4 text-left transition-all', isSelected ? 'border-primary bg-secondary shadow-sm ring-1 ring-[hsl(var(--primary))]/20' : 'border-border hover:border-[#AEB89B]')}
+                      className={cn('relative flex flex-col rounded-2xl border bg-white p-4 text-left transition-all', isSelected ? 'border-primary bg-secondary shadow-sm ring-1 ring-[hsl(var(--primary))]/20' : 'border-border hover:border-border')}
                     >
                       <span className={cn('absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full border-2', isSelected ? 'border-primary bg-[hsl(var(--primary))]' : 'border-border bg-white')}>
                         {isSelected && <span className="h-2 w-2 rounded-full bg-white" />}
@@ -1105,7 +1105,7 @@ export default function PenjualRegisterForm() {
                 const total = price + tax;
                 const periodEnd = new Date(); if(billing==='yearly') periodEnd.setFullYear(periodEnd.getFullYear()+1); else periodEnd.setMonth(periodEnd.getMonth()+1);
                 return (
-                  <div className="rounded-xl border border-border bg-[#FCFCF9] p-4">
+                  <div className="rounded-xl border border-border bg-secondary p-4">
                     <div className="flex items-center justify-between text-[13px]">
                       <span className="text-muted-foreground">Paket terpilih</span>
                       <span className="font-semibold text-[hsl(var(--primary))]">ReBites {plan.name} {billing==='yearly'?'Tahunan':'Bulanan'}</span>
@@ -1120,7 +1120,7 @@ export default function PenjualRegisterForm() {
               })()}
 
               {payError && (
-                <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">{payError}</p>
+                <p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">{payError}</p>
               )}
 
               <div className="flex gap-2">
@@ -1154,7 +1154,7 @@ export default function PenjualRegisterForm() {
         Sudah punya toko?{" "}
         <Link
           href="/auth/login/penjual"
-          className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-[#1B3F2C]"
+          className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-foreground"
         >
           Masuk sebagai penjual
         </Link>

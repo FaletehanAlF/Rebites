@@ -11,7 +11,7 @@ import { SoftBlob } from "@/app/components/shared/ornaments";
 import type { FilterKey } from "@/lib/types";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-caramel focus-visible:ring-offset-2 focus-visible:ring-offset-primary";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-primary";
 
 const MAX_ITEMS = 8;
 
@@ -112,7 +112,7 @@ export function UrgentDealsSection({
       className="grain-overlay relative flex min-h-screen scroll-mt-20 flex-col justify-center overflow-hidden bg-primary py-10 sm:py-16 lg:py-20"
     >
       <SoftBlob className="-left-24 top-1/4 h-80 w-80 bg-white/10" />
-      <SoftBlob className="-right-24 bottom-0 h-96 w-96 bg-caramel/15" />
+      <SoftBlob className="-right-24 bottom-0 h-96 w-96 bg-primary/15" />
       <div
         aria-hidden
         className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full"
@@ -158,7 +158,7 @@ export function UrgentDealsSection({
             </div>
 
             <h2 className="mt-3 font-sans text-[22px] font-bold tracking-tight text-white sm:text-[28px]">
-              Menu <span className="text-caramel">unggulan</span> hari ini
+              Menu <span className="text-primary">unggulan</span> hari ini
             </h2>
             <p className="mt-2 max-w-xl font-sans text-sm text-white/70">
               Pilihan makanan surplus dengan rating terbaik dari UMKM terdekat.
@@ -187,9 +187,9 @@ export function UrgentDealsSection({
             disabled={!canLeft}
             aria-label="Geser rekomendasi makanan ke kiri"
             className={cn(
-              "absolute -left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white text-charcoal-900 shadow-xl shadow-black/20 transition-all duration-200 hover:bg-caramel hover:text-white active:scale-[0.95] sm:-left-5 sm:h-11 sm:w-11",
+              "absolute -left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white text-foreground shadow-xl shadow-black/20 transition-all duration-200 hover:bg-primary-dark hover:text-white active:scale-[0.95] sm:-left-5 sm:h-11 sm:w-11",
               !canLeft &&
-                "cursor-default opacity-35 hover:bg-white hover:text-charcoal-900",
+                "cursor-default opacity-35 hover:bg-white hover:text-foreground",
               FOCUS_RING,
             )}
           >
@@ -246,9 +246,9 @@ export function UrgentDealsSection({
             disabled={!canRight}
             aria-label="Geser rekomendasi makanan ke kanan"
             className={cn(
-              "absolute -right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white text-charcoal-900 shadow-xl shadow-black/20 transition-all duration-200 hover:bg-caramel hover:text-white active:scale-[0.95] sm:-right-5 sm:h-11 sm:w-11",
+              "absolute -right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white text-foreground shadow-xl shadow-black/20 transition-all duration-200 hover:bg-primary-dark hover:text-white active:scale-[0.95] sm:-right-5 sm:h-11 sm:w-11",
               !canRight &&
-                "cursor-default opacity-35 hover:bg-white hover:text-charcoal-900",
+                "cursor-default opacity-35 hover:bg-white hover:text-foreground",
               FOCUS_RING,
             )}
           >

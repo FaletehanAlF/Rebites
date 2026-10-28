@@ -43,6 +43,10 @@ export interface FoodItem {
   discountedPrice: number;
   discountPercent: number;
   expiresAt?: string;
+  /** Raw DB id (uuid) — `id` above may be the slug. Used to match liked foods. */
+  rawId?: string;
+  /** Product slug (falls back to `rawId` when the row has no slug). */
+  slug?: string;
 }
 
 export interface Vendor {

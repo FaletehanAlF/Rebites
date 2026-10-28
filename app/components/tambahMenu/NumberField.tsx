@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 const inputCls =
-  'w-full rounded-xl border border-sage-100 bg-white px-4 py-3 text-sm text-charcoal-900 placeholder:text-sage-500 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
+  'w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 
 interface NumberFieldProps {
   /** Nilai dari parent (number) - sinkronisasi dua arah. */
@@ -89,7 +89,7 @@ export function NumberField({
   return (
     <div>
       {label && (
-        <label htmlFor={id} className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-charcoal-900">
+        <label htmlFor={id} className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground">
           {label}
         </label>
       )}
@@ -98,7 +98,7 @@ export function NumberField({
           type="button"
           aria-label={`Kurangi ${label ?? 'nilai'}`}
           onClick={decrement}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-sage-100 bg-cream-50 text-charcoal-900 transition-colors hover:bg-sage-100"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary text-foreground transition-colors hover:bg-muted"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <line x1={5} y1={12} x2={19} y2={12} />
@@ -118,7 +118,7 @@ export function NumberField({
           type="button"
           aria-label={`Tambah ${label ?? 'nilai'}`}
           onClick={increment}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-sage-100 bg-cream-50 text-charcoal-900 transition-colors hover:bg-sage-100"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary text-foreground transition-colors hover:bg-muted"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <line x1={12} y1={5} x2={12} y2={19} />
@@ -126,7 +126,7 @@ export function NumberField({
           </svg>
         </button>
         {unitLabel && (
-          <span className="text-xs text-sage-500 whitespace-nowrap">{unitLabel}</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">{unitLabel}</span>
         )}
       </div>
     </div>

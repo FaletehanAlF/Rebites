@@ -25,7 +25,7 @@ const SalesStatsCard = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[300px] animate-pulse rounded-3xl border border-sage-200/60 bg-sage-100/40" />
+      <div className="h-[300px] animate-pulse rounded-3xl border border-border/60 bg-muted/40" />
     ),
   }
 );
@@ -56,7 +56,7 @@ export default function VendorDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-cream-50">
+      <div className="flex min-h-screen items-center justify-center bg-secondary">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
@@ -64,7 +64,7 @@ export default function VendorDashboardPage() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative min-h-screen bg-cream-50 font-sans text-charcoal-900">
+      <div className="relative min-h-screen bg-secondary font-sans text-foreground">
         <DashboardDecor />
 
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -83,19 +83,19 @@ export default function VendorDashboardPage() {
                   <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
                     Halo, <span className="font-extralight italic">{firstName}</span>
                   </h1>
-                  <p className="mt-1 text-sm text-sage-500">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Pantau penjualan dan pesanan masuk tokomu 
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-caramel/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-charcoal-900">
-                    <Crown className="h-3.5 w-3.5 text-caramel" />
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-foreground">
+                    <Crown className="h-3.5 w-3.5 text-primary" />
                     Paket Aktif · {plan.label}
                   </span>
                   { }
                   <Link
                     href="/dashboard/penjual/langganan"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3.5 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-caramel/10"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3.5 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary-dark/10"
                   >
                     Kelola Paket Langganan
                   </Link>

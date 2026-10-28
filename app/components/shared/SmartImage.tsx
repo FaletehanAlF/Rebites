@@ -40,7 +40,10 @@ export function SmartImage({
       src={src}
       alt={alt}
       fill
-      sizes={sizes}
+      // Without sizes, fill images imply 100vw and the browser downloads the
+      // largest srcset variant even for thumbnails. The default matches the
+      // responsive grids this component is used in.
+      sizes={sizes ?? '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'}
       priority={priority}
       onError={() => setFailed(true)}
       className={cn('object-cover', className)}

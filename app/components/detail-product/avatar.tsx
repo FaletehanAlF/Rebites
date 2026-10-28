@@ -26,7 +26,7 @@ export function Avatar({
       <span
         aria-label={name}
         className={cn(
-          'flex shrink-0 items-center justify-center rounded-full bg-sage-100 font-sans text-sm font-semibold text-primary',
+          'flex shrink-0 items-center justify-center rounded-full bg-muted font-sans text-sm font-semibold text-primary',
           className
         )}
       >
@@ -39,7 +39,7 @@ export function Avatar({
     <span
       aria-label={name}
       className={cn(
-        'relative block shrink-0 overflow-hidden rounded-full bg-sage-100',
+        'relative block shrink-0 overflow-hidden rounded-full bg-muted',
         className
       )}
     >

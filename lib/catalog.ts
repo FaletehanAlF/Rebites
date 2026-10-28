@@ -207,28 +207,68 @@ export async function fetchCatalog(): Promise<CatalogData> {
   };
 }
 
+const CATALOG_CACHE_TTL_MS = 15_000; // 15 detik
+let catalogCache: Promise<CatalogData> | null = null;
+let catalogCacheTimestamp = 0;
+
+function invalidateCatalogCache() {
+  catalogCache = null;
+  catalogCacheTimestamp = 0;
+}
+
+// Invalidasi di level modul (terdaftar saat import, lebih dulu daripada
+// listener instance mana pun) sehingga semua instance useCatalog berbagi
+// SATU fetch baru saat pengaturan toko berubah.
+if (typeof window !== 'undefined') {
+  window.addEventListener(STORE_SETTINGS_UPDATED_EVENT, invalidateCatalogCache);
+}
+
+// Cache promise fetchCatalog: mount bersamaan / dalam TTL berbagi satu hasil.
+function fetchCatalogCached(): Promise<CatalogData> {
+  if (catalogCache && Date.now() - catalogCacheTimestamp < CATALOG_CACHE_TTL_MS) {
+    return catalogCache;
+  }
+  const run = fetchCatalog();
+  catalogCache = run;
+  catalogCacheTimestamp = Date.now();
+  // Hasil gagal jangan di-cache agar percobaan berikutnya fetch ulang.
+  run.catch(() => {
+    if (catalogCache === run) catalogCache = null;
+  });
+  return run;
+}
+
 export function useCatalog() {
   const [data, setData] = useState<CatalogData>(EMPTY_CATALOG);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  const load = useCallback(async (isCancelled?: () => boolean) => {
     setLoading(true);
-    const result = await fetchCatalog();
+    const result = await fetchCatalogCached();
+    if (isCancelled?.()) return;
     setData(result);
     setLoading(false);
   }, []);
 
+  // API publik: selalu fetch baru seperti sebelumnya.
+  const refresh = useCallback(() => {
+    invalidateCatalogCache();
+    return load();
+  }, [load]);
+
   useEffect(() => {
-    refresh();
+    let cancelled = false;
+    void load(() => cancelled);
     // Instant: saat pengaturan toko disimpan (logo/nama/openHours), refresh vendor di home tanpa reload
     const onStoreUpdated = () => {
-      void refresh();
+      void load(() => cancelled);
     };
     window.addEventListener(STORE_SETTINGS_UPDATED_EVENT, onStoreUpdated);
     return () => {
+      cancelled = true;
       window.removeEventListener(STORE_SETTINGS_UPDATED_EVENT, onStoreUpdated);
     };
-  }, [refresh]);
+  }, [load]);
 
   return { ...data, loading, refresh };
 }

@@ -1,4 +1,3 @@
-'use client';
 
 import { Banknote, QrCode, Wallet } from 'lucide-react';
 import type { PaymentMethod } from '@/lib/types';

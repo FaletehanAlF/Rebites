@@ -139,11 +139,11 @@ export function OrderCard({
           {isDelivered && (
             <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold">
               {reviewed ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-sage-100 px-2 py-0.5 text-sage-600">
-                  <Star className="h-3 w-3 fill-caramel text-caramel" aria-hidden /> Sudah dinilai
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
+                  <Star className="h-3 w-3 fill-primary text-primary" aria-hidden /> Sudah dinilai
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-caramel/15 px-2 py-0.5 text-caramel-700">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-primary">
                   <Star className="h-3 w-3" aria-hidden /> Belum dinilai
                 </span>
               )}

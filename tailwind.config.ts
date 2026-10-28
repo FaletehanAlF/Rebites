@@ -54,17 +54,20 @@ const config: Config = {
         'admin-hover':
           '0 2px 6px hsl(152 20% 20% / 0.06), 0 16px 32px -16px hsl(152 20% 20% / 0.24)',
       },
-      // Satu keluarga font (Inter) untuk seluruh aplikasi. Alias `display`,
-      // `sans`, dan `inter` sengaja menunjuk variabel yang sama; `inter`
-      // dulu memakai Be Vietnam Pro (--font-secondary) sehingga teks kecil
-      // tampil berbeda dari sisa halaman. `mono` tetap pakai stack Tailwind
-      // bawaan karena dipakai khusus untuk kode/e-mail di tabel admin.
+      // Dua keluarga font sesuai arah desain: Plus Jakarta Sans (primary,
+      // --font-sans) dan Be Vietnam Pro (secondary, --font-secondary).
+      // Alias `inter` menunjuk variabel yang sama dengan `sans` supaya kelas
+      // `font-inter` pada lama masih valid tanpa memperkenalkan font ketiga.
       fontFamily: {
-        display: ['var(--font-sans)', 'system-ui', 'sans-serif'],
-        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-sans)'],
+        sans: ['var(--font-sans)'],
+        secondary: ['var(--font-secondary)', 'system-ui', 'sans-serif'],
         inter: ['var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       colors: {
+        // Palet panel admin (dari branch fitur admin) — token legacy yang
+        // masih dipakai komponen admin. Kadang kelas ini juga dipakai halaman
+        // publik lama; bersihkan seiring migrasi desain putih-hijau.
         forest: '#3B5240',
         'forest-dark': '#2F4235',
         'forest-deep': '#2A3731',
@@ -90,7 +93,6 @@ const config: Config = {
         'gold-400': '#D9BA62',
         'gold-500': '#C9A227',
         'gold-600': '#B08A1C',
-        sale: '#E53935',
         'charcoal-500': '#5C6B60',
         // charcoal-700: teks body sekunder. Sebelumnya kelas `text-charcoal-700`
         // dipakai di banyak komponen admin tetapi token ini belum ada, sehingga
@@ -113,6 +115,9 @@ const config: Config = {
         },
         caramel: '#C8A882',
         'caramel-dark': '#6F4529',
+        // Single source of truth: every colour below maps to a token in app/globals.css.
+        // `sale` shares the destructive hue on purpose — one red value, two roles.
+        sale: 'hsl(var(--destructive))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -125,6 +130,7 @@ const config: Config = {
         },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
+          dark: 'hsl(var(--primary-dark))',
           foreground: 'hsl(var(--primary-foreground))',
           // Nama kunci sengaja 'foreground-strong' supaya utilitas yang
           // dihasilkan adalah `text-primary-foreground-strong` — kelas inilah
@@ -182,14 +188,6 @@ const config: Config = {
         },
       },
       keyframes: {
-        'accordion-down': {
-          from: { height: '0' },
-          to: { height: 'var(--radix-accordion-content-height)' },
-        },
-        'accordion-up': {
-          from: { height: 'var(--radix-accordion-content-height)' },
-          to: { height: '0' },
-        },
         marquee: {
           from: { transform: 'translateX(0%)' },
           to: { transform: 'translateX(-50%)' },
@@ -200,8 +198,6 @@ const config: Config = {
         },
       },
       animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
         marquee: 'marquee 40s linear infinite',
         'marquee-reverse': 'marquee-reverse 40s linear infinite',
       },

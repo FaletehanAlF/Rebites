@@ -84,7 +84,7 @@ function DetailPageContent({
   }, [notify]);
 
   return (
-    <div className="relative min-h-screen overflow-x-clip bg-cream-50 text-charcoal-900">
+    <div className="relative min-h-screen overflow-x-clip bg-secondary text-foreground">
       <PageOrnaments />
       <div className="lg:hidden"><MobileNavbar /></div>
       <div className="hidden lg:block"><ProfileNavbar /></div>
@@ -126,7 +126,7 @@ function DetailPageContent({
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.25, ease: EASE }}
             role="status"
-            className="fixed bottom-24 right-4 z-[70] rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-cream-50 shadow-xl lg:bottom-6 lg:right-6"
+            className="fixed bottom-24 right-4 z-[70] rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-xl lg:bottom-6 lg:right-6"
           >
             {toast.message}
           </motion.div>

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function OrderSuccessPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-cream-50" />}>
+    <Suspense fallback={<main className="min-h-screen bg-secondary" />}>
       <OrderSuccessView />
     </Suspense>
   );

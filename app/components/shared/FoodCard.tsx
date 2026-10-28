@@ -13,7 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export function FoodCard({
   item,
@@ -74,10 +74,10 @@ export function FoodCard({
           handleOpen();
         }
       }}
-      className="group flex cursor-pointer overflow-hidden rounded-2xl border border-zinc-200 bg-white outline-none transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg hover:shadow-primary/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 sm:flex-col sm:h-full sm:hover:-translate-y-1"
+      className="group flex cursor-pointer overflow-hidden rounded-2xl border border-zinc-200 bg-white outline-none transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg hover:shadow-primary/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-col sm:h-full sm:hover:-translate-y-1"
     >
       {/* Image: fixed 96x96 di mobile (horizontal), aspect 4/3 di desktop (vertical) */}
-      <div className="relative h-28 w-28 shrink-0 overflow-hidden bg-sage-100 sm:h-auto sm:w-full sm:aspect-[4/3]">
+      <div className="relative h-28 w-28 shrink-0 overflow-hidden bg-muted sm:h-auto sm:w-full sm:aspect-[4/3]">
         <SmartImage
           src={item.image}
           alt={`Foto ${item.name} dari ${item.vendorName}`}
@@ -88,8 +88,8 @@ export function FoodCard({
           )}
         />
         {isUnavailable && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-charcoal-900/40 p-2 text-center">
-            <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold leading-none text-charcoal-900 shadow-lg sm:px-3 sm:py-1 sm:text-xs">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-foreground/40 p-2 text-center">
+            <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold leading-none text-foreground shadow-lg sm:px-3 sm:py-1 sm:text-xs">
               {isOutOfStock ? "Stok Habis" : "Tidak Tersedia"}
             </span>
           </div>
@@ -118,33 +118,33 @@ export function FoodCard({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
-        <h3 className="line-clamp-1 font-sans text-[13px] font-bold leading-snug text-charcoal-900 sm:text-[15px] sm:line-clamp-2">
+        <h3 className="line-clamp-1 font-sans text-[13px] font-bold leading-snug text-foreground sm:text-[15px] sm:line-clamp-2">
           {item.name}
         </h3>
-        <p className="mt-0.5 line-clamp-1 font-sans text-[11px] text-charcoal-500 sm:text-[13px]">{item.vendorName}</p>
+        <p className="mt-0.5 line-clamp-1 font-sans text-[11px] text-muted-foreground sm:text-[13px]">{item.vendorName}</p>
 
-        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-charcoal-500 sm:mt-2 sm:gap-2 sm:text-xs">
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground sm:mt-2 sm:gap-2 sm:text-xs">
           {item.rating != null && (
-            <span className="inline-flex items-center gap-1 font-medium text-charcoal-900">
-              <Star className="h-3 w-3 fill-caramel text-caramel sm:h-3.5 sm:w-3.5" />
+            <span className="inline-flex items-center gap-1 font-medium text-foreground">
+              <Star className="h-3 w-3 fill-primary text-primary sm:h-3.5 sm:w-3.5" />
               {item.rating.toFixed(1)}
             </span>
           )}
           {item.distanceKm != null && (
             <span className="inline-flex items-center gap-1">
-              <MapPin className="h-3 w-3 text-sage-500 sm:h-3.5 sm:w-3.5" />
+              <MapPin className="h-3 w-3 text-muted-foreground sm:h-3.5 sm:w-3.5" />
               {item.distanceKm} km
             </span>
           )}
           <span className="inline-flex items-center gap-1">
-            <Clock className="h-3 w-3 text-sage-500 sm:h-3.5 sm:w-3.5" />
+            <Clock className="h-3 w-3 text-muted-foreground sm:h-3.5 sm:w-3.5" />
             {item.availableFrom} {item.availableTo}
           </span>
         </div>
 
         {/* Mobile: stock pill terlihat, Desktop: sama */}
         <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-2.5">
-          <span className="inline-flex w-fit rounded-full bg-cream-100 px-2.5 py-1 text-[10px] font-medium leading-none text-charcoal-600 sm:px-3 sm:py-1 sm:text-[11px]">
+          <span className="inline-flex w-fit rounded-full bg-muted px-2.5 py-1 text-[10px] font-medium leading-none text-muted-foreground sm:px-3 sm:py-1 sm:text-[11px]">
             {displayStockLabel}
           </span>
         </div>
@@ -154,7 +154,7 @@ export function FoodCard({
           <div className="flex flex-col gap-0.5 sm:gap-1">
             <div className="flex flex-wrap items-baseline gap-1 sm:gap-1.5">
               {item.originalPrice > item.discountedPrice && (
-                <span className="text-[11px] leading-none text-charcoal-500 line-through sm:text-xs">
+                <span className="text-[11px] leading-none text-muted-foreground line-through sm:text-xs">
                   {formatRupiah(item.originalPrice)}
                 </span>
               )}
@@ -176,7 +176,7 @@ export function FoodCard({
                 handleOpen();
               }}
               className={cn(
-                "inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-3.5 py-1.5 text-[11px] font-semibold leading-none text-white shadow-sm transition-colors hover:bg-caramel focus-visible:ring-2 focus-visible:ring-caramel focus-visible:ring-offset-2 sm:mt-3 sm:w-full sm:px-4 sm:py-2.5 sm:text-sm",
+                "inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-3.5 py-1.5 text-[11px] font-semibold leading-none text-white shadow-sm transition-colors hover:bg-primary-dark focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:mt-3 sm:w-full sm:px-4 sm:py-2.5 sm:text-sm",
                 FOCUS_RING,
               )}
             >

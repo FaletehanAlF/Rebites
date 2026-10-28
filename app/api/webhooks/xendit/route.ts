@@ -87,10 +87,17 @@ export async function POST(req: NextRequest) {
 
   if (externalId.startsWith('RB-')) {
     
-    const { data: order } = await service
-      .from('orders')        .select('order_code, payment_status, product_slug, quantity, coin_used, coin_earned, buyer_id, vendor_name, product_name, total_price, delivery_option, promo_code')
+    const { data: order, error: orderErr } = await service
+      .from('orders')
+      .select('order_code, payment_status, product_slug, quantity, coin_used, coin_earned, buyer_id, vendor_name, product_name, total_price, delivery_option, promo_code')
       .eq('order_code', externalId)
       .maybeSingle();
+
+    if (orderErr) {
+      // Do not ack: Xendit must retry or the payment is never settled.
+      console.error('[webhook/xendit] order fetch failed', orderErr.message);
+      return NextResponse.json({ error: 'DB fetch failed' }, { status: 500 });
+    }
 
     if (!order) {
       console.warn('[webhook/xendit] order not found', externalId);
@@ -192,6 +199,9 @@ export async function POST(req: NextRequest) {
         console.error('[webhook/xendit] transisi terminal gagal', terminalErr.message, {
           orderCode: externalId,
         });
+        // Jangan ack: Xendit akan retry sampai transisi terminal berhasil,
+        // sehingga order tidak tertinggal dalam status unpaid.
+        return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
       }
       // Pelepasan promo: HANYA pemenang transisi terminal yang boleh melepas,
       // dan hanya bila promo benar-benar terklaim (lihat planTerminalPromoRelease).
@@ -256,11 +266,15 @@ export async function POST(req: NextRequest) {
       // hanya langganan yang masih 'pending' yang boleh di-expire-kan.
       // Webhook lama/terlambat tidak boleh menjatuhkan subscription yang
       // sudah active (mis. EXPIRED lama datang setelah PAID).
-      await service
+      const { error: subErr } = await service
         .from('subscriptions')
         .update({ status: 'expired', xendit_status: normalizedStatus } as Record<string, unknown>)
         .eq('xendit_invoice_id', invoiceId)
         .eq('status', 'pending');
+      if (subErr) {
+        console.error('[webhook/xendit] subscription update failed', subErr.message);
+        return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ received: true });

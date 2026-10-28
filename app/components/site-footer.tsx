@@ -1,15 +1,13 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowUp, Mail, MapPin } from 'lucide-react';
 
-const SAGE = 'hsl(var(--primary-foreground) / 0.7)';
-const CREAM = 'hsl(var(--primary-foreground))';
-const CREAM_BG = 'hsl(var(--secondary))';
-const FOREST = 'hsl(var(--primary))';
-const GOLD = '#C8A882';
+const WAVE_FILL = 'hsl(var(--secondary))';
+const WAVE_LINE = 'hsl(var(--muted-foreground))';
+const WAVE_LINE_BRAND = 'hsl(var(--primary))';
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -73,12 +71,12 @@ function FooterWave() {
       >
         <path
           d="M0,0 H1440 V48 C1180,104 980,20 720,44 C470,68 280,112 0,76 Z"
-          fill={CREAM_BG}
+          fill={WAVE_FILL}
         />
         <path
           d="M0,76 C280,112 470,68 720,44 C980,20 1180,104 1440,48"
           fill="none"
-          stroke={GOLD}
+          stroke={WAVE_LINE}
           strokeOpacity="0.55"
           strokeWidth="1.6"
           strokeLinecap="round"
@@ -86,7 +84,7 @@ function FooterWave() {
         <path
           d="M0,70 C288,106 482,62 724,40 C978,18 1184,100 1440,45"
           fill="none"
-          stroke={FOREST}
+          stroke={WAVE_LINE_BRAND}
           strokeOpacity="0.25"
           strokeWidth="0.8"
           strokeLinecap="round"
@@ -115,7 +113,7 @@ function BackToTop() {
       type="button"
       onClick={scrollTop}
       aria-label="Kembali ke atas"
-      className={`fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary shadow-[0_18px_38px_-18px_rgba(0,0,0,0.55)] transition-all duration-300 hover:bg-caramel hover:text-white ${
+      className={`fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary shadow-[0_18px_38px_-18px_rgba(0,0,0,0.55)] transition-all duration-300 hover:bg-primary-dark hover:text-white ${
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
       }`}
     >
@@ -166,7 +164,7 @@ export function SiteFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary transition-colors duration-300 hover:bg-caramel hover:text-white"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary transition-colors duration-300 hover:bg-primary-dark hover:text-white"
                 >
                   <Icon className="h-[18px] w-[18px]" />
                 </a>
@@ -181,7 +179,7 @@ export function SiteFooter() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="font-sans text-[15px] text-primary-foreground transition-colors duration-300 hover:text-caramel"
+                    className="font-sans text-[15px] text-primary-foreground transition-colors duration-300 hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -196,7 +194,7 @@ export function SiteFooter() {
               <li>
                 <a
                   href="mailto:halo@rebites.id"
-                  className="inline-flex items-center justify-center gap-2 font-sans text-[15px] text-primary-foreground transition-colors duration-300 hover:text-caramel sm:justify-start"
+                  className="inline-flex items-center justify-center gap-2 font-sans text-[15px] text-primary-foreground transition-colors duration-300 hover:text-primary sm:justify-start"
                 >
                   <Mail className="h-4 w-4 shrink-0 opacity-70" />
                   halo@rebites.id
@@ -206,7 +204,7 @@ export function SiteFooter() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="font-sans text-[15px] text-primary-foreground transition-colors duration-300 hover:text-caramel"
+                    className="font-sans text-[15px] text-primary-foreground transition-colors duration-300 hover:text-primary"
                   >
                     {link.label}
                   </Link>

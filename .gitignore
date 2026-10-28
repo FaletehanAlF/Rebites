@@ -1,4 +1,7 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# GitHub
+# See https://help.github.com/articles/ignoring-files/
+
+.agents
 
 # dependencies
 /node_modules
@@ -23,6 +26,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
 # local env files
 # `.env*.local` mencakup .env.development.local, .env.production.local,
@@ -32,8 +36,10 @@ yarn-error.log*
 .env
 .env.local
 .env*.local
+.env.*
+!.env.example
 
-# vercel
+# deployment
 .vercel
 
 # typescript
@@ -41,6 +47,8 @@ yarn-error.log*
 next-env.d.ts
 
 # local verification & debug artifacts (Tahap 4B: jangan commit log/skrip verifikasi lokal)
-*.log
 p1b-verify.mjs
 remote_schema_verify.sql
+
+# temporary files
+.vibecode-tmp/
