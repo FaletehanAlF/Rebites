@@ -1,4 +1,18 @@
 ﻿import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
+import { isSuperAdminUserId, type AdminActor } from '@/lib/admin-access';
+import {
+  AdminProfileQueryError,
+  SupabaseUnavailableError,
+  classifyAdminProfile,
+  isSupabaseUnavailable,
+} from '@/lib/server/supabase-errors';
+
+export {
+  AdminProfileQueryError,
+  SupabaseUnavailableError,
+  isSupabaseUnavailable,
+};
 
 function requireEnv(name: string): string {
   const raw = process.env[name];
@@ -7,19 +21,67 @@ function requireEnv(name: string): string {
   return value;
 }
 
-export function createAnonServerClient(): SupabaseClient {
+// Batas waktu untuk panggilan server -> Supabase. Tanpa ini, DNS yang
+// diarahkan ke host salah (atau jaringan putus) membuat tiap request admin
+// menggantung sampai fetch default menyerah — dashboard memanggil 3 endpoint
+// sekaligus, jadi halaman terasa "rusak" alih-alih menampilkan pesan.
+const SUPABASE_FETCH_TIMEOUT_MS = 10_000;
+
+function withTimeout(timeoutMs = SUPABASE_FETCH_TIMEOUT_MS): typeof fetch {
+  return (input, init) =>
+    fetch(input, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+}
+
+export function createAnonServerClient(
+  timeoutMs = SUPABASE_FETCH_TIMEOUT_MS
+): SupabaseClient {
   const url = requireEnv('NEXT_PUBLIC_SUPABASE_URL');
   const anonKey = requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
   return createClient(url, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: withTimeout(timeoutMs) },
   });
 }
 
-export function createServiceClient(): SupabaseClient {
+/**
+ * Respons untuk query yang gagal, dengan status yang jujur:
+ * 503 bila Supabase tidak terjangkau (bisa dicoba lagi), 500 bila PostgREST
+ * menolak permintaannya (RLS/kolom/tabel — bug atau drift schema).
+ *
+ * @param message Pesan publik yang aman; TIDAK pernah memuat pesan internal.
+ */
+export function queryFailureResponse(error: unknown, message: string): Response {
+  if (isSupabaseUnavailable(error)) return upstreamUnavailableResponse();
+  return NextResponse.json({ error: message }, { status: 500 });
+}
+
+/**
+ * Respons standar saat Supabase tidak terjangkau. 503 — bukan 401 — supaya
+ * klien tidak "keluar" dari sesi dan tahu bahwa ini bisa dicoba lagi.
+ */
+export function upstreamUnavailableResponse(): Response {
+  return NextResponse.json(
+    {
+      error:
+        'Tidak dapat menghubungi server data. Periksa koneksi internet lalu coba lagi.',
+      code: 'UPSTREAM_UNAVAILABLE',
+    },
+    { status: 503, headers: { 'Cache-Control': 'no-store' } }
+  );
+}
+
+export function createServiceClient(
+  timeoutMs?: number
+): SupabaseClient {
   const url = requireEnv('NEXT_PUBLIC_SUPABASE_URL');
   const serviceKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
   return createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // Default tetap tanpa timeout agar perilaku pemanggil lama (webhook,
+    // checkout, verifikasi) tidak berubah. Pemeriksaan admin meminta timeout
+    // eksplisit: tanpa itu, DNS yang salah membuat setiap route admin
+    // menggantung alih-alih menjawab 503.
+    ...(timeoutMs === undefined ? {} : { global: { fetch: withTimeout(timeoutMs) } }),
   });
 }
 
@@ -28,12 +90,20 @@ export function createServiceClient(): SupabaseClient {
 // user yang sebenarnya. WAJIB dipakai untuk aksi admin (moderasi produk):
 // service_role memiliki auth.uid() = null sehingga trigger
 // enforce_product_verification_* akan mengembalikan kolom verifikasi ke OLD.
-export function createAuthedServerClient(authHeader: string): SupabaseClient {
+export function createAuthedServerClient(
+  authHeader: string,
+  timeoutMs?: number
+): SupabaseClient {
   const url = requireEnv('NEXT_PUBLIC_SUPABASE_URL');
   const anonKey = requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
   return createClient(url, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: authHeader } },
+    global: {
+      headers: { Authorization: authHeader },
+      // Default tetap tanpa timeout agar perilaku route admin lama tidak
+      // berubah. Health check meminta timeout eksplisit yang lebih pendek.
+      ...(timeoutMs === undefined ? {} : { fetch: withTimeout(timeoutMs) }),
+    },
   });
 }
 
@@ -145,12 +215,39 @@ export async function getUserFromBearer(
     }
     return null;
   }
-  const { data, error } = await client.auth.getUser(token);
+  let data, error;
+  try {
+    ({ data, error } = await client.auth.getUser(token));
+  } catch (e) {
+    // fetch/AbortError yang lolos dari Supabase: Supabase tidak terjangkau.
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug(
+        `[supabase-server]${tag} getUserFromBearer: JARINGAN`,
+        JSON.stringify(safeAuthErrorDetail(e)),
+        `host=${safeSupabaseHost()}`
+      );
+    }
+    throw new SupabaseUnavailableError(e);
+  }
+  if (error && isSupabaseUnavailable(error)) {
+    // Supabase membungkus kegagalan jaringan sebagai AuthRetryableFetchError
+    // (status 0). Ini BUKAN penolakan token: jangan diterjemahkan jadi 401.
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug(
+        `[supabase-server]${tag} getUserFromBearer: JARINGAN`,
+        JSON.stringify(safeAuthErrorDetail(error)),
+        `host=${safeSupabaseHost()}`,
+        safeKeyPresence('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+        '-> DNS/TLS/jaringan lokal. Cek: Resolve-DnsName <host> harus ke Cloudflare (104.18.x / 172.64.x)'
+      );
+    }
+    throw new SupabaseUnavailableError(error);
+  }
   if (error || !data.user) {
+    // Supabase terjangkau tapi menolak token / tidak mengembalikan user:
+    // ini benar-benar "tidak login", bukan gangguan jaringan.
     if (process.env.NODE_ENV !== 'production') {
       // Detail aman: name/message/cause/status — TIDAK ada token/secret/URL penuh.
-      // "fetch failed" + cause.code (ENOTFOUND/ECONNREFUSED/ETIMEDOUT/CERT_*)
-      // = jaringan Node->Supabase, BUKAN penolakan JWT.
       console.debug(
         `[supabase-server]${tag} getUserFromBearer: DITOLAK`,
         JSON.stringify(safeAuthErrorDetail(error ?? new Error('no user'))),
@@ -166,20 +263,47 @@ export async function getUserFromBearer(
   return { id: data.user.id, email: data.user.email ?? null };
 }
 
+/**
+ * Verifikasi admin: token terverifikasi + profiles.role='admin' + tidak kena
+ * sanksi suspend/ban.
+ *
+ * `null` HANYA berarti "bukan admin" (tanpa sesi, token ditolak, role bukan
+ * admin, atau akun dikenai sanksi). Kegagalan MEMBACA profil sengaja dilempar:
+ * - `SupabaseUnavailableError` → route menjawab 503 (boleh dicoba lagi);
+ * - `AdminProfileQueryError`   → route menjawab 500 (RLS/schema, bukan 403).
+ *
+ * Sebelumnya keduanya menyamar sebagai `null`, sehingga admin yang sah ditolak
+ * 403 "Hanya admin" tepat ketika database sedang bermasalah — dan klien
+ * mengira sesinya hilang.
+ */
 export async function getAdminUser(
   authHeader: string | null
 ): Promise<{ id: string; email: string | null } | null> {
   const user = await getUserFromBearer(authHeader);
   if (!user) return null;
 
-  const service = createServiceClient();
-  const { data } = await service
+  const service = createServiceClient(SUPABASE_FETCH_TIMEOUT_MS);
+  const { data, error } = await service
     .from('profiles')
-    .select('role')
+    .select('role, account_status')
     .eq('id', user.id)
     .maybeSingle();
 
-  if (!data || data.role !== 'admin') return null;
+  const verdict = classifyAdminProfile(data, error);
+  if (verdict.status === 'unavailable') {
+    throw new SupabaseUnavailableError(verdict.error);
+  }
+  if (verdict.status === 'profile-error') {
+    throw new AdminProfileQueryError(verdict.error);
+  }
+  // Status sanksi (suspend/ban) HARUS mencabut akses admin.
+  //
+  // Sebelumnya kolom ini hanya ditulis (api/admin/sanctions) dan dihitung
+  // untuk statistik dasbor, tetapi tidak pernah dibaca saat otorisasi —
+  // sehingga admin yang "diblokir" tetap memegang seluruh wewenang admin.
+  // Aturan nilainya ada di classifyAdminProfile() agar dapat diuji langsung.
+  if (verdict.status !== 'admin') return null;
+
   return user;
 }
 
@@ -187,6 +311,27 @@ export async function isAdminUser(
   authHeader: string | null
 ): Promise<boolean> {
   return (await getAdminUser(authHeader)) !== null;
+}
+
+/**
+ * Actor admin untuk keputusan sensitif (ubah peran / sanksi).
+ *
+ * `isSuperAdmin` HANYA true bila id user hasil verifikasi server
+ * (`auth.getUser`) sama persis dengan SUPER_ADMIN_USER_ID yang
+ * dikonfigurasi. Env kosong/tidak valid → semua actor isSuperAdmin=false
+ * (fail-closed; admin tim tetap admin biasa). Nilai env/UUID TIDAK pernah
+ * dikembalikan ke client — hanya boolean.
+ */
+export async function getAdminActor(
+  authHeader: string | null
+): Promise<AdminActor | null> {
+  const user = await getAdminUser(authHeader);
+  if (!user) return null;
+  return {
+    id: user.id,
+    role: 'admin',
+    isSuperAdmin: isSuperAdminUserId(user.id),
+  };
 }
 
 export function getSiteUrl(): string {
