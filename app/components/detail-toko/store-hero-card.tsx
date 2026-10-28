@@ -159,9 +159,11 @@ export function StoreHeroCard({ vendor, openNow }: StoreHeroCardProps) {
                     <span className="flex items-center gap-1 font-semibold text-foreground">
                       <Star className="h-3.5 w-3.5 fill-primary text-primary" />
                       {vendor.rating.toFixed(1)}
-                      <span className="font-normal text-muted-foreground">
-                        · {vendor.distanceKm} km dari kamu
-                      </span>
+                      {vendor.distanceKm != null && (
+                        <span className="font-normal text-muted-foreground">
+                          · {vendor.distanceKm} km dari kamu
+                        </span>
+                      )}
                     </span>
                     <span className="flex items-center gap-1">
                       <Users className="h-3.5 w-3.5 text-muted-foreground" />
@@ -209,6 +211,34 @@ export function StoreHeroCard({ vendor, openNow }: StoreHeroCardProps) {
             <p className="mt-6 border-t border-border pt-5 text-sm leading-relaxed text-muted-foreground">
               {storeDesc}
             </p>
+
+            {(() => {
+              // Info trust dari database; hanya tampilkan field yang punya nilai.
+              const stats: string[] = [];
+              if (vendor.memberSince != null) stats.push(`Mitra sejak ${vendor.memberSince}`);
+              if (vendor.responseTime) stats.push(`Respons ${vendor.responseTime}`);
+              if (vendor.porsiTerselamatkan != null)
+                stats.push(
+                  `${vendor.porsiTerselamatkan.toLocaleString("id-ID")} porsi terselamatkan`
+                );
+              if (vendor.co2eSavedKg != null)
+                stats.push(
+                  `${vendor.co2eSavedKg.toLocaleString("id-ID")} kg CO₂e diselamatkan`
+                );
+              if (stats.length === 0) return null;
+              return (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {stats.map((stat) => (
+                    <span
+                      key={stat}
+                      className="inline-flex items-center rounded-full bg-cream-100 px-3 py-1.5 text-[11px] font-medium text-charcoal-600"
+                    >
+                      {stat}
+                    </span>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </motion.div>
       </div>

@@ -19,7 +19,7 @@ export default function CategoryNotFound() {
             Kategori makanan yang kamu cari tidak tersedia.
           </p>
           <Link
-            href="/homePage"
+            href="/home"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-200 hover:bg-primary-dark active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />

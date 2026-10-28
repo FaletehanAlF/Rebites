@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useRef,
   useState,
   type FormEvent,
   type InputHTMLAttributes,
@@ -15,6 +16,7 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
+  KeyRound,
   Lock,
   Mail,
   MailCheck,
@@ -28,6 +30,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/app/components/ui/dialog";
+import {
+  CurrentUserRoleError,
+  fetchCurrentUserRole,
+  getHomePathForRole,
+  isSafeRedirectPath,
+  type UserRole,
+} from "@/lib/current-user";
+import {
+  EMAIL_COOLDOWN_SECONDS,
+  EMAIL_DELIVERY_ERROR_MESSAGE,
+  getAuthCallbackUrl,
+  getDesiredNextPath,
+  isEmailDeliveryError,
+  isEmailRateLimitError,
+  mapOtpVerifyError,
+  mapResendError,
+  parseCooldownSeconds,
+  useEmailCooldown,
+} from "@/lib/auth-email";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -45,6 +66,15 @@ const itemVariants: Variants = {
     transition: { duration: 0.45, ease: EASE },
   },
 };
+
+/**
+ * Supabase membatasi panjang OTP email ke rentang 6–10 digit. Nilai persis
+ * yang dikonfigurasi di dashboard Auth tidak tersedia lewat API client,
+ * sehingga input menerima seluruh rentang numerik tersebut dan validasi
+ * akhir tetap dilakukan server saat `verifyOtp`.
+ */
+const MIN_OTP_DIGITS = 6;
+const MAX_OTP_DIGITS = 10;
 
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   id: string;
@@ -139,6 +169,200 @@ export default function AuthForm({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmEmailOpen, setConfirmEmailOpen] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState("");
+  // Email yang sedang menunggu verifikasi OTP. Dipakai agar pengguna bisa
+  // membuka kembali dialog bila menutupnya lalu menekan "Buat Akun" dengan
+  // email yang sama (signUp kedua tidak mengirim email baru dari Supabase).
+  const pendingOtpEmailRef = useRef<string | null>(null);
+  const {
+    remainingSec: resendRemainingSec,
+    isCooling: isResendCooling,
+    start: startResendCooldown,
+  } = useEmailCooldown(EMAIL_COOLDOWN_SECONDS);
+
+  async function handleResend() {
+    const targetEmail = email.trim();
+    if (!targetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
+      setResendMessage("Masukkan email yang valid terlebih dahulu.");
+      return;
+    }
+    if (isResendCooling) {
+      setResendMessage(
+        `Tunggu ${resendRemainingSec} detik sebelum kirim ulang.`
+      );
+      return;
+    }
+    // Cegah request berulang selama request sebelumnya masih berjalan.
+    if (resendLoading) return;
+    setResendLoading(true);
+    setResendMessage("");
+    try {
+      const { supabase } = await import("@/lib/supabase");
+      const desiredNext =
+        typeof window !== "undefined"
+          ? getDesiredNextPath(window.location.search, redirectTo)
+          : redirectTo;
+      // type "signup" mengirim ulang template "Confirm sign up". Selama
+      // template memuat Token OTP, email baru berisi kode yang dapat
+      // diverifikasi lewat verifyOtp.
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email: targetEmail,
+        options: { emailRedirectTo: getAuthCallbackUrl(desiredNext) },
+      });
+      if (resendError) {
+        const friendly = mapResendError(resendError.message);
+        setResendMessage(friendly.message);
+        if (friendly.isRateLimited) {
+          // Pakai durasi Supabase bila pesannya menyediakannya.
+          startResendCooldown(
+            parseCooldownSeconds(resendError.message) ??
+              EMAIL_COOLDOWN_SECONDS
+          );
+        }
+        return;
+      }
+      startResendCooldown(EMAIL_COOLDOWN_SECONDS);
+      setOtpError("");
+      setResendMessage(
+        "Email verifikasi dikirim ulang. Cek inbox, spam, dan folder promosi, lalu masukkan kode terbaru."
+      );
+    } catch (err) {
+      setResendMessage(
+        err instanceof Error && err.message
+          ? err.message
+          : "Gagal mengirim ulang. Silakan coba lagi."
+      );
+    } finally {
+      setResendLoading(false);
+    }
+  }
+
+  /**
+   * Lanjutan autentikasi setelah sesi aktif (login, signup tanpa konfirmasi,
+   * atau verifikasi OTP berhasil): baca role, catat activity log, lalu
+   * redirect sesuai aturan yang sudah ada (redirect eksplisit → onboarding
+   * penjual via ?plan= → home per role). Satu jalur untuk semua agar
+   * pemeriksaan role tidak terduplikasi dan tidak terlewat.
+   */
+  async function finishAuth(authUserId: string | null) {
+    const params = new URLSearchParams(window.location.search);
+    const planParam = params.get("plan");
+    const billingParam = params.get("billing");
+    const penjualRegisterTarget =
+      planParam === "basic" || planParam === "standar" || planParam === "premium"
+        ? `/auth/register/penjual?plan=${planParam}&billing=${
+            billingParam === "yearly" ? "yearly" : "monthly"
+          }`
+        : null;
+    const rawRedirect = params.get("redirect");
+    const safeRedirect = isSafeRedirectPath(rawRedirect)
+      ? rawRedirect
+      : null;
+    // Jangan fallback ke pembeli bila role gagal dibaca. Jika query/sesi
+    // gagal, fetchCurrentUserRole melempar CurrentUserRoleError; tangani
+    // secara eksplisit dan hentikan redirect.
+    let role: UserRole | null = null;
+    try {
+      role = await fetchCurrentUserRole(authUserId);
+    } catch (roleErr) {
+      if (roleErr instanceof CurrentUserRoleError) {
+        setError(roleErr.message);
+      } else {
+        setError("Gagal membaca peran akun. Silakan coba lagi.");
+      }
+      return;
+    }
+
+    // Akun yang benar-benar ter-autentikasi tetapi tanpa role profil:
+    // pada signin jangan dianggap pembeli. Pada signup (akun baru) belum
+    // dijamin ada baris profil, gunakan target default.
+    if (!isSignup && role === null) {
+      setError(
+        "Peran akun tidak ditemukan. Hubungi administrator ReBites."
+      );
+      return;
+    }
+
+    try {
+      const { supabase } = await import("@/lib/supabase");
+      const lastUid =
+        authUserId ??
+        (window as Window & { __lastSignInUserId?: string }).__lastSignInUserId;
+      if (lastUid) {
+        await supabase.from("activity_logs").insert({
+          user_id: lastUid,
+          activity_type: "login",
+          description: "Masuk ke ReBites.",
+          metadata: { role: role ?? null },
+        });
+      }
+    } catch {
+      // Logging aktivitas bersifat non-blokir agar login tetap berjalan.
+    }
+    const roleHome =
+      role ? getHomePathForRole(role) : redirectTo;
+    window.location.href =
+      safeRedirect || penjualRegisterTarget || roleHome || redirectTo;
+  }
+
+  /**
+   * Verifikasi kode OTP yang dikirim ke email pendaftaran. Bila berhasil,
+   * sesi aktif di client dan alur lanjut lewat `finishAuth` — jalur yang sama
+   * dengan login biasa (baca role, activity log, redirect).
+   */
+  async function handleVerifyOtp(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (otpLoading) return;
+
+    const token = otpCode.trim();
+    if (
+      !/^\d+$/.test(token) ||
+      token.length < MIN_OTP_DIGITS ||
+      token.length > MAX_OTP_DIGITS
+    ) {
+      setOtpError(
+        `Masukkan kode verifikasi berupa angka (${MIN_OTP_DIGITS}–${MAX_OTP_DIGITS} digit).`
+      );
+      return;
+    }
+    if (!email.trim()) {
+      setOtpError("Email tidak ditemukan. Muat ulang halaman lalu coba lagi.");
+      return;
+    }
+
+    setOtpError("");
+    setOtpLoading(true);
+    try {
+      const { supabase } = await import("@/lib/supabase");
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token,
+        type: "signup",
+      });
+      if (verifyError) {
+        setOtpError(mapOtpVerifyError(verifyError.message));
+        return;
+      }
+      // Sukses: sesi kini aktif. Jangan lewati pemeriksaan role — lanjutkan
+      // lewat finishAuth yang sama dengan login/signup biasa.
+      pendingOtpEmailRef.current = null;
+      setOtpCode("");
+      setConfirmEmailOpen(false);
+      await finishAuth(data?.user?.id ?? null);
+    } catch {
+      setOtpError(
+        "Gagal memverifikasi kode. Periksa koneksi lalu coba lagi."
+      );
+    } finally {
+      setOtpLoading(false);
+    }
+  }
 
   useEffect(() => {
     const remembered = localStorage.getItem("rebites_remembered_email");
@@ -151,7 +375,21 @@ export default function AuthForm({
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (confirmEmailOpen) return;
+    // Pengguna menutup dialog OTP lalu menekan tombol daftar lagi dengan
+    // email yang sama: buka kembali dialog alih-alih memanggil signUp
+    // (signUp ulang tidak mengirim email baru dari Supabase).
+    if (
+      isSignup &&
+      pendingOtpEmailRef.current &&
+      email.trim().toLowerCase() === pendingOtpEmailRef.current
+    ) {
+      setOtpError("");
+      setConfirmEmailOpen(true);
+      return;
+    }
     setError("");
+    setNeedsVerification(false);
+    setResendMessage("");
 
     if (isSignup && !fullName.trim()) {
       setError("Nama lengkap wajib diisi.");
@@ -174,41 +412,67 @@ export default function AuthForm({
 
       const { supabase } = await import("@/lib/supabase");
 
-      if (isSignup) {
-        const { data: signUpData, error: signUpError } =
-          await supabase.auth.signUp({
-            email: email.trim(),
-            password,
-            options: {
-              data: { full_name: fullName.trim() },
-              emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`,
-            },
-          });
-        if (signUpError) throw signUpError;
+      // Simpan user id hasil autentikasi agar pengambilan role memakai uid
+      // yang pasti, bukan bergantung pada getSession() yang bisa gagal async.
+      let signedInUserId: string | null = null;
 
-        if (!signUpData.session) {
+      if (isSignup) {
+        // Hitung tujuan akhir SEBELUM signup agar link email bisa
+        // mengembalikan user ke halaman yang benar (mis. onboarding
+        // penjual bila daftar via ?plan=). Memakai origin browser saat itu
+        // agar tidak tergantung nilai build-time NEXT_PUBLIC_SITE_URL.
+        const desiredNext = getDesiredNextPath(
+          window.location.search,
+          redirectTo
+        );
+         const { data: signUpData, error: signUpError } =
+           await supabase.auth.signUp({
+             email: email.trim(),
+             password,
+             options: {
+               data: { full_name: fullName.trim() },
+               emailRedirectTo: getAuthCallbackUrl(desiredNext),
+             },
+           });
+         if (signUpError) throw signUpError;
+         signedInUserId = signUpData?.user?.id ?? null;
+
+         if (!signUpData.session) {
+          // Supabase "anti-enumeration": untuk email yang SUDAH terdaftar,
+          // signUp mengembalikan user tanpa identities dan TIDAK mengirim
+          // email apa pun. Jangan biarkan pengguna menunggu kode yang tidak
+          // akan pernah datang.
+          const signUpIdentities = signUpData.user?.identities;
+          if (
+            Array.isArray(signUpIdentities) &&
+            signUpIdentities.length === 0
+          ) {
+            setError(
+              "Email ini sudah terdaftar. Silakan masuk — bila email belum diverifikasi, gunakan tombol kirim ulang di halaman masuk."
+            );
+            return;
+          }
+          // Simpan email yang menunggu OTP agar dialog bisa dibuka kembali
+          // bila tertutup tanpa sengaja (lihat guard di handleSubmit).
+          pendingOtpEmailRef.current = email.trim().toLowerCase();
+          setOtpCode("");
+          setOtpError("");
           setConfirmEmailOpen(true);
           return;
         }
       } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (signInError) throw signInError;
+         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+           email: email.trim(),
+           password,
+         });
+         if (signInError) throw signInError;
+         signedInUserId = signInData?.user?.id ?? null;
+         (window as Window & { __lastSignInUserId?: string }).__lastSignInUserId = signInData?.user?.id ?? undefined;
       }
 
-      const params = new URLSearchParams(window.location.search);
-      const planParam = params.get("plan");
-      const billingParam = params.get("billing");
-      const penjualRegisterTarget =
-        planParam === "basic" || planParam === "standar" || planParam === "premium"
-          ? `/auth/register/penjual?plan=${planParam}&billing=${
-              billingParam === "yearly" ? "yearly" : "monthly"
-            }`
-          : null;
-      window.location.href =
-        params.get("redirect") || penjualRegisterTarget || redirectTo;
+      // Lanjutkan lewat jalur autentikasi yang sama dengan login: baca role,
+      // catat activity log, lalu redirect (termasuk onboarding penjual ?plan=).
+      await finishAuth(signedInUserId);
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       if (message.includes("Supabase env")) {
@@ -219,12 +483,22 @@ export default function AuthForm({
         setError("Email atau kata sandi salah.");
       } else if (message.includes("User already registered")) {
         setError("Email sudah terdaftar. Silakan masuk.");
+      } else if (isEmailRateLimitError(message)) {
+        // Batas kirim email Supabase (mis. setelah beberapa kali daftar/ulang).
+        setError(
+          "Terlalu banyak permintaan email. Tunggu sekitar 1 menit, cek folder spam/promosi, lalu coba lagi.",
+        );
+      } else if (isEmailDeliveryError(message)) {
+        // Kegagalan pengiriman (SMTP/penyedia email). Jangan tampilkan pesan
+        // mentah berbahasa Inggris atau detail konfigurasi ke pengguna.
+        setError(EMAIL_DELIVERY_ERROR_MESSAGE);
       } else if (
         message.includes("Email not confirmed") ||
         message.includes("email_not_confirmed")
       ) {
+        setNeedsVerification(true);
         setError(
-          "Email belum diverifikasi. Buka email Anda dan klik tautan konfirmasi.",
+          "Email belum diverifikasi. Buka email Anda dan klik tautan konfirmasi terbaru, atau kirim ulang di bawah.",
         );
       } else {
         setError(message || "Terjadi kesalahan. Silakan coba lagi.");
@@ -347,6 +621,38 @@ export default function AuthForm({
             {error}
           </p>
         )}
+
+        {needsVerification && !isSignup && (
+          <div className="rounded-lg border border-border bg-secondary px-3 py-2.5">
+            <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
+              Tidak menemukan email? Cek spam/promosi, lalu kirim ulang ke{" "}
+              <span className="font-semibold text-primary">
+                {email.trim() || "email kamu"}
+              </span>
+              .
+            </p>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendLoading || isResendCooling || !email.trim()}
+              className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-4 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {resendLoading
+                ? "Mengirim…"
+                : isResendCooling
+                  ? `Kirim ulang dalam ${resendRemainingSec} detik`
+                  : "Kirim Ulang Email Konfirmasi"}
+            </button>
+            {resendMessage && (
+              <p
+                role="status"
+                className="mt-2 font-sans text-[12px] leading-relaxed text-muted-foreground"
+              >
+                {resendMessage}
+              </p>
+            )}
+          </div>
+        )}
         </div>
 
         <button
@@ -382,15 +688,72 @@ export default function AuthForm({
               Cek Email Kamu
             </DialogTitle>
             <DialogDescription className="text-center font-sans text-sm leading-relaxed text-muted-foreground">
-              Registrasi berhasil! Kami mengirim tautan konfirmasi ke{" "}
+              Registrasi berhasil! Kami mengirim kode verifikasi ke{" "}
               <span className="font-semibold text-primary">
                 {email.trim()}
               </span>
-              . Langkah selanjutnya: buka email tersebut, klik tautan
-              konfirmasinya, dan kamu akan diarahkan kembali ke ReBites untuk
-              masuk.
+              . Masukkan kode tersebut di bawah ini untuk mengaktifkan akunmu.
             </DialogDescription>
           </DialogHeader>
+          <form
+            className="mt-4 flex flex-col gap-2"
+            onSubmit={handleVerifyOtp}
+            noValidate
+          >
+            <Field
+              id="otpCode"
+              label="Kode Verifikasi"
+              icon={KeyRound}
+              name="otpCode"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder="Kode dari email"
+              maxLength={MAX_OTP_DIGITS}
+              value={otpCode}
+              onChange={(e) =>
+                setOtpCode(
+                  e.target.value.replace(/\D/g, "").slice(0, MAX_OTP_DIGITS)
+                )
+              }
+              disabled={otpLoading}
+            />
+            {otpError && (
+              <p
+                role="alert"
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700"
+              >
+                {otpError}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={otpLoading || otpCode.length < MIN_OTP_DIGITS}
+              className="mt-1 inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {otpLoading ? "Memverifikasi…" : "Verifikasi Kode"}
+            </button>
+          </form>
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resendLoading || isResendCooling || otpLoading}
+            className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {resendLoading
+              ? "Mengirim…"
+              : isResendCooling
+                ? `Kirim ulang dalam ${resendRemainingSec} detik`
+                : "Kirim Ulang Kode"}
+          </button>
+          {resendMessage && (
+            <p
+              role="status"
+              className="mt-2 text-center font-sans text-[12px] leading-relaxed text-muted-foreground"
+            >
+              {resendMessage}
+            </p>
+          )}
           <Link
             href="/auth/login"
             className="mt-2 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[13px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors duration-200 hover:bg-primary"

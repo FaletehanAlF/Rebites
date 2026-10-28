@@ -202,10 +202,10 @@ export function FaqSection() {
                     <div
                       key={faq.q}
                       className={cn(
-                        "overflow-hidden rounded-2xl bg-white transition-all duration-300",
+                        "overflow-hidden rounded-2xl bg-white",
                         isOpen
-                          ? "shadow-[0_18px_40px_-28px_rgba(30,43,32,0.35)] ring-1 ring-primary/40"
-                          : "hover:ring-1 hover:ring-primary/30",
+                          ? "shadow-[0_18px_40px_-28px_rgba(30,43,32,0.35)] ring-1 ring-primary/40 transition-shadow duration-300"
+                          : "hover:ring-1 hover:ring-primary/30 transition-shadow duration-300",
                       )}
                     >
                       <button
@@ -218,34 +218,33 @@ export function FaqSection() {
                           {faq.q}
                         </span>
 
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-300">
-                          <Plus
-                            className={cn(
-                              "h-4 w-4 transition-transform duration-300",
-                              isOpen && "rotate-45",
-                            )}
-                          />
+                        <span
+                          className={cn(
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-300 ease-out",
+                            isOpen && "rotate-45",
+                          )}
+                        >
+                          <Plus className="h-4 w-4" />
                         </span>
                       </button>
 
-                      <AnimatePresence initial={false}>
-                        {isOpen && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{
-                              duration: 0.35,
-                              ease: [0.22, 1, 0.36, 1],
-                            }}
-                            className="overflow-hidden"
-                          >
-                            <p className="px-5 pb-5 font-sans text-sm leading-[1.8] text-primary">
-                              {faq.a}
-                            </p>
-                          </motion.div>
+                      {/* grid-rows 0fr/1fr: animasi tinggi di kompositor tanpa mengukur
+                          konten (height:auto), jadi tidak lag/patah-patah saat buka-tutup. */}
+                      <div
+                        aria-hidden={!isOpen}
+                        className={cn(
+                          "grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                          isOpen
+                            ? "grid-rows-[1fr] opacity-100"
+                            : "grid-rows-[0fr] opacity-0",
                         )}
-                      </AnimatePresence>
+                      >
+                        <div className="overflow-hidden">
+                          <p className="px-5 pb-5 font-sans text-sm leading-[1.8] text-forest">
+                            {faq.a}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}

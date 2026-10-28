@@ -23,6 +23,8 @@ export function PaymentSummaryCard() {
     missingRequirement,
     submitting,
     submitOrder,
+    fulfillment,
+    selectedShippingOption,
   } = useCheckout();
   const cardRef = useRef<HTMLDivElement>(null);
   const [stuck, setStuck] = useState(false);
@@ -105,14 +107,36 @@ export function PaymentSummaryCard() {
             </dd>
           </div>
 
-          {summary.deliveryFee > 0 && (
+          {/* delivery menampilkan harga opsi terpilih (tanpa fallback
+              Rp8.000); belum memilih = placeholder. Pickup = behavior lama. */}
+          {fulfillment === 'delivery'
+            ? selectedShippingOption && (
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-charcoal-500">Biaya pengiriman</dt>
+                  <dd className="font-medium tabular-nums text-charcoal-900">
+                    <AnimatedNumber
+                      value={summary.deliveryFee}
+                      format={formatRupiah}
+                    />
+                  </dd>
+                </div>
+              )
+            : summary.deliveryFee > 0 && (
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-charcoal-500">Biaya pengiriman</dt>
+                  <dd className="font-medium tabular-nums text-charcoal-900">
+                    <AnimatedNumber
+                      value={summary.deliveryFee}
+                      format={formatRupiah}
+                    />
+                  </dd>
+                </div>
+              )}
+          {fulfillment === 'delivery' && !selectedShippingOption && (
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-muted-foreground">Biaya pengantaran</dt>
-              <dd className="font-medium tabular-nums text-foreground">
-                <AnimatedNumber
-                  value={summary.deliveryFee}
-                  format={formatRupiah}
-                />
+              <dt className="text-charcoal-500">Biaya pengiriman</dt>
+              <dd className="font-medium tabular-nums text-sage-500">
+                Pilih pengiriman
               </dd>
             </div>
           )}

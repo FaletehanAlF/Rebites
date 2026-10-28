@@ -216,6 +216,7 @@ export async function getActiveFlashSaleProducts(
       .select('*, umkm:umkm_profiles(business_name)')
       .not('flash_sale_price', 'is', null)
       .eq('status', 'available')
+      .eq('verification_status', 'approved')
       .gt('stock', 0)
       .order('created_at', { ascending: false });
     if (error) {
@@ -240,6 +241,9 @@ export async function getActiveFlashSaleProducts(
         allDay: (r.all_day as boolean) ?? false,
         isSurplusToday: (r.is_surplus_today as boolean) ?? true,
         featured: (r.featured as boolean) ?? false,
+        // kapabilitas fulfillment (DB NOT NULL DEFAULT true).
+        isDelivery: (r.is_delivery as boolean) ?? true,
+        isPickup: (r.is_pickup as boolean) ?? true,
         vendorName: (umkm?.business_name as string) ?? (r.vendor_name as string) ?? SELLER_VENDOR_NAME,
         flashSale:
           r.flash_sale_price != null
@@ -291,7 +295,8 @@ export async function getActiveFlashSaleProducts(
         image: p.image,
         category: p.category as UrgentItem['category'],
         rating: 4.7,
-        distanceKm: 1.8,
+        // jarak seller-flash belum diketahui -> NULL (jangan karang 1.8 km).
+        distanceKm: null,
         availableFrom: p.startTime,
         availableTo: p.endTime,
         stockLabel: `${p.stock} porsi tersisa`,

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Heart, MapPin, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,7 +13,6 @@ import { SoftBlob } from "@/app/components/shared/ornaments";
 import { Marquee } from "@/app/components/shared/marquee";
 import type { UrgentItem, UrgentSlot } from "@/lib/types";
 import {
-  FLASH_SELLER_STORE_HREF,
   getActiveFlashSaleProducts,
   type FlashSaleCardItem,
 } from "@/lib/flash-sale";
@@ -163,23 +161,16 @@ function UrgentCard({
   startsAtIso,
   endsAtIso,
   onViewDetail,
-  detailHref,
 }: {
   item: UrgentItem;
   startsAtIso: string;
   endsAtIso: string;
   onViewDetail?: (id: string) => void;
-
-  detailHref?: string;
 }) {
-  const router = useRouter();
-  const openDetail = () => {
-    if (detailHref) {
-      router.push(detailHref);
-      return;
-    }
-    onViewDetail?.(item.id);
-  };
+  // Semua kartu produk memakai popup yang sama (ProductDetailModal lewat
+  // onViewDetail). Sebelumnya kartu flash sale diarahkan ke halaman
+  // /detail/product sehingga tampilannya berbeda sendiri dari kartu lain.
+  const openDetail = () => onViewDetail?.(item.id);
 
   const remainingToStart = useCountdown(startsAtIso);
   const remainingToEnd = useCountdown(endsAtIso);
@@ -289,14 +280,18 @@ function UrgentCard({
         </p>
 
         <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1 font-medium text-foreground">
-            <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-            {item.rating.toFixed(1)}
-          </span>
-          <span className="flex items-center gap-1">
-            <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-            {item.distanceKm} km
-          </span>
+          {item.rating != null && (
+            <span className="flex items-center gap-1 font-medium text-foreground">
+              <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+              {item.rating.toFixed(1)}
+            </span>
+          )}
+          {item.distanceKm != null && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+              {item.distanceKm} km
+            </span>
+          )}
         </div>
 
         {isActive &&
@@ -403,7 +398,6 @@ export function FlashSaleSection({
     ...staticSlotItems,
     ...dynamicSlotItems.filter((item) => !staticIds.has(item.id)),
   ];
-  const dynamicIds = new Set(dynamicSlotItems.map((item) => item.id));
 
   return (
     <section
@@ -630,11 +624,6 @@ export function FlashSaleSection({
                     startsAtIso={item.startsAt ?? slotStartIso!}
                     endsAtIso={item.endsAt ?? slotEndIso!}
                     onViewDetail={onViewDetail}
-                    detailHref={
-                      dynamicIds.has(item.id)
-                        ? `${FLASH_SELLER_STORE_HREF}#menu-surplus`
-                        : undefined
-                    }
                   />
                 </motion.div>
               ))}

@@ -40,7 +40,9 @@ function deriveSnapshot(transactions: CoinTransaction[]): CoinsSnapshot {
   let earned = 0;
   let spent = 0;
   for (const tx of transactions) {
-    if (tx.type === 'earned') earned += tx.amount;
+    // saldo = (earned + refund) - spent, selaras dengan RPC
+    // spend_order_coins / refund_order_coins di database.
+    if (tx.type === 'earned' || (tx.type as string) === 'refund') earned += tx.amount;
     else spent += tx.amount;
   }
   return {
@@ -64,6 +66,15 @@ async function fetchTransactions(userId: string): Promise<CoinTransaction[]> {
   return (data ?? []).map(rowToTransaction);
 }
 
+/**
+ * fungsi client-side ini TIDAK LAGI berwenang mencatat koin.
+ * Pencatatan koin hanya via server (service_role): checkout memakai RPC
+ * spend_order_coins, settlement via order-settlement.ts, refund via trigger
+ * DB / refund_order_coins. Policy RLS INSERT client sudah dicabut sehingga
+ * pemanggilan insert di bawah akan ditolak database (return false).
+ * Fungsi dipertahankan untuk kompatibilitas pemanggil (saat ini tidak ada
+ * pemanggil aktif) — JANGAN dipakai untuk alur baru.
+ */
 export async function settleOrderCoins(
   orderId: string,
   { spent, earned }: { spent: number; earned: number }

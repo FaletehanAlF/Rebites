@@ -33,11 +33,11 @@ async function resolveProductId(key: string): Promise<string | null> {
   if (uuidRegex.test(trimmed)) return trimmed;
   
   try {
-    const { data } = await supabase.from('products').select('id').eq('id', trimmed).maybeSingle();
+    const { data } = await supabase.from('products').select('id').eq('id', trimmed).eq('verification_status', 'approved').maybeSingle();
     if (data?.id) return data.id;
   } catch {}
   try {
-    const { data } = await supabase.from('products').select('id').eq('slug', trimmed).maybeSingle();
+    const { data } = await supabase.from('products').select('id').eq('slug', trimmed).eq('verification_status', 'approved').maybeSingle();
     if (data?.id) return data.id;
   } catch {}
   
@@ -169,6 +169,7 @@ export async function getLikedFoods(): Promise<LikedFood[]> {
         .from('product_favorites')
         .select('product_id, created_at, products(id, slug, name, image_url, surplus_price, original_price)')
         .eq('user_id', userId)
+        .eq('products.verification_status', 'approved')
         .order('created_at', { ascending: false })
         .limit(100);
       if (!error && data) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   Check,
   CheckCheck,
+  Flag,
   Coins,
   Copy,
   MapPin,
@@ -13,12 +14,13 @@ import {
   Truck,
 } from 'lucide-react';
 import { SmartImage } from '@/app/components/shared/SmartImage';
+import { ReportUserModal } from '@/app/components/shared/report-user-modal';
+import { supabase } from '@/lib/supabase';
 import { formatRupiah } from '@/lib/data';
 import { fetchProductDetail } from '@/app/components/detail-product/detail-data';
 import type { StoredOrder } from '@/lib/types';
 import {
   getOrderSubStatus,
-  getOrderTimeline,
   mapsUrl,
   paymentMethodName,
 } from '@/lib/order-utils';
@@ -29,7 +31,9 @@ import {
 } from '@/lib/order-utils';
 import { useCountdown, formatCountdown } from '@/lib/useCountdown';
 import { getReviewFor, saveReview } from '@/lib/review-storage';
-import { notifyNewReview } from '@/lib/order-notifications';
+import { ShippingSimulationSection } from './shipping-simulation-panel';
+import { DeliveryStatusPanel } from './delivery-status-panel';
+import { OrderStatusTimeline } from './order-status-timeline';
 import { transitionOrderStatus, getStatusLabel } from '@/lib/order-state-machine';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
@@ -58,6 +62,18 @@ export function OrderDetailModal({
     { rating: number; comment: string; createdAt: string } | undefined
   >(undefined);
   const [confirmingReceipt, setConfirmingReceipt] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ orderId: string; userId: string } | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+
+  // Target laporan terikat pada pesanan yang sedang dibuka. Tanpa reset ini,
+  // reportTarget dari pesanan sebelumnya ikut terpakai sehingga laporan
+  // terkirim ke pemilik toko yang salah.
+  useEffect(() => {
+    setReportOpen(false);
+    setReportTarget(null);
+    setReportLoading(false);
+  }, [order?.orderId]);
 
   useEffect(() => {
     let mounted = true;
@@ -72,6 +88,66 @@ export function OrderDetailModal({
       mounted = false;
     };
   }, [order, userId]);
+
+  const loadReportTarget = async () => {
+    if (!order) return null;
+    const slug = order.vendorSlug?.trim() ?? '';
+    if (slug) {
+      const { data, error } = await supabase
+        .from('umkm_profiles')
+        .select('user_id')
+        .eq('slug', slug)
+        .maybeSingle();
+      if (!error && data?.user_id) return data.user_id as string;
+    }
+    // Order lama dapat menyimpan vendor_slug yang bukan slug toko. Resolusi
+    // cadangan lewat umkm_id baris order (RLS: hanya pesanan milik pembeli)
+    // agar pemilik toko yang benar tetap ditemukan.
+    const { data: row, error: rowErr } = await supabase
+      .from('orders')
+      .select('umkm_id')
+      .eq('order_code', order.orderId)
+      .maybeSingle();
+    const umkmId = (row as { umkm_id?: string | null } | null)?.umkm_id;
+    if (rowErr || !umkmId) return null;
+    const { data: store, error: storeErr } = await supabase
+      .from('umkm_profiles')
+      .select('user_id')
+      .eq('id', umkmId)
+      .maybeSingle();
+    if (storeErr || !store?.user_id) return null;
+    return store.user_id as string;
+  };
+
+  const handleOpenReport = async () => {
+    if (reportLoading || reportOpen || !order) return;
+    const orderId = order.orderId;
+    setReportLoading(true);
+    try {
+      const target =
+        reportTarget?.orderId === orderId ? reportTarget.userId : await loadReportTarget();
+      if (!target) {
+        toast({
+          title: 'Tidak dapat melaporkan',
+          description: 'Akun pemilik toko tidak ditemukan.',
+        });
+        return;
+      }
+      if (target === userId) {
+        toast({
+          title: 'Tidak dapat melaporkan',
+          description: 'Anda tidak dapat melaporkan akun Anda sendiri.',
+        });
+        return;
+      }
+      setReportTarget({ orderId, userId: target });
+      setReportOpen(true);
+    } catch {
+      toast({ title: 'Gagal', description: 'Laporan tidak dapat dibuka.' });
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   const handleCopy = async () => {
     if (!order) return;
@@ -127,6 +203,7 @@ export function OrderDetailModal({
   );
 
   return (
+    <>
     <Dialog open={!!order} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="flex max-h-[92dvh] w-[min(560px,100vw-1rem)] flex-col sm:max-h-[85vh]">
         {order && (
@@ -139,23 +216,40 @@ export function OrderDetailModal({
             </DialogHeader>
 
             <div className="-mx-1 mt-1 min-h-0 flex-1 overflow-y-auto px-1">
-              {}
-              <div className="flex items-center justify-between gap-2 rounded-xl bg-muted px-3 py-2">
-                <p className="truncate font-display text-sm font-semibold tabular-nums text-foreground">
-                  #{order.orderId}
-                </p>
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-xs font-semibold text-foreground transition-colors hover:border-primary/30 hover:text-primary"
-                >
-                  {copied ? (
-                    <Check className="h-3.5 w-3.5 text-primary" />
-                  ) : (
-                    <Copy className="h-3.5 w-3.5" />
-                  )}
-                  Salin ID
-                </button>
+              {/* Ringkasan pesanan: kode, status, metode, total. */}
+              <div className="rounded-xl bg-cream-100 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="truncate font-display text-sm font-semibold tabular-nums text-charcoal-900">
+                    #{order.orderId}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    aria-label="Salin kode pesanan"
+                    className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-xs font-semibold text-charcoal-900 transition-colors hover:border-primary/30 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5 text-primary" aria-hidden />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" aria-hidden />
+                    )}
+                    Salin ID
+                  </button>
+                </div>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-charcoal-500">
+                  <span className="inline-flex items-center gap-1 font-medium text-charcoal-700">
+                    {order.fulfillment === 'delivery' ? (
+                      <Truck className="h-3 w-3 shrink-0" aria-hidden />
+                    ) : (
+                      <Store className="h-3 w-3 shrink-0" aria-hidden />
+                    )}
+                    {order.fulfillment === 'delivery' ? 'Diantar' : 'Ambil sendiri'}
+                  </span>
+                  <span aria-hidden>·</span>
+                  <span>{formatOrderDate(order.createdAt)}</span>
+                  <span aria-hidden>·</span>
+                  <span>{formatOrderTime(order.createdAt)}</span>
+                </div>
               </div>
 
               {}
@@ -167,8 +261,28 @@ export function OrderDetailModal({
               />
 
               {}
-              {order.fulfillment === 'delivery' && orderStatus === 'out_for_delivery' && (
-                <DeliveryTrackingInfo order={order} />
+              {order.fulfillment === 'delivery' && (
+                // key per order: state simulasi (picker, GPS, record) tidak
+                // pernah terbawa saat berpindah pesanan.
+                <ShippingSimulationSection key={order.orderId} order={order} />
+              )}
+
+              {}
+              {/* Panel pengantaran: status jujur + ilustrasi kontekstual.
+                  Tidak ada marker/posisi kurir palsu; lihat delivery-status-panel. */}
+              {order.fulfillment === 'delivery' && (
+                <>
+                  <SectionTitle>Status Pengantaran</SectionTitle>
+                  <DeliveryStatusPanel order={order} />
+                </>
+              )}
+
+              {}
+              {order.fulfillment === 'delivery' && order.biteshipOrderId && (
+                <>
+                  <SectionTitle>Lacak Pengiriman</SectionTitle>
+                  <ShipmentTrackingSection order={order} />
+                </>
               )}
 
               {}
@@ -253,29 +367,7 @@ export function OrderDetailModal({
 
               {}
               <SectionTitle>Riwayat Status</SectionTitle>
-              <ol className="mt-2 space-y-2.5 rounded-xl ring-1 ring-border p-3.5">
-                {getOrderTimeline(order).map((entry) => (
-                  <li key={`${entry.label}-${entry.timeIso}`} className="flex items-start gap-3">
-                    <span
-                      className={
-                        entry.done
-                          ? 'mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary text-white'
-                          : 'mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-border bg-white'
-                      }
-                    >
-                      {entry.done && <Check className="h-2.5 w-2.5" strokeWidth={4} />}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[13px] font-medium text-foreground">
-                        {entry.label}
-                      </span>
-                      <span className="block text-xs text-muted-foreground">
-                        {formatOrderTime(entry.timeIso)}
-                      </span>
-                    </span>
-                  </li>
-                ))}
-              </ol>
+              <OrderStatusTimeline order={order} />
 
               {}
               <SectionTitle>Informasi Pesanan</SectionTitle>
@@ -343,6 +435,15 @@ export function OrderDetailModal({
               )}
               <button
                 type="button"
+                onClick={handleOpenReport}
+                disabled={reportLoading}
+                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-destructive px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+              >
+                <Flag className="h-4 w-4" />
+                {reportLoading ? 'Memuat…' : 'Laporkan'}
+              </button>
+              <button
+                type="button"
                 onClick={onClose}
                 className="inline-flex h-11 flex-1 items-center justify-center rounded-full border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary-dark/20"
               >
@@ -353,6 +454,13 @@ export function OrderDetailModal({
         )}
       </DialogContent>
     </Dialog>
+    <ReportUserModal
+      open={reportOpen}
+      reportedUserId={reportTarget?.userId ?? null}
+      reportedLabel="pemilik toko ini"
+      onClose={() => setReportOpen(false)}
+    />
+  </>
   );
 }
 
@@ -427,44 +535,85 @@ function StatusStrip({
   );
 }
 
-function DeliveryTrackingInfo({ order }: { order: StoredOrder }) {
-  const arrivalAt = order.estimatedArrivalAt;
-  const distance = order.distanceKm ?? order.deliveryDistanceKm;
+/**
+ * Label display status Biteship (status kurir saja).
+ * Bukan order_status ReBites; tidak memengaruhi lifecycle.
+ */
+const SHIPMENT_STATUS_LABELS: Record<string, string> = {
+  confirmed: 'Pesanan dikonfirmasi',
+  scheduled: 'Terjadwal',
+  allocated: 'Kurir ditugaskan',
+  picking_up: 'Kurir menuju toko',
+  picked: 'Pesanan diambil kurir',
+  in_transit: 'Dalam perjalanan',
+  dropping_off: 'Kurir mengantar',
+  delivered: 'Telah diterima',
+  on_hold: 'Pengiriman ditahan',
+  return_in_transit: 'Dalam proses pengembalian',
+  returned: 'Pesanan dikembalikan',
+  rejected: 'Pengiriman ditolak',
+  cancelled: 'Pengiriman dibatalkan',
+  disposed: 'Pengiriman dihentikan',
+  courier_not_found: 'Kurir belum tersedia',
+};
 
-  if (!arrivalAt && !distance) return null;
+/**
+ * section shipment buyer (display-only dari StoredOrder).
+ * Hanya dirender bila delivery + biteshipOrderId ada (guard di caller).
+ * shipmentError TIDAK PERNAH ditampilkan; tanpa API call; tanpa polling.
+ */
+function ShipmentTrackingSection({ order }: { order: StoredOrder }) {
+  const [copiedResi, setCopiedResi] = useState(false);
 
-  const arrivalDate = new Date(arrivalAt!);
-  const rangeStart = new Date(arrivalDate.getTime() - 5 * 60_000);
-  const rangeEnd = new Date(arrivalDate.getTime() + 5 * 60_000);
+  const courierLabel =
+    order.courierServiceName?.trim() || order.courierCode?.trim() || null;
+  const resi =
+    order.biteshipWaybillId?.trim() || order.biteshipTrackingId?.trim() || null;
+  const statusLabel =
+    (order.shipmentStatus && SHIPMENT_STATUS_LABELS[order.shipmentStatus]) ||
+    'Status pengiriman belum tersedia';
 
-  const formatTime = (d: Date) =>
-    d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const handleCopyResi = async () => {
+    if (!resi) return;
+    try {
+      await navigator.clipboard.writeText(resi);
+      setCopiedResi(true);
+      window.setTimeout(() => setCopiedResi(false), 1600);
+      toast({ title: 'Nomor resi disalin' });
+    } catch {
+      toast({
+        title: 'Gagal menyalin',
+        description: `Salin manual: ${resi}`,
+      });
+    }
+  };
 
   return (
-    <div className="mt-3 rounded-xl bg-purple-50 px-4 py-3 ring-1 ring-purple-100">
-      <div className="flex items-center gap-2">
-        <Truck className="h-4 w-4 text-purple-600" />
-        <p className="text-sm font-semibold text-purple-700">Pesanan Sedang Diantar</p>
+    <div className="mt-2 space-y-2 rounded-xl ring-1 ring-hairline p-3.5 text-sm">
+      {courierLabel && <Row label="Kurir" value={courierLabel} />}
+      <div className="flex items-start justify-between gap-4">
+        <dt className="shrink-0 text-charcoal-500">Nomor resi</dt>
+        {resi ? (
+          <dd className="flex min-w-0 items-center justify-end gap-2 text-right font-medium tabular-nums text-charcoal-900">
+            <span className="break-all">{resi}</span>
+            <button
+              type="button"
+              onClick={handleCopyResi}
+              aria-label="Salin nomor resi"
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-hairline bg-white text-charcoal-900 transition-colors hover:border-sage-500/50 hover:text-caramel"
+            >
+              {copiedResi ? (
+                <Check className="h-3.5 w-3.5 text-primary" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+            </button>
+          </dd>
+        ) : (
+          <dd className="text-right text-charcoal-500">Nomor resi belum tersedia</dd>
+        )}
       </div>
-      <p className="mt-1 text-xs text-purple-600">Pesananmu sedang menuju alamatmu.</p>
-      {arrivalAt && (
-        <div className="mt-2 flex items-center gap-4">
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-purple-500">Estimasi tiba</p>
-            <p className="text-sm font-bold tabular-nums text-purple-700">
-              {formatTime(rangeStart)} – {formatTime(rangeEnd)}
-            </p>
-          </div>
-          {typeof distance === 'number' && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-purple-500">Jarak</p>
-              <p className="text-sm font-bold tabular-nums text-purple-700">
-                {distance.toLocaleString('id-ID', { maximumFractionDigits: 1 })} km
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+      <Row label="Status" value={statusLabel} />
     </div>
   );
 }
@@ -549,6 +698,8 @@ function FulfillmentSection({ order }: { order: StoredOrder }) {
               <p className="break-words text-xs text-muted-foreground">
                 {order.addressSnapshot.fullAddress}, {order.addressSnapshot.district},{' '}
                 {order.addressSnapshot.city}, {order.addressSnapshot.province}
+                {/* kode pos jika ada; order lama tanpa postal tetap tampil. */}
+                {order.addressSnapshot.postalCode ? ` ${order.addressSnapshot.postalCode}` : ''}
               </p>
               {order.addressSnapshot.note && (
                 <p className="mt-0.5 text-xs italic text-muted-foreground">
@@ -638,13 +789,6 @@ function ReviewBlock({
       createdAt: new Date().toISOString(),
     })
       .then(() => {
-        
-        notifyNewReview({
-          orderCode: orderId,
-          productName,
-          rating,
-          authorName: 'Pembeli',
-        }).catch(() => {});
         onSaved();
       })
       .catch((err: unknown) => {

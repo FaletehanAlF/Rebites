@@ -19,11 +19,12 @@ import { useStoreClosedModal } from "@/lib/store-closed-modal-store";
 import { useProductDetail } from "@/app/components/detail-product/use-product-detail";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 import { useCurrentUser } from "@/lib/current-user";
+import { RequireAuth } from "@/app/components/auth/require-auth";
 import { getSellerStoreSettings } from "@/lib/store-settings-storage";
 
 import { ArrowRight } from "lucide-react";
 
-export default function HomePage() {
+function HomePageContent() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [hasStore, setHasStore] = useState(false);
   const { userId } = useCurrentUser();
@@ -315,5 +316,20 @@ export default function HomePage() {
       />
     </div>
     </MotionConfig>
+  );
+}
+
+/**
+ * `/home` mewajibkan sesi valid (kebutuhan aplikasi saat ini).
+ * Selama status sesi diperiksa, konten TIDAK di-render (spinner dari
+ * `RequireAuth`); tanpa sesi -> `replace` ke `/auth/login?redirect=/home`
+ * agar kembali ke sini setelah login. Tidak ada mekanisme token baru:
+ * memakai `useCurrentUser` yang sama seperti halaman terproteksi lain.
+ */
+export default function HomePage() {
+  return (
+    <RequireAuth>
+      <HomePageContent />
+    </RequireAuth>
   );
 }

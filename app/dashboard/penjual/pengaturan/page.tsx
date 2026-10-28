@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ImageIcon, Store, Trash2 } from "lucide-react";
+import { AlertTriangle, ImageIcon, LocateFixed, Store, Trash2 } from "lucide-react";
 import { SellerShell } from "@/app/components/dashboard-penjual/SellerShell";
 import { Card } from "@/app/components/dashboard-penjual/Card";
 import {
@@ -12,6 +13,23 @@ import {
 } from "@/lib/store-settings-storage";
 import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/use-seller-status";
 import { supabase } from "@/lib/supabase";
+import { parseCoordinatePairInput } from "@/lib/location-validation";
+import { resolveFormCoordinates } from "@/lib/delivery-map-plan";
+import {
+  requestDeviceLocation,
+  type DeviceLocationReason,
+} from "@/lib/device-location";
+
+/** Peta pemilih dimuat hanya saat halaman pengaturan dirender (MapLibre berat). */
+const LocationPickerMap = dynamic(
+  () => import("@/app/components/shared/location-picker-map"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[220px] animate-pulse rounded-xl border border-sage-100 bg-cream-100 sm:h-[260px]" />
+    ),
+  }
+);
 
 function inputClass() {
   return "w-full rounded-xl border border-border bg-white px-3 py-1.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary";
@@ -28,10 +46,34 @@ export default function PengaturanTokoPage() {
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
   const [openHours, setOpenHours] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const logoInputRef = useRef<HTMLInputElement>(null);
+  // origin foundation (opsional, NULL untuk data legacy).
+  const [postalCode, setPostalCode] = useState("");
+  const [storePhone, setStorePhone] = useState("");
+  // koordinat toko (GPS/manual, opsional). Kosong = belum diketahui.
+  const [storeLatInput, setStoreLatInput] = useState("");
+  const [storeLngInput, setStoreLngInput] = useState("");
+  const [gpsStatus, setGpsStatus] = useState<
+      "idle" | "requesting" | "ok" | DeviceLocationReason
+    >("idle");
+    const [imageUrl, setImageUrl] = useState("");
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [logoPreview, setLogoPreview] = useState<string | null>(null);
+    const logoInputRef = useRef<HTMLInputElement>(null);
+
+    // Nilai marker peta: difilter lewat helper yang sama dengan peta Tahap A,
+      // sehingga pasangan setengah/tidak sah tidak pernah menjadi marker.
+      const storePickerPoint = resolveFormCoordinates(
+    storeLatInput,
+    storeLngInput,
+    parseCoordinatePairInput
+  );
+      const storePickerLat = storePickerPoint?.latitude ?? null;
+      const storePickerLng = storePickerPoint?.longitude ?? null;
+    // Koordinat saat halaman dimuat — untuk tombol "Kembalikan".
+    const [savedPair, setSavedPair] = useState<{ lat: number | null; lng: number | null }>({
+      lat: null,
+      lng: null,
+    });
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -45,6 +87,20 @@ export default function PengaturanTokoPage() {
       setStoreName(settings?.storeName ?? "");
       setDescription(settings?.description ?? "");
       setAddress(settings?.address ?? "");
+      setPostalCode(settings?.postalCode ?? "");
+      setStorePhone(settings?.phone ?? "");
+      setStoreLatInput(
+        typeof settings?.latitude === "number" ? String(settings.latitude) : ""
+      );
+      setStoreLngInput(
+        typeof settings?.longitude === "number" ? String(settings.longitude) : ""
+      );
+      // Simpan koordinat tersimpan untuk tombol "Kembalikan". Membuka halaman
+      // ini TIDAK mengubah nilai apa pun.
+      setSavedPair({
+        lat: typeof settings?.latitude === "number" ? settings.latitude : null,
+        lng: typeof settings?.longitude === "number" ? settings.longitude : null,
+      });
       setImageUrl(settings?.image ?? "");
       setOpenHours(settings?.openHours ?? "");
       setLoading(false);
@@ -79,6 +135,20 @@ export default function PengaturanTokoPage() {
     reader.readAsDataURL(file);
   }
 
+  // isi koordinat dari perangkat (GPS). Ditolak/tidak tersedia ->
+  // pengguna tetap bisa mengisi manual (fallback, tanpa nilai karangan).
+  async function handleUseDeviceLocation() {
+    setGpsStatus("requesting");
+    const result = await requestDeviceLocation();
+    if (!result.ok) {
+      setGpsStatus(result.reason);
+      return;
+    }
+    setStoreLatInput(result.latitude.toFixed(6));
+    setStoreLngInput(result.longitude.toFixed(6));
+    setGpsStatus("ok");
+  }
+
   async function handleSave() {
     setMessage("");
     setError("");
@@ -93,6 +163,25 @@ export default function PengaturanTokoPage() {
     }
     if (!/^\d{1,2}\.\d{2}\s*[–-]\s*\d{1,2}\.\d{2}$/.test(openHours.trim())) {
       setError("Format jam operasional tidak valid. Contoh: 09.00–21.00");
+      return;
+    }
+    // kode pos opsional; jika diisi harus 5 digit. String kosong = NULL.
+    const postalTrimmed = postalCode.trim();
+    if (postalTrimmed !== '' && !/^[0-9]{5}$/.test(postalTrimmed)) {
+      setError("Kode pos toko harus 5 digit angka (cth. 16424). Kosongkan jika belum tahu.");
+      return;
+    }
+    // telepon toko opsional; jika diisi minimal 9 digit.
+    const phoneTrimmed = storePhone.trim();
+    if (phoneTrimmed !== '' && !/^[0-9+\-\s]{9,16}$/.test(phoneTrimmed)) {
+      setError("Nomor telepon toko tidak valid (9–16 digit). Kosongkan jika belum ada.");
+      return;
+    }
+    // koordinat opsional — dua-duanya atau tidak sama sekali; tidak
+    // pernah menyimpan setengah pasangan atau nilai karangan.
+    const coordinatePair = parseCoordinatePairInput(storeLatInput, storeLngInput);
+    if (!coordinatePair.ok) {
+      setError(coordinatePair.error);
       return;
     }
 
@@ -133,6 +222,12 @@ export default function PengaturanTokoPage() {
         address: address.trim(),
         image: finalImage || undefined,
         openHours: trimmedOpenHours,
+        // kosong -> NULL (legacy aman).
+        postalCode: postalTrimmed === '' ? null : postalTrimmed,
+        phone: phoneTrimmed === '' ? null : phoneTrimmed,
+        // koordinat toko (NULL = belum diketahui).
+        latitude: coordinatePair.latitude,
+        longitude: coordinatePair.longitude,
       });
       if (!ok) throw new Error("Gagal menyimpan pengaturan toko.");
 
@@ -142,6 +237,14 @@ export default function PengaturanTokoPage() {
       setStoreName(storeName.trim());
       setDescription(description.trim());
       setAddress(address.trim());
+      setPostalCode(postalTrimmed);
+      setStorePhone(phoneTrimmed);
+      setStoreLatInput(
+        coordinatePair.latitude === null ? "" : String(coordinatePair.latitude)
+      );
+      setStoreLngInput(
+        coordinatePair.longitude === null ? "" : String(coordinatePair.longitude)
+      );
       setLogoFile(null);
       setLogoPreview(null);
       setMessage("Pengaturan toko tersimpan. Perubahan langsung tampil di beranda & Detail Toko.");
@@ -255,6 +358,138 @@ export default function PengaturanTokoPage() {
                   placeholder="Jl. contoh no. 123"
                   className={inputClass()}
                 />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="settings-postal-code"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-sage-500"
+                >
+                  Kode Pos Toko{" "}
+                  <span className="normal-case text-charcoal-500/60">(opsional)</span>
+                </label>
+                <input
+                  id="settings-postal-code"
+                  type="text"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  placeholder="cth. 16424"
+                  inputMode="numeric"
+                  maxLength={5}
+                  className={inputClass()}
+                />
+                <p className="mt-1 text-[10px] text-charcoal-500/60">
+                  5 digit. Dibutuhkan untuk ongkir ekspedisi nantinya.
+                </p>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="settings-phone"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-sage-500"
+                >
+                  Telepon Toko{" "}
+                  <span className="normal-case text-charcoal-500/60">(opsional)</span>
+                </label>
+                <input
+                  id="settings-phone"
+                  type="tel"
+                  value={storePhone}
+                  onChange={(e) => setStorePhone(e.target.value)}
+                  placeholder="08xxxxxxxxxx"
+                  className={inputClass()}
+                />
+                <p className="mt-1 text-[10px] text-charcoal-500/60">
+                  Untuk kontak kurir pengiriman nantinya.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-sage-100 bg-cream-50/60 p-3.5 lg:col-span-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-sage-500">
+                    Koordinat Toko{" "}
+                    <span className="normal-case text-charcoal-500/60">(opsional)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void handleUseDeviceLocation()}
+                    disabled={gpsStatus === "requesting"}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <LocateFixed className="h-3.5 w-3.5" />
+                    {gpsStatus === "requesting" ? "Meminta izin…" : "Gunakan lokasi saat ini"}
+                  </button>
+                </div>
+                <p className="mt-1 text-[10px] leading-relaxed text-charcoal-500/60">
+                  Dipakai untuk simulasi pengiriman dan akurasi ongkir (kurir instan).
+                  Gunakan GPS saat berada di lokasi toko, atau isi manual. Kosongkan
+                  jika belum tahu — jangan asal isi.
+                </p>
+                {gpsStatus === "denied" && (
+                  <p className="mt-1.5 rounded-md bg-red-50 px-2.5 py-1.5 text-[11px] text-red-700 ring-1 ring-red-200">
+                    Izin lokasi ditolak. Isi koordinat manual di bawah.
+                  </p>
+                )}
+                {gpsStatus === "unavailable" && (
+                  <p className="mt-1.5 rounded-md bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-700 ring-1 ring-amber-200">
+                    Lokasi perangkat tidak tersedia saat ini. Isi koordinat manual
+                    di bawah.
+                  </p>
+                )}
+                {gpsStatus === "ok" && (
+                  <p className="mt-1.5 rounded-md bg-primary/5 px-2.5 py-1.5 text-[11px] text-primary ring-1 ring-primary/20">
+                    Koordinat terisi dari perangkat. Periksa lalu simpan.
+                  </p>
+                )}
+                <div className="mt-2">
+                  <LocationPickerMap
+                    latitude={storePickerLat}
+                    longitude={storePickerLng}
+                    initialLatitude={savedPair.lat}
+                    initialLongitude={savedPair.lng}
+                    onPick={(lat, lng) => {
+                      setStoreLatInput(lat.toFixed(6));
+                      setStoreLngInput(lng.toFixed(6));
+                      setGpsStatus("idle");
+                    }}
+                  />
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="settings-latitude"
+                      className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-sage-500"
+                    >
+                      Latitude
+                    </label>
+                    <input
+                      id="settings-latitude"
+                      type="text"
+                      inputMode="decimal"
+                      value={storeLatInput}
+                      onChange={(e) => setStoreLatInput(e.target.value)}
+                      placeholder="cth. -6.20000"
+                      className={inputClass()}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="settings-longitude"
+                      className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-sage-500"
+                    >
+                      Longitude
+                    </label>
+                    <input
+                      id="settings-longitude"
+                      type="text"
+                      inputMode="decimal"
+                      value={storeLngInput}
+                      onChange={(e) => setStoreLngInput(e.target.value)}
+                      placeholder="cth. 106.81667"
+                      className={inputClass()}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>

@@ -20,10 +20,7 @@ import type { StoredOrder } from '@/lib/types';
 import {
   ORDERS_UPDATED_EVENT,
   getSellerOrders,
-  patchOrder,
-  getOrderById,
 } from '@/lib/order-storage';
-import { notifyOrderCompleted, notifyOrderDelivering } from '@/lib/order-notifications';
 import { getSellerUmkm } from '@/lib/product-storage';
 import {
   SUB_STATUS_LABEL,
@@ -38,6 +35,7 @@ import {
 } from '@/lib/order-state-machine';
 import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { Card } from '@/app/components/dashboard-penjual/Card';
+import { CourierLiveTracker } from '@/app/components/order-history/courier-live-tracker';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 
 type OrderTab = 'berlangsung' | 'selesai' | 'semua';
@@ -175,11 +173,25 @@ function OrderRow({
           </p>
           <StatusChip order={order} />
         </div>
-        <p className="mt-1 truncate text-xs text-muted-foreground">
-          {order.orderId} ·{' '}
-          {order.fulfillment === 'delivery' ? 'Diantar' : 'Ambil sendiri'} ·{' '}
-          {formatOrderDateTime(order.createdAt)}
+        <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+          <span className="font-medium text-charcoal-500">{order.orderId}</span>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1 font-medium text-charcoal-700">
+            {order.fulfillment === 'delivery' ? (
+              <Truck className="h-3 w-3 shrink-0" aria-hidden />
+            ) : (
+              <Store className="h-3 w-3 shrink-0" aria-hidden />
+            )}
+            {order.fulfillment === 'delivery' ? 'Diantar' : 'Ambil sendiri'}
+          </span>
+          <span aria-hidden>·</span>
+          <span>{formatOrderDateTime(order.createdAt)}</span>
         </p>
+        {order.fulfillment === 'delivery' && order.deliveryFee > 0 && (
+          <p className="mt-0.5 text-xs text-sage-500">
+            Ongkir {formatRupiah(order.deliveryFee)}
+          </p>
+        )}
         {order.fulfillment === 'delivery' && order.addressSnapshot && (
           <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 shrink-0" />
@@ -245,6 +257,12 @@ function OrderRow({
           </span>
         )}
       </div>
+      {/*
+        Pelacak kurir live sengaja tidak dipasang di kartu penjual: sebelumnya
+        komponen ini langsung memancarkan GPS perangkat ke kanal Broadcast
+        publik. Penjual bukan kurir, dan kanal itu bisa diterima siapa pun yang
+        mengetahui kode pesanan. Aktifkan kembali hanya lewat jalur ber-RLS.
+      */}
     </li>
   );
 }
@@ -288,29 +306,27 @@ export default function PesananMasukPage() {
     };
   }, []);
 
-  const handleAdvance = useCallback((order: StoredOrder) => {
-    const next = order.fulfillment === 'delivery' ? 'diantar' : 'siap-diambil';
-    patchOrder(order.orderId, { progressStatus: next }).then((updated) => {
-      // Notifikasi pembeli: "Siap Diambil" / "Sedang Diantar" (best-effort).
-      if (updated) notifyOrderDelivering(updated).catch(() => {});
-    });
+  const handleAdvance = useCallback(async (order: StoredOrder) => {
+    const target = order.fulfillment === 'delivery' ? 'out_for_delivery' : 'ready_for_pickup';
+    const result = await transitionOrderStatus(order.orderId, target);
+    if (result.success) {
+      window.dispatchEvent(new Event(ORDERS_UPDATED_EVENT));
+    } else {
+      alert(result.error ?? 'Gagal mengubah status pesanan');
+    }
   }, []);
 
-  const handleComplete = useCallback((orderId: string) => {
-    getOrderById(orderId).then((order) => {
-      patchOrder(orderId, {
-        status: 'completed',
-        completedAt: new Date().toISOString(),
-      });
-
-      if (order) {
-        notifyOrderCompleted({
-          ...order,
-          status: 'completed',
-          completedAt: new Date().toISOString(),
-        });
-      }
-    });
+  const handleComplete = useCallback(async (orderId: string) => {
+    const result = await transitionOrderStatus(
+      orderId,
+      'completed',
+      'Pesanan ditandai selesai oleh penjual'
+    );
+    if (result.success) {
+      window.dispatchEvent(new Event(ORDERS_UPDATED_EVENT));
+    } else {
+      alert(result.error ?? 'Gagal menandai pesanan selesai');
+    }
   }, []);
 
   const tabs = [

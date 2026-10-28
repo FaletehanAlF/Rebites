@@ -474,21 +474,20 @@ export default function PenjualRegisterForm() {
     setPayError(null);
     setPayProcessing(true);
     try {
-      const { supabase } = await import("@/lib/supabase");
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) {
-        setPayError("Sesi habis, silakan login ulang.");
+      const { getValidAuthHeader, fetchWithAuth, AuthError } = await import("@/lib/auth-token");
+      let authHeader: string;
+      try {
+        authHeader = await getValidAuthHeader();
+      } catch (err) {
+        setPayError(err instanceof AuthError ? err.message : "Sesi habis, silakan login ulang.");
         router.push("/auth/login");
         return;
       }
-      const res = await fetch("/api/subscriptions/xendit", {
+      const res = await fetchWithAuth("/api/subscriptions/xendit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: authHeader,
         },
         body: JSON.stringify({ planSlug: selectedPlan, billing }),
       });

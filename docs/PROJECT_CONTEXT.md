@@ -72,15 +72,32 @@ supabase/migrations/       # SQL schema + RLS
 public/                    # images (makanan*.jpg, hero-makanan.jpeg, logo.png, …)
 ```
 
-## 4. Routes (from `npm run build`, 47 pages)
+## 4. Routes (from `npm run build`)
 
 Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
 `/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`,
-`/langganan/pembayaran`.
+`/langganan/pembayaran`, **`/dashboard/admin/*`** (see §5.1).
 SSG (●): `/makanan/[category]` (8 paths).
 Dynamic (ƒ): `/langganan/sukses`, `/api/checkout/xendit(+verify)`,
 `/api/orders/[code]`, `/api/profile(+addresses|avatar)`,
-`/api/subscriptions/xendit(+verify)`, `/api/webhooks/xendit`.
+`/api/subscriptions/xendit(+verify)`, `/api/webhooks/xendit`,
+`/api/admin/**` (role-guarded helper routes).
+
+## 5.1 Admin panel (merged from `feature/admin-full-update`)
+
+Area `/dashboard/admin/**` + `app/components/admin/**`, protected by RBAC:
+every admin route/row passes an admin-verification wrapper (see
+`lib/admin-*` helpers and cookie/session `me` status). Two roles only:
+`super_admin` (full) and `admin` (proposer/`super_admin` approval for role
+changes). Verified sub-areas: overview, artikel, langganan, moderasi,
+monitoring (+ aktivitas/audit/laporan/peringatan/sanksi), pengaturan,
+pengguna (+detail), permintaan-role, pesanan, produk, profile, riwayat,
+system, UMKM (+detail).
+
+Admin UX conventions (unittest-checked in `tests/`): localStorage-backed
+preferences (`lib/admin-preferences.ts`, `ADMIN_LOCAL_STORAGE_KEYS`), audit
+trail writes attempt best-effort inserts into `admin_audit_logs`, and shared
+fetch helpers in `lib/` get 401-retry with one refresh.
 
 ## 5. Landing page architecture (`/`)
 
@@ -117,6 +134,11 @@ mount and renders nothing when empty (no placeholder products).
   --success`; `--radius: 0.25rem`. No cream/beige/caramel surfaces.
 - **Tailwind** (`tailwind.config.ts`): `font-display`/`font-sans` → Plus Jakarta
   Sans, `font-secondary` → Be Vietnam Pro; `bg-sale` shares the destructive hue.
+- **Admin-only palette** (also in `tailwind.config.ts` + `.admin-root` overrides
+  in `app/globals.css`): tokens like `forest`, `cream`, `charcoal-*`, `sage-*`,
+  `caramel` remain valid and are reserved for the admin dashboard; buyer-facing
+  surfaces must keep using the white/green tokens above. `ring-hairline`,
+  `border-hairline` are hairline-neutral greys usable in both areas.
 - **Utilities**: `.text-balance`, `.grain-overlay` (3.5% noise texture used on
   landing sections), `[id] { scroll-margin-top: 6.5rem }` for anchor offsets.
 - **Motion**: `app/components/shared/reveal.tsx` (`Reveal`, framer in-view);
@@ -144,7 +166,10 @@ mount and renders nothing when empty (no placeholder products).
 
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
 `SUPABASE_SERVICE_ROLE_KEY` (server only), `NEXT_PUBLIC_SITE_URL`,
-`XENDIT_SECRET_KEY`, `XENDIT_CALLBACK_TOKEN` / `XENDIT_WEBHOOK_TOKEN`.
+`XENDIT_SECRET_KEY`, `XENDIT_CALLBACK_TOKEN` / `XENDIT_WEBHOOK_TOKEN`,
+`BITESHIP_API_KEY`, `BITESHIP_COURIERS`, `BITESHIP_WEBHOOK_SECRET`,
+`DELIVERY_BASE_FEE_IDR` / `DELIVERY_PER_KM_FEE_IDR` / `DELIVERY_MIN_FEE_IDR` /
+`DELIVERY_MAX_FEE_IDR`, `SUPER_ADMIN_USER_ID` (admin bootstrap id).
 
 Never prefix server secrets with `NEXT_PUBLIC_`.
 
@@ -157,6 +182,8 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 | `npm run build` | production build + type check (lint skipped: `eslint.ignoreDuringBuilds`) |
 | `npm run lint` | `next lint` |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm run typecheck:tests` | type-check `tests/` via `tsconfig.tests.json` |
+| `npm run test:<name>` | 20 focused suites (`node --test`, e.g. checkout price/failure, admin guard/health/analytics, stock release, shipping rates); see `package.json` |
 | `npm start` | serve production build |
 
 ## 10. Known issues / technical debt (verified)
@@ -176,13 +203,28 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   fabricated testimonials), `landing/partner-marquee.tsx`,
   `landing/catalog-sections.tsx`, `components/hero-food-carousel.tsx`,
   `components/flash-sale-grid.tsx`, and `RevealWords` in `shared/reveal.tsx`.
-- No automated tests; visual verification is manual (browser at 320/375/768/
-  1024/1440/1920 — no horizontal overflow observed on `/`).
+- 20 automated `node --test` suites exist (`tests/*`, wired as npm
+  `test:<name>` scripts) covering checkout pricing/idempotency/failure,
+  Xendit fail-closed paths, admin RBAC and UI regressions, stock release and
+  shipping; run them before touching those areas. Visual verification for new
+  UI stays manual (browser at 320/375/768/1024/1440/1920 — no horizontal
+  overflow observed).
+- **EOL caveat (Windows, `core.autocrlf=true`)**: `tests/admin-ui-regressions`
+  has one EOL-sensitive regex (`ADMIN_ROLE_DECISIONS_SEEN_KEY,\n] as const`);
+  if a fresh checkout smudges `lib/admin-preferences.ts` to CRLF the suite can
+  fail spuriously — restore the file to LF (`git cat-file blob
+  :0:lib/admin-preferences.ts` → workdir) or add a `.gitattributes`
+  `text=auto eol=lf` rule for `tests/` fixtures later.
 
 ## 11. Conventions for future work
 
 - Keep pages as Server Components; add `"use client"` only for genuine
   interactivity.
+- Buyer pages that require a session wrap the whole view in
+  `<RequireAuth>` (see `notifikasi/pembeli/page.tsx`): the guard lives OUTSIDE
+  the shell so navbar/title/skeleton are hidden before redirect.
+- Home navigation links point to `/home` — never `/homePage` (the
+  `/homePage` path does not exist; it was a transient develop bug).
 - Reuse the design tokens; do not introduce new fonts, palettes or gradients.
 - Preserve landing section ids and navbar/footer anchor behavior.
 - Do not fabricate stats, testimonials, partners or logos anywhere in the UI.

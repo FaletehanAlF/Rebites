@@ -12,6 +12,14 @@ export interface SellerStoreSettings {
   image: string;
   address: string;
   openHours: string;
+  /** kode pos origin, NULL untuk data legacy. */
+  postalCode?: string | null;
+  /** telepon toko untuk kontak kurir, NULL jika belum diisi. */
+  phone?: string | null;
+  /** gunakan kolom existing umkm_profiles.latitude, NULL = belum diketahui. */
+  latitude?: number | null;
+  /** gunakan kolom existing umkm_profiles.longitude, NULL = belum diketahui. */
+  longitude?: number | null;
 }
 
 export const DEFAULT_STORE_SETTINGS: SellerStoreSettings = {
@@ -37,7 +45,7 @@ export async function getSellerStoreSettings(): Promise<SellerStoreSettings | nu
 
   const { data, error } = await supabase
     .from('umkm_profiles')
-    .select('business_name, description, logo_url, address, is_open, open_hours')
+    .select('business_name, description, logo_url, address, is_open, open_hours, postal_code, phone, latitude, longitude')
     .eq('user_id', uid)
     .maybeSingle();
   if (error || !data) return null;
@@ -49,6 +57,11 @@ export async function getSellerStoreSettings(): Promise<SellerStoreSettings | nu
     image: data.logo_url ?? '',
     address: data.address ?? '',
     openHours: data.open_hours ?? '',
+    // Backward compat: kolom baru NULL untuk toko lama.
+    postalCode: (data as Record<string, unknown>).postal_code as string | null ?? null,
+    phone: (data as Record<string, unknown>).phone as string | null ?? null,
+    latitude: (data as Record<string, unknown>).latitude as number | null ?? null,
+    longitude: (data as Record<string, unknown>).longitude as number | null ?? null,
   };
 }
 
@@ -118,6 +131,24 @@ export function updateStoreSettings(
   if (patch.image !== undefined) payload.logo_url = patch.image;
   if (patch.address !== undefined) payload.address = patch.address;
   if (patch.openHours !== undefined) payload.open_hours = patch.openHours;
+  // postal/phone origin (nullable).
+  if (patch.postalCode !== undefined)
+    payload.postal_code = patch.postalCode?.trim() ? patch.postalCode.trim() : null;
+  if (patch.phone !== undefined)
+    payload.phone = patch.phone?.trim() ? patch.phone.trim() : null;
+  // koordinat origin toko (opsional, dari GPS/manual di pengaturan).
+  // Hanya angka finite yang ditulis; selain itu NULL (belum diketahui) —
+  // tanpa nilai karangan. Rentang sah ditegakkan form + CHECK constraint DB.
+  if (patch.latitude !== undefined)
+    payload.latitude =
+      typeof patch.latitude === 'number' && Number.isFinite(patch.latitude)
+        ? patch.latitude
+        : null;
+  if (patch.longitude !== undefined)
+    payload.longitude =
+      typeof patch.longitude === 'number' && Number.isFinite(patch.longitude)
+        ? patch.longitude
+        : null;
   if (Object.keys(payload).length === 0) return Promise.resolve(true);
   return patchOwnUmkm(payload);
 }

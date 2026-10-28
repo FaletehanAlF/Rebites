@@ -2,7 +2,7 @@
 
 import { supabase } from './supabase';
 import { getSellerUmkm } from './product-storage';
-import type { StoredOrder, FulfillmentMode, DeliveryAddress } from './types';
+import type { StoredOrder, FulfillmentMode, AddressSnapshot, ShippingSnapshot } from './types';
 
 export const ORDERS_UPDATED_EVENT = 'rebites-orders-updated';
 
@@ -32,7 +32,7 @@ export function rowToStoredOrder(row: OrderRow): StoredOrder {
     fulfillment: (row.delivery_option === 'delivery'
       ? 'delivery'
       : 'pickup') as FulfillmentMode,
-    addressSnapshot: (row.address_snapshot ?? null) as Omit<DeliveryAddress, 'id'> | null,
+    addressSnapshot: (row.address_snapshot ?? null) as AddressSnapshot | null,
     paymentMethodId: row.payment_method_id ?? 'tanpa-pembayaran',
     subtotal: row.subtotal ?? 0,
     discount: row.discount ?? 0,
@@ -62,6 +62,20 @@ export function rowToStoredOrder(row: OrderRow): StoredOrder {
     estimatedDeliveryMinutes: row.estimated_delivery_minutes ?? undefined,
     deliveryStartedAt: row.delivery_started_at ?? undefined,
     estimatedArrivalAt: row.estimated_arrival_at ?? undefined,
+    // snapshot imut; order legacy (NULL) tetap terbaca.
+    shippingSnapshot: (row.shipping_snapshot ?? null) as ShippingSnapshot | null,
+    // pilihan kurir; pickup/legacy (NULL) tetap terbaca.
+    courierCode: row.courier_code ?? undefined,
+    courierServiceCode: row.courier_service_code ?? undefined,
+    courierServiceName: row.courier_service_name ?? undefined,
+    shippingRate: row.shipping_rate ?? undefined,
+    // identitas/status shipment; belum-ada-shipment (NULL) tetap terbaca.
+    biteshipOrderId: row.biteship_order_id ?? undefined,
+    biteshipTrackingId: row.biteship_tracking_id ?? undefined,
+    biteshipWaybillId: row.biteship_waybill_id ?? undefined,
+    shipmentStatus: row.shipment_status ?? undefined,
+    shipmentCreatedAt: row.shipment_created_at ?? undefined,
+    shipmentError: row.shipment_error ?? undefined,
     progressStatus: row.progress_status ?? undefined,
   };
 }
@@ -120,8 +134,11 @@ export async function getUserOrders(userId: string | null | undefined): Promise<
     .eq('buyer_id', userId)
     .order('created_at', { ascending: false });
   if (error) {
+    // Dilempar (bukan diubah jadi []): array kosong akan tampil sebagai
+    // "Belum ada pesanan", sehingga kegagalan jaringan terbaca seolah-olah
+    // pembeli memang belum pernah memesan.
     console.error('[order-storage] gagal memuat pesanan:', error.message);
-    return [];
+    throw new Error(error.message || 'Gagal memuat pesanan.');
   }
   return (data ?? []).map(rowToStoredOrder);
 }
@@ -179,7 +196,25 @@ const PATCH_COLUMN_MAP: Record<string, string> = {
   estimatedDeliveryMinutes: 'estimated_delivery_minutes',
   deliveryStartedAt: 'delivery_started_at',
   estimatedArrivalAt: 'estimated_arrival_at',
+  shippingSnapshot: 'shipping_snapshot',
+  courierCode: 'courier_code',
+  courierServiceCode: 'courier_service_code',
+  courierServiceName: 'courier_service_name',
+  shippingRate: 'shipping_rate',
+  biteshipOrderId: 'biteship_order_id',
+  biteshipTrackingId: 'biteship_tracking_id',
+  biteshipWaybillId: 'biteship_waybill_id',
+  shipmentStatus: 'shipment_status',
+  shipmentCreatedAt: 'shipment_created_at',
+  shipmentError: 'shipment_error',
 };
+
+// Kolom yang boleh ditulis klien. Status operasional (lifecycle/order/progress)
+// dan field kepemilikan/finansial TIDAK boleh ditulis langsung; gunakan
+// transitionOrderStatus() atau jalur tepercaya server.
+// progressStatus tidak lagi dapat ditulis klien: nilainya diturunkan dari
+// order_status (lihat getOrderSubStatus). Klien hanya boleh menulis catatan.
+const CLIENT_PATCHABLE_KEYS = new Set<string>(['note']);
 
 export async function patchOrder(
   orderId: string,
@@ -187,6 +222,7 @@ export async function patchOrder(
 ): Promise<StoredOrder | undefined> {
   const payload: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(patch)) {
+    if (!CLIENT_PATCHABLE_KEYS.has(key)) continue;
     const column = PATCH_COLUMN_MAP[key] ?? key;
     payload[column] = value;
   }
@@ -237,17 +273,22 @@ export async function completeExpiredOrders(userId: string | null | undefined): 
       ? new Date(order.estimatedCompletionAt).getTime()
       : new Date(order.createdAt).getTime() + (order.estimatedMinutes ?? 20) * 60_000;
     if (Number.isFinite(deadline) && now >= deadline) {
-      const updated = await patchOrder(order.orderId, {
-        status: 'completed',
-        completedAt: new Date().toISOString(),
-      });
-      if (updated) {
+      // Penyelesaian otomatis: tulis langsung dengan filter buyer_id (bukan
+      // patchOrder generik) agar tidak membuka penulisan status arbitrer.
+      // Set kedua kolom agar tidak bertentangan.
+      const { data: updatedRows, error: updErr } = await supabase
+        .from('orders')
+        .update({
+          lifecycle_status: 'completed',
+          order_status: 'completed',
+          completed_at: new Date().toISOString(),
+        })
+        .eq('order_code', order.orderId)
+        .eq('buyer_id', userId ?? '')
+        .select('order_code');
+      if (!updErr && Array.isArray(updatedRows) && updatedRows.length > 0) {
         changed = true;
-        
-        try {
-          const { notifyOrderCompleted } = await import('./order-notifications');
-          await notifyOrderCompleted({ ...order, status: 'completed', completedAt: new Date().toISOString() });
-        } catch {}
+        dispatchUpdated();
       }
     }
   }
@@ -273,21 +314,17 @@ export async function syncDeliveringNotifications(userId: string | null | undefi
   for (const order of orders) {
     if (order.status !== 'ongoing') continue;
     if (!paidSet.has(order.orderId)) continue;
-    // Status dikendalikan penjual (progress_status terisi) - notifikasi
-    // delivering dikirim dari dashboard penjual saat status diubah,
-    // bukan dari timer estimasi.
-    if (order.progressStatus) continue;
+    // Status dikendalikan penjual (progress_status terisi ATAU status resmi
+    // out_for_delivery) - notifikasi delivering dikirim dari dashboard penjual
+    // saat status diubah, bukan dari timer estimasi.
+    if (order.progressStatus || order.orderStatus === 'out_for_delivery') continue;
     if (!order.estimatedCompletionAt) continue;
     const start = new Date(order.createdAt).getTime();
     const end = new Date(order.estimatedCompletionAt).getTime();
     if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
     const progress = (now - start) / (end - start);
     if (progress >= 0.6 && progress < 1) {
-      try {
-        const { notifyOrderDelivering } = await import('./order-notifications');
-        await notifyOrderDelivering(order);
-        sent = true;
-      } catch {}
+      sent = true;
     }
   }
   return sent;

@@ -10,15 +10,23 @@ import { NotificationCard } from './notification-card';
 import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { cn } from '@/lib/utils';
 
-type NotificationFilter = 'all' | 'order' | 'subscription';
+type NotificationFilter = 'all' | 'order' | 'subscription' | 'moderation';
 
 const FILTER_TABS: { value: NotificationFilter; label: string }[] = [
   { value: 'all', label: 'Semua' },
   { value: 'order', label: 'Pesanan Masuk' },
   { value: 'subscription', label: 'Langganan' },
+  { value: 'moderation', label: 'Moderasi' },
 ];
 
 const ORDER_TYPES: NotificationType[] = ['incoming_order', 'new_review', 'order_completed'];
+const MODERATION_TYPES: NotificationType[] = [
+  'product_approved',
+  'product_rejected',
+  'product_warning',
+  // NOTIF-1: laporan baru untuk toko termasuk kategori moderasi.
+  'report_received',
+];
 const SUBSCRIPTION_TYPES: NotificationType[] = [
   'subscription_active',
   'subscription_renewed',
@@ -38,7 +46,11 @@ export function SellerNotificationView() {
   const filtered = useMemo(() => {
     if (filter === 'all') return notifications;
     const types =
-      filter === 'order' ? ORDER_TYPES : SUBSCRIPTION_TYPES;
+      filter === 'order'
+        ? ORDER_TYPES
+        : filter === 'moderation'
+          ? MODERATION_TYPES
+          : SUBSCRIPTION_TYPES;
     return notifications.filter((n) => types.includes(n.type));
   }, [notifications, filter]);
 
@@ -97,8 +109,10 @@ export function SellerNotificationView() {
             </h3>
             <p className="mt-1 max-w-xs text-sm text-muted-foreground">
               {filter === 'all'
-                ? 'Notifikasi pesanan masuk dan langganan akan muncul di sini.'
-                : 'Tidak ada notifikasi untuk filter ini.'}
+                ? 'Notifikasi pesanan masuk, langganan, dan moderasi produk akan muncul di sini.'
+                : filter === 'moderation'
+                  ? 'Notifikasi hasil moderasi produk (disetujui/ditolak) akan muncul di sini.'
+                  : 'Tidak ada notifikasi untuk filter ini.'}
             </p>
           </div>
         ) : (

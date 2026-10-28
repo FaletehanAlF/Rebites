@@ -23,7 +23,9 @@ export function useStoreProducts(slug: string) {
     setError(null);
 
     const load = async () => {
-      const result = await getStoreProductsBySlug(slug);
+      // Konteks dashboard seller: tampilkan semua produk miliknya
+      // termasuk yang pending/rejected.
+      const result = await getStoreProductsBySlug(slug, { includeAll: true });
       if (!mounted) return;
       setProducts(result.products);
       setError(result.error);

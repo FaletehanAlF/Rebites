@@ -13,7 +13,7 @@ export function ProductBreadcrumb({
   onShare: () => void;
 }) {
   const searchParams = useSearchParams();
-  const fromPage = searchParams.get("from") === "home" ? "/homePage" : "/";
+  const fromPage = searchParams.get("from") === "home" ? "/home" : "/";
 
   return (
     <div className="flex items-center justify-between gap-4">
