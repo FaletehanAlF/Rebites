@@ -16,9 +16,18 @@ import {
 } from "lucide-react";
 import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/use-seller-status";
 import {
+  CurrentUserRoleError,
   fetchCurrentUserRole,
   getHomePathForRole,
 } from "@/lib/current-user";
+import {
+  EMAIL_COOLDOWN_SECONDS,
+  getAuthCallbackUrl,
+  getDesiredNextPath,
+  mapResendError,
+  parseCooldownSeconds,
+  useEmailCooldown,
+} from "@/lib/auth-email";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -99,10 +108,77 @@ export default function PenjualLoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
+  const {
+    remainingSec: resendRemainingSec,
+    isCooling: isResendCooling,
+    start: startResendCooldown,
+  } = useEmailCooldown(EMAIL_COOLDOWN_SECONDS);
+
+  async function handleResend() {
+    const targetEmail = email.trim();
+    if (!targetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
+      setResendMessage("Masukkan email yang valid terlebih dahulu.");
+      return;
+    }
+    if (isResendCooling) {
+      setResendMessage(
+        `Tunggu ${resendRemainingSec} detik sebelum kirim ulang.`
+      );
+      return;
+    }
+    // Cegah request berulang selama request sebelumnya masih berjalan.
+    if (resendLoading) return;
+    setResendLoading(true);
+    setResendMessage("");
+    try {
+      const { supabase } = await import("@/lib/supabase");
+      const desiredNext =
+        typeof window !== "undefined"
+          ? getDesiredNextPath(
+              window.location.search,
+              "/auth/register/penjual"
+            )
+          : "/auth/register/penjual";
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email: targetEmail,
+        options: { emailRedirectTo: getAuthCallbackUrl(desiredNext) },
+      });
+      if (resendError) {
+        const friendly = mapResendError(resendError.message);
+        setResendMessage(friendly.message);
+        if (friendly.isRateLimited) {
+          // Pakai durasi Supabase bila pesannya menyediakannya.
+          startResendCooldown(
+            parseCooldownSeconds(resendError.message) ??
+              EMAIL_COOLDOWN_SECONDS
+          );
+        }
+        return;
+      }
+      startResendCooldown(EMAIL_COOLDOWN_SECONDS);
+      setResendMessage(
+        "Email konfirmasi dikirim ulang. Cek inbox, spam, dan folder promosi, lalu klik tautan terbaru dalam 5 menit."
+      );
+    } catch (err) {
+      setResendMessage(
+        err instanceof Error && err.message
+          ? err.message
+          : "Gagal mengirim ulang. Silakan coba lagi."
+      );
+    } finally {
+      setResendLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    setNeedsVerification(false);
+    setResendMessage("");
 
     const emailTrim = email.trim();
     const nameTrim = businessName.trim();
@@ -138,7 +214,10 @@ export default function PenjualLoginForm() {
           throw new Error("Email atau kata sandi salah.");
         }
         if (msg.includes("Email not confirmed")) {
-          throw new Error("Email belum diverifikasi. Cek email Anda.");
+          setNeedsVerification(true);
+          throw new Error(
+            "Email belum diverifikasi. Cek email Anda dan klik tautan terbaru, atau kirim ulang di bawah."
+          );
         }
         throw new Error(msg);
       }
@@ -184,7 +263,34 @@ export default function PenjualLoginForm() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event(SELLER_STATUS_UPDATED_EVENT));
       }
-      const role = await fetchCurrentUserRole(user.id);
+      let role: Awaited<ReturnType<typeof fetchCurrentUserRole>> = null;
+      try {
+        role = await fetchCurrentUserRole(user.id);
+      } catch (roleErr) {
+        if (roleErr instanceof CurrentUserRoleError) {
+          setError(roleErr.message);
+        } else {
+          setError("Gagal membaca peran akun. Silakan coba lagi.");
+        }
+        return;
+      }
+      if (!role) {
+        setError("Peran akun tidak ditemukan. Hubungi administrator ReBites.");
+        return;
+      }
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        await supabase.from("activity_logs").insert({
+          user_id: user.id,
+          activity_type: "login",
+          description: "Masuk sebagai penjual.",
+          metadata: { business_name: nameTrim },
+          target_type: "store",
+          target_id: umkm.id,
+        });
+      } catch {
+        // Logging aktivitas bersifat non-blokir agar login tetap berjalan.
+      }
       // Seller flow dipertahankan: umkm (dan anomali buyer/null yang lolos
       // cek umkm_profiles) tetap ke dashboard penjual. Hanya admin yang
       // diarahkan keluar via mapping terpusat.
@@ -316,6 +422,38 @@ export default function PenjualLoginForm() {
           >
             {error}
           </p>
+        )}
+
+        {needsVerification && (
+          <div className="rounded-lg border border-border bg-secondary px-3 py-2.5">
+            <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
+              Tidak menemukan email? Cek spam/promosi, lalu kirim ulang ke{" "}
+              <span className="font-semibold text-[hsl(var(--primary))]">
+                {email.trim() || "email kamu"}
+              </span>
+              .
+            </p>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendLoading || isResendCooling || !email.trim()}
+              className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-4 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--primary))] transition-colors hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {resendLoading
+                ? "Mengirim…"
+                : isResendCooling
+                  ? `Kirim ulang dalam ${resendRemainingSec} detik`
+                  : "Kirim Ulang Email Konfirmasi"}
+            </button>
+            {resendMessage && (
+              <p
+                role="status"
+                className="mt-2 font-sans text-[12px] leading-relaxed text-muted-foreground"
+              >
+                {resendMessage}
+              </p>
+            )}
+          </div>
         )}
 
         <button

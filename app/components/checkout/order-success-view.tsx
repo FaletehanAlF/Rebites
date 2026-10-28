@@ -173,14 +173,16 @@ export function OrderSuccessView() {
     };
 
     fetchStatus();
+    // Interval polling tidak boleh lebih sering dari batas server
+    // (VERIFY_CHECK_WINDOW 15 dtk di lib/server/verify-throttle.ts).
     pollRef.current = setInterval(() => {
-      elapsed += 3000;
-      if (elapsed >= 90_000 && pollRef.current) {
+      elapsed += 15000;
+      if (elapsed >= 180000 && pollRef.current) {
         clearInterval(pollRef.current);
         return;
       }
       fetchStatus();
-    }, 3000);
+    }, 15000);
 
     return () => {
       cancelled = true;

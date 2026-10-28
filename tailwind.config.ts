@@ -3,12 +3,33 @@ import type { Config } from 'tailwindcss';
 const config: Config = {
   darkMode: ['class'],
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './hooks/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
+    './types/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
+      /**
+       * Skala opacity tambahan.
+       *
+       * Tailwind hanya menghasilkan CSS untuk nilai yang ada di skala. Nilai
+       * di luar skala diabaikan tanpa error build maupun peringatan lint,
+       * sehingga kelas seperti `bg-success/15` tidak berefek dan elemen
+       * memakai warna induknya.
+       *
+       * Nilai berikut ditambahkan karena dipakai di komponen. Sisanya sudah
+       * ada di skala bawaan: 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90,
+       * 95, 100.
+       */
+      opacity: {
+        15: '0.15',
+        35: '0.35',
+        45: '0.45',
+        55: '0.55',
+        68: '0.68',
+        85: '0.85',
+      },
 
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -20,10 +41,28 @@ const config: Config = {
         md: 'calc(var(--radius) - 1px)',
         sm: 'calc(var(--radius) - 2px)',
       },
+      // Skala elevasi panel admin. Ganti garis 1px dengan bayangan lembut:
+      // permukaan tetap terbaca sebagai lapisan, tapi tidak lagi terlihat
+      // seperti kotak bertanda. `admin-card` = panel/tabel diam,
+      // `admin-pop` = lapisan mengambang (dropdown, modal, drawer),
+      // `admin-hover` = state hover pada kartu interaktif.
+      boxShadow: {
+        'admin-card':
+          '0 1px 2px hsl(152 20% 20% / 0.04), 0 8px 24px -12px hsl(152 20% 20% / 0.16)',
+        'admin-pop':
+          '0 4px 12px hsl(152 20% 20% / 0.08), 0 16px 40px -16px hsl(152 20% 20% / 0.28)',
+        'admin-hover':
+          '0 2px 6px hsl(152 20% 20% / 0.06), 0 16px 32px -16px hsl(152 20% 20% / 0.24)',
+      },
+      // Satu keluarga font (Inter) untuk seluruh aplikasi. Alias `display`,
+      // `sans`, dan `inter` sengaja menunjuk variabel yang sama; `inter`
+      // dulu memakai Be Vietnam Pro (--font-secondary) sehingga teks kecil
+      // tampil berbeda dari sisa halaman. `mono` tetap pakai stack Tailwind
+      // bawaan karena dipakai khusus untuk kode/e-mail di tabel admin.
       fontFamily: {
-        display: ['var(--font-sans)'],
-        sans: ['var(--font-sans)'],
-        inter: ['var(--font-secondary)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        inter: ['var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       colors: {
         forest: '#3B5240',
@@ -53,6 +92,13 @@ const config: Config = {
         'gold-600': '#B08A1C',
         sale: '#E53935',
         'charcoal-500': '#5C6B60',
+        // charcoal-700: teks body sekunder. Sebelumnya kelas `text-charcoal-700`
+        // dipakai di banyak komponen admin tetapi token ini belum ada, sehingga
+        // kelasnya tidak menghasilkan CSS dan teks jatuh ke charcoal-900
+        // (hierarki judul vs body hilang). Nilai ini memberi kontras ~9.4:1
+        // di atas putih (charcoal-500 ~5.6:1, charcoal-900 ~15:1) sehingga
+        // terbaca ringan tanpa melanggar WCAG AA.
+        'charcoal-700': '#3B4A40',
         'charcoal-900': '#1E2A22',
         amber: {
           DEFAULT: '#D6A54A',
@@ -80,7 +126,12 @@ const config: Config = {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
-          strong: 'hsl(var(--primary-foreground-strong))',
+          // Nama kunci sengaja 'foreground-strong' supaya utilitas yang
+          // dihasilkan adalah `text-primary-foreground-strong` — kelas inilah
+          // yang dipakai tombol, badge, dan footer. Sebelumnya kuncinya
+          // 'strong' sehingga kelas itu tidak pernah tergenerate dan teks
+          // tombol hilang di atas latar hijau saat hover.
+          'foreground-strong': 'hsl(var(--primary-foreground-strong))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -101,6 +152,9 @@ const config: Config = {
         warning: {
           DEFAULT: 'hsl(var(--warning))',
           foreground: 'hsl(var(--warning-foreground))',
+          // Nada gelap untuk teks (badge/label). `warning` sendiri hanya cocok
+          // sebagai latar; sebagai warna teks kontrasnya di bawah 4.5:1.
+          strong: 'hsl(var(--warning-strong))',
         },
         success: {
           DEFAULT: 'hsl(var(--success))',
@@ -109,6 +163,16 @@ const config: Config = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        // Token permukaan panel admin. Semua nilainya didefinisikan di
+        // `app/globals.css` pada blok `:root` (bukan hanya `.admin-root`)
+        // supaya `hsl(var(--admin-*))` selalu resolve, termasuk ketika
+        // komponen admin dirender lewat portal di luar `.admin-root`.
+        // Halaman publik tidak memakai token ini.
+        'admin-canvas': 'hsl(var(--admin-canvas))',
+        'admin-panel': 'hsl(var(--admin-panel))',
+        'admin-surface': 'hsl(var(--admin-surface))',
+        'admin-surface-hover': 'hsl(var(--admin-surface-hover))',
+        'admin-line': 'hsl(var(--admin-line))',
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',

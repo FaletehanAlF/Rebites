@@ -3,7 +3,10 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
+import { sanitizeSearchTerm } from '@/lib/filter-search';
 
 export const runtime = 'nodejs';
 
@@ -31,11 +34,6 @@ const UMKM_SELECT = [
 
 type Row = Record<string, unknown>;
 
-function sanitizeSearch(raw: string | null): string {
-  if (!raw) return '';
-  return raw.trim().slice(0, 100).replace(/[%(),]/g, '');
-}
-
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization');
@@ -57,7 +55,19 @@ export async function GET(req: NextRequest) {
     const rawOffset = Number(params.get('offset') ?? '0');
     const limit = Number.isFinite(rawLimit) ? Math.min(100, Math.max(1, Math.floor(rawLimit))) : 20;
     const offset = Number.isFinite(rawOffset) ? Math.max(0, Math.floor(rawOffset)) : 0;
-    const search = sanitizeSearch(params.get('search'));
+    const search = sanitizeSearchTerm(params.get('search'));
+
+    // Filter verifikasi: allowlist ketat, bukan boolean bebas dari query.
+    // Tanpa filter ini admin harus menggulir seluruh halaman untuk menemukan
+    // toko yang belum diverifikasi — padahal itu tugas utama halaman UMKM.
+    const VERIFICATION_ALLOWLIST = ['verified', 'unverified'] as const;
+    const verificationRaw = (params.get('verification') ?? '').trim().toLowerCase();
+    if (verificationRaw && !(VERIFICATION_ALLOWLIST as readonly string[]).includes(verificationRaw)) {
+      return NextResponse.json(
+        { error: 'Filter verification tidak valid. Nilai yang diizinkan: verified, unverified.' },
+        { status: 400 }
+      );
+    }
 
     const db = createAuthedServerClient(authHeader);
 
@@ -65,6 +75,9 @@ export async function GET(req: NextRequest) {
       .from('umkm_profiles')
       .select(UMKM_SELECT, { count: 'exact' })
       .order('created_at', { ascending: false });
+
+    if (verificationRaw === 'verified') query = query.eq('is_verified', true);
+    if (verificationRaw === 'unverified') query = query.eq('is_verified', false);
 
     if (search) {
       const pattern = `%${search}%`;
@@ -185,8 +198,10 @@ export async function GET(req: NextRequest) {
       offset,
     });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/umkm] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses data UMKM." }, { status: 500 });
   }
 }

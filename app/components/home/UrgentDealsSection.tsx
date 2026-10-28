@@ -113,7 +113,14 @@ export function UrgentDealsSection({
     >
       <SoftBlob className="-left-24 top-1/4 h-80 w-80 bg-white/10" />
       <SoftBlob className="-right-24 bottom-0 h-96 w-96 bg-caramel/15" />
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-white/[0.06] blur-3xl" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 70%)',
+        }}
+      />
 
       {SPARKLES.map((pos, i) => (
         <motion.span

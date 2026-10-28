@@ -112,12 +112,6 @@ export interface ProductWithUMKM extends Product {
   umkm: Pick<UMKMProfile, 'id' | 'business_name' | 'city' | 'rating'>;
 }
 
-// ---------------------------------------------------------------------------
-// Admin Monitoring foundation (migration 0025, database saja, tanpa UI).
-// Cerminan tipe untuk tabel: activity_logs, reports, warnings, sanctions,
-// admin_audit_logs, dan profiles.account_status.
-// ---------------------------------------------------------------------------
-
 export type AccountStatus = 'active' | 'suspended' | 'banned';
 
 export type ActivityType =

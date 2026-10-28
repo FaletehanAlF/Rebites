@@ -2,27 +2,33 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { PackageSearch, SearchX } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { PackageSearch, SearchX, TriangleAlert, RefreshCw } from 'lucide-react';
 import type { StoredOrder } from '@/lib/types';
 import { getReviewFor } from '@/lib/review-storage';
 import { useCurrentUser } from '@/lib/current-user';
 import { useOrders } from '@/hooks/use-orders';
 import { OrderToolbar, type StatusFilter, type FulfillmentFilter } from './order-toolbar';
 import { OrderCard } from './order-card';
-import { OrderDetailModal } from './order-detail-modal';
 import { Toaster } from '@/app/components/ui/toaster';
 
 export function OrderHistoryView() {
-  const { orders, activeOrders, completedOrders, loading } = useOrders();
+  const {
+    orders,
+    activeOrders,
+    completedOrders,
+    cancelledOrders,
+    loading,
+    error,
+    refetch,
+  } = useOrders();
   const { userId } = useCurrentUser();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [query, setQuery] = useState('');
   const [fulfillment, setFulfillment] = useState<FulfillmentFilter>('all');
-  const [dateRange, setDateRange] = useState('all');
-  const [detailOrder, setDetailOrder] = useState<StoredOrder | null>(null);
   const [highlightOrderId, setHighlightOrderId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,11 +36,12 @@ export function OrderHistoryView() {
     if (param) setHighlightOrderId(param);
   }, [searchParams]);
 
+  // Deep link lama `?orderId=...` (dipakai notifikasi & redirect Xendit)
+  // diarahkan ke halaman detail khusus, bukan membuka modal.
   useEffect(() => {
-    if (!highlightOrderId || loading || orders.length === 0) return;
-    const found = orders.find((o) => o.orderId === highlightOrderId);
-    if (found) setDetailOrder(found);
-  }, [highlightOrderId, loading, orders]);
+    if (!highlightOrderId) return;
+    router.replace(`/riwayatPesanan/${encodeURIComponent(highlightOrderId)}`);
+  }, [highlightOrderId, router]);
 
   const [reviewsTick, setReviewsTick] = useState(0);
   const [reviewedMap, setReviewedMap] = useState<Set<string>>(new Set());
@@ -58,62 +65,90 @@ export function OrderHistoryView() {
     };
   }, [completedOrders, reviewsTick, userId]);
 
-  const statusToList = (filter: StatusFilter): StoredOrder[] => {
-    if (filter === 'all') return orders ?? [];
-    if (filter === 'ongoing') return activeOrders;
-    if (filter === 'delivered') return completedOrders;
-    if (filter === 'cancelled') return [];
-    return orders ?? [];
-  };
-
-  const baseList = statusToList(statusFilter);
+  // Setiap tab punya sumber datanya sendiri — sebelumnya "Dibatalkan" selalu
+  // mengembalikan [] sehingga tombolnya tidak pernah menampilkan apa pun.
+  const baseList = useMemo<StoredOrder[]>(() => {
+    if (statusFilter === 'ongoing') return activeOrders;
+    if (statusFilter === 'delivered') return completedOrders;
+    if (statusFilter === 'cancelled') return cancelledOrders;
+    return orders;
+  }, [statusFilter, activeOrders, completedOrders, cancelledOrders, orders]);
 
   const filteredList = useMemo(() => {
     const q = query.trim().toLowerCase();
     return baseList.filter((order) => {
-      if (fulfillment !== 'all' && order.fulfillment !== fulfillment) {
-        return false;
-      }
-      if (dateRange !== 'all') {
-        const now = Date.now();
-        const created = new Date(order.createdAt).getTime();
-        const diffDays = (now - created) / (1000 * 60 * 60 * 24);
-        if (dateRange === '7d' && diffDays > 7) return false;
-        if (dateRange === '30d' && diffDays > 30) return false;
-        if (dateRange === '90d' && diffDays > 90) return false;
-      }
+      if (fulfillment !== 'all' && order.fulfillment !== fulfillment) return false;
       if (q) {
-        const haystacks = [order.orderId, order.productName, order.vendorName];
+        const haystacks = [
+          order.orderId,
+          order.productName,
+          order.vendorName,
+          order.addressSnapshot?.receiverName ?? '',
+        ];
         if (!haystacks.some((h) => h.toLowerCase().includes(q))) return false;
       }
       return true;
     });
-  }, [baseList, fulfillment, query, dateRange]);
-
-  if (loading) {
-    return (
-      <div className="w-full space-y-5">
-        <div className="h-10 w-56 animate-pulse rounded-xl bg-white ring-1 ring-hairline" />
-        <div className="h-24 animate-pulse rounded-xl border border-zinc-200 bg-white" />
-        <div className="h-32 animate-pulse rounded-xl border border-zinc-200 bg-white" />
-      </div>
-    );
-  }
-
-  const isFiltering = query.trim() !== '' || fulfillment !== 'all' || dateRange !== 'all' || statusFilter !== 'all';
+  }, [baseList, fulfillment, query]);
 
   const counts = {
     all: orders.length,
     ongoing: activeOrders.length,
     delivered: completedOrders.length,
-    cancelled: 0,
+    cancelled: cancelledOrders.length,
   };
+
+  const clearFilters = () => {
+    setQuery('');
+    setFulfillment('all');
+    setStatusFilter('all');
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full space-y-4" aria-busy="true" aria-label="Memuat pesanan">
+        <div className="h-[104px] animate-pulse rounded-2xl border border-hairline bg-white" />
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-[152px] animate-pulse rounded-2xl border border-hairline bg-white" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        role="alert"
+        className="flex flex-col items-center rounded-2xl border border-caramel/30 bg-caramel/[0.07] px-6 py-10 text-center"
+      >
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-caramel-700">
+          <TriangleAlert className="h-5 w-5" aria-hidden />
+        </span>
+        <h2 className="mt-3 font-display text-base font-semibold text-charcoal-900">
+          Pesanan gagal dimuat
+        </h2>
+        <p className="mt-1 max-w-sm text-sm leading-relaxed text-charcoal-700">
+          Data pesananmu tidak bisa diambil saat ini. Ini bukan berarti kamu belum punya
+          pesanan — periksa koneksi lalu coba lagi.
+        </p>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-caramel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
+          <RefreshCw className="h-4 w-4" aria-hidden />
+          Coba lagi
+        </button>
+      </div>
+    );
+  }
+
+  const isFiltering = query.trim() !== '' || fulfillment !== 'all' || statusFilter !== 'all';
 
   return (
     <>
       <div className="w-full space-y-4">
-        {}
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="rounded-2xl border border-hairline bg-white p-3 shadow-sm sm:p-4">
           <OrderToolbar
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
@@ -122,8 +157,6 @@ export function OrderHistoryView() {
             onQueryChange={setQuery}
             fulfillment={fulfillment}
             onFulfillmentChange={setFulfillment}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
           />
         </div>
 
@@ -134,42 +167,24 @@ export function OrderHistoryView() {
                 key={order.orderId}
                 order={order}
                 reviewed={reviewedMap.has(order.orderId)}
-                onViewDetail={setDetailOrder}
+                onViewDetail={(o) =>
+                  router.push(`/riwayatPesanan/${encodeURIComponent(o.orderId)}`)
+                }
+                onTrack={(o) =>
+                  router.push(`/riwayatPesanan/${encodeURIComponent(o.orderId)}#pengantaran`)
+                }
                 highlighted={order.orderId === highlightOrderId}
               />
             ))}
           </div>
         ) : (
           <EmptyState
-            variant={isFiltering ? 'no-result' : orders.length === 0 ? 'empty' : 'tab'}
-            isCompletedTab={statusFilter === 'delivered'}
-            onClear={() => {
-              setQuery('');
-              setFulfillment('all');
-              setDateRange('all');
-              setStatusFilter('all');
-            }}
+            variant={isFiltering ? 'no-result' : 'empty'}
+            statusFilter={statusFilter}
+            onClear={clearFilters}
           />
         )}
       </div>
-
-      {}
-      <OrderDetailModal
-        order={detailOrder}
-        userId={userId}
-        onClose={() => {
-          setDetailOrder(null);
-          setHighlightOrderId(null);
-          
-          if (typeof window !== 'undefined') {
-            const url = new URL(window.location.href);
-            url.searchParams.delete('orderId');
-            url.searchParams.delete('payment');
-            window.history.replaceState({}, '', url.toString());
-          }
-        }}
-        onReviewed={() => setReviewsTick((t) => t + 1)}
-      />
       <Toaster />
     </>
   );
@@ -177,57 +192,55 @@ export function OrderHistoryView() {
 
 function EmptyState({
   variant,
-  isCompletedTab,
+  statusFilter,
   onClear,
 }: {
-  variant: 'empty' | 'no-result' | 'tab';
-  isCompletedTab: boolean;
+  variant: 'empty' | 'no-result';
+  statusFilter: StatusFilter;
   onClear: () => void;
 }) {
   if (variant === 'no-result') {
     return (
-      <div className="flex flex-col items-center rounded-xl border border-dashed border-zinc-200 bg-white px-6 py-10 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-500">
-          <SearchX className="h-5 w-5" />
+      <div className="flex flex-col items-center rounded-2xl border border-dashed border-hairline bg-white px-6 py-10 text-center">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-100 text-primary">
+          <SearchX className="h-5 w-5" aria-hidden />
         </span>
-        <h3 className="mt-3 font-display text-base font-medium text-zinc-900">Pesanan tidak ditemukan</h3>
-        <p className="mt-1 max-w-xs text-sm text-zinc-500">Coba cari dengan Order ID atau nama produk lain.</p>
+        <h2 className="mt-3 font-display text-base font-semibold text-charcoal-900">
+          Tidak ada pesanan yang cocok
+        </h2>
+        <p className="mt-1 max-w-sm text-sm text-charcoal-500">
+          {statusFilter === 'cancelled'
+            ? 'Belum ada pesanan dibatalkan pada filter ini.'
+            : 'Coba kata kunci lain atau hapus filter yang sedang aktif.'}
+        </p>
         <button
           type="button"
           onClick={onClear}
-          className="mt-4 inline-flex h-9 items-center rounded-full border border-primary px-5 text-xs font-semibold text-primary hover:bg-primary hover:text-white"
+          className="mt-4 inline-flex h-10 items-center rounded-full border border-hairline px-5 text-sm font-semibold text-charcoal-900 transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          Hapus Filter
+          Hapus filter
         </button>
       </div>
     );
   }
 
-  if (variant === 'tab') {
-    return (
-      <div className="flex flex-col items-center rounded-xl border border-dashed border-zinc-200 bg-white px-6 py-10 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-500">
-          <PackageSearch className="h-5 w-5" />
-        </span>
-        <h3 className="mt-3 font-display text-base font-medium text-zinc-900">
-          {isCompletedTab ? 'Belum ada pesanan selesai' : 'Tidak ada pesanan'}
-        </h3>
-        <p className="mt-1 max-w-xs text-sm text-zinc-500">
-          {isCompletedTab ? 'Pesanan yang sudah selesai akan muncul di sini.' : 'Semua pesananmu sudah selesai.'}
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col items-center rounded-xl border border-dashed border-zinc-200 bg-white px-6 py-10 text-center">
+    <div className="flex flex-col items-center rounded-2xl border border-dashed border-hairline bg-white px-6 py-12 text-center">
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-100 text-primary">
-        <PackageSearch className="h-5 w-5" />
+        <PackageSearch className="h-5 w-5" aria-hidden />
       </span>
-      <h3 className="mt-3 font-display text-base font-medium text-zinc-900">Belum Ada Pesanan</h3>
-      <p className="mt-1 max-w-xs text-sm text-zinc-500">Pesanan yang kamu lakukan akan muncul di sini.</p>
-      <Link href="/home" className="mt-4 inline-flex h-9 items-center rounded-full bg-primary px-5 text-xs font-semibold text-white hover:bg-primary">
-        Mulai Belanja
+      <h2 className="mt-3 font-display text-base font-semibold text-charcoal-900">
+        Belum ada pesanan
+      </h2>
+      <p className="mt-1 max-w-sm text-sm leading-relaxed text-charcoal-500">
+        Pesanan yang kamu buat akan muncul di sini lengkap dengan status dan detail
+        pengantarannya.
+      </p>
+      <Link
+        href="/home"
+        className="mt-4 inline-flex h-10 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-caramel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      >
+        Mulai belanja
       </Link>
     </div>
   );

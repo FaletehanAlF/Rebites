@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { ChevronDown, LocateFixed } from 'lucide-react';
 import {
   DialogDescription,
   DialogHeader,
@@ -10,7 +11,24 @@ import {
 import type { AddressLabel, DeliveryAddress } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import type { AddressFormValues } from '@/hooks/use-addresses';
+import { parseCoordinatePairInput } from '@/lib/location-validation';
+import { resolveFormCoordinates } from '@/lib/delivery-map-plan';
+import {
+  requestDeviceLocation,
+  type DeviceLocationReason,
+} from '@/lib/device-location';
 import { useCheckout } from './checkout-context';
+
+/** Peta pemilih dimuat hanya saat form alamat dibuka (MapLibre berat). */
+const LocationPickerMap = dynamic(
+  () => import('@/app/components/shared/location-picker-map'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[220px] animate-pulse rounded-xl border border-hairline bg-cream-100 sm:h-[260px]" />
+    ),
+  }
+);
 
 const LABELS: AddressLabel[] = ['Rumah', 'Kos', 'Sekolah', 'Lainnya'];
 
@@ -33,6 +51,13 @@ const DEPOK_DISTRICTS = [
 const INPUT_CLASS =
   'w-full rounded-xl border border-sage-100 bg-white px-3.5 py-2.5 text-sm text-charcoal-900 placeholder:text-sage-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 
+/** tampilkan koordinat tersimpan sebagai teks input; kosong = belum ada. */
+function coordinateToInput(value: number | null | undefined): string {
+  return typeof value === 'number' && Number.isFinite(value) ? String(value) : '';
+}
+
+type GpsStatus = 'idle' | 'requesting' | 'ok' | DeviceLocationReason;
+
 function toFormValues(editing: DeliveryAddress | null): AddressFormValues {
   if (!editing) {
     return {
@@ -44,7 +69,7 @@ function toFormValues(editing: DeliveryAddress | null): AddressFormValues {
       district: '',
       fullAddress: '',
       note: '',
-      // 7B-1: kode pos opsional; lat/lng selalu NULL (tanpa map-picker).
+      // kode pos opsional; koordinat opsional (diisi blok GPS/manual).
       postalCode: null,
       latitude: null,
       longitude: null,
@@ -78,6 +103,29 @@ export function AddressFormView({
     toFormValues(editing),
   );
   const [error, setError] = useState<string | null>(null);
+  // input koordinat (GPS / manual). Baru dipakai saat simpan.
+  const [latInput, setLatInput] = useState(() => coordinateToInput(editing?.latitude));
+  const [lngInput, setLngInput] = useState(() => coordinateToInput(editing?.longitude));
+  const [gpsStatus, setGpsStatus] = useState<GpsStatus>('idle');
+
+  // Nilai peta hanya untuk tampilan marker: difilter lewat helper yang sama
+  // dengan peta Tahap A, sehingga titik tidak sah tidak pernah menjadi marker.
+  const pickerPoint = resolveFormCoordinates(latInput, lngInput, parseCoordinatePairInput);
+  const pickerLat = pickerPoint?.latitude ?? null;
+  const pickerLng = pickerPoint?.longitude ?? null;
+
+  const handleUseDeviceLocation = async () => {
+    setGpsStatus('requesting');
+    const result = await requestDeviceLocation();
+    if (!result.ok) {
+      // Ditolak/tidak tersedia: pengguna tetap bisa isi manual di bawah.
+      setGpsStatus(result.reason);
+      return;
+    }
+    setLatInput(result.latitude.toFixed(6));
+    setLngInput(result.longitude.toFixed(6));
+    setGpsStatus('ok');
+  };
 
   const setField = <K extends keyof AddressFormValues>(
     key: K,
@@ -87,13 +135,17 @@ export function AddressFormView({
   const handleSave = () => {
     if (!form.receiverName.trim()) return setError('Nama penerima wajib diisi.');
     if (!/^[0-9+\-\s]{9,16}$/.test(form.phone.trim()))
-      return setError('Nomor telepon tidak valid (9â€“16 digit).');
+      return setError('Nomor telepon tidak valid (9–16 digit).');
     if (!form.district.trim()) return setError('Kecamatan wajib dipilih.');
-    // 7B-1: kode pos opsional; string kosong = NULL (bukan valid).
+    // kode pos opsional; string kosong = NULL (bukan valid).
     // Jika diisi harus 5 digit Indonesia.
     const postalTrimmed = (form.postalCode ?? '').trim();
     if (postalTrimmed !== '' && !/^[0-9]{5}$/.test(postalTrimmed))
       return setError('Kode pos harus 5 digit angka (cth. 16424).');
+    // koordinat opsional — dua-duanya atau tidak sama sekali; tidak
+    // pernah menyimpan setengah pasangan atau nilai karangan.
+    const coordinatePair = parseCoordinatePairInput(latInput, lngInput);
+    if (!coordinatePair.ok) return setError(coordinatePair.error);
     if (form.fullAddress.trim().length < 8)
       return setError('Alamat lengkap minimal 8 karakter.');
 
@@ -103,9 +155,8 @@ export function AddressFormView({
       fullAddress: form.fullAddress.trim(),
       note: form.note?.trim() || undefined,
       postalCode: postalTrimmed === '' ? null : postalTrimmed,
-      // 7B-1: tanpa map-picker/geocoding -> selalu NULL, jangan karang koordinat.
-      latitude: null,
-      longitude: null,
+      latitude: coordinatePair.latitude,
+      longitude: coordinatePair.longitude,
     };
 
     if (editing) {
@@ -232,6 +283,85 @@ export function AddressFormView({
             className={INPUT_CLASS}
           />
         </label>
+
+        <div className="rounded-xl border border-sage-100 bg-cream-50/70 p-3.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+              Koordinat Lokasi{' '}
+              <span className="normal-case text-sage-500">(opsional)</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => void handleUseDeviceLocation()}
+              disabled={gpsStatus === 'requesting'}
+              className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <LocateFixed className="h-3.5 w-3.5" />
+              {gpsStatus === 'requesting' ? 'Meminta izin…' : 'Gunakan lokasi saat ini'}
+            </button>
+          </div>
+          <p className="mt-1 text-[11px] leading-relaxed text-charcoal-500">
+            Dipakai untuk simulasi pengiriman dan akurasi ongkir. Kosongkan jika
+            belum diketahui — jangan asal isi.
+          </p>
+          {gpsStatus === 'denied' && (
+            <p className="mt-1.5 rounded-md bg-red-50 px-2.5 py-1.5 text-[11px] text-red-700 ring-1 ring-red-200">
+              Izin lokasi ditolak browser. Isi koordinat manual di bawah.
+            </p>
+          )}
+          {gpsStatus === 'unavailable' && (
+            <p className="mt-1.5 rounded-md bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-700 ring-1 ring-amber-200">
+              Lokasi perangkat tidak tersedia saat ini. Isi koordinat manual di
+              bawah.
+            </p>
+          )}
+          {gpsStatus === 'ok' && (
+            <p className="mt-1.5 rounded-md bg-primary/5 px-2.5 py-1.5 text-[11px] text-primary ring-1 ring-primary/20">
+              Koordinat terisi dari perangkat. Periksa lalu simpan.
+            </p>
+          )}
+          <div className="mt-2">
+            <LocationPickerMap
+              latitude={pickerLat}
+              longitude={pickerLng}
+              initialLatitude={editing?.latitude ?? null}
+              initialLongitude={editing?.longitude ?? null}
+              onPick={(lat, lng) => {
+                setLatInput(lat.toFixed(6));
+                setLngInput(lng.toFixed(6));
+                setGpsStatus('idle');
+              }}
+            />
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+                Latitude
+              </span>
+              <input
+                value={latInput}
+                onChange={(e) => setLatInput(e.target.value)}
+                placeholder="cth. -6.20000"
+                inputMode="decimal"
+                aria-label="Latitude lokasi"
+                className={INPUT_CLASS}
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+                Longitude
+              </span>
+              <input
+                value={lngInput}
+                onChange={(e) => setLngInput(e.target.value)}
+                placeholder="cth. 106.81667"
+                inputMode="decimal"
+                aria-label="Longitude lokasi"
+                className={INPUT_CLASS}
+              />
+            </label>
+          </div>
+        </div>
 
         <label className="block">
           <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">

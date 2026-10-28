@@ -391,7 +391,7 @@ export function HeroFoodCarousel() {
                       spacing={0.45}
                       curve={18}
                       tilt={6}
-                      blur={4}
+                      blur={2}
                       fade={1}
                       minOpacity={0}
                       smoothing={200}

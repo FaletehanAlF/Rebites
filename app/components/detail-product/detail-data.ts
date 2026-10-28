@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { resolveEffectiveUnitPrice } from '@/lib/flash-pricing';
 import type { ProductDetail, RelatedProduct } from './data';
 
 const UUID_RE =
@@ -7,7 +8,7 @@ const DEFAULT_VENDOR_AVATAR =
   'https://images.pexels.com/photos/37193132/pexels-photo-37193132.jpeg?auto=compress&cs=tinysrgb&w=800';
 
 /**
- * 7B-2D-1: mapping berat/dimensi dari DB. NULL = belum diketahui
+ * mapping berat/dimensi dari DB. NULL = belum diketahui
  * (produk legacy / seller belum mengisi). Tanpa default/fallback.
  */
 function toPackageInt(value: unknown): number | null {
@@ -45,20 +46,23 @@ function rowToProductDetail(row: Record<string, any>): ProductDetail {
     stockRemaining: stock,
     rating: Number(row.rating ?? 5),
     reviewCount: soldCount > 0 ? soldCount : 32,
-    // 7B-1: NULL = belum diketahui. Jangan fallback 1 km (bukan kebenaran shipping).
+    // NULL = belum diketahui. Jangan fallback 1 km (bukan kebenaran shipping).
     distanceKm: row.distance_km != null && Number.isFinite(Number(row.distance_km))
       ? Number(row.distance_km)
       : null,
-    // 7B-2B: kapabilitas fulfillment (DB NOT NULL DEFAULT true).
+    // kapabilitas fulfillment (DB NOT NULL DEFAULT true).
     isDelivery: row.is_delivery ?? true,
     isPickup: row.is_pickup ?? true,
-    // 7B-2D-1: package dari DB (select * sudah mencakup kolom shipping).
+    // package dari DB (select * sudah mencakup kolom shipping).
     weightGram: toPackageInt(row.weight_gram),
     lengthCm: toPackageInt(row.length_cm),
     widthCm: toPackageInt(row.width_cm),
     heightCm: toPackageInt(row.height_cm),
     originalPrice: row.original_price ?? 0,
-    discountedPrice: row.surplus_price ?? 0,
+    // Samakan dengan aturan harga server (surplus_price, ditimpa
+    // flash_sale_price saat flash sale aktif) agar harga di halaman detail
+    // dan checkout identik dengan nominal yang ditagih server.
+    discountedPrice: resolveEffectiveUnitPrice(row),
     description: row.description?.trim()
       ? row.description
       : `${name} masih segar dan layak dinikmati hari ini, langsung dari ${

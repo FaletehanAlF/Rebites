@@ -1,6 +1,7 @@
 'use client';
 
-import { AdminAuthError, getAdminAuthHeader } from './admin-auth';
+import { fetchAdminWithAuth } from './admin-auth';
+import { AuthError } from './auth-token';
 
 export interface AdminUserUmkm {
   id: string | null;
@@ -31,6 +32,8 @@ export interface AdminUserItem {
   email: string | null;
   full_name: string | null;
   role: string | null;
+  /** Boolean dari server: user ini = Super Admin terkonfigurasi (tanpa UUID). */
+  is_super_admin: boolean;
   is_verified: boolean;
   created_at: string | null;
   /** Ditentukan dari keberadaan umkm_profiles, BUKAN dari role. */
@@ -58,12 +61,18 @@ export class AdminUsersApiError extends Error {
   }
 }
 
-async function authHeader(): Promise<string> {
+/**
+ * Satu refresh + satu retry saat 401 — kontrak `fetchAdminWithAuth` yang sama
+ * dengan lib admin lain. Inilah penyebab "gagal mengubah role": sebelumnya
+ * token diambil sekali, sehingga sesi yang masuk refresh window langsung
+ * dijawab 401 dan perubahan role gagal tanpa pernah dicoba ulang.
+ */
+async function adminFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   try {
-    return await getAdminAuthHeader();
+    return await fetchAdminWithAuth(input, init);
   } catch (err) {
-    if (err instanceof AdminAuthError) {
-      throw new AdminUsersApiError(err.message, 401);
+    if (err instanceof AuthError) {
+      throw new AdminUsersApiError(err.message, err.status);
     }
     throw err;
   }
@@ -90,6 +99,8 @@ export interface AdminUserDetail {
   email: string | null;
   full_name: string | null;
   role: string | null;
+  /** Boolean dari server: target = Super Admin terkonfigurasi (tanpa UUID). */
+  is_super_admin: boolean;
   phone: string | null;
   is_verified: boolean;
   created_at: string | null;
@@ -111,9 +122,7 @@ export interface AdminUserDetailSeller extends AdminUserSeller {
 }
 
 export async function fetchAdminUserDetail(id: string): Promise<AdminUserDetail> {
-  const res = await fetch(`/api/admin/users/${encodeURIComponent(id)}`, {
-    headers: { Authorization: await authHeader() },
-  });
+  const res = await adminFetch(`/api/admin/users/${encodeURIComponent(id)}`);
   if (!res.ok) {
     await parseError(res, 'Gagal memuat detail pengguna.');
   }
@@ -132,11 +141,10 @@ export async function updateAdminUserRole(
   id: string,
   role: AllowedUserRole
 ): Promise<{ id: string | null; old_role: string | null; role: string | null }> {
-  const res = await fetch(`/api/admin/users/${encodeURIComponent(id)}/role`, {
+  const res = await adminFetch(`/api/admin/users/${encodeURIComponent(id)}/role`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: await authHeader(),
     },
     body: JSON.stringify({ role }),
   });
@@ -163,9 +171,7 @@ export async function fetchAdminUsers(
   });
   if (search.trim()) params.set('search', search.trim());
   if (sellerStatus) params.set('sellerStatus', sellerStatus);
-  const res = await fetch(`/api/admin/users?${params.toString()}`, {
-    headers: { Authorization: await authHeader() },
-  });
+  const res = await adminFetch(`/api/admin/users?${params.toString()}`);
   if (!res.ok) {
     await parseError(res, 'Gagal memuat daftar pengguna.');
   }
@@ -211,11 +217,8 @@ export async function fetchAdminRoleHistory(
     limit: String(limit),
     offset: String(offset),
   });
-  const res = await fetch(
-    `/api/admin/users/${encodeURIComponent(id)}/role-history?${params.toString()}`,
-    {
-      headers: { Authorization: await authHeader() },
-    }
+  const res = await adminFetch(
+    `/api/admin/users/${encodeURIComponent(id)}/role-history?${params.toString()}`
   );
   if (!res.ok) {
     await parseError(res, 'Gagal memuat riwayat role.');

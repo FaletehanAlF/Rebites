@@ -83,7 +83,7 @@ export function ProductDetailModal({
   const { user, loading: authLoading } = useCurrentUser();
 
   const handleBuy = useCallback(() => {
-    if (authLoading) return;
+    if (authLoading || product.stockRemaining <= 0) return;
     if (!user) {
       toast({
         title: "Silakan login terlebih dahulu",
@@ -99,11 +99,13 @@ export function ProductDetailModal({
     router.push(
       `/detail/pesanan?product=${encodeURIComponent(product.id)}&qty=${qty}`,
     );
-  }, [onClose, qty, product.id, router, user, authLoading]);
+  }, [onClose, qty, product.id, product.stockRemaining, router, user, authLoading]);
 
   const savings = product.originalPrice - product.discountedPrice;
   const savingsPercent = Math.round((savings / product.originalPrice) * 100);
   const primaryImage = product.images[0];
+  // Sumber kebenaran stok adalah angka (<= 0 berarti habis).
+  const isOutOfStock = product.stockRemaining <= 0;
   const lowStock = product.stockRemaining <= 3;
 
   return (
@@ -215,7 +217,7 @@ export function ProductDetailModal({
                 "inline-block h-1.5 w-1.5 rounded-full mr-1.5",
                 lowStock ? "bg-sale" : "bg-primary/100",
               )} />
-              {lowStock ? `Stok terbatas, ${product.stockRemaining} tersisa` : `${product.stockRemaining} tersedia`}
+              {isOutOfStock ? `Stok Habis` : lowStock ? `Stok terbatas, ${product.stockRemaining} tersisa` : `${product.stockRemaining} tersedia`}
             </p>
 
             {}
@@ -266,10 +268,10 @@ export function ProductDetailModal({
                   <button
                     type="button"
                     onClick={handleBuy}
-                    disabled={added || product.stockRemaining === 0}
+                    disabled={added || isOutOfStock}
                     className={cn(
                       "flex h-11 flex-1 items-center justify-center rounded-2xl text-sm font-semibold transition-all active:scale-[0.97]",
-                      product.stockRemaining === 0
+                      isOutOfStock
                         ? "bg-charcoal-900/10 text-charcoal-400 cursor-not-allowed"
                         : added
                           ? "bg-primary text-white"
@@ -279,7 +281,7 @@ export function ProductDetailModal({
                   >
                     {added
                       ? "Ditambahkan!"
-                      : product.stockRemaining === 0
+                      : isOutOfStock
                         ? "Stok Habis"
                         : "Beli Sekarang"}
                   </button>

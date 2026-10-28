@@ -3,8 +3,11 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 import { COVER_IMAGE_ERROR, isArticleCoverUrl } from '@/lib/article-cover';
+import { sanitizeSearchTerm } from '@/lib/filter-search';
 
 export const runtime = 'nodejs';
 
@@ -22,7 +25,10 @@ const ADMIN_LIST_SELECT = [
   'title',
   'slug',
   'excerpt',
-  'content',
+  // `content` SENGAJA tidak diambil di daftar. Artikel bisa 50.000 karakter;
+  // 20 baris per halaman berarti hingga ~1 MB JSON hanya untuk menampilkan
+  // judul + status. Isi artikel diambil per artikel lewat GET /:id saat
+  // admin membuka pratinjau atau form ubah.
   'cover_image',
   'status',
   'published_at',
@@ -38,11 +44,6 @@ const STATUS_FILTERS = ['draft', 'published', 'archived'] as const;
 type StatusFilter = (typeof STATUS_FILTERS)[number];
 
 type ProfileRow = Record<string, unknown>;
-
-function sanitizeListSearch(raw: string | null): string {
-  if (!raw) return '';
-  return raw.trim().slice(0, 100).replace(/[%(),]/g, '');
-}
 
 export async function GET(req: NextRequest) {
   try {
@@ -65,7 +66,7 @@ export async function GET(req: NextRequest) {
     const rawOffset = Number(params.get('offset') ?? '0');
     const limit = Number.isFinite(rawLimit) ? Math.min(100, Math.max(1, Math.floor(rawLimit))) : 20;
     const offset = Number.isFinite(rawOffset) ? Math.max(0, Math.floor(rawOffset)) : 0;
-    const search = sanitizeListSearch(params.get('search'));
+    const search = sanitizeSearchTerm(params.get('search'));
     const statusRaw = (params.get('status') ?? '').trim();
     const statusFilter: StatusFilter | null = (
       STATUS_FILTERS as readonly string[]
@@ -144,9 +145,11 @@ export async function GET(req: NextRequest) {
       offset,
     });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/articles] list unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses artikel." }, { status: 500 });
   }
 }
 
@@ -373,8 +376,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ article: created }, { status: 201 });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/articles] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses artikel." }, { status: 500 });
   }
 }

@@ -241,7 +241,7 @@ export async function getActiveFlashSaleProducts(
         allDay: (r.all_day as boolean) ?? false,
         isSurplusToday: (r.is_surplus_today as boolean) ?? true,
         featured: (r.featured as boolean) ?? false,
-        // 7B-2B: kapabilitas fulfillment (DB NOT NULL DEFAULT true).
+        // kapabilitas fulfillment (DB NOT NULL DEFAULT true).
         isDelivery: (r.is_delivery as boolean) ?? true,
         isPickup: (r.is_pickup as boolean) ?? true,
         vendorName: (umkm?.business_name as string) ?? (r.vendor_name as string) ?? SELLER_VENDOR_NAME,
@@ -295,7 +295,7 @@ export async function getActiveFlashSaleProducts(
         image: p.image,
         category: p.category as UrgentItem['category'],
         rating: 4.7,
-        // 7B-1: jarak seller-flash belum diketahui -> NULL (jangan karang 1.8 km).
+        // jarak seller-flash belum diketahui -> NULL (jangan karang 1.8 km).
         distanceKm: null,
         availableFrom: p.startTime,
         availableTo: p.endTime,

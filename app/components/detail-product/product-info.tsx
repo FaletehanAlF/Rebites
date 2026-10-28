@@ -56,7 +56,7 @@ export function ProductInfo({
           <span aria-hidden className="text-sage-500">
             ·
           </span>
-          {/* 7B-1: jarak hanya tampil jika angka nyata; NULL disembunyikan. */}
+          {/* jarak hanya tampil jika angka nyata; NULL disembunyikan. */}
           {typeof product.distanceKm === 'number' && (
             <span className="inline-flex items-center gap-1 text-charcoal-500">
               <MapPin className="h-4 w-4 text-primary" />

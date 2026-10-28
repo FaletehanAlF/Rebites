@@ -15,6 +15,7 @@ import {
   Pencil,
   Plus,
   Trash2,
+  TriangleAlert,
   Utensils,
   XCircle,
   Zap,
@@ -322,6 +323,9 @@ function FlashSalePanel({
   const cfg = product.flashSale ?? null;
   const status = resolveFlashSaleStatus(product);
   const [editing, setEditing] = useState(false);
+  // Ringkas secara default: detail harga/slot/tanggal dilipat agar kartu tidak
+  // memanjang. Pembeli melihat statusnya; penjual membuka detail bila perlu.
+  const [showDetails, setShowDetails] = useState(false);
   const [error, setError] = useState('');
   const [price, setPrice] = useState('');
   const [selectedSlot, setSelectedSlot] = useState<UrgentSlot>('09-12');
@@ -465,8 +469,17 @@ function FlashSalePanel({
           Tidak tersedia di paket Basic. Upgrade ke Standar untuk mengikuti Flash Sale.
         </p>
       ) : editing ? (
-        <div className="mt-3 space-y-2.5">
-          { }
+        <Dialog open onOpenChange={(open) => !open && setEditing(false)}>
+          <DialogContent className="max-w-md rounded-2xl border-sage-100 bg-white p-5">
+            <DialogHeader>
+              <DialogTitle className="font-display text-base font-semibold text-charcoal-900">
+                Atur Flash Sale
+              </DialogTitle>
+              <DialogDescription className="text-xs leading-relaxed text-sage-500">
+                {product.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2.5">
           <div className="rounded-xl bg-white p-2.5">
             <label className="block text-[10px] font-semibold uppercase tracking-wider text-charcoal-900">
               Harga Flash Sale
@@ -590,68 +603,76 @@ function FlashSalePanel({
               Batal
             </button>
           </div>
-        </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       ) : cfg ? (
-        <div className="mt-2 space-y-1.5 rounded-xl bg-white p-2.5">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[11px] text-sage-500">Harga normal</span>
-            <span className="text-[11px] font-medium text-charcoal-500 line-through">
-              {formatRupiah(product.surplusPrice)}
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[11px] font-medium text-charcoal-900">Harga Flash Sale</span>
-            <span className="flex items-center gap-1.5">
+        <div className="mt-2 rounded-xl bg-white p-2.5">
+          {/* Ringkasan padat: satu baris harga + slot, sisanya dilipat. */}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+            <span className="flex items-baseline gap-1.5">
+              <span className="text-xs font-bold text-charcoal-900">
+                {formatRupiah(cfg.price)}
+              </span>
               {draftDiscount > 0 && (
-                <span className="text-[10px] font-bold text-primary">Diskon {draftDiscount}%</span>
+                <span className="text-[10px] font-bold text-primary">−{draftDiscount}%</span>
               )}
-              <span className="text-xs font-bold text-charcoal-900">{formatRupiah(cfg.price)}</span>
             </span>
-          </div>
-          <div className="flex items-start justify-between gap-2 text-[11px] text-sage-500">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3 shrink-0" />
-              Slot
-            </span>
-            <span className="text-right font-medium text-charcoal-900">
+            <span className="text-[10px] font-medium text-sage-500">
               {(() => {
                 try {
                   const slotKey = slotFromStartIso(cfg.startIso);
                   const slotDef = FLASH_SLOTS.find((s) => s.key === slotKey);
-                  return slotDef ? `${slotDef.label} (${slotDef.range})` : slotKey;
+                  return slotDef ? `${slotDef.label} ${slotDef.range}` : slotKey;
                 } catch {
                   return '-';
                 }
-              })()}{' '}
-              • {status === 'active' ? 'Tampil di Home' : status === 'scheduled' ? 'Akan tampil' : 'Berakhir'}
+              })()}
             </span>
           </div>
-          <div className="flex items-start justify-between gap-2 text-[11px] text-sage-500">
-            <span className="flex items-center gap-1">
-              <CalendarDays className="h-3 w-3 shrink-0" />
-              Mulai
-            </span>
-            <span className="text-right font-medium text-charcoal-900">
-              {formatPeriodLabel(cfg.startIso)}
-            </span>
+
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setShowDetails((prev) => !prev)}
+              aria-expanded={showDetails}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+            >
+              {showDetails ? 'Sembunyikan detail' : 'Lihat detail'}
+            </button>
+            <span aria-hidden className="text-sage-500">·</span>
+            <button
+              type="button"
+              onClick={startEditing}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-charcoal-900 hover:text-primary"
+            >
+              <Pencil className="h-3 w-3" aria-hidden />
+              Ubah
+            </button>
           </div>
-          <div className="flex items-start justify-between gap-2 text-[11px] text-sage-500">
-            <span className="flex items-center gap-1">
-              <CalendarDays className="h-3 w-3 shrink-0" />
-              Berakhir
-            </span>
-            <span className="text-right font-medium text-charcoal-900">
-              {formatPeriodLabel(cfg.endIso)}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={startEditing}
-            className="mt-0.5 inline-flex items-center gap-1.5 rounded-full border border-sage-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-charcoal-900 transition-colors hover:bg-sage-50"
-          >
-            <Pencil className="h-3 w-3" />
-            Ubah pengaturan
-          </button>
+
+          {showDetails && (
+            <dl className="mt-2 space-y-1 border-t border-sage-100 pt-2 text-[11px]">
+              <div className="flex items-baseline justify-between gap-2">
+                <dt className="text-sage-500">Harga normal</dt>
+                <dd className="font-medium text-charcoal-500 line-through">
+                  {formatRupiah(product.surplusPrice)}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <dt className="text-sage-500">Mulai</dt>
+                <dd className="text-right font-medium text-charcoal-900">
+                  {formatPeriodLabel(cfg.startIso)}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <dt className="text-sage-500">Berakhir</dt>
+                <dd className="text-right font-medium text-charcoal-900">
+                  {formatPeriodLabel(cfg.endIso)}
+                </dd>
+              </div>
+            </dl>
+          )}
         </div>
       ) : (
         <p className="mt-1.5 text-[11px] text-sage-500">
@@ -671,6 +692,7 @@ function MenuCard({
   onUpgradeClick,
   onQuotaBlocked,
   onEdit,
+  onFixWeight,
 }: {
   product: SellerProduct;
   flashQuota: number;
@@ -678,6 +700,7 @@ function MenuCard({
   onUpgradeClick: () => void;
   onQuotaBlocked: () => void;
   onEdit: () => void;
+  onFixWeight: () => void;
 }) {
   const { plan } = useSellerPlan();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -703,80 +726,103 @@ function MenuCard({
   const available = isProductAvailable(product);
 
   return (
-    <Card className="flex flex-col p-4">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-sage-100">
-        <SmartImage src={product.image} alt={`Foto ${product.name}`} />
-        {product.featured && (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-caramel px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white shadow-md">
-            <Crown className="h-3 w-3" />
-            Unggulan
-          </span>
-        )}
-        <span
-          className={cn(
-            'absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em]',
-            available
-              ? 'bg-white/95 text-primary'
-              : 'bg-white/95 text-charcoal-500'
+    <Card className="flex flex-col p-3.5">
+      {/* Kepala kartu: thumbnail ringkas + nama/harga/status.
+          Ringkas 4:3 lama membuat kartu setinggi ~700px dan tidak seragam. */}
+      <div className="flex items-start gap-3">
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-sage-100">
+          <SmartImage src={product.image} alt={`Foto ${product.name}`} sizes="80px" />
+          {product.featured && (
+            <span
+              className="absolute left-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-caramel text-white shadow-sm"
+              title="Unggulan"
+            >
+              <Crown className="h-3 w-3" aria-hidden />
+            </span>
           )}
-        >
-          {available ? `Stok ${product.stock}` : product.stock <= 0 ? 'Habis' : 'Tutup'}
-        </span>
-      </div>
+        </div>
 
-      <div className="mt-3 flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h3 className="truncate text-sm font-bold text-charcoal-900">
-            {product.name}
-          </h3>
-          <p className="mt-0.5 text-xs text-sage-500">{product.category}</p>
-          <div className="mt-1.5">
-            {(product.verificationStatus ?? 'pending') === 'approved' ? (
-              <Badge variant="success">Disetujui</Badge>
-            ) : (product.verificationStatus ?? 'pending') === 'rejected' ? (
-              <Badge variant="destructive">Ditolak</Badge>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h3
+              className="line-clamp-2 text-sm font-bold leading-snug text-charcoal-900"
+              title={product.name}
+            >
+              {product.name}
+            </h3>
+            <button
+              type="button"
+              onClick={onEdit}
+              aria-label={`Edit ${product.name}`}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-sage-200 text-charcoal-500 transition-colors hover:border-caramel hover:bg-caramel/20 hover:text-caramel"
+            >
+              <Pencil className="h-3 w-3" aria-hidden />
+            </button>
+          </div>
+
+          <p className="mt-0.5 truncate text-xs text-sage-500">{product.category}</p>
+
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {(product.verificationStatus ?? 'approved') === 'approved' ? (
+              <Badge variant="success">Tayang</Badge>
+            ) : (product.verificationStatus ?? 'approved') === 'rejected' ? (
+              <Badge variant="destructive">Ditunda Admin</Badge>
             ) : (
               <Badge variant="warning">Menunggu Verifikasi</Badge>
             )}
+            <span
+              className={cn(
+                'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]',
+                available ? 'bg-primary/10 text-primary' : 'bg-cream-100 text-charcoal-500'
+              )}
+            >
+              {available ? `Stok ${product.stock}` : product.stock <= 0 ? 'Habis' : 'Tutup'}
+            </span>
           </div>
-          {(product.verificationStatus ?? 'pending') === 'rejected' &&
-          product.rejectionReason?.trim() ? (
-            <p className="mt-1.5 rounded-xl bg-red-50 px-3 py-2 text-[11px] leading-relaxed text-red-700">
-              <span className="font-bold">Alasan penolakan: </span>
-              {product.rejectionReason.trim()}
-            </p>
-          ) : null}
+
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
+            <span className="text-sm font-bold text-primary">
+              {formatRupiah(product.surplusPrice)}
+            </span>
+            <span className="text-[11px] text-charcoal-500 line-through">
+              {formatRupiah(product.originalPrice)}
+            </span>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={onEdit}
-          aria-label={`Edit ${product.name}`}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-sage-200 text-charcoal-500 transition-colors hover:border-caramel hover:bg-caramel/20 hover:text-caramel"
-        >
-          <Pencil className="h-3 w-3" />
-        </button>
       </div>
 
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className="text-sm font-bold text-primary">
-          {formatRupiah(product.surplusPrice)}
-        </span>
-        <span className="text-xs text-charcoal-500 line-through">
-          {formatRupiah(product.originalPrice)}
-        </span>
-      </div>
+      {/* Peringatan ringkas: hanya yang benar-benar menghalangi pembeli. */}
+      {(product.verificationStatus ?? 'approved') === 'rejected' &&
+      product.rejectionReason?.trim() ? (
+        <p className="mt-2.5 line-clamp-3 rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-red-700">
+          <span className="font-bold">Alasan penundaan: </span>
+          {product.rejectionReason.trim()}
+        </p>
+      ) : null}
+      {product.isDelivery && product.weightGram == null ? (
+        <div className="mt-2.5 flex items-start gap-2 rounded-lg bg-caramel/15 px-2.5 py-1.5">
+          <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" aria-hidden />
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold leading-snug text-charcoal-900">
+              Belum siap dikirim kurir
+            </p>
+            <button
+              type="button"
+              onClick={onFixWeight}
+              className="mt-0.5 text-[11px] font-semibold text-caramel-dark underline-offset-2 hover:underline"
+            >
+              Isi berat sekarang
+            </button>
+          </div>
+        </div>
+      ) : null}
 
-      { }
-      <div className="mt-3">
+      {/* Kontrol: stok & jam. Ditumpuk agar tidak saling menghimpit di kartu sempit. */}
+      <div className="mt-3 space-y-2">
         <StockEditor product={product} />
-      </div>
-
-      { }
-      <div className="mt-3">
         <TimeEditor product={product} />
       </div>
 
-      { }
       <FlashSalePanel
         product={product}
         quota={flashQuota}
@@ -785,12 +831,11 @@ function MenuCard({
         onQuotaBlocked={onQuotaBlocked}
       />
 
-      { }
-      <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
+      <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-3">
         <button
           type="button"
           onClick={handleToggleStock}
-          className="rounded-full border border-sage-100 px-3 py-1.5 text-[11px] font-semibold text-charcoal-900 transition-colors hover:bg-cream-50"
+          className="rounded-full border border-sage-100 px-2.5 py-1 text-[11px] font-semibold text-charcoal-900 transition-colors hover:bg-cream-50"
         >
           {product.stock > 0 ? 'Set Habis' : 'Set Tersedia'}
         </button>
@@ -800,7 +845,7 @@ function MenuCard({
             type="button"
             onClick={handleToggleFeatured}
             className={cn(
-              'rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors',
+              'rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors',
               product.featured
                 ? 'bg-caramel text-white hover:bg-caramel-600'
                 : 'border border-caramel-500 text-caramel-dark hover:bg-caramel/15'
@@ -816,13 +861,13 @@ function MenuCard({
           onBlur={() => setConfirmingDelete(false)}
           aria-label={confirmingDelete ? `Klik lagi untuk menghapus ${product.name}` : `Hapus ${product.name}`}
           className={cn(
-            'ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors',
+            'ml-auto inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors',
             confirmingDelete
               ? 'bg-red-600 text-white'
               : 'border border-sage-100 text-charcoal-500 hover:bg-cream-50 hover:text-charcoal-900'
           )}
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="h-3 w-3" aria-hidden />
           {confirmingDelete ? 'Yakin?' : 'Hapus'}
         </button>
       </div>
@@ -917,6 +962,14 @@ export default function MenuSayaPage() {
   const [editingProduct, setEditingProduct] = useState<SellerProduct | null>(
     null,
   );
+  // true ketika modal edit dibuka dari arahan "Isi berat sekarang": langsung
+  // buka bagian "Edit lebih lanjut" yang memuat Informasi Pengiriman.
+  const [editFocusShipping, setEditFocusShipping] = useState(false);
+
+  const openEditModal = (product: SellerProduct, focusShipping = false) => {
+    setEditingProduct(product);
+    setEditFocusShipping(focusShipping);
+  };
 
   const [, setStatusTick] = useState(0);
 
@@ -1058,7 +1111,8 @@ export default function MenuSayaPage() {
               flashUsed={flashUsed}
               onUpgradeClick={() => setUpgradeOpen(true)}
               onQuotaBlocked={() => setQuotaBlocked(true)}
-              onEdit={() => setEditingProduct(product)}
+              onEdit={() => openEditModal(product)}
+              onFixWeight={() => openEditModal(product, true)}
             />
           ))}
         </div>
@@ -1068,9 +1122,9 @@ export default function MenuSayaPage() {
         product={editingProduct}
         open={editingProduct !== null}
         onClose={() => setEditingProduct(null)}
+        initialShowAdvanced={editFocusShipping}
       />
 
-      { }
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
         <DialogContent className="max-w-sm rounded-2xl border-sage-100 bg-white p-6">
           <DialogHeader>

@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     if (insertErr) {
       console.error('[subscriptions/xendit] insert pending error', insertErr.message);
-      
+      return NextResponse.json({ error: 'Gagal menyimpan langganan.' }, { status: 500 });
     }
 
     return NextResponse.json({

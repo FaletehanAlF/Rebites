@@ -118,14 +118,16 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
     };
 
     check();
+    // Interval polling tidak boleh lebih sering dari batas server
+    // (VERIFY_CHECK_WINDOW 15 dtk di lib/server/verify-throttle.ts).
     interval = setInterval(() => {
-      elapsed += 3000;
-      if (elapsed >= 90_000) {
+      elapsed += 15000;
+      if (elapsed >= 180000) {
         clearInterval(interval);
         return;
       }
       check();
-    }, 3000);
+    }, 15000);
 
     return () => {
       cancelled = true;

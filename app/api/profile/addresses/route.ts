@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getUserFromBearer } from '@/lib/server/supabase';
+import { validateCoordinatePairFields } from '@/lib/location-validation';
 
 export const runtime = 'nodejs';
 
@@ -14,8 +15,10 @@ export const runtime = 'nodejs';
  *
  * Kolom sesuai skema DB: label, receiver_name, phone, province, city,
  * district, full_address, note, is_selected.
- * 7B-1: + postal_code (5 digit, opsional/NULL), latitude (-90..90, NULL),
+ * + postal_code (5 digit, opsional/NULL), latitude (-90..90, NULL),
  * longitude (-180..180, NULL). Tanpa geocoding, tanpa koordinat palsu.
+ * Tahap 3: latitude/longitude wajib berpasangan — dikirim dua-duanya
+ * (angka valid atau NULL) atau tidak sama sekali; setengah pasangan ditolak.
  */
 
 const ALLOWED_LABELS = ['Rumah', 'Kos', 'Sekolah', 'Lainnya'];
@@ -37,14 +40,6 @@ type AddressPayload = {
   longitude?: number | null;
 };
 
-function parseCoordinateField(value: unknown): number | null | 'invalid' {
-  if (value === null || value === undefined) return null;
-  if (typeof value === 'string' && value.trim() === '') return null;
-  const num = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(num)) return 'invalid';
-  return num;
-}
-
 function pickFields(body: Record<string, unknown>): AddressPayload {
   const out: AddressPayload = {};
   if (typeof body.label === 'string' && ALLOWED_LABELS.includes(body.label)) out.label = body.label;
@@ -56,29 +51,22 @@ function pickFields(body: Record<string, unknown>): AddressPayload {
   if (typeof body.full_address === 'string') out.full_address = body.full_address;
   if (typeof body.note === 'string' || body.note === null) out.note = body.note as string | null;
   if (typeof body.is_selected === 'boolean') out.is_selected = body.is_selected;
-  // 7B-1: postal_code opsional; string kosong -> NULL (bukan valid).
+  // postal_code opsional; string kosong -> NULL (bukan valid).
   if (typeof body.postal_code === 'string') {
     const trimmed = body.postal_code.trim();
     out.postal_code = trimmed === '' ? null : trimmed;
   } else if (body.postal_code === null) {
     out.postal_code = null;
   }
-  // 7B-1: lat/lng opsional; string kosong -> NULL.
-  if (body.latitude !== undefined) {
-    const parsed = parseCoordinateField(body.latitude);
-    if (parsed === 'invalid') {
-      (out as Record<string, unknown>).__latitudeInvalid = true;
-    } else {
-      out.latitude = parsed;
-    }
-  }
-  if (body.longitude !== undefined) {
-    const parsed = parseCoordinateField(body.longitude);
-    if (parsed === 'invalid') {
-      (out as Record<string, unknown>).__longitudeInvalid = true;
-    } else {
-      out.longitude = parsed;
-    }
+  // 7B-1 (Tahap 3): lat/lng opsional tetapi wajib berpasangan. Helper
+  // bersama memvalidasi angka, rentang, dan kelengkapan pasangan sekaligus;
+  // hasilnya hanya ditulis bila dua-duanya dikirim (angka valid atau NULL).
+  const coordinatePair = validateCoordinatePairFields(body.latitude, body.longitude);
+  if (!coordinatePair.ok) {
+    (out as Record<string, unknown>).__coordinatePairError = coordinatePair.error;
+  } else if (coordinatePair.provided) {
+    out.latitude = coordinatePair.latitude;
+    out.longitude = coordinatePair.longitude;
   }
   return out;
 }
@@ -86,22 +74,14 @@ function pickFields(body: Record<string, unknown>): AddressPayload {
 /** Validasi dasar 7B-1 untuk field lokasi opsional. Return pesan error atau null. */
 function validateLocationFields(fields: AddressPayload): string | null {
   const raw = fields as Record<string, unknown>;
-  if (raw.__latitudeInvalid || raw.__longitudeInvalid) {
-    return 'latitude/longitude tidak valid (harus angka).';
+  // Tahap 3: pasangan koordinat sudah divalidasi lengkap oleh helper bersama
+  // (angka, rentang, dan kelengkapan pasangan) saat pickFields.
+  if (typeof raw.__coordinatePairError === 'string') {
+    return raw.__coordinatePairError;
   }
   if (fields.postal_code !== undefined && fields.postal_code !== null) {
     if (!POSTAL_CODE_RE.test(fields.postal_code)) {
       return 'Kode pos harus 5 digit angka (cth. 16424).';
-    }
-  }
-  if (fields.latitude !== undefined && fields.latitude !== null) {
-    if (fields.latitude < -90 || fields.latitude > 90) {
-      return 'latitude harus di antara -90 dan 90.';
-    }
-  }
-  if (fields.longitude !== undefined && fields.longitude !== null) {
-    if (fields.longitude < -180 || fields.longitude > 180) {
-      return 'longitude harus di antara -180 dan 180.';
     }
   }
   return null;
@@ -155,8 +135,7 @@ export async function POST(req: NextRequest) {
 
   const fields = pickFields(body);
   const locationError = validateLocationFields(fields);
-  delete (fields as Record<string, unknown>).__latitudeInvalid;
-  delete (fields as Record<string, unknown>).__longitudeInvalid;
+  delete (fields as Record<string, unknown>).__coordinatePairError;
   if (locationError) {
     return NextResponse.json({ error: locationError }, { status: 400 });
   }
@@ -208,8 +187,7 @@ export async function PUT(req: NextRequest) {
 
   const fields = pickFields(body);
   const locationError = validateLocationFields(fields);
-  delete (fields as Record<string, unknown>).__latitudeInvalid;
-  delete (fields as Record<string, unknown>).__longitudeInvalid;
+  delete (fields as Record<string, unknown>).__coordinatePairError;
   if (locationError) {
     return NextResponse.json({ error: locationError }, { status: 400 });
   }

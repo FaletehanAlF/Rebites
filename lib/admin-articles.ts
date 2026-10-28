@@ -16,7 +16,13 @@ export interface AdminArticleItem {
   title: string | null;
   slug: string | null;
   excerpt: string | null;
-  content: string | null;
+  /**
+   * Opsional: daftar artikel (GET /api/admin/articles) TIDAK mengirim isi
+   * artikel karena bisa 50.000 karakter × 20 baris per halaman. Nilainya
+   * `undefined` pada hasil daftar, dan baru terisi setelah
+   * `fetchAdminArticleDetail(id)` dipanggil (pratinjau / form ubah).
+   */
+  content?: string | null;
   cover_image: string | null;
   status: ArticleStatus | string | null;
   published_at: string | null;
@@ -113,6 +119,29 @@ export interface ArticlePayload {
   umkm_id: string | null;
   category: string | null;
   tags: string[];
+}
+
+/**
+ * Detail satu artikel, TERMASUK isi (`content`).
+ *
+ * Wajib dipanggil sebelum membuka form ubah atau pratinjau isi: daftar
+ * artikel tidak lagi mengirim `content`, dan menyimpan form yang isinya
+ * kosong akan MENGHAPUS isi artikel di server (PUT mengirim `content`).
+ */
+export async function fetchAdminArticleDetail(id: string): Promise<AdminArticleItem> {
+  const res = await fetch(`/api/admin/articles/${encodeURIComponent(id)}`, {
+    headers: { Authorization: await authHeader() },
+  });
+  if (!res.ok) {
+    await parseError(res, 'Gagal memuat detail artikel.');
+  }
+  const json = (await res.json().catch(() => null)) as {
+    article?: AdminArticleItem;
+  } | null;
+  if (!json || !json.article) {
+    throw new AdminArticlesApiError('Respons detail artikel tidak valid.', 500);
+  }
+  return json.article;
 }
 
 /** Frontend tidak pernah mengirim status/published_at/author_id (dipaksa server). */

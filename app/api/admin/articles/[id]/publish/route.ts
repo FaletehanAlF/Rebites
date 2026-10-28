@@ -3,6 +3,8 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 import { COVER_IMAGE_ERROR, isArticleCoverUrl } from '@/lib/article-cover';
 
@@ -150,8 +152,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
     return NextResponse.json({ article: updated });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/articles/publish] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses artikel." }, { status: 500 });
   }
 }

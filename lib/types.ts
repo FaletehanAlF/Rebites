@@ -95,16 +95,16 @@ export interface DeliveryAddress {
   district: string;
   fullAddress: string;
   note?: string;
-  /** 7B-1: kode pos 5 digit, NULL untuk alamat legacy. */
+  /** kode pos 5 digit, NULL untuk alamat legacy. */
   postalCode?: string | null;
-  /** 7B-1: NULL hingga ada map-picker/geocoding. Jangan isi palsu. */
+  /** diisi GPS/manual (pasangan lengkap); NULL = belum diketahui. Jangan isi palsu. */
   latitude?: number | null;
-  /** 7B-1: NULL hingga ada map-picker/geocoding. Jangan isi palsu. */
+  /** diisi GPS/manual (pasangan lengkap); NULL = belum diketahui. Jangan isi palsu. */
   longitude?: number | null;
 }
 
 /**
- * 7B-1: snapshot alamat saat checkout. Diperluas additive, semua field baru
+ * snapshot alamat saat checkout. Diperluas additive, semua field baru
  * opsional agar order lama (tanpa postal/latlng/addressId) tetap terbaca.
  */
 export interface AddressSnapshot extends Omit<DeliveryAddress, "id"> {
@@ -112,7 +112,7 @@ export interface AddressSnapshot extends Omit<DeliveryAddress, "id"> {
 }
 
 /**
- * 7B-2D-5: snapshot origin seller saat checkout. Dibangun server-side dari
+ * snapshot origin seller saat checkout. Dibangun server-side dari
  * umkm_profiles (bukan dari client). Semua field nullable kecuali nama/slug
  * yang mengikuti behavior vendor existing. Imut setelah order dibuat.
  */
@@ -128,7 +128,7 @@ export interface ShippingOriginSnapshot {
 }
 
 /**
- * 7B-2D-5: snapshot package saat checkout. Dibangun server-side dari
+ * snapshot package saat checkout. Dibangun server-side dari
  * products (bukan dari client). weightGram = berat PER UNIT (tidak berubah
  * arti); totalWeightGram = weightGram x quantity (null bila unknown).
  */
@@ -142,7 +142,7 @@ export interface ShippingPackageSnapshot {
 }
 
 /**
- * 7B-2D-5: snapshot shipping imut pada orders.shipping_snapshot (jsonb,
+ * snapshot shipping imut pada orders.shipping_snapshot (jsonb,
  * nullable untuk order legacy). Destination TIDAK diduplikasi (tetap di
  * address_snapshot). Tanpa courier/service/tracking (tahap Biteship).
  */
@@ -152,7 +152,7 @@ export interface ShippingSnapshot {
 }
 
 /**
- * 7C-1: satu opsi ongkir hasil normalisasi Biteship rates
+ * satu opsi ongkir hasil normalisasi Biteship rates
  * (POST /api/shipping/rates). Harga final per opsi (IDR).
  */
 export interface ShippingRateOption {
@@ -212,7 +212,7 @@ export interface StoredOrder {
   estimatedCompletionAt?: string;
   completedAt?: string;
 
-  /** 7B-1: NULL = belum diketahui (jangan tampilkan angka palsu). */
+  /** NULL = belum diketahui (jangan tampilkan angka palsu). */
   distanceKm?: number | null;
   vendorAddress?: string;
   vendorOpenHours?: string;
@@ -226,29 +226,29 @@ export interface StoredOrder {
   deliveryStartedAt?: string;
   estimatedArrivalAt?: string;
 
-  /** 7B-2D-5: snapshot imut {origin, package} (orders.shipping_snapshot). NULL = order legacy. */
+  /** snapshot imut {origin, package} (orders.shipping_snapshot). NULL = order legacy. */
   shippingSnapshot?: ShippingSnapshot | null;
 
-  /** 7C-1: pilihan kurir checkout (kolom orders, nullable untuk pickup/legacy). */
+  /** pilihan kurir checkout (kolom orders, nullable untuk pickup/legacy). */
   courierCode?: string | null;
-  /** 7C-1: pilihan service kurir (kolom orders, nullable untuk pickup/legacy). */
+  /** pilihan service kurir (kolom orders, nullable untuk pickup/legacy). */
   courierServiceCode?: string | null;
-  /** 7C-1: nama service kurir pilihan (kolom orders, nullable untuk pickup/legacy). */
+  /** nama service kurir pilihan (kolom orders, nullable untuk pickup/legacy). */
   courierServiceName?: string | null;
-  /** 7C-1: ongkir pilihan IDR (kolom orders, nullable untuk pickup/legacy). */
+  /** ongkir pilihan IDR (kolom orders, nullable untuk pickup/legacy). */
   shippingRate?: number | null;
 
-  /** 7C-3C-1: ID order Biteship (kolom orders, NULL = shipment belum dibuat). */
+  /** ID order Biteship (kolom orders, NULL = shipment belum dibuat). */
   biteshipOrderId?: string | null;
-  /** 7C-3C-1: tracking ID Biteship untuk GET /v1/trackings/:id (NULL = belum ada). */
+  /** tracking ID Biteship untuk GET /v1/trackings/:id (NULL = belum ada). */
   biteshipTrackingId?: string | null;
-  /** 7C-3C-1: nomor AWB/waybill (NULL hingga tersedia). */
+  /** nomor AWB/waybill (NULL hingga tersedia). */
   biteshipWaybillId?: string | null;
-  /** 7C-3C-1: status shipment Biteship terakhir (NULL = belum ada shipment). */
+  /** status shipment Biteship terakhir (NULL = belum ada shipment). */
   shipmentStatus?: string | null;
-  /** 7C-3C-1: waktu shipment berhasil dibuat (NULL = belum ada shipment). */
+  /** waktu shipment berhasil dibuat (NULL = belum ada shipment). */
   shipmentCreatedAt?: string | null;
-  /** 7C-3C-1: pesan error terakhir shipment (bedakan gagal vs belum dibuat). */
+  /** pesan error terakhir shipment (bedakan gagal vs belum dibuat). */
   shipmentError?: string | null;
 }
 
@@ -260,7 +260,7 @@ export interface OrderReview {
   createdAt: string;
 }
 
-export type CoinTransactionType = "earned" | "spent";
+export type CoinTransactionType = "earned" | "spent" | "refund";
 
 export interface CoinTransaction {
   id: string;
@@ -281,19 +281,25 @@ export interface OrderDraft {
   originalPrice: number;
   discountedPrice: number;
   stockRemaining: number;
-  /** 7B-1: NULL = belum diketahui. Bukan sumber kebenaran shipping. */
+  /** NULL = belum diketahui. Bukan sumber kebenaran shipping. */
   distanceKm?: number | null;
-  /** 7B-2B: kapabilitas fulfillment produk (sumber untuk gating UI checkout). */
+  /** kapabilitas fulfillment produk (sumber untuk gating UI checkout). */
   isDelivery: boolean;
-  /** 7B-2B: kapabilitas fulfillment produk (sumber untuk gating UI checkout). */
+  /** kapabilitas fulfillment produk (sumber untuk gating UI checkout). */
   isPickup: boolean;
-  /** 7B-2D-1: berat per kemasan dari products.weight_gram. NULL = belum diketahui. */
+  /**
+   * true = produk bisa dikirim kurir, tetapi beratnya belum diisi (weight_gram
+   * NULL). Server menolak ongkir dengan product_no_weight, jadi UI harus
+   * menyembunyikan/menolak Diantar, bukan menampilkan error kurir mentah.
+   */
+  deliveryUnavailableReason?: "weight_missing" | null;
+  /** berat per kemasan dari products.weight_gram. NULL = belum diketahui. */
   weightGram?: number | null;
-  /** 7B-2D-1: panjang kemasan dari products.length_cm. NULL = belum diketahui. */
+  /** panjang kemasan dari products.length_cm. NULL = belum diketahui. */
   lengthCm?: number | null;
-  /** 7B-2D-1: lebar kemasan dari products.width_cm. NULL = belum diketahui. */
+  /** lebar kemasan dari products.width_cm. NULL = belum diketahui. */
   widthCm?: number | null;
-  /** 7B-2D-1: tinggi kemasan dari products.height_cm. NULL = belum diketahui. */
+  /** tinggi kemasan dari products.height_cm. NULL = belum diketahui. */
   heightCm?: number | null;
   pickupTime: { from: string; to: string };
   pickupLocation: string;

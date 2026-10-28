@@ -166,13 +166,30 @@ export function FoldText({
 
   const animate = (open: boolean) => {
     tweenRef.current?.kill();
+    // `will-change` hanya dipasang SELAMA animasi. Sebelumnya kelas
+    // `will-change-transform` menempel permanen di setiap karakter judul;
+    // browser lalu wajib mempertahankan lapisan komposit untuk semuanya
+    // selamanya, memakan memori GPU dan membuat scroll berat. Animasi ini
+    // berjalan sekali (trigger="load"), jadi setelah selesai tidak ada alasan
+    // menyimpan lapisan tersebut.
+    spriteRefs.current.forEach((el) => {
+      if (el) el.style.willChange = "transform";
+    });
+    const releaseLayers = () => {
+      spriteRefs.current.forEach((el) => {
+        if (el) el.style.willChange = "";
+      });
+    };
     tweenRef.current = gsap.to(spriteRefs.current, {
       "--fold-p": open ? 0 : 1,
       "--fold-crease": open ? 0 : 1,
       duration,
       ease,
       stagger: open ? stagger : stagger * 0.6,
-      onComplete,
+      onComplete: () => {
+        releaseLayers();
+        onComplete?.();
+      },
     });
   };
 
@@ -253,7 +270,7 @@ export function FoldText({
                     ref={(el) => {
                       spriteRefs.current[spriteIndex] = el;
                     }}
-                    className="relative inline-block whitespace-pre will-change-transform"
+                    className="relative inline-block whitespace-pre"
                     style={{ transformStyle: "preserve-3d" }}
                   >
                     <span style={faceFront}>{value}</span>

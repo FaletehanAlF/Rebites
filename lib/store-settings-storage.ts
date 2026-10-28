@@ -12,13 +12,13 @@ export interface SellerStoreSettings {
   image: string;
   address: string;
   openHours: string;
-  /** 7B-1: kode pos origin, NULL untuk data legacy. */
+  /** kode pos origin, NULL untuk data legacy. */
   postalCode?: string | null;
-  /** 7B-1: telepon toko untuk kontak kurir, NULL jika belum diisi. */
+  /** telepon toko untuk kontak kurir, NULL jika belum diisi. */
   phone?: string | null;
-  /** 7B-1: gunakan kolom existing umkm_profiles.latitude, NULL = belum diketahui. */
+  /** gunakan kolom existing umkm_profiles.latitude, NULL = belum diketahui. */
   latitude?: number | null;
-  /** 7B-1: gunakan kolom existing umkm_profiles.longitude, NULL = belum diketahui. */
+  /** gunakan kolom existing umkm_profiles.longitude, NULL = belum diketahui. */
   longitude?: number | null;
 }
 
@@ -131,12 +131,24 @@ export function updateStoreSettings(
   if (patch.image !== undefined) payload.logo_url = patch.image;
   if (patch.address !== undefined) payload.address = patch.address;
   if (patch.openHours !== undefined) payload.open_hours = patch.openHours;
-  // 7B-1: postal/phone origin (nullable). lat/lng TIDAK diubah dari UI
-  // (tanpa map-picker, biarkan NULL hingga terverifikasi).
+  // postal/phone origin (nullable).
   if (patch.postalCode !== undefined)
     payload.postal_code = patch.postalCode?.trim() ? patch.postalCode.trim() : null;
   if (patch.phone !== undefined)
     payload.phone = patch.phone?.trim() ? patch.phone.trim() : null;
+  // koordinat origin toko (opsional, dari GPS/manual di pengaturan).
+  // Hanya angka finite yang ditulis; selain itu NULL (belum diketahui) —
+  // tanpa nilai karangan. Rentang sah ditegakkan form + CHECK constraint DB.
+  if (patch.latitude !== undefined)
+    payload.latitude =
+      typeof patch.latitude === 'number' && Number.isFinite(patch.latitude)
+        ? patch.latitude
+        : null;
+  if (patch.longitude !== undefined)
+    payload.longitude =
+      typeof patch.longitude === 'number' && Number.isFinite(patch.longitude)
+        ? patch.longitude
+        : null;
   if (Object.keys(payload).length === 0) return Promise.resolve(true);
   return patchOwnUmkm(payload);
 }

@@ -20,6 +20,23 @@ export interface XenditInvoice {
   expiry_date: string;
 }
 
+/**
+ * Error HTTP dari Xendit dengan status eksplisit.
+ *
+ * Status disimpan pada properti `.status` agar tetap tersedia walau pesan
+ * JSON dari Xendit menimpa teks error (sebelumnya status hilang sehingga
+ * klasifikasi konservatif selalu jatuh ke `unknown`).
+ */
+export interface XenditHttpError extends Error {
+  status?: number;
+}
+
+function makeXenditHttpError(message: string, status: number): XenditHttpError {
+  const err = new Error(message) as XenditHttpError;
+  err.status = status;
+  return err;
+}
+
 function getSecretKey(): string {
   const raw = process.env.XENDIT_SECRET_KEY?.trim();
   if (!raw) throw new Error('Missing env: XENDIT_SECRET_KEY');
@@ -96,7 +113,7 @@ export async function createXenditInvoice(
       external_id: params.externalId,
       message: msg,
     });
-    throw new Error(msg);
+    throw makeXenditHttpError(msg, res.status);
   }
 
   console.log('[xendit] invoice created', {
@@ -136,7 +153,7 @@ export async function getXenditInvoice(
     const msg =
       (json as { message?: string })?.message ??
       `Xendit error ${res.status}`;
-    throw new Error(msg);
+    throw makeXenditHttpError(msg, res.status);
   }
   return json as XenditInvoice & { payment_method?: string; payment_channel?: string };
 }

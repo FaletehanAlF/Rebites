@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/server/supabase';
 export const runtime = 'nodejs';
 
 /**
- * 7C-3C-4: Biteship webhook (server-only).
+ * Biteship webhook (server-only).
  * Menerima update shipment: order.status / order.waybill_id / order.price.
  * Hanya menulis kolom shipment; TIDAK menyentuh payment/order/lifecycle/stock.
  *

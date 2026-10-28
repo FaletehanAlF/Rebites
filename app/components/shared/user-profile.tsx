@@ -1009,10 +1009,22 @@ export function UserProfile() {
         />
       </div>
 
-      <div className="lg:pl-[280px]">
+      <div className="pt-14 lg:pl-[280px] lg:pt-0">
         <MobileBottomNav />
-        {}
-        <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-sage-100 bg-white px-4 py-3 lg:hidden">
+        {/*
+          Bar "My Profile" khusus mobile.
+
+          Sebelumnya bar ini `sticky top-0 z-10` sementara MobileNavbar
+          bersifat `fixed top-0 z-50`. Akibatnya bar ini SELALU tertutup
+          MobileNavbar (z lebih rendah, posisi sama) dan hanya menyisakan
+          celah kosong 120px di dalam <main> — bukan jarak, tapi ruang
+          hilang. Sekarang:
+            - pembungkus diberi `pt-14` (tinggi MobileNavbar 56px) supaya
+              bar mulai TEPAT di bawah navbar, bukan di belakangnya;
+            - bar memakai `top-14` agar tetap menempel di bawah navbar
+              saat halaman digulir, tanpa menimpa ikon notifikasi.
+        */}
+        <div className="sticky top-14 z-10 flex items-center gap-3 border-b border-sage-100 bg-white px-4 py-2.5 lg:hidden">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
@@ -1026,7 +1038,7 @@ export function UserProfile() {
           </span>
         </div>
 
-        <main className="relative mx-auto max-w-[1100px] px-4 pb-24 pt-[120px] sm:pb-20 sm:pt-6 lg:px-8 lg:pt-8">
+        <main className="relative mx-auto max-w-[1100px] px-4 pb-24 pt-4 sm:pt-6 lg:px-8 lg:pt-8">
           {}
           <div className="hidden lg:block">
             <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-primary">

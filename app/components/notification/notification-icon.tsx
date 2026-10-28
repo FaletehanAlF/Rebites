@@ -3,6 +3,7 @@
 import {
   CheckCircle2,
   CreditCard,
+  Flag,
   Gift,
   PackageCheck,
   ShoppingBag,
@@ -99,6 +100,18 @@ const ICON_CONFIG: Record<
     icon: XCircle,
     bg: 'bg-red-50',
     color: 'text-red-500',
+  },
+  product_warning: {
+    icon: AlertTriangle,
+    bg: 'bg-caramel/15',
+    color: 'text-caramel-dark',
+  },
+  // NOTIF-1: laporan baru untuk toko. Diberi ikon bendera agar berbeda dari
+  // peringatan produk (keduanya sama-sama terkait moderasi).
+  report_received: {
+    icon: Flag,
+    bg: 'bg-orange-50',
+    color: 'text-orange-600',
   },
 };
 

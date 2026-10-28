@@ -107,7 +107,7 @@ export function PaymentSummaryCard() {
             </dd>
           </div>
 
-          {/* 7C-2D: delivery menampilkan harga opsi terpilih (tanpa fallback
+          {/* delivery menampilkan harga opsi terpilih (tanpa fallback
               Rp8.000); belum memilih = placeholder. Pickup = behavior lama. */}
           {fulfillment === 'delivery'
             ? selectedShippingOption && (

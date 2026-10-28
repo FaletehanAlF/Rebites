@@ -1,10 +1,21 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, History } from 'lucide-react';
+import { History, RefreshCw } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { AdminPagination } from './admin-controls';
+import {
+  AdminInlineError,
+  AdminInlineLoading,
+  AdminInlineMessage,
+} from './admin-state';
+import {
+  formatTanggalWaktu,
+  labelPeran,
+  varianPeran,
+} from './admin-format';
 import {
   AdminUsersApiError,
   fetchAdminRoleHistory,
@@ -12,19 +23,6 @@ import {
 } from '@/lib/admin-users';
 
 const PAGE_LIMIT = 20;
-
-const formatDateTime = (iso: string | null | undefined) => {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 export function UserRoleHistory({
   userId,
@@ -57,7 +55,7 @@ export function UserRoleHistory({
         if (err instanceof AdminUsersApiError && err.status === 401) {
           setErrorMsg('Sesi habis, silakan login ulang.');
         } else {
-          setErrorMsg(err instanceof Error ? err.message : 'Gagal memuat riwayat role.');
+          setErrorMsg(err instanceof Error ? err.message : 'Gagal memuat riwayat peran.');
         }
         setStatus('error');
       }
@@ -70,37 +68,42 @@ export function UserRoleHistory({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, refreshKey]);
 
-  const showingFrom = total === 0 ? 0 : offset + 1;
-  const showingTo = Math.min(offset + PAGE_LIMIT, total);
+  const page = Math.floor(offset / PAGE_LIMIT) + 1;
 
   return (
-    <Card>
+    <Card className="mt-5">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <History className="h-4 w-4 text-primary" />
-          Riwayat Perubahan Role
+          <History aria-hidden className="h-4 w-4 text-primary" />
+          Riwayat perubahan peran
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {status === 'loading' && (
-          <div className="flex items-center justify-center py-8">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        )}
+        {status === 'loading' && <AdminInlineLoading label="Memuat riwayat" />}
 
         {status === 'error' && (
-          <div className="flex flex-col items-center py-6 text-center">
-            <p className="text-sm text-sage-500">{errorMsg}</p>
-            <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => load(offset)}>
-              Coba lagi
+          <div className="flex flex-col items-center gap-3 py-2">
+            <AdminInlineError message={errorMsg} />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                void load(offset);
+              }}
+            >
+              <RefreshCw aria-hidden className="h-3.5 w-3.5" />
+              Coba Lagi
             </Button>
           </div>
         )}
 
         {status === 'ready' && logs.length === 0 && (
-          <p className="py-6 text-center text-sm text-sage-500">
-            Belum ada perubahan role yang tercatat untuk pengguna ini.
-          </p>
+          <div className="py-6 text-center">
+            <AdminInlineMessage>
+              Belum ada perubahan peran yang tercatat untuk pengguna ini.
+            </AdminInlineMessage>
+          </div>
         )}
 
         {status === 'ready' && logs.length > 0 && (
@@ -109,15 +112,17 @@ export function UserRoleHistory({
               {logs.map((log) => (
                 <li
                   key={log.id ?? `${log.created_at}-${log.new_role}`}
-                  className="rounded-xl bg-cream-50 px-4 py-3"
+                  className="rounded-[var(--radius)] bg-cream-50 px-4 py-3"
                 >
                   <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <Badge variant="secondary">{log.old_role ?? '-'}</Badge>
-                    <span aria-hidden="true" className="text-sage-500">→</span>
-                    <Badge variant="default">{log.new_role ?? '-'}</Badge>
+                    <Badge variant={varianPeran(log.old_role)}>{labelPeran(log.old_role)}</Badge>
+                    <span aria-hidden="true" className="text-sage-500">
+                      →
+                    </span>
+                    <Badge variant={varianPeran(log.new_role)}>{labelPeran(log.new_role)}</Badge>
                   </div>
                   <p className="mt-1.5 text-xs text-sage-500">
-                    {formatDateTime(log.created_at)} · oleh{' '}
+                    {formatTanggalWaktu(log.created_at)} · oleh{' '}
                     {log.actor?.full_name?.trim() ||
                       log.actor?.email ||
                       'admin tidak diketahui'}
@@ -126,31 +131,15 @@ export function UserRoleHistory({
               ))}
             </ul>
             {total > PAGE_LIMIT && (
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <p className="text-xs text-sage-500">
-                  {showingFrom}–{showingTo} dari {total}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={offset <= 0}
-                    onClick={() => load(Math.max(0, offset - PAGE_LIMIT))}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={offset + PAGE_LIMIT >= total}
-                    onClick={() => load(offset + PAGE_LIMIT)}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              <AdminPagination
+                total={total}
+                page={page}
+                pageSize={PAGE_LIMIT}
+                noun="perubahan peran"
+                onPageChange={(next) => {
+                  void load((next - 1) * PAGE_LIMIT);
+                }}
+              />
             )}
           </>
         )}

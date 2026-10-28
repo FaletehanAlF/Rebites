@@ -3,11 +3,15 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 import {
   resolveSellerStatus,
   type SellerStatus,
 } from '@/lib/server/seller-status';
+import { isSuperAdminUserId } from '@/lib/admin-access';
+import { sanitizeSearchTerm } from '@/lib/filter-search';
 
 export const runtime = 'nodejs';
 
@@ -53,11 +57,6 @@ const SELLER_STATUS_FILTERS: readonly SellerStatus[] = [
 
 type Row = Record<string, unknown>;
 
-function sanitizeSearch(raw: string | null): string {
-  if (!raw) return '';
-  return raw.trim().slice(0, 100).replace(/[%(),]/g, '');
-}
-
 function asString(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
 }
@@ -87,7 +86,7 @@ export async function GET(req: NextRequest) {
     const rawOffset = Number(params.get('offset') ?? '0');
     const limit = Number.isFinite(rawLimit) ? Math.min(100, Math.max(1, Math.floor(rawLimit))) : 20;
     const offset = Number.isFinite(rawOffset) ? Math.max(0, Math.floor(rawOffset)) : 0;
-    const search = sanitizeSearch(params.get('search'));
+    const search = sanitizeSearchTerm(params.get('search'));
     const sellerFilterRaw = (params.get('sellerStatus') ?? '').trim();
     const sellerFilter: SellerStatus | null = (
       SELLER_STATUS_FILTERS as readonly string[]
@@ -256,6 +255,7 @@ export async function GET(req: NextRequest) {
         email: r.email ?? null,
         full_name: r.full_name ?? null,
         role: r.role ?? null,
+        is_super_admin: isSuperAdminUserId(typeof r.id === 'string' ? r.id : null),
         is_verified: r.is_verified ?? false,
         created_at: r.created_at ?? null,
         has_umkm: umkm !== null,
@@ -294,8 +294,10 @@ export async function GET(req: NextRequest) {
       offset,
     });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/users] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses data pengguna." }, { status: 500 });
   }
 }

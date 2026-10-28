@@ -1,25 +1,20 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, Be_Vietnam_Pro, Dancing_Script } from 'next/font/google';
+import { Inter, Dancing_Script } from 'next/font/google';
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+// Font utama ReBites. Satu keluarga (Inter) dipakai untuk seluruh aplikasi:
+// body, heading, form, dialog, tabel, dan panel admin. Inter dipilih karena
+// netral, x-height besar, punya berat 100-900 (variable) plus italic, dan
+// sangat terbaca pada ukuran kecil seperti tabel/label admin.
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
-  weight: ['200', '300', '400', '500', '600', '700', '800'],
   style: ['normal', 'italic'],
-  preload: false,
 });
 
-const beVietnamPro = Be_Vietnam_Pro({
-  subsets: ['latin'],
-  variable: '--font-secondary',
-  display: 'swap',
-  weight: ['300', '400', '500', '600', '700'],
-  style: ['normal'],
-  preload: false,
-});
-
+// Hanya untuk aksen dekoratif (tanda tangan "dibuat dengan rasa" di FAQ).
+// Bukan font UI, jadi tidak dipakai untuk elemen fungsional apa pun.
 const dancingScript = Dancing_Script({
   subsets: ['latin'],
   variable: '--font-script',
@@ -52,7 +47,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${plusJakartaSans.variable} ${beVietnamPro.variable} ${dancingScript.variable}`}
+      className={`${inter.variable} ${dancingScript.variable}`}
     >
       <body className="font-sans antialiased">{children}</body>
     </html>

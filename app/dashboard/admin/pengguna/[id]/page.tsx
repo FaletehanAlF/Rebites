@@ -2,12 +2,18 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ShieldAlert } from 'lucide-react';
-import { useRequireAdmin } from '@/hooks/use-require-admin';
+import { UserRoundX } from 'lucide-react';
 import { UserDetailView } from '@/app/components/admin/user-detail-view';
 import { UserRoleHistory } from '@/app/components/admin/user-role-history';
+import { ModerationHistory } from '@/app/components/admin/moderation-history';
 import { Button } from '@/app/components/ui/button';
-import { Card, CardContent } from '@/app/components/ui/card';
+import { ADMIN_PAGE_WRAPPER } from '@/app/components/admin/admin-page-header';
+import {
+  AdminEmptyState,
+  AdminErrorState,
+  AdminForbiddenState,
+  AdminLoadingState,
+} from '@/app/components/admin/admin-state';
 import {
   AdminUsersApiError,
   fetchAdminUserDetail,
@@ -15,12 +21,11 @@ import {
 } from '@/lib/admin-users';
 
 export default function AdminUserDetailPage({ params }: { params: { id: string } }) {
-  const { loading: adminLoading, isAdmin } = useRequireAdmin();
   const [user, setUser] = useState<AdminUserDetail | null>(null);
   const [historyKey, setHistoryKey] = useState(0);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'forbidden' | 'not-found'>(
-    'loading'
-  );
+  const [status, setStatus] = useState<
+    'loading' | 'ready' | 'error' | 'forbidden' | 'not-found'
+  >('loading');
   const [errorMsg, setErrorMsg] = useState('');
 
   const load = useCallback(async () => {
@@ -50,103 +55,67 @@ export default function AdminUserDetailPage({ params }: { params: { id: string }
   }, [params.id]);
 
   useEffect(() => {
-    if (!adminLoading && isAdmin) {
-      load();
-    }
-  }, [adminLoading, isAdmin, load]);
+    load();
+  }, [load]);
 
-  if (adminLoading) {
+  if (status === 'loading' || (status === 'ready' && !user)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-cream-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className={ADMIN_PAGE_WRAPPER}>
+        <AdminLoadingState label="Memuat detail pengguna" />
       </div>
     );
   }
 
-  if (!isAdmin) {
-    // Redirect ditangani hook (ke /auth/login atau /).
-    return null;
+  if (status === 'forbidden') {
+    return (
+      <div className={ADMIN_PAGE_WRAPPER}>
+        <AdminForbiddenState />
+      </div>
+    );
+  }
+
+  if (status === 'not-found') {
+    return (
+      <div className={ADMIN_PAGE_WRAPPER}>
+        <AdminEmptyState
+          icon={<UserRoundX aria-hidden className="h-10 w-10 text-primary" />}
+          title="Pengguna tidak ditemukan"
+          description="ID pengguna tidak cocok dengan data terdaftar."
+          action={
+            <Link href="/dashboard/admin/pengguna">
+              <Button type="button" variant="outline" size="sm">
+                Kembali ke daftar pengguna
+              </Button>
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className={ADMIN_PAGE_WRAPPER}>
+        <AdminErrorState
+          title="Gagal memuat pengguna"
+          message={errorMsg}
+          onRetry={() => void load()}
+        />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 font-sans text-charcoal-900">
-      {(status === 'loading' || (status === 'ready' && !user)) && (
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
-      )}
-
-      {status === 'forbidden' && (
-        <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-          <Card className="mt-8">
-            <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-              <ShieldAlert className="h-10 w-10 text-caramel" />
-              <h2 className="mt-4 font-display text-xl font-semibold text-primary">Akses ditolak</h2>
-              <p className="mt-1 max-w-sm text-sm text-sage-500">
-                Halaman ini hanya untuk admin.
-              </p>
-              <Link href="/" className="mt-5">
-                <Button type="button" variant="outline" size="sm">
-                  Kembali ke Beranda
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {status === 'not-found' && (
-        <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-          <Card className="mt-8">
-            <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-              <ShieldAlert className="h-10 w-10 text-caramel" />
-              <h2 className="mt-4 font-display text-xl font-semibold text-primary">
-                Pengguna tidak ditemukan
-              </h2>
-              <p className="mt-1 max-w-sm text-sm text-sage-500">
-                ID pengguna tidak cocok dengan data terdaftar.
-              </p>
-              <Link href="/dashboard/admin/pengguna" className="mt-5">
-                <Button type="button" variant="outline" size="sm">
-                  Kembali ke Daftar
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {status === 'error' && (
-        <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-          <Card className="mt-8">
-            <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-              <ShieldAlert className="h-10 w-10 text-caramel" />
-              <h2 className="mt-4 font-display text-xl font-semibold text-primary">
-                Gagal memuat pengguna
-              </h2>
-              <p className="mt-1 max-w-sm text-sm text-sage-500">{errorMsg}</p>
-              <Button type="button" size="sm" className="mt-5" onClick={() => load()}>
-                Coba lagi
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {status === 'ready' && user && (
-        <>
-          <UserDetailView
-            user={user}
-            onRoleChanged={() => {
-              load();
-              setHistoryKey((k) => k + 1);
-            }}
-          />
-          <div className="mx-auto -mt-14 w-full max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
-            <UserRoleHistory userId={user.id} refreshKey={historyKey} />
-          </div>
-        </>
-      )}
+    <div className={ADMIN_PAGE_WRAPPER}>
+      <UserDetailView
+        user={user!}
+        onRoleChanged={() => {
+          void load();
+          setHistoryKey((k) => k + 1);
+        }}
+      />
+      <ModerationHistory userId={user!.id} />
+      <UserRoleHistory userId={user!.id} refreshKey={historyKey} />
     </div>
   );
 }

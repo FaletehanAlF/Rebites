@@ -30,7 +30,7 @@ interface OrderCalculationInput {
   coinBalance?: number;
 
   /**
-   * 7C-2D: override ongkir untuk DISPLAY (mis. harga opsi Biteship terpilih).
+   * override ongkir untuk DISPLAY (mis. harga opsi Biteship terpilih).
    * Delivery memakai nilai ini bila diberikan; bila tidak diberikan, memakai
    * flat DELIVERY_FEE (behavior lama). Pickup selalu 0. Bukan source of truth
    * final order (server revalidasi).
@@ -54,7 +54,7 @@ export function useOrderCalculation({
       : 0;
     const taxable = Math.max(0, subtotal - discount);
     const serviceFee = Math.round(taxable * ADMIN_FEE_RATE);
-    // 7C-2D: delivery memakai override bila diberikan (harga opsi terpilih);
+    // delivery memakai override bila diberikan (harga opsi terpilih);
     // tanpa override = flat lama. Pickup selalu 0.
     const deliveryFee =
       fulfillment === 'delivery' ? (deliveryFeeOverride ?? DELIVERY_FEE) : 0;

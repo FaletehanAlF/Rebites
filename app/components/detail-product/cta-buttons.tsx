@@ -20,6 +20,9 @@ export function CTAButtons({
   const saved = isLiked(product.id);
   const [added, setAdded] = useState(false);
   const reduce = useReducedMotion();
+  // Sumber kebenaran stok adalah angka; tombol pesan disabled saat habis,
+  // tombol simpan/favorit tetap berfungsi.
+  const isOutOfStock = product.stockRemaining <= 0;
 
   const handleSave = async () => {
     const next = !saved;
@@ -28,6 +31,7 @@ export function CTAButtons({
   };
 
   const handleOrder = () => {
+    if (isOutOfStock) return;
     onOrder();
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1600);
@@ -38,11 +42,19 @@ export function CTAButtons({
       <motion.button
         type="button"
         onClick={handleOrder}
-        whileHover={reduce ? undefined : { scale: 1.02 }}
-        whileTap={reduce ? undefined : { scale: 0.98 }}
-        className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-caramel hover:shadow-[0_20px_45px_-20px_rgba(27,77,50,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50"
+        disabled={isOutOfStock}
+        whileHover={reduce || isOutOfStock ? undefined : { scale: 1.02 }}
+        whileTap={reduce || isOutOfStock ? undefined : { scale: 0.98 }}
+        className={cn(
+          "inline-flex flex-1 items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50",
+          isOutOfStock
+            ? "cursor-not-allowed bg-charcoal-900/10 text-charcoal-400"
+            : "bg-primary text-white hover:bg-caramel hover:shadow-[0_20px_45px_-20px_rgba(27,77,50,0.65)]",
+        )}
       >
-        {added ? (
+        {isOutOfStock ? (
+          <>Stok Habis</>
+        ) : added ? (
           <>
             <Check className="h-4 w-4" />
             Ditambahkan ke keranjang

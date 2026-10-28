@@ -20,7 +20,10 @@ export type NotificationType =
   | 'subscription_changed'
   | 'subscription_expired'
   | 'product_approved'
-  | 'product_rejected';
+  | 'product_rejected'
+  | 'product_warning'
+  /** NOTIF-1: laporan baru ditujukan ke pemilik toko yang dilaporkan. */
+  | 'report_received';
 
 export interface Notification {
   id: string;

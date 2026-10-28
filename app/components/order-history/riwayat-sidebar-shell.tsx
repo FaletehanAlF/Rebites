@@ -28,16 +28,20 @@ export function RiwayatSidebarShell({ children }: { children: React.ReactNode })
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-display text-base font-semibold text-primary">Riwayat Transaksi</span>
+          <span className="font-display text-base font-semibold text-primary">Pesanan Saya</span>
         </div>
 
-        <main className="mx-auto max-w-[1100px] px-4 pb-24 pt-[120px] sm:pb-20 sm:pt-6 lg:px-8 lg:pt-8">
-          {}
-          <div className="hidden lg:block">
-            <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-primary">Riwayat Transaksi</h1>
-            <p className="mt-1 text-sm text-stone">Kelola dan lacak transaksi makanan surplus kamu.</p>
-          </div>
-          <div className="mt-6">{children}</div>
+        <main className="mx-auto max-w-[1100px] px-4 pb-24 pt-[104px] sm:pb-20 sm:pt-6 lg:px-8 lg:pt-8">
+          <header className="hidden lg:block">
+            <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-primary">
+              Pesanan Saya
+            </h1>
+            <p className="mt-1 max-w-prose text-sm leading-relaxed text-stone">
+              Lihat status dan detail setiap pesanan, termasuk perjalanan pengantaran
+              dan rincian biayanya.
+            </p>
+          </header>
+          <div className="mt-4 lg:mt-6">{children}</div>
         </main>
       </div>
     </div>

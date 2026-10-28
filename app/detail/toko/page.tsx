@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { useCatalog } from "@/lib/catalog";
 import type { FoodItem, Vendor } from "@/lib/types";
 import { SiteFooter } from "@/app/components/site-footer";
+import { MobileNavbar } from "@/app/components/shared/MobileNavbar";
+import { ProfileNavbar } from "@/app/components/shared/navbar";
 import { ProductDetailModal } from "@/app/components/shared/ProductDetailModalLazy";
 import { CategoryRow } from "@/app/components/detail-toko/category-row";
 import { useProductDetail } from "@/app/components/detail-product/use-product-detail";
@@ -72,6 +74,8 @@ function sellerProductToFoodItem(
     discountPercent: pricing.isFlash
       ? getFlashDiscountPercent(sp)
       : sp.discountPercent,
+    // Stok numerik diteruskan agar kartu memakai angka, bukan teks label.
+    ...({ stock: sp.stock } as { stock: number }),
   };
 }
 
@@ -425,8 +429,28 @@ function StoreDetailContent() {
   }
 
   return (
-    <main className="min-h-screen bg-cream-50 font-sans text-charcoal-900">
-      { }
+    <main className="min-h-screen bg-cream-50 pt-14 font-sans text-charcoal-900 lg:pt-24">
+      {/*
+        Navbar halaman toko.
+
+        Sebelumnya halaman ini TIDAK punya navbar sama sekali — pengunjung
+        yang menggulir ke bawah kehilangan seluruh navigasi, dan di desktop
+        tidak ada jalan kembali ke beranda selain tombol di dalam banner.
+
+        Memakai komponen yang SAMA dengan halaman detail produk
+        (`MobileNavbar` untuk < lg, `ProfileNavbar` untuk >= lg) supaya
+        posisi, tinggi, dan perilaku sticky-nya identik di semua halaman
+        publik. Keduanya `fixed top-0`, jadi konten diberi padding atas:
+        pt-14 (56px, tinggi MobileNavbar) dan lg:pt-24 (96px, tinggi
+        ProfileNavbar + jarak atasnya). Tanpa padding ini banner toko
+        akan tertutup navbar.
+      */}
+      <div className="lg:hidden">
+        <MobileNavbar />
+      </div>
+      <div className="hidden lg:block">
+        <ProfileNavbar />
+      </div>
       <StoreHeroCard vendor={vendor} openNow={openNow} />
 
       { }

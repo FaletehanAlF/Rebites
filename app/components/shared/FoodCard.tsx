@@ -20,14 +20,24 @@ export function FoodCard({
   onViewDetail,
   forceUnavailable = false,
 }: {
-  item: FoodItem;
+  item: FoodItem & { stock?: number | null };
   onViewDetail?: (id: string) => void;
   /** Dipakai Detail Toko: paksa kartu jadi tidak tersedia (stok habis / jam jual habis). */
   forceUnavailable?: boolean;
 }) {
   const { isLiked, toggle } = useLikedFoods();
   const liked = isLiked(item.id);
-  const isUnavailable = forceUnavailable || item.stockLabel === "Habis";
+  // Sumber kebenaran stok adalah angka; teks label hanya fallback bila angka
+  // tidak tersedia (mis. item flash-sale/urgent tanpa field stok).
+  const numericStock =
+    typeof item.stock === "number" && Number.isFinite(item.stock)
+      ? item.stock
+      : null;
+  const isOutOfStock =
+    numericStock != null ? numericStock <= 0 : item.stockLabel === "Habis";
+  const displayStockLabel =
+    isOutOfStock && item.stockLabel !== "Habis" ? "Habis" : item.stockLabel;
+  const isUnavailable = forceUnavailable || isOutOfStock;
   const { user, loading: authLoading } = useCurrentUser();
   const router = useRouter();
 
@@ -44,7 +54,9 @@ export function FoodCard({
         description: "Anda harus login untuk melihat detail produk dan memesan.",
         variant: "default",
       });
-      router.push(`/auth/login?redirect=/detail/produk/${item.id}`);
+      router.push(
+        `/auth/login?redirect=${encodeURIComponent(`/detail/product?id=${item.id}`)}`
+      );
       return;
     }
     onViewDetail?.(item.id);
@@ -78,7 +90,7 @@ export function FoodCard({
         {isUnavailable && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-charcoal-900/40 p-2 text-center">
             <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold leading-none text-charcoal-900 shadow-lg sm:px-3 sm:py-1 sm:text-xs">
-              {item.stockLabel === "Habis" ? "Stok Habis" : "Tidak Tersedia"}
+              {isOutOfStock ? "Stok Habis" : "Tidak Tersedia"}
             </span>
           </div>
         )}
@@ -133,7 +145,7 @@ export function FoodCard({
         {/* Mobile: stock pill terlihat, Desktop: sama */}
         <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-2.5">
           <span className="inline-flex w-fit rounded-full bg-cream-100 px-2.5 py-1 text-[10px] font-medium leading-none text-charcoal-600 sm:px-3 sm:py-1 sm:text-[11px]">
-            {item.stockLabel}
+            {displayStockLabel}
           </span>
         </div>
 
@@ -154,7 +166,7 @@ export function FoodCard({
 
           {isUnavailable ? (
             <div className="inline-flex shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1.5 text-[11px] font-semibold leading-none text-zinc-400 sm:mt-3 sm:w-full sm:px-4 sm:py-2.5 sm:text-sm">
-              {item.stockLabel === "Habis" ? "Habis" : "Tutup"}
+              {isOutOfStock ? "Habis" : "Tutup"}
             </div>
           ) : (
             <button

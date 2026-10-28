@@ -3,7 +3,11 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
+import { sanitizeSearchTerm } from '@/lib/filter-search';
+import { deriveOrderMonitoringFlags } from '@/lib/order-monitoring-flags';
 
 export const runtime = 'nodejs';
 
@@ -90,11 +94,6 @@ const ORDERS_SELECT = [
   'estimated_completion_at',
 ].join(', ');
 
-function sanitizeSearch(raw: string | null): string {
-  if (!raw) return '';
-  return raw.trim().slice(0, 100).replace(/[%(),]/g, '');
-}
-
 function asString(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
 }
@@ -128,7 +127,7 @@ export async function GET(req: NextRequest) {
     const rawOffset = Number(params.get('offset') ?? '0');
     const limit = Number.isFinite(rawLimit) ? Math.min(100, Math.max(1, Math.floor(rawLimit))) : 20;
     const offset = Number.isFinite(rawOffset) ? Math.max(0, Math.floor(rawOffset)) : 0;
-    const search = sanitizeSearch(params.get('search'));
+    const search = sanitizeSearchTerm(params.get('search'));
 
     const orderStatusRaw = (params.get('order_status') ?? '').trim().toLowerCase();
     if (orderStatusRaw && !isAllowed(ORDER_STATUS_ALLOWLIST, orderStatusRaw)) {
@@ -292,15 +291,16 @@ export async function GET(req: NextRequest) {
       const deliveryOption = asString(r.delivery_option);
       const biteshipOrderId = asString(r.biteship_order_id);
 
-      // Flag display-only (server-side, tanpa mutasi DB).
-      const hasShipment = biteshipOrderId !== null;
-      const paidWithoutShipment =
-        paymentStatus === 'paid' && deliveryOption === 'delivery' && !hasShipment;
-      const lifecycleMismatch =
-        (lifecycleStatus === 'completed' && orderStatus !== 'completed') ||
-        (lifecycleStatus === 'ongoing' && orderStatus === 'completed') ||
-        (orderStatus === 'cancelled' && lifecycleStatus === 'ongoing');
-      const legacyNoProgress = progressStatus === null;
+      // Flag display-only (server-side, tanpa mutasi DB). Derivasi murni agar
+      // perilaku endpoint yang sama dapat diuji tanpa database.
+      const flags = deriveOrderMonitoringFlags({
+        payment_status: paymentStatus,
+        order_status: orderStatus,
+        lifecycle_status: lifecycleStatus,
+        progress_status: progressStatus,
+        delivery_option: deliveryOption,
+        biteship_order_id: biteshipOrderId,
+      });
 
       return {
         id: r.id,
@@ -374,12 +374,7 @@ export async function GET(req: NextRequest) {
               name: asString(r.product_name),
               image_url: null,
             },
-        flags: {
-          has_shipment: hasShipment,
-          paid_without_shipment: paidWithoutShipment,
-          lifecycle_mismatch: lifecycleMismatch,
-          legacy_no_progress: legacyNoProgress,
-        },
+        flags,
       };
     });
 
@@ -390,8 +385,10 @@ export async function GET(req: NextRequest) {
       offset,
     });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/orders] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memuat pesanan." }, { status: 500 });
   }
 }

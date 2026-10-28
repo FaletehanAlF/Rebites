@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, Star, Quote } from "lucide-react";
-import { SmoothScroll } from "@/app/components/smooth-scroll";
 import { Preloader } from "@/app/components/preloader";
 import { SiteFooter } from "@/app/components/site-footer";
 import { Reveal, RevealWords } from "@/app/components/reveal";
@@ -175,7 +174,7 @@ export default function Home() {
   }, [testimonialApi]);
 
   return (
-    <SmoothScroll>
+    <>
       <Preloader onDone={handlePreloaderDone} />
       <div className="flex min-h-screen flex-col">
         <div id="top" className="flex flex-1 flex-col">
@@ -218,7 +217,14 @@ export default function Home() {
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-32 -top-32 h-[32rem] w-[32rem] rounded-full bg-primary-foreground/[0.06] blur-3xl"
+          className="pointer-events-none absolute -right-32 -top-32 h-[32rem] w-[32rem] rounded-full"
+          // Gradien radial menggantikan `blur-3xl`. Hasil visualnya sama
+          // (glow lembut), tetapi tanpa filter blur 64px pada bidang 512px —
+          // filter sebesar itu mahal saat digulir di perangkat lemah.
+          style={{
+            background:
+              'radial-gradient(circle, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 70%)',
+          }}
         />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -388,7 +394,16 @@ export default function Home() {
         data-nav="green"
         className="grain-overlay relative scroll-mt-28 overflow-hidden bg-primary pt-24 pb-16 lg:scroll-mt-32 lg:pt-28 lg:pb-20"
       >
-        <div className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-primary-foreground/[0.06] blur-3xl" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full"
+          // Gradien radial menggantikan `blur-3xl`: glow yang sama, tanpa
+          // filter blur 64px pada bidang 448px yang mahal saat digulir.
+          style={{
+            background:
+              'radial-gradient(circle, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 70%)',
+          }}
+        />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
@@ -534,6 +549,6 @@ export default function Home() {
       <FaqSection />
 
       <SiteFooter />
-    </SmoothScroll>
+    </>
   );
 }

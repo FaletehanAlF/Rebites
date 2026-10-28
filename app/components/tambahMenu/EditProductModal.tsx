@@ -63,10 +63,13 @@ export function EditProductModal({
   product,
   open,
   onClose,
+  initialShowAdvanced = false,
 }: {
   product: SellerProduct | null;
   open: boolean;
   onClose: () => void;
+  /** Buka bagian "Edit lebih lanjut" langsung (dipakai arahan isi berat dari Menu Saya). */
+  initialShowAdvanced?: boolean;
 }) {
   const [name, setName] = useState('');
   const [image, setImage] = useState('');
@@ -79,10 +82,10 @@ export function EditProductModal({
   const [endTime, setEndTime] = useState('17:00');
   const [allDay, setAllDay] = useState(false);
   const [isSurplusToday, setIsSurplusToday] = useState(true);
-  // 7B-2B: kapabilitas fulfillment (DB NOT NULL, default true untuk legacy).
+  // kapabilitas fulfillment (DB NOT NULL, default true untuk legacy).
   const [isDelivery, setIsDelivery] = useState(true);
   const [isPickup, setIsPickup] = useState(true);
-  // 7B-2D-1: package opsional sebagai teks mentah ('' = kosong = NULL).
+  // package opsional sebagai teks mentah ('' = kosong = NULL).
   const [weightRaw, setWeightRaw] = useState('');
   const [lengthRaw, setLengthRaw] = useState('');
   const [widthRaw, setWidthRaw] = useState('');
@@ -107,14 +110,14 @@ export function EditProductModal({
     setIsSurplusToday(product.isSurplusToday);
     setIsDelivery(product.isDelivery ?? true);
     setIsPickup(product.isPickup ?? true);
-    // 7B-2D-1: produk lama tanpa package (NULL) tampil sebagai kosong.
+    // produk lama tanpa package (NULL) tampil sebagai kosong.
     setWeightRaw(product.weightGram != null ? String(product.weightGram) : '');
     setLengthRaw(product.lengthCm != null ? String(product.lengthCm) : '');
     setWidthRaw(product.widthCm != null ? String(product.widthCm) : '');
     setHeightRaw(product.heightCm != null ? String(product.heightCm) : '');
-    setShowAdvanced(false);
+    setShowAdvanced(initialShowAdvanced);
     setError('');
-  }, [open, product]);
+  }, [open, product, initialShowAdvanced]);
 
   if (!product) return null;
 
@@ -156,18 +159,26 @@ export function EditProductModal({
       setError('Harga normal tidak boleh negatif.');
       return;
     }
-    // 7B-2B: minimal satu metode pengambilan harus aktif.
+    // minimal satu metode pengambilan harus aktif.
     if (!isDelivery && !isPickup) {
       setError('Pilih minimal satu metode pengambilan: Diantar atau Ambil Sendiri.');
       return;
     }
-    // 7B-2D-1: berat/dimensi boleh kosong (NULL); jika diisi harus angka positif.
+    // dimensi boleh kosong (NULL); jika diisi harus angka positif.
     const weightParsed = parseShippingNumber(weightRaw);
     const lengthParsed = parseShippingNumber(lengthRaw);
     const widthParsed = parseShippingNumber(widthRaw);
     const heightParsed = parseShippingNumber(heightRaw);
     if (!weightParsed.ok || !lengthParsed.ok || !widthParsed.ok || !heightParsed.ok) {
       setError('Berat dan dimensi harus berupa angka positif. Kosongkan jika belum tahu.');
+      return;
+    }
+    // Berat wajib bila Diantar aktif: tanpa weight_gram server menolak ongkir
+    // (product_no_weight) dan checkout, sehingga pembeli melihat error kurir.
+    if (isDelivery && weightParsed.value === null) {
+      setError(
+        'Isi berat makanan (gram) agar pembeli bisa memilih Diantar. Atau matikan toggle Diantar.'
+      );
       return;
     }
 
@@ -208,10 +219,10 @@ export function EditProductModal({
         allDay,
         isSurplusToday,
         discountPercent,
-        // 7B-2B: kapabilitas fulfillment pilihan seller.
+        // kapabilitas fulfillment pilihan seller.
         isDelivery,
         isPickup,
-        // 7B-2D-1: package opsional (NULL jika kosong, tanpa angka palsu).
+        // package opsional (NULL jika kosong, tanpa angka palsu).
         weightGram: weightParsed.value,
         lengthCm: lengthParsed.value,
         widthCm: widthParsed.value,

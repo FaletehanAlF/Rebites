@@ -3,6 +3,8 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 import { notifySellerModeration } from '@/lib/server/moderation-notifications';
 
@@ -10,7 +12,13 @@ export const runtime = 'nodejs';
 
 /**
  * POST /api/admin/products/:id/reject
- * Tolak produk pending (khusus admin). Body: { reason: string }.
+ * Tolak / turunkan produk (khusus admin). Body: { reason: string }.
+ * Mendukung auto-approve era post-publish monitoring:
+ *   - pending -> rejected  (reject antrean lama)
+ *   - approved -> rejected (takedown produk yang sudah live)
+ * Produk yang sudah rejected ditolak dengan 409. Produk yang
+ * ditolak/takedown tidak muncul sebagai produk aktif yang bisa dibeli
+ * (katalog/checkout memfilter verification_status='approved').
  * Auth: Authorization: Bearer <supabase access_token admin>
  */
 
@@ -71,9 +79,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     const current = (existing as ProductRow).verification_status as string | null;
-    if (current !== 'pending') {
+    if (current !== 'pending' && current !== 'approved') {
       return NextResponse.json(
-        { error: `Produk sudah dimoderasi (status: ${current}). Hanya produk pending yang bisa ditolak.` },
+        { error: `Produk sudah ditolak (status: ${current}). Hanya produk pending/approved yang bisa ditolak.` },
         { status: 409 }
       );
     }
@@ -88,7 +96,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         rejection_reason: reason,
       })
       .eq('id', id)
-      .eq('verification_status', 'pending')
+      .eq('verification_status', current)
       .select()
       .maybeSingle();
 
@@ -158,8 +166,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     return NextResponse.json({ product: updated });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/products/reject] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses produk." }, { status: 500 });
   }
 }

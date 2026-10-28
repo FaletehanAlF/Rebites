@@ -65,7 +65,7 @@ export function AddMenuForm() {
   const [limitReached, setLimitReached] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
   const [productCount, setProductCount] = useState(0);
-  // 7B-2D-1: input package opsional sebagai teks mentah ('' = kosong = NULL).
+  // input package opsional sebagai teks mentah ('' = kosong = NULL).
   const [weightRaw, setWeightRaw] = useState('');
   const [lengthRaw, setLengthRaw] = useState('');
   const [widthRaw, setWidthRaw] = useState('');
@@ -93,18 +93,28 @@ export function AddMenuForm() {
   const handleSave = () => {
     setTouched(true);
     if (!form.name.trim() || savingProduct) return;
-    // 7B-2B: minimal satu metode pengambilan harus aktif.
+    // minimal satu metode pengambilan harus aktif.
     if (!form.isDelivery && !form.isPickup) {
       setSaveError('Pilih minimal satu metode pengambilan: Diantar atau Ambil Sendiri.');
       return;
     }
-    // 7B-2D-1: berat/dimensi boleh kosong (NULL); jika diisi harus angka positif.
+    // dimensi boleh kosong (NULL); jika diisi harus angka positif.
     const weightParsed = parseShippingNumber(weightRaw);
     const lengthParsed = parseShippingNumber(lengthRaw);
     const widthParsed = parseShippingNumber(widthRaw);
     const heightParsed = parseShippingNumber(heightRaw);
     if (!weightParsed.ok || !lengthParsed.ok || !widthParsed.ok || !heightParsed.ok) {
       setSaveError('Berat dan dimensi harus berupa angka positif. Kosongkan jika belum tahu.');
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      return;
+    }
+    // Berat wajib bila Diantar aktif: tanpa weight_gram server menolak
+    // /api/shipping/rates (product_no_weight) dan checkout, sehingga toggle
+    // Diantar hanya menjadi janji yang tidak bisa dipenuhi.
+    if (form.isDelivery && weightParsed.value === null) {
+      setSaveError(
+        'Isi berat makanan (gram) agar pembeli bisa memilih Diantar. Atau matikan toggle Diantar.'
+      );
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       return;
     }
@@ -143,10 +153,10 @@ export function AddMenuForm() {
         endTime: form.endTime,
         isSurplusToday: form.isSurplusToday,
         featured: false,
-        // 7B-2B: kapabilitas fulfillment pilihan seller.
+        // kapabilitas fulfillment pilihan seller.
         isDelivery: form.isDelivery,
         isPickup: form.isPickup,
-        // 7B-2D-1: package opsional (NULL jika kosong, tanpa angka palsu).
+        // package opsional (NULL jika kosong, tanpa angka palsu).
         weightGram: weightParsed.value,
         lengthCm: lengthParsed.value,
         widthCm: widthParsed.value,
@@ -247,8 +257,8 @@ export function AddMenuForm() {
             Menu Berhasil Ditambahkan
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-sage-500">
-            {savedName} telah masuk ke daftar menu tokomu dan menunggu verifikasi admin
-            sebelum tampil di marketplace.
+            {savedName} telah masuk ke daftar menu tokomu dan sudah aktif di
+            marketplace.
           </p>
           <div className="mt-6 grid gap-3">
             <Link

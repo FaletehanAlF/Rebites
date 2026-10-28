@@ -83,7 +83,7 @@ export function ShippingInfoSection({
           <input
             id={`${idPrefix}-weight`}
             type="text"
-            inputMode="decimal"
+            inputMode="numeric"
             value={weightRaw}
             onChange={(event) => onWeightChange(event.target.value)}
             placeholder="Contoh: 500"
@@ -96,8 +96,8 @@ export function ShippingInfoSection({
         </div>
         <p className={cn('text-sage-500', isEdit ? 'mt-1 text-[11px]' : 'mt-1.5 text-[11px]')}>
           {isDelivery
-            ? 'Diantar aktif — dengan berat, pembeli bisa melihat pilihan pengiriman. Boleh dikosongkan.'
-            : 'Boleh dikosongkan jika belum tahu.'}
+            ? 'Wajib diisi karena Diantar aktif: berat (angka bulat, gram) dipakai kurir untuk menghitung ongkir.'
+            : 'Ambil sendiri aktif — berat belum dibutuhkan. Isi jika ingin mengaktifkan Diantar.'}
         </p>
       </div>
 

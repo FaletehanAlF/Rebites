@@ -3,6 +3,8 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 
 export const runtime = 'nodejs';
@@ -57,12 +59,19 @@ export async function POST(
       return NextResponse.json({ error: 'UMKM tidak ditemukan.' }, { status: 404 });
     }
 
-    const nextValue = !((existing as UmkmRow).is_verified ?? false);
+    const currentValue = (existing as UmkmRow).is_verified === true;
+    const nextValue = !currentValue;
 
+    // Conditional update: hanya baris yang nilainya MASIH seperti saat dibaca.
+    // Tanpa ini dua admin yang menekan tombol bersamaan bisa saling menimpa
+    // (A membaca false, B membaca false, keduanya menulis true — padahal
+    // maksud B mungkin membatalkan verifikasi A). Dengan `.eq` pada nilai
+    // lama, penulis kedua tidak menemukan baris dan mendapat 409.
     const { data: updated, error: updErr } = await db
       .from('umkm_profiles')
       .update({ is_verified: nextValue })
       .eq('id', id)
+      .eq('is_verified', currentValue)
       .select('id, is_verified')
       .maybeSingle();
 
@@ -71,7 +80,10 @@ export async function POST(
       return NextResponse.json({ error: 'Gagal mengubah status verifikasi.' }, { status: 500 });
     }
     if (!updated) {
-      return NextResponse.json({ error: 'UMKM tidak ditemukan.' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Status verifikasi sudah diubah admin lain. Muat ulang data.' },
+        { status: 409 }
+      );
     }
 
     const row = updated as UmkmRow;
@@ -80,8 +92,10 @@ export async function POST(
       is_verified: row.is_verified ?? nextValue,
     });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/umkm/verify] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses data UMKM." }, { status: 500 });
   }
 }

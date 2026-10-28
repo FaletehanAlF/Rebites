@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, MapPin, Truck } from 'lucide-react';
+import { Check, Info, MapPin, Truck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatRupiah } from '@/lib/data';
 import type { FulfillmentMode } from '@/lib/types';
 import { useCheckout } from './checkout-context';
 
@@ -29,14 +30,39 @@ const OPTIONS: {
   },
 ];
 
-export function FulfillmentToggle() {
-  const { draft, fulfillment, setFulfillment } = useCheckout();
+/** Ringkasan biaya per metode: angka diambil dari summary (server-authoritative saat checkout). */
+function feeLabel(value: number, hasValue: boolean): string {
+  if (!hasValue) return 'Hitung saat pilih alamat';
+  if (value <= 0) return 'Gratis';
+  return formatRupiah(value);
+}
 
-  // 7B-2B: hanya tampilkan metode yang didukung kapabilitas produk.
+export function FulfillmentToggle() {
+  const { draft, fulfillment, setFulfillment, summary, selectedShippingOption } = useCheckout();
+
+  // hanya tampilkan metode yang didukung kapabilitas produk.
   // Security boundary tetap di server (checkout menolak fulfillment invalid).
+  // Berat belum diisi = Diantar pasti gagal di ongkir, jadi Diantar tidak
+  // ditampilkan sebagai pilihan yang bisa diklik.
+  const deliveryBlockedByWeight =
+    draft.isDelivery && draft.deliveryUnavailableReason === 'weight_missing';
   const visibleOptions = OPTIONS.filter((option) =>
     option.value === 'pickup' ? draft.isPickup : draft.isDelivery
   );
+  const selectableOptions = visibleOptions.filter(
+    (option) => !(option.value === 'delivery' && deliveryBlockedByWeight)
+  );
+
+  // Ongkir hanya dianggap diketahui bila opsi pengiriman benar-benar terpilih.
+  // Tanpa pilihan = "Hitung saat pilih alamat", BUKAN Rp0 (tidak menyesatkan).
+  const deliveryFeeKnown = fulfillment === 'delivery' && selectedShippingOption != null;
+
+  const costFor = (mode: FulfillmentMode): string => {
+    if (mode === 'pickup') return 'Gratis';
+    if (!deliveryFeeKnown) return 'Hitung saat pilih alamat';
+    return feeLabel(summary.deliveryFee, true);
+  };
+
 
   if (visibleOptions.length === 0) {
     return (
@@ -66,8 +92,21 @@ export function FulfillmentToggle() {
         Pilih cara kamu menerima pesanan
       </p>
 
+      {deliveryBlockedByWeight && (
+        <p
+          role="status"
+          className="mt-3 flex items-start gap-2 rounded-xl bg-caramel/15 px-3 py-2.5 text-xs leading-relaxed text-charcoal-900"
+        >
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" />
+          <span>
+            Menu ini sementara hanya bisa diambil sendiri — penjual belum
+            mengisi berat makanan, jadi ongkir belum bisa dihitung.
+          </span>
+        </p>
+      )}
+
       <div role="radiogroup" className="mt-4 grid gap-3 sm:grid-cols-2">
-        {visibleOptions.map((option) => {
+        {selectableOptions.map((option) => {
           const selected = fulfillment === option.value;
           const Icon = option.icon;
           return (
@@ -107,6 +146,18 @@ export function FulfillmentToggle() {
                 <span className="mt-0.5 block text-xs leading-snug text-charcoal-500">
                   {option.subtitle}
                 </span>
+                <span
+                  className={cn(
+                    'mt-1 block text-xs font-semibold tabular-nums',
+                    option.value === 'pickup'
+                      ? 'text-primary'
+                      : deliveryFeeKnown
+                        ? 'text-charcoal-900'
+                        : 'text-sage-500'
+                  )}
+                >
+                  {costFor(option.value)}
+                </span>
               </span>
 
               <span
@@ -130,6 +181,24 @@ export function FulfillmentToggle() {
           );
         })}
       </div>
+
+      {/* Info lokasi pengambilan hanya saat Ambil Sendiri dipilih. */}
+      {fulfillment === 'pickup' && (
+        <div className="mt-3 flex items-start gap-2 rounded-xl bg-cream-50 px-3 py-2.5">
+          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+          <div className="min-w-0 text-xs leading-relaxed">
+            <p className="font-semibold text-charcoal-900">
+              Ambil di {draft.vendorName}
+            </p>
+            {draft.pickupLocation ? (
+              <p className="text-charcoal-500">{draft.pickupLocation}</p>
+            ) : null}
+            <p className="text-charcoal-500">
+              Tidak ada biaya pengiriman untuk metode ini.
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

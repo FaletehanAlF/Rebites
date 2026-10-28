@@ -1,6 +1,7 @@
 'use client';
 
-import { AdminAuthError, getAdminAuthHeader } from './admin-auth';
+import { fetchAdminWithAuth } from './admin-auth';
+import { AuthError } from './auth-token';
 
 export type AdminSubscriptionRawStatus =
   | 'active'
@@ -76,12 +77,18 @@ export class AdminSubscriptionsApiError extends Error {
   }
 }
 
-async function authHeader(): Promise<string> {
+/**
+ * Satu refresh + satu retry saat 401 — kontrak yang sama dengan
+ * `lib/admin-reports.ts` (lihat `fetchWithAuth` di `lib/auth-token.ts`).
+ * Sebelumnya token hanya diambil sekali, sehingga 401 di tengah sesi langsung
+ * menjadi error tanpa percobaan refresh padahal sesinya masih dapat dipulihkan.
+ */
+async function adminFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   try {
-    return await getAdminAuthHeader();
+    return await fetchAdminWithAuth(input, init);
   } catch (err) {
-    if (err instanceof AdminAuthError) {
-      throw new AdminSubscriptionsApiError(err.message, 401);
+    if (err instanceof AuthError) {
+      throw new AdminSubscriptionsApiError(err.message, err.status);
     }
     throw err;
   }
@@ -100,11 +107,11 @@ export function rawStatusLabel(status: string | null | undefined): string {
     case 'pending':
       return 'Menunggu pembayaran';
     case 'expired':
-      return 'Expired';
+      return 'Kedaluwarsa';
     case 'cancelled':
       return 'Dibatalkan';
     case 'trial':
-      return 'Trial';
+      return 'Uji coba';
     default:
       return status?.trim() ? status : '-';
   }
@@ -122,9 +129,9 @@ export function effectiveLabel(
     case 'pending':
       return 'Menunggu pembayaran';
     case 'expired':
-      return 'Expired';
+      return 'Kedaluwarsa';
     case 'trial':
-      return 'Trial';
+      return 'Uji coba';
     default:
       return effective?.trim() ? String(effective) : '-';
   }
@@ -144,9 +151,7 @@ export async function fetchAdminSubscriptions(
   if (search.trim()) params.set('search', search.trim());
   if (status) params.set('status', status);
   if (plan.trim()) params.set('plan', plan.trim());
-  const res = await fetch(`/api/admin/subscriptions?${params.toString()}`, {
-    headers: { Authorization: await authHeader() },
-  });
+  const res = await adminFetch(`/api/admin/subscriptions?${params.toString()}`);
   if (!res.ok) {
     await parseError(res, 'Gagal memuat daftar langganan.');
   }

@@ -3,6 +3,8 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 
 export const runtime = 'nodejs';
@@ -21,7 +23,7 @@ const UMKM_DETAIL_SELECT = [
   'category',
   'address',
   'city',
-  // 7B-1: origin foundation (kolom baru nullable, backward compat).
+  // origin foundation (kolom baru nullable, backward compat).
   'postal_code',
   'phone',
   'latitude',
@@ -110,7 +112,7 @@ export async function GET(
       db
         .from('products')
         .select(
-          'id, name, image_url, category, original_price, surplus_price, stock, verification_status, created_at'
+          'id, name, description, image_url, category, original_price, surplus_price, stock, status, verification_status, rejection_reason, reviewed_at, weight_gram, length_cm, width_cm, height_cm, is_delivery, is_pickup, created_at, updated_at'
         )
         .eq('umkm_id', id)
         .order('created_at', { ascending: false })
@@ -136,13 +138,24 @@ export async function GET(
     const products = (((productsRes.data ?? []) as unknown) as Row[]).map((p) => ({
       id: p.id ?? null,
       name: p.name ?? 'Tidak diketahui',
+      description: (p.description as string | null) ?? null,
       image_url: p.image_url ?? null,
       category: p.category ?? null,
       original_price: p.original_price ?? null,
       surplus_price: p.surplus_price ?? null,
       stock: p.stock ?? null,
+      status: (p.status as string | null) ?? null,
       verification_status: p.verification_status ?? null,
+      rejection_reason: (p.rejection_reason as string | null) ?? null,
+      reviewed_at: (p.reviewed_at as string | null) ?? null,
+      weight_gram: (p.weight_gram as number | null) ?? null,
+      length_cm: (p.length_cm as number | null) ?? null,
+      width_cm: (p.width_cm as number | null) ?? null,
+      height_cm: (p.height_cm as number | null) ?? null,
+      is_delivery: (p.is_delivery as boolean | null) ?? null,
+      is_pickup: (p.is_pickup as boolean | null) ?? null,
       created_at: p.created_at ?? null,
+      updated_at: (p.updated_at as string | null) ?? null,
     }));
 
     return NextResponse.json({
@@ -205,8 +218,10 @@ export async function GET(
       product_total: products.length,
     });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/umkm/detail] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses data UMKM." }, { status: 500 });
   }
 }

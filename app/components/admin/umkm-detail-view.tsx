@@ -1,18 +1,11 @@
-'use client';
+﻿'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  BadgeCheck,
-  RefreshCw,
-  ShieldAlert,
-  Store,
-} from 'lucide-react';
+import { BadgeCheck, RefreshCw, Store } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Card, CardContent } from '@/app/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/app/components/ui/dialog';
-import { Toaster } from '@/app/components/ui/toaster';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -30,35 +22,29 @@ import {
   toggleUmkmVerification,
   type AdminUmkmDetailResult,
 } from '@/lib/admin-umkm';
+import { flagSuspiciousProduct } from '@/lib/product-suspicion';
+import { AdminPageHeader, ADMIN_PAGE_WRAPPER } from './admin-page-header';
+import {
+  AdminErrorState,
+  AdminForbiddenState,
+  AdminLoadingState,
+} from './admin-state';
+import { AdminDetailField, AdminDetailGrid, AdminDetailSection } from './admin-detail';
+import { formatRupiah, formatTanggal, formatTanggalWaktu } from './admin-format';
+import { ProductDetailDrawer } from './product-detail-drawer';
+import { ModerationHistory } from './moderation-history';
 
-const formatPrice = (value: number | null | undefined) => {
-  if (value === null || value === undefined) return '-';
-  return `Rp${Number(value).toLocaleString('id-ID')}`;
-};
+import { redirectIfSessionExpired } from './admin-session';
 
-const formatDate = (iso: string | null | undefined) => {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-sage-500">
-        {label}
-      </p>
-      <p className="mt-1 break-words text-sm text-charcoal-900">{value}</p>
-    </div>
-  );
+
+/** Nilai kosong ditampilkan sebagai tanda hubung yang konsisten. */
+function nilai(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return '—';
+  const text = String(value).trim();
+  return text ? text : '—';
 }
+
 
 export function UmkmDetailView({ id }: { id: string }) {
   const router = useRouter();
@@ -67,19 +53,30 @@ export function UmkmDetailView({ id }: { id: string }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [verifyBusy, setVerifyBusy] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  // Muat ulang (mis. setelah verifikasi) dapat berjalan tumpang tindih dengan
+  // pemuatan sebelumnya; hanya respons terbaru yang boleh menulis state.
+  const requestIdRef = useRef(0);
 
   const load = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
     setStatus('loading');
     setErrorMsg('');
     try {
       const result = await fetchAdminUmkmDetail(id);
+      if (requestId !== requestIdRef.current) return;
       setData(result);
       setStatus('ready');
     } catch (err) {
-      if (err instanceof AdminUmkmApiError && err.status === 401) {
-        router.replace('/auth/login');
-        return;
-      }
+      if (requestId !== requestIdRef.current) return;
+      if (await redirectIfSessionExpired((err as { status?: number })?.status ?? 0, router, () => {
+          setErrorMsg('Tidak dapat menghubungi server data. Coba lagi.');
+          setStatus('error');
+        })) return;
+      // Refresh berhasil: request ini tetap gagal, jadi tampilkan error +
+      // tombol coba lagi — jangan biarkan status 'loading' menggantung.
+      if (requestId !== requestIdRef.current) return;
       if (err instanceof AdminUmkmApiError && err.status === 403) {
         setStatus('forbidden');
         return;
@@ -120,223 +117,364 @@ export function UmkmDetailView({ id }: { id: string }) {
 
   if (status === 'loading') {
     return (
-      <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
+      <div className={ADMIN_PAGE_WRAPPER}>
+        <AdminLoadingState label="Memuat detail UMKM" />
       </div>
     );
   }
 
   if (status === 'forbidden') {
     return (
-      <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-        <Card className="mt-8">
-          <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-            <ShieldAlert className="h-10 w-10 text-caramel" />
-            <h2 className="mt-4 font-display text-xl font-semibold text-primary">Akses ditolak</h2>
-            <p className="mt-1 max-w-sm text-sm text-sage-500">
-              Halaman ini hanya untuk admin.
-            </p>
-            <Link href="/" className="mt-5">
-              <Button type="button" variant="outline" size="sm">
-                Kembali ke Beranda
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+      <div className={ADMIN_PAGE_WRAPPER}>
+        <AdminForbiddenState message="Halaman ini hanya untuk admin." />
       </div>
     );
   }
 
   if (status === 'error' || !data) {
     return (
-      <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-        <Card className="mt-8">
-          <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-            <ShieldAlert className="h-10 w-10 text-caramel" />
-            <h2 className="mt-4 font-display text-xl font-semibold text-primary">Gagal memuat detail</h2>
-            <p className="mt-1 max-w-sm text-sm text-sage-500">{errorMsg}</p>
-            <Button type="button" size="sm" className="mt-5" onClick={load}>
-              Coba lagi
-            </Button>
-          </CardContent>
-        </Card>
+      <div className={ADMIN_PAGE_WRAPPER}>
+        <AdminErrorState
+          title="Gagal memuat detail"
+          message={errorMsg}
+          onRetry={() => {
+            void load();
+          }}
+        />
       </div>
     );
   }
 
-  const { umkm, owner, subscription, products } = data;
+  const { umkm, owner, subscription, products, product_total } = data;
   const verified = umkm.is_verified;
+  // `products` adalah ringkasan terbatas (PRODUCT_SUMMARY_LIMIT = 15 di route).
+  // `product_total` saat ini = panjang array tersebut, jadi label tidak boleh
+  // mengklaim jumlah total toko — cukup sebut batas ringkasan.
+  const productLimitReached = products.length >= 15;
+  const totalProduk = product_total ?? products.length;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-      <Toaster />
-      <Link
-        href="/dashboard/admin/umkm"
-        className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[13px] font-semibold text-charcoal-500 transition-colors hover:bg-white hover:text-primary"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Daftar UMKM
-      </Link>
+    <div className={ADMIN_PAGE_WRAPPER}>
+      {/* Toaster sengaja TIDAK dipasang di sini: AdminShell sudah memasang
+          satu untuk seluruh panel (sebelumnya tidak ada sama sekali,
+          sehingga toast() tidak pernah tampil). Dua viewport sekaligus
+          akan menampilkan toast yang sama dua kali. */}
+      <AdminPageHeader
+        eyebrow="Admin · Detail UMKM"
+        title={umkm.business_name}
+        description={`${umkm.city ?? 'Kota belum tersedia'} · Bergabung ${formatTanggal(umkm.created_at)}`}
+        backHref="/dashboard/admin/umkm"
+        backLabel="Daftar UMKM"
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                void load();
+              }}
+            >
+              <RefreshCw aria-hidden className="h-3.5 w-3.5" />
+              Muat ulang
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={verified ? 'destructive' : 'default'}
+              onClick={() => setConfirmOpen(true)}
+            >
+              {verified ? 'Batalkan Verifikasi' : 'Verifikasi UMKM'}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-4">
-          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-cream-100">
-            <SmartImage
-              src={umkm.logo_url ?? ''}
-              alt={umkm.business_name}
-              sizes="80px"
-            />
+      {/* Identitas toko: logo, status, deskripsi singkat. Tombol aksi pindah
+          ke header halaman agar sejajar dengan nama toko di pojok kanan. */}
+      <Card className="mb-6">
+        <CardContent className="p-5">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[var(--radius)] bg-sage-100">
+              <SmartImage src={umkm.logo_url ?? ''} alt={umkm.business_name} sizes="64px" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={verified ? 'success' : 'secondary'}>
+                  {verified ? <BadgeCheck aria-hidden className="h-3 w-3" /> : null}
+                  {verified ? 'Terverifikasi' : 'Belum Terverifikasi'}
+                </Badge>
+                {umkm.category && <Badge variant="secondary">{umkm.category}</Badge>}
+                <Badge variant={umkm.is_open === true ? 'success' : 'secondary'}>
+                  {umkm.is_open === null ? 'Status buka tidak diketahui' : umkm.is_open ? 'Buka' : 'Tutup'}
+                </Badge>
+              </div>
+              {/* Tagline saja. Deskripsi penuh punya kartunya sendiri di bawah;
+                  menampilkannya juga di sini hanya mengulang teks yang sama. */}
+              {umkm.tagline?.trim() ? (
+                <p className="mt-2 line-clamp-2 break-words text-sm leading-relaxed text-charcoal-700">
+                  {umkm.tagline}
+                </p>
+              ) : null}
+              <p className="mt-1.5 truncate text-xs leading-relaxed text-sage-500">
+                {owner?.full_name?.trim() || owner?.email || 'Pemilik tidak tersedia'}
+                {umkm.slug ? ` · ${umkm.slug}` : ''}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={verified ? 'success' : 'secondary'}>
-                {verified ? <BadgeCheck className="h-3 w-3" /> : null}
-                {verified ? 'Terverifikasi' : 'Belum Terverifikasi'}
-              </Badge>
-              {umkm.category && (
-                <span className="text-[11px] text-sage-500">{umkm.category}</span>
-              )}
-            </div>
-            <h1 className="mt-1 break-words font-display text-[clamp(1.4rem,3vw,2rem)] font-semibold tracking-tight text-primary">
-              {umkm.business_name}
-            </h1>
-            <p className="mt-1 text-sm text-sage-500">
-              {umkm.city ?? 'Kota belum tersedia'} · Bergabung {formatDate(umkm.created_at)}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={load}
-          >
-            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-            Muat ulang
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={verified ? 'destructive' : 'default'}
-            onClick={() => setConfirmOpen(true)}
-          >
-            {verified ? 'Batalkan Verifikasi' : 'Verifikasi UMKM'}
-          </Button>
-        </div>
-      </div>
-
-      <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Informasi Toko</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Deskripsi" value={umkm.description?.trim() ? umkm.description : '-'} />
-            <Field label="Alamat" value={umkm.address?.trim() ? umkm.address : '-'} />
-            <Field label="Jam Operasional" value={umkm.open_hours?.trim() ? umkm.open_hours : '-'} />
-            <Field
-              label="Status Toko"
-              value={umkm.is_open === null ? '-' : umkm.is_open ? 'Buka' : 'Tutup'}
-            />
-            <Field label="Slug" value={umkm.slug ?? '-'} />
-            <Field label="Rating" value={umkm.rating !== null ? String(umkm.rating) : '-'} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Pemilik</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Nama Pemilik (Toko)" value={umkm.owner_name?.trim() ? umkm.owner_name : '-'} />
-            <Field label="Nama Akun" value={owner?.full_name?.trim() ? owner.full_name : '-'} />
-            <Field label="Email" value={owner?.email ?? '-'} />
-            <Field label="Role" value={owner?.role ?? '-'} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Subscription</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Paket" value={subscription?.plan?.name ?? 'Belum ada'} />
-            <Field label="Status" value={subscription?.status ?? '-'} />
-            <Field label="Billing" value={subscription?.billing ?? '-'} />
-            <Field label="Dibayar" value={formatPrice(subscription?.price_paid ?? null)} />
-            <Field label="Periode Mulai" value={formatDate(subscription?.current_period_start ?? null)} />
-            <Field label="Periode Berakhir" value={formatDate(subscription?.current_period_end ?? null)} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Informasi Lainnya</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Partner Tier" value={umkm.partner_tier ?? '-'} />
-            <Field label="Followers" value={umkm.followers !== null ? String(umkm.followers) : '-'} />
-            <Field label="Member Sejak" value={umkm.member_since !== null ? String(umkm.member_since) : '-'} />
-            <Field label="Waktu Respons" value={umkm.response_time ?? '-'} />
-            <Field
-              label="Porsi Terselamatkan"
-              value={umkm.porsi_terselamatkan !== null ? String(umkm.porsi_terselamatkan) : '-'}
-            />
-            <Field
-              label="CO2e Saved"
-              value={umkm.co2e_saved_kg !== null ? `${umkm.co2e_saved_kg} kg` : '-'}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="mt-5">
-        <CardHeader>
-          <CardTitle className="text-base">
-            Produk ({products.length}
-            {products.length >= 15 ? '+' : ''})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {products.length === 0 ? (
-            <div className="flex flex-col items-center px-6 py-10 text-center">
-              <Store className="h-8 w-8 text-primary" />
-              <p className="mt-3 text-sm text-sage-500">UMKM ini belum memiliki produk.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {products.map((p) => (
-                <div
-                  key={p.id ?? p.name}
-                  className="flex items-start gap-3 rounded-xl border border-border/70 p-3"
-                >
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-cream-100">
-                    <SmartImage
-                      src={p.image_url ?? ''}
-                      alt={p.name}
-                      sizes="56px"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-charcoal-900">{p.name}</p>
-                    <p className="mt-0.5 text-[12px] text-sage-500">
-                      {p.verification_status ?? '-'} · Stok {p.stock ?? '-'} ·{' '}
-                      {formatPrice(p.surplus_price)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
 
+      {/* Deskripsi toko dipisah ke kartu selebar konten. Di dalam kartu
+          identitas (kolom sempit di samping logo) teks panjang terlipat jadi
+          belasan baris pendek yang sulit dipindai — terutama untuk toko
+          dengan deskripsi panjang. Lebar penuh memberi panjang baris yang
+          nyaman dibaca dan tinggi yang wajar. */}
+      {umkm.description?.trim() ? (
+        <Card className="mb-6">
+          <CardContent className="p-5">
+            <AdminDetailSection title="Deskripsi toko">
+              {/* Dipecah per paragraf (baris kosong) agar teks panjang bisa
+                  dipindai. `max-w-prose` membatasi panjang baris supaya mata
+                  tidak kehilangan tempat saat kembali ke baris berikutnya. */}
+              <div className="max-w-prose space-y-3">
+                {umkm.description
+                  .split(/\n{2,}/)
+                  .map((paragraf) => paragraf.trim())
+                  .filter(Boolean)
+                  .map((paragraf, index) => (
+                    <p
+                      key={`desc-${index}`}
+                      className="whitespace-pre-wrap break-words text-sm leading-relaxed text-charcoal-700"
+                    >
+                      {paragraf}
+                    </p>
+                  ))}
+              </div>
+            </AdminDetailSection>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <Card>
+          <CardContent className="p-5">
+            <AdminDetailSection title="Informasi Toko">
+              <AdminDetailGrid>
+                {/* Alamat memakan lebar penuh: alamat toko hampir selalu
+                    lebih panjang dari satu kolom sehingga sebelumnya
+                    terlipat jadi 4-5 baris sempit di samping "Kota". */}
+                <AdminDetailField label="Alamat" className="sm:col-span-2">
+                  {nilai(umkm.address)}
+                </AdminDetailField>
+                <AdminDetailField label="Kota">{nilai(umkm.city)}</AdminDetailField>
+                <AdminDetailField label="Kode pos">
+                  {nilai(umkm.postal_code)}
+                </AdminDetailField>
+                <AdminDetailField label="Jam operasional">
+                  {nilai(umkm.open_hours)}
+                </AdminDetailField>
+                <AdminDetailField label="Telepon">{nilai(umkm.phone)}</AdminDetailField>
+                <AdminDetailField label="Rating">
+                  {umkm.rating !== null ? String(umkm.rating) : '—'}
+                </AdminDetailField>
+                <AdminDetailField label="Bergabung">
+                  {formatTanggal(umkm.created_at)}
+                </AdminDetailField>
+              </AdminDetailGrid>
+            </AdminDetailSection>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5">
+            <AdminDetailSection
+              title="Pemilik"
+              description="Akun yang memiliki toko ini (relasi 1:1)."
+            >
+              <AdminDetailGrid>
+                <AdminDetailField label="Nama pemilik (toko)">
+                  {nilai(umkm.owner_name)}
+                </AdminDetailField>
+                <AdminDetailField label="Nama akun">{nilai(owner?.full_name)}</AdminDetailField>
+                <AdminDetailField label="Email">{nilai(owner?.email)}</AdminDetailField>
+                <AdminDetailField label="Peran">{nilai(owner?.role)}</AdminDetailField>
+              </AdminDetailGrid>
+            </AdminDetailSection>
+
+            <AdminDetailSection
+              title="Subscription"
+              description="Paket langganan toko saat ini."
+              className="mt-5"
+            >
+              <AdminDetailGrid>
+                <AdminDetailField label="Paket">
+                  {subscription?.plan?.name ?? 'Belum ada'}
+                </AdminDetailField>
+                <AdminDetailField label="Status">{nilai(subscription?.status)}</AdminDetailField>
+                <AdminDetailField label="Billing">{nilai(subscription?.billing)}</AdminDetailField>
+                <AdminDetailField label="Dibayar">
+                  {formatRupiah(subscription?.price_paid ?? null)}
+                </AdminDetailField>
+                <AdminDetailField label="Periode mulai">
+                  {formatTanggalWaktu(subscription?.current_period_start ?? null)}
+                </AdminDetailField>
+                <AdminDetailField label="Periode berakhir">
+                  {formatTanggalWaktu(subscription?.current_period_end ?? null)}
+                </AdminDetailField>
+              </AdminDetailGrid>
+            </AdminDetailSection>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="mt-6">
+        <CardContent className="p-5">
+          <AdminDetailSection
+            title="Statistik & metadata toko"
+            description="Angka yang dilaporkan oleh profil toko."
+          >
+            <AdminDetailGrid columns={3}>
+              <AdminDetailField label="Partner tier">{nilai(umkm.partner_tier)}</AdminDetailField>
+              <AdminDetailField label="Followers">
+                {umkm.followers !== null ? String(umkm.followers) : '—'}
+              </AdminDetailField>
+              <AdminDetailField label="Member sejak">
+                {umkm.member_since !== null ? String(umkm.member_since) : '—'}
+              </AdminDetailField>
+              <AdminDetailField label="Waktu respons">{nilai(umkm.response_time)}</AdminDetailField>
+              <AdminDetailField label="Porsi terselamatkan">
+                {umkm.porsi_terselamatkan !== null ? String(umkm.porsi_terselamatkan) : '—'}
+              </AdminDetailField>
+              <AdminDetailField label="Penghematan CO2e">
+                {umkm.co2e_saved_kg !== null ? `${umkm.co2e_saved_kg} kg` : '—'}
+              </AdminDetailField>
+            </AdminDetailGrid>
+          </AdminDetailSection>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardContent className="p-5">
+          <AdminDetailSection
+            title={`Produk${totalProduk > 0 ? ` (${totalProduk}${productLimitReached ? '+' : ''})` : ''}`}
+            description={
+              productLimitReached
+                ? 'Menampilkan maksimal 15 produk terbaru dari server.'
+                : undefined
+            }
+          >
+            {products.length === 0 ? (
+              <p className="rounded-[var(--radius)] border border-dashed border-border bg-sage-100/20 px-4 py-10 text-center text-sm text-sage-500">
+                UMKM ini belum memiliki produk.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-2">
+                {products.map((p) => {
+                  const flags = flagSuspiciousProduct({
+                    id: p.id,
+                    name: p.name,
+                    description: p.description,
+                    image_url: p.image_url,
+                    category: p.category,
+                    original_price: p.original_price,
+                    surplus_price: p.surplus_price,
+                    stock: p.stock,
+                    verification_status: p.verification_status,
+                    created_at: p.created_at,
+                    updated_at: p.updated_at,
+                  });
+                  return (
+                    <div
+                      key={p.id ?? p.name}
+                      className="flex items-start gap-3 rounded-[var(--radius)] border border-border/70 bg-white p-4"
+                    >
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[var(--radius)] bg-sage-100">
+                        <SmartImage src={p.image_url ?? ''} alt={p.name} sizes="56px" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge
+                            variant={
+                              p.verification_status === 'approved'
+                                ? 'success'
+                                : p.verification_status === 'rejected'
+                                  ? 'destructive'
+                                  : 'warning'
+                            }
+                          >
+                            {p.verification_status === 'approved'
+                              ? 'Disetujui'
+                              : p.verification_status === 'rejected'
+                                ? 'Ditolak'
+                                : p.verification_status === 'pending'
+                                  ? 'Menunggu'
+                                  : (p.verification_status ?? '—')}
+                          </Badge>
+                          {p.status && (
+                            <Badge variant="secondary">
+                              {p.status === 'available'
+                                ? 'Tersedia'
+                                : p.status === 'sold_out'
+                                  ? 'Stok habis'
+                                  : p.status}
+                            </Badge>
+                          )}
+                          {flags.length > 0 && (
+                            <Badge variant="warning">Perlu tinjau ({flags.length})</Badge>
+                          )}
+                        </div>
+                        <p className="mt-1.5 truncate text-sm font-semibold text-charcoal-900" title={p.name}>
+                          {p.name}
+                        </p>
+                        <p className="mt-0.5 text-xs text-sage-500">
+                          {nilai(p.category)} · Stok {p.stock ?? '—'} ·{' '}
+                          {formatRupiah(p.surplus_price)}
+                        </p>
+                        <p className="mt-0.5 text-xs text-sage-500">
+                          Dibuat {formatTanggal(p.created_at)}
+                          {p.weight_gram != null ? ` · ${p.weight_gram} g` : ''}
+                        </p>
+                        {p.verification_status === 'rejected' && p.rejection_reason && (
+                          <p className="mt-1 line-clamp-2 break-words text-xs text-destructive">
+                            Alasan: {p.rejection_reason}
+                          </p>
+                        )}
+                        {p.id && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedProductId(p.id)}
+                            className="mt-2 inline-flex min-h-[36px] items-center rounded-[var(--radius)] text-xs font-semibold text-primary underline underline-offset-2 hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+                          >
+                            Buka detail &amp; moderasi
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </AdminDetailSection>
+        </CardContent>
+      </Card>
+
+      <div className="mt-6">
+        <ModerationHistory
+          userId={owner?.id ?? null}
+          title="Riwayat Moderasi Pemilik"
+          description="Tindakan admin tercatat pada akun pemilik toko (relasi pemilik–toko 1:1). Server belum menyediakan audit khusus tingkat toko, sehingga riwayat ini bukan riwayat hukuman toko."
+          emptyMessage={
+            owner
+              ? 'Belum ada tindakan moderasi yang tercatat untuk akun pemilik toko ini.'
+              : 'Relasi pemilik toko tidak tersedia, riwayat tidak dapat dimuat.'
+          }
+        />
+      </div>
+
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="overflow-hidden sm:max-w-md">
+          <DialogHeader className="shrink-0">
             <DialogTitle>
               {verified ? 'Batalkan verifikasi UMKM ini?' : 'Verifikasi UMKM ini?'}
             </DialogTitle>
@@ -346,7 +484,7 @@ export function UmkmDetailView({ id }: { id: string }) {
                 : `“${umkm.business_name}” akan berstatus Terverifikasi. Perubahan ini hanya mengubah status verifikasi toko.`}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4 shrink-0 gap-2 border-t border-border/60 pt-4 sm:space-x-0">
             <Button
               type="button"
               variant="outline"
@@ -366,6 +504,12 @@ export function UmkmDetailView({ id }: { id: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ProductDetailDrawer
+        productId={selectedProductId}
+        onClose={() => setSelectedProductId(null)}
+        onChanged={load}
+      />
     </div>
   );
 }

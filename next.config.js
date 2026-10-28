@@ -5,6 +5,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: [
       "framer-motion",
+      "gsap",
       "lucide-react",
       "recharts",
       "embla-carousel-react",
@@ -25,7 +26,10 @@ const nextConfig = {
     ],
   },
   images: {
-    formats: ["image/webp"],
+    // AVIF lebih kecil ~20-30% dari WebP pada foto; WebP tetap jadi fallback
+    // untuk browser lama. Urutan penting: Next memilih format pertama yang
+    // didukung Accept header klien.
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",

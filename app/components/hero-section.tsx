@@ -109,9 +109,11 @@ export function HeroSection() {
     const el = target ? document.getElementById(target) : null;
     if (!el) return;
 
-    const lenis = window.__lenis;
-    if (lenis) lenis.scrollTo(el, { offset: -104, duration: 1.1 });
-    else el.scrollIntoView({ behavior: "smooth", block: "start" });
+    // `scrollIntoView` dengan perilaku smooth memakai animasi native browser
+    // (compositor), bukan loop rAF JavaScript. Sebelumnya Lenis mengambil alih
+    // seluruh scroll halaman dan menjalankan rAF terus-menerus — itulah sumber
+    // scroll terasa "patah-patah" di perangkat lemah.
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -121,13 +123,21 @@ export function HeroSection() {
           <div className="mx-auto w-full">
             <nav
               className={cn(
-                "flex h-20 min-w-fit items-center justify-between px-5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-6 lg:px-8",
+                // `transition-all` dihapus: ia meng-animasikan SEMUA properti,
+                // termasuk yang memaksa raster ulang. Properti yang benar-benar
+                // berubah hanya warna, border, dan bayangan.
+                "flex h-20 min-w-fit items-center justify-between px-5 transition-[background-color,border-color,box-shadow,color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-6 lg:px-8",
                 scrolled
                   ? cn(
-                      "mx-auto w-full max-w-4xl rounded-full border px-6 shadow-[0_20px_44px_-26px_rgba(27,77,50,0.45)] backdrop-blur-xl sm:px-7 xl:max-w-5xl",
+                      // `backdrop-blur-xl` dihapus. Elemen sticky yang memakai
+                      // backdrop-filter harus mengambil sampel ulang isi di
+                      // belakangnya SETIAP frame scroll — inilah penyebab
+                      // utama scroll terasa patah-patah. Latar dibuat sedikit
+                      // lebih pekat supaya keterbacaan tetap sama.
+                      "mx-auto w-full max-w-4xl rounded-full border px-6 shadow-[0_20px_44px_-26px_rgba(27,77,50,0.45)] sm:px-7 xl:max-w-5xl",
                       navIsDark
-                        ? "border-white/15 bg-primary/70 text-white"
-                        : "border-hairline/70 bg-white/85 text-primary",
+                        ? "border-white/15 bg-primary/95 text-white"
+                        : "border-hairline/70 bg-white/95 text-primary",
                     )
                   : cn(
                       "mx-auto w-full max-w-7xl rounded-none border-b border-transparent bg-transparent",
@@ -745,7 +755,9 @@ function Leaf({
         x,
         rotate,
         opacity,
-        filter: `${blur ? `blur(${blur}px) ` : ""}saturate(1.35) brightness(0.96) contrast(1.1)`,
+        // blur dihapus: filter blur pada elemen besar adalah efek termahal di GPU,
+        // dan 6 daun berarti 6 filter aktif selama hero terlihat.
+        filter: "saturate(1.35) brightness(0.96) contrast(1.1)",
         borderRadius: radius,
       }}
     >
@@ -811,30 +823,8 @@ function HeroFoodBackdrop() {
       speedY: -0.2,
       speedX: -0.05,
     },
-    {
-      src: "/daun1072179.jpg",
-      size: 208,
-      top: "46%",
-      left: "4%",
-      radius: "0 100% 0 100%",
-      rotate: 14,
-      opacity: 0.7,
-      blur: 0,
-      speedY: -0.32,
-      speedX: 0.09,
-    },
-    {
-      src: "/daun1420019.jpg",
-      size: 208,
-      top: "48%",
-      right: "4%",
-      radius: "100% 0 100% 0",
-      rotate: -16,
-      opacity: 0.45,
-      blur: 0.3,
-      speedY: -0.36,
-      speedX: -0.08,
-    },
+      // Dua daun kecil dihapus saat optimasi: tiap daun = 1 motion.div dengan
+      // transform scroll aktif; 4 daun memberi komposisi yang sama dengan beban lebih ringan.
   ];
 
   return (

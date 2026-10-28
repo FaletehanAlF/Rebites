@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { UserProfile } from '@/app/components/shared/user-profile';
+import { RequireAuth } from '@/app/components/auth/require-auth';
 
 export const metadata: Metadata = {
   title: 'Profil - ReBites',
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function ProfilePage() {
-  return <UserProfile />;
+  return (
+    <RequireAuth>
+      <UserProfile />
+    </RequireAuth>
+  );
 }

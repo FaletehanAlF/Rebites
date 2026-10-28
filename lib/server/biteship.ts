@@ -1,5 +1,5 @@
 /**
- * 7C-1: Biteship server helper (server-only, pola lib/server/xendit.ts).
+ * Biteship server helper (server-only, pola lib/server/xendit.ts).
  * - API key hanya dari process.env (tanpa prefix NEXT_PUBLIC_).
  * - fetch + AbortController timeout 10 detik.
  * - API key tidak pernah di-log / dikembalikan ke client.
@@ -10,7 +10,7 @@ const BITESHIP_API_BASE = 'https://api.biteship.com';
 const RATES_PATH = '/v1/rates/couriers';
 const REQUEST_TIMEOUT_MS = 10_000;
 
-/** 7C-3C-2: diekspor untuk shipment service (nilai sama, tanpa ubah behavior rates). */
+/** diekspor untuk shipment service (nilai sama, tanpa ubah behavior rates). */
 export { BITESHIP_API_BASE, REQUEST_TIMEOUT_MS };
 
 export function getBiteshipApiKey(): string {
@@ -49,6 +49,166 @@ export interface BiteshipRatesPayload {
   destination_postal_code: number;
   couriers: string;
   items: BiteshipRateItem[];
+  /**
+   * koordinat opsional (mode "mix" Biteship). Dikirim HANYA bila
+   * pasangan lat/lng tersedia dan valid; kurir instant (mis. grab)
+   * mensyaratkan koordinat untuk menghasilkan harga.
+   */
+  origin_latitude?: number;
+  origin_longitude?: number;
+  destination_latitude?: number;
+  destination_longitude?: number;
+}
+
+/** Koordinat opsional dari DB/legacy — nilai mentah, divalidasi di sini. */
+export interface BiteshipOptionalCoordinates {
+  latitude?: unknown;
+  longitude?: unknown;
+}
+
+function parseCoordinateValue(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'string' && value.trim() === '') return null;
+  const num = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(num)) return null;
+  return num;
+}
+
+function toPositiveIntOrNull(value: unknown): number | null {
+  if (value == null) return null;
+  const num = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  const int = Math.floor(num);
+  return int >= 1 ? int : null;
+}
+
+/**
+ * Validasi pasangan koordinat: kirim hanya bila KEDUANYA angka dan dalam
+ * rentang sah (lat -90..90, lng -180..180). Selain itu -> null
+ * (tidak mengarang nilai, tidak mengirim setengah pasangan).
+ */
+function normalizeCoordinatePair(
+  pair: BiteshipOptionalCoordinates | null | undefined
+): { latitude: number; longitude: number } | null {
+  if (!pair) return null;
+  const latitude = parseCoordinateValue(pair.latitude);
+  const longitude = parseCoordinateValue(pair.longitude);
+  if (latitude === null || longitude === null) return null;
+  if (latitude < -90 || latitude > 90) return null;
+  if (longitude < -180 || longitude > 180) return null;
+  return { latitude, longitude };
+}
+
+/**
+ * bangun item rates sesuai kontrak resmi Biteship.
+ * - `weight` = gram PER UNIT; `quantity` dikirim terpisah dan Biteship
+ *   yang mengalikan (weight x quantity). JANGAN mengalikan di sini agar
+ *   tidak terjadi pembobotan ganda; tidak ada konversi kg (kontrak gram).
+ * - Dimensi cm hanya dikirim bila angka positif (tanpa 0/negatif/karangan).
+ */
+export function buildBiteshipRateItem(input: {
+  name: string;
+  /** Harga per unit (IDR); dibulatkan seperti perilaku lama. */
+  unitValue: number;
+  quantity: number;
+  /** Berat per unit (gram). */
+  weightGram: number;
+  lengthCm?: unknown;
+  widthCm?: unknown;
+  heightCm?: unknown;
+}): BiteshipRateItem {
+  const item: BiteshipRateItem = {
+    name: input.name,
+    category: 'food_and_drink',
+    value: Math.round(input.unitValue),
+    quantity: input.quantity,
+    weight: input.weightGram,
+  };
+  const length = toPositiveIntOrNull(input.lengthCm);
+  const width = toPositiveIntOrNull(input.widthCm);
+  const height = toPositiveIntOrNull(input.heightCm);
+  if (length != null) item.length = length;
+  if (width != null) item.width = width;
+  if (height != null) item.height = height;
+  return item;
+}
+
+/**
+ * bangun payload rates Biteship.
+ * - Postal tetap dikirim (akurasi "medium", perilaku lama dipertahankan).
+ * - Koordinat hanya ditambahkan bila tersedia & valid (mode "mix" Biteship,
+ *   dibutuhkan kurir instant seperti grab). Tanpa koordinat, payload identik
+ *   dengan perilaku postal-only sebelumnya — tanpa fallback/nilai palsu.
+ */
+export function buildBiteshipRatesPayload(input: {
+  originPostalCode: number;
+  destinationPostalCode: number;
+  couriers: string[];
+  items: BiteshipRateItem[];
+  originCoordinates?: BiteshipOptionalCoordinates | null;
+  destinationCoordinates?: BiteshipOptionalCoordinates | null;
+}): BiteshipRatesPayload {
+  const payload: BiteshipRatesPayload = {
+    origin_postal_code: input.originPostalCode,
+    destination_postal_code: input.destinationPostalCode,
+    couriers: input.couriers.join(','),
+    items: input.items,
+  };
+  const origin = normalizeCoordinatePair(input.originCoordinates);
+  if (origin) {
+    payload.origin_latitude = origin.latitude;
+    payload.origin_longitude = origin.longitude;
+  }
+  const destination = normalizeCoordinatePair(input.destinationCoordinates);
+  if (destination) {
+    payload.destination_latitude = destination.latitude;
+    payload.destination_longitude = destination.longitude;
+  }
+  return payload;
+}
+
+export type BiteshipRatesErrorCode = 'provider_balance' | 'provider_quota';
+
+export interface BiteshipRatesErrorInfo {
+  code: BiteshipRatesErrorCode;
+  /** Pesan aman ditampilkan ke pengguna (Indonesia). Pesan mentah tetap di log server. */
+  message: string;
+}
+
+/**
+ * klasifikasi error rates Biteship yang perlu pesan khusus
+ * (saldo/kuota). Fungsi murni, tanpa efek samping:
+ * - pesan saldo/kuota -> code + pesan Indonesia yang jelas;
+ * - pesan lain -> null (pemanggil meneruskan pesan asli + code generik).
+ * Tidak pernah mengubah error menjadi tarif/kesuksesan palsu.
+ */
+export function classifyBiteshipRatesError(
+  rawMessage: string
+): BiteshipRatesErrorInfo | null {
+  const message = typeof rawMessage === 'string' ? rawMessage : '';
+  if (
+    /no sufficient balance|insufficient balance|not enough balance|top\s*up your balance|saldo/i.test(
+      message
+    )
+  ) {
+    return {
+      code: 'provider_balance',
+      message:
+        'Ongkir belum dapat dihitung karena saldo akun pengiriman (Biteship) tidak mencukupi. Hubungi admin agar saldo diisi, lalu coba lagi.',
+    };
+  }
+  if (
+    /rate limit|too many requests|quota (exceeded|is exceeded)|exceeded the quota|kuota/i.test(
+      message
+    )
+  ) {
+    return {
+      code: 'provider_quota',
+      message:
+        'Layanan ongkir sedang dibatasi oleh penyedia (kuota/rate limit). Coba lagi beberapa saat lagi.',
+    };
+  }
+  return null;
 }
 
 /** Subset field pricing Biteship yang dipakai normalisasi route. */

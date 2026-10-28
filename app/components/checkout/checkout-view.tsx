@@ -18,6 +18,7 @@ import { ShippingOptionSection } from "./shipping-option-section";
 import { PaymentSummaryCard } from "./payment-summary-card";
 import { StickyMobileBar } from "./sticky-mobile-bar";
 import { CheckoutSuccessDialog } from "./checkout-success-dialog";
+import { CheckoutPriceReviewDialog } from "./checkout-price-review-dialog";
 import { useCurrentUser } from "@/lib/current-user";
 import { toast } from "@/hooks/use-toast";
 
@@ -35,10 +36,16 @@ function buildOrderDraft(product: ProductDetail): OrderDraft {
     discountedPrice: product.discountedPrice,
     stockRemaining: product.stockRemaining,
     distanceKm: product.distanceKm,
-    // 7B-2B: kapabilitas fulfillment untuk gating UI (server validasi ulang).
+    // kapabilitas fulfillment untuk gating UI (server validasi ulang).
     isDelivery: product.isDelivery ?? true,
     isPickup: product.isPickup ?? true,
-    // 7B-2D-1: package dari ProductDetail (NULL = belum diketahui).
+    // Berat NULL = ongkir pasti ditolak server (product_no_weight). Tandai di
+    // sini agar toggle Diantar tidak menawarkan janji yang gagal belakangan.
+    deliveryUnavailableReason:
+      (product.isDelivery ?? true) && !(product.weightGram != null)
+        ? 'weight_missing'
+        : null,
+    // package dari ProductDetail (NULL = belum diketahui).
     weightGram: product.weightGram ?? null,
     lengthCm: product.lengthCm ?? null,
     widthCm: product.widthCm ?? null,
@@ -107,6 +114,7 @@ function CheckoutContent({
       </main>
 
       <CheckoutSuccessDialog />
+      <CheckoutPriceReviewDialog />
     </CheckoutProvider>
   );
 }

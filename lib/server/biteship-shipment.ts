@@ -1,5 +1,5 @@
 /**
- * 7C-3C-2: Biteship shipment service (server-only).
+ * Biteship shipment service (server-only).
  * Membuat Biteship Order (POST /v1/orders) dari data order ReBites.
  * - Identifier utama: orderCode. Seluruh data dari database/snapshot,
  *   TIDAK ADA yang dipercaya dari client (service tidak menerima input client).

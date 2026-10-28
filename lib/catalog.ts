@@ -29,6 +29,8 @@ function parseStockFromLabel(label: string | null | undefined, fallback: number)
 }
 
 function productToFoodItem(row: ProductRow): FoodItem {
+  // Sumber kebenaran stok adalah kolom numerik; label hanya output presentasional.
+  const stock = Number(row.stock ?? 0);
   return {
     id: row.slug ?? row.id,
     name: row.name ?? '',
@@ -40,13 +42,18 @@ function productToFoodItem(row: ProductRow): FoodItem {
     availableFrom: (row.sell_window_start ?? '09:00').slice(0, 5),
     availableTo: (row.sell_window_end ?? '21:00').slice(0, 5),
     stockLabel:
-      row.stock_label ?? `${row.stock ?? 0} porsi tersisa`,
+      row.stock_label ?? (stock <= 0 ? 'Habis' : `${stock} porsi tersisa`),
     originalPrice: row.original_price ?? 0,
     discountedPrice: row.surplus_price ?? 0,
     discountPercent: row.discount_percent ?? 0,
     expiresAt: row.expires_at ?? undefined,
     // tambahan untuk lookup robust foto makanan disukai (id slug vs uuid)
-    ...({ slug: row.slug ?? row.id, rawId: row.id } as { slug: string; rawId: string }),
+    // + stok numerik agar kartu memakai angka, bukan teks label.
+    ...({ slug: row.slug ?? row.id, rawId: row.id, stock } as {
+      slug: string;
+      rawId: string;
+      stock: number;
+    }),
   } as FoodItem;
 }
 

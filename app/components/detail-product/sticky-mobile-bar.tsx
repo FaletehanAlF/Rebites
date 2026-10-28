@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { ProductDetail } from "@/app/components/detail-product/data";
 import { formatIDR } from "@/app/components/detail-product/data";
 import { EASE } from "./anim";
@@ -18,6 +19,8 @@ export function StickyMobileBar({
 }) {
   const [visible, setVisible] = useState(false);
   const reduce = useReducedMotion();
+  // Sumber kebenaran stok adalah angka; tombol pesan disabled saat habis.
+  const isOutOfStock = product.stockRemaining <= 0;
 
   useEffect(() => {
     const el = ctaRef.current;
@@ -58,10 +61,22 @@ export function StickyMobileBar({
             <button
               type="button"
               onClick={onOrder}
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-caramel active:scale-[0.98]"
+              disabled={isOutOfStock}
+              className={cn(
+                "inline-flex shrink-0 items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors duration-200 active:scale-[0.98]",
+                isOutOfStock
+                  ? "cursor-not-allowed bg-zinc-100 text-zinc-400"
+                  : "bg-primary text-white hover:bg-caramel",
+              )}
             >
-              <ShoppingBag className="h-4 w-4" />
-              Pesan Sekarang
+              {isOutOfStock ? (
+                <>Stok Habis</>
+              ) : (
+                <>
+                  <ShoppingBag className="h-4 w-4" />
+                  Pesan Sekarang
+                </>
+              )}
             </button>
           </div>
         </motion.div>

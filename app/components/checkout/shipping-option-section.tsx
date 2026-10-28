@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Clock3, TriangleAlert, Truck } from 'lucide-react';
+import { Check, Clock3, MapPin, TriangleAlert, Truck } from 'lucide-react';
 import { formatRupiah } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import type { ShippingRateOption } from '@/lib/types';
@@ -131,20 +131,37 @@ function LoadingSkeleton() {
 }
 
 /**
- * 7C-2B: pemilih layanan pengiriman (food-delivery style).
+ * pemilih layanan pengiriman (food-delivery style).
  * Hanya tampil untuk fulfillment delivery. Menyimpan identifier
  * (courierCode/serviceCode) via context; harga hanya display
  * (source of truth tetap server pada phase berikutnya).
  */
 export function ShippingOptionSection() {
   const {
+    draft,
     fulfillment,
     shippingOptions,
     selectedShipping,
     setSelectedShipping,
     shippingLoading,
     shippingError,
+    shippingErrorCode,
+    selectedAddress,
   } = useCheckout();
+
+  const selectedOption =
+    selectedShipping && shippingOptions.length > 0
+      ? (shippingOptions.find(
+          (o) =>
+            o.courierCode === selectedShipping.courierCode &&
+            o.serviceCode === selectedShipping.serviceCode
+        ) ?? null)
+      : null;
+
+  // Alamat tujuan aktif — konfirmasi visual bahwa ongkir dihitung untuk alamat ini.
+  const destinationLabel = selectedAddress
+    ? [selectedAddress.label, selectedAddress.district].filter(Boolean).join(' · ')
+    : null;
 
   return (
     <AnimatePresence initial={false}>
@@ -165,8 +182,25 @@ export function ShippingOptionSection() {
             <p className="mt-0.5 text-sm text-sage-500">
               Kurir dan estimasi tiba untuk pesanan ini
             </p>
+            <p className="mt-1 text-xs text-sage-500">
+              Estimasi dihitung ulang saat alamat pengiriman berubah. Harga final
+              tetap dihitung ulang server saat checkout.
+            </p>
 
             <div className="mt-4">
+              {/* Konteks tujuan: memastikan tarif dihitung untuk alamat yang benar. */}
+              <div className="mb-3 flex items-start gap-2 rounded-xl bg-cream-50 px-3 py-2.5">
+                <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-sage-500">
+                    Dikirim ke
+                  </p>
+                  <p className="truncate text-[13px] font-medium text-charcoal-900">
+                    {destinationLabel ?? 'Belum ada alamat terpilih'}
+                  </p>
+                </div>
+              </div>
+
               {shippingLoading ? (
                 <LoadingSkeleton />
               ) : shippingError ? (
@@ -182,6 +216,41 @@ export function ShippingOptionSection() {
                     <p className="mt-0.5 text-xs leading-relaxed text-charcoal-500">
                       {shippingError}
                     </p>
+                    {shippingErrorCode === 'product_no_weight' && (
+                      <p className="mt-1.5 text-xs leading-relaxed text-charcoal-900">
+                        {draft.isPickup
+                          ? 'Kamu masih bisa melanjutkan pesanan dengan memilih “Ambil Sendiri” di atas, atau tunggu penjual melengkapi berat produk ini.'
+                          : 'Penjual perlu melengkapi berat produk ini agar kurir dapat dihitung.'}
+                      </p>
+                    )}
+                    {shippingErrorCode === 'origin_postal_missing' && (
+                      <p className="mt-1.5 text-xs leading-relaxed text-charcoal-900">
+                        {draft.isPickup
+                          ? 'Kamu masih bisa melanjutkan pesanan dengan memilih “Ambil Sendiri” di atas.'
+                          : 'Toko belum mengisi lokasinya. Coba lagi nanti atau pilih Ambil Sendiri.'}
+                      </p>
+                    )}
+                    {(shippingErrorCode === 'origin_coordinates_missing' ||
+                      shippingErrorCode === 'dest_coordinates_missing' ||
+                      shippingErrorCode === 'dest_postal_missing') && (
+                      <p className="mt-1.5 text-xs leading-relaxed text-charcoal-900">
+                        {shippingErrorCode === 'origin_coordinates_missing'
+                          ? 'Toko belum menandai titik lokasinya, jadi jarak antar belum bisa diukur.'
+                          : 'Alamat pengiriman belum punya titik lokasi. Buka bagian Alamat Pengiriman, pilih atau tandai titik lokasimu, lalu ongkir dihitung ulang otomatis.'}
+                      </p>
+                    )}
+                    {shippingErrorCode === 'provider_balance' && (
+                      <p className="mt-1.5 text-xs leading-relaxed text-charcoal-900">
+                        {draft.isPickup
+                          ? 'Kamu masih bisa melanjutkan pesanan dengan memilih “Ambil Sendiri” di atas.'
+                          : 'Coba lagi nanti atau hubungi admin agar layanan ongkir aktif kembali.'}
+                      </p>
+                    )}
+                    {shippingErrorCode === 'provider_quota' && (
+                      <p className="mt-1.5 text-xs leading-relaxed text-charcoal-900">
+                        Silakan coba beberapa saat lagi.
+                      </p>
+                    )}
                   </div>
                 </div>
               ) : shippingOptions.length === 0 ? (
@@ -189,26 +258,45 @@ export function ShippingOptionSection() {
                   Belum ada pilihan pengiriman untuk alamat ini.
                 </p>
               ) : (
-                <div role="radiogroup" aria-label="Pilihan kurir" className="space-y-3">
-                  {shippingOptions.map((option) => {
-                    const selected =
-                      selectedShipping?.courierCode === option.courierCode &&
-                      selectedShipping?.serviceCode === option.serviceCode;
-                    return (
-                      <OptionCard
-                        key={`${option.courierCode}::${option.serviceCode}`}
-                        option={option}
-                        selected={selected}
-                        onSelect={() =>
-                          setSelectedShipping({
-                            courierCode: option.courierCode,
-                            serviceCode: option.serviceCode,
-                          })
-                        }
-                      />
-                    );
-                  })}
-                </div>
+                <>
+                  <div role="radiogroup" aria-label="Pilihan kurir" className="space-y-3">
+                    {shippingOptions.map((option) => {
+                      const selected =
+                        selectedShipping?.courierCode === option.courierCode &&
+                        selectedShipping?.serviceCode === option.serviceCode;
+                      return (
+                        <OptionCard
+                          key={`${option.courierCode}::${option.serviceCode}`}
+                          option={option}
+                          selected={selected}
+                          onSelect={() =>
+                            setSelectedShipping({
+                              courierCode: option.courierCode,
+                              serviceCode: option.serviceCode,
+                            })
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Transparansi tarif: jarak adalah estimasi, bukan rute resmi. */}
+                  {selectedOption && (
+                    <div className="mt-3 rounded-xl bg-cream-50 px-3.5 py-3">
+                      <div className="flex items-center justify-between gap-3 text-xs">
+                        <span className="text-charcoal-500">Ongkir diantar</span>
+                        <span className="font-semibold tabular-nums text-charcoal-900">
+                          {formatRupiah(selectedOption.price)}
+                        </span>
+                      </div>
+                      <p className="mt-1.5 text-[11px] leading-relaxed text-charcoal-500">
+                        Tarif estimasi lokal ReBites, dihitung dari jarak titik toko ke
+                        titik alamatmu. Bukan tarif kurir resmi; jumlah akhir tetap
+                        dihitung ulang server saat checkout.
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
