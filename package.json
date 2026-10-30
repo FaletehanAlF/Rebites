@@ -31,7 +31,12 @@
     "test:admin-me-status": "node --test tests/admin-me-status.test.ts",
     "test:postgrest-pagination": "node --test tests/postgrest-pagination.test.ts",
     "test:site-url": "node --test tests/site-url.test.ts",
-    "test:activity-log-array-concat": "node --test tests/activity-log-array-concat.test.ts"
+    "test:activity-log-array-concat": "node --test tests/activity-log-array-concat.test.ts",
+    "test:chatbot-guard": "node --test tests/chatbot-guard.test.ts",
+    "test:chatbot-knowledge": "node --test tests/chatbot-knowledge.test.ts",
+    "test:chatbot-actions": "node --test tests/chatbot-actions.test.ts",
+    "test:chatbot-history": "node --test tests/chatbot-history.test.ts",
+    "test:chatbot-markdown": "node --test tests/chatbot-markdown.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from 'next/font/google';
+import { ChatbotMount } from '@/app/components/chatbot/chatbot-mount';
 
 // Exactly two typefaces for the whole product:
 //   --font-sans      Plus Jakarta Sans — primary (body, headings, UI)
@@ -53,7 +54,13 @@ export default function RootLayout({
       lang="id"
       className={`${plusJakartaSans.variable} ${beVietnamPro.variable}`}
     >
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        {children}
+        {/* Asisten melayang untuk semua halaman: pengunjung, pembeli, penjual,
+            dan admin. Profil perilakunya ditentukan server dari status sesi,
+            bukan dari klien. */}
+        <ChatbotMount />
+      </body>
     </html>
   );
 }

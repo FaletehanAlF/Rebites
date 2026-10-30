@@ -106,7 +106,7 @@ CREATE POLICY "products_select_own" ON public.products FOR SELECT
   );
 `;
 
-type Ids = { id: string };
+type Id = { id: string };
 
 async function setup(): Promise<PGlite> {
   const db = new PGlite();
