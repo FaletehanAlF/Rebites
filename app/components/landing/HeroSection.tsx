@@ -97,7 +97,7 @@ export function HeroSection() {
           <div className="relative mx-auto w-full max-w-xl pb-6 sm:pb-8 lg:max-w-none lg:pb-0">
             <div className="relative aspect-[5/4] w-full overflow-hidden rounded-[1.75rem] border border-border/70 bg-muted shadow-[0_40px_80px_-56px_rgba(27,77,50,0.65)] sm:rounded-[2.25rem] lg:aspect-[4/5]">
               <Image
-                src="/hero-makanan.jpeg"
+                src="/hero-makanan.avif"
                 alt="Aneka hidangan dari pelaku UMKM yang dijual melalui ReBites"
                 fill
                 priority

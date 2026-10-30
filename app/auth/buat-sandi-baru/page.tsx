@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function BuatSandiBaruPage() {
   return (
     <AuthCenteredShell
-      imageSrc="/hero-makanan.jpeg"
+      imageSrc="/hero-makanan.avif"
       variant="buyer"
       title={
         <>

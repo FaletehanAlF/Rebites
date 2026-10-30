@@ -128,7 +128,7 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
           aria-label="Ke beranda ReBites"
           className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full ring-1 ring-black/5 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          <Image src="/logo.png" alt="ReBites" width={40} height={40} className="h-10 w-10 object-cover" />
+          <Image src="/logo.avif" alt="ReBites" width={40} height={40} className="h-10 w-10 object-cover" />
         </Link>
         <Link href="/home" className="min-w-0 flex-1">
           <p className="font-display text-xl font-semibold leading-none tracking-tight text-primary">

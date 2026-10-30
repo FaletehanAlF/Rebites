@@ -329,7 +329,7 @@ export default function PenjualLoginForm() {
         className="mb-5 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
       >
         <Image
-          src="/logo.png"
+          src="/logo.avif"
           alt="ReBites"
           width={28}
           height={28}

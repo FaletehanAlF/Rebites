@@ -7,7 +7,7 @@ const STEPS = [
     title: 'Pelaku UMKM mendaftar & mengunggah',
     description:
       'Mendaftar akun, melengkapi profil usaha, lalu mengunggah makanan surplus yang masih layak konsumsi beserta harga, stok, dan waktu penjualannya.',
-    image: '/penjual-login.jpg',
+    image: '/penjual-login.avif',
     alt: 'Pelaku UMKM mendaftar dan mengunggah menu di ReBites',
   },
   {
@@ -15,7 +15,7 @@ const STEPS = [
     title: 'Pembeli mencari & melihat detail',
     description:
       'Menjelajahi kategori dan pencarian, lalu memeriksa detail produk surplus di sekitarnya sebelum menentukan jumlah pembelian.',
-    image: '/pembeli-mencaro.jpg',
+    image: '/pembeli-mencaro.avif',
     alt: 'Pembeli mencari makanan surplus di ReBites',
   },
   {
@@ -23,7 +23,7 @@ const STEPS = [
     title: 'Pilih metode penerimaan pesanan',
     description:
       'Memilih diantar atau diambil langsung di lokasi penjual, kemudian memilih metode pembayaran untuk menyelesaikan pesanan.',
-    image: '/penerimaan.jpg',
+    image: '/penerimaan.avif',
     alt: 'Pilihan metode penerimaan pesanan di ReBites',
   },
   {
@@ -31,7 +31,7 @@ const STEPS = [
     title: 'Makanan berhasil diselamatkan',
     description:
       'Menikmati makanan berkualitas dengan harga lebih terjangkau, sekaligus membantu mengurangi food loss dan food waste di Indonesia.',
-    image: '/terselamatkan.jpg',
+    image: '/terselamatkan.avif',
     alt: 'Makanan surplus yang berhasil diselamatkan',
   },
 ];
