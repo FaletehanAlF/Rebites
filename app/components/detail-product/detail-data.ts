@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { resolveEffectiveUnitPrice } from '@/lib/flash-pricing';
+import { resolveImageSrc } from '@/lib/image-path';
 import type { ProductDetail, RelatedProduct } from './data';
 
 const UUID_RE =
@@ -26,7 +27,7 @@ function rowToProductDetail(row: Record<string, any>): ProductDetail {
   const soldCount = Number(row.sold_count ?? 0);
   const porsiTerselamatkan = Number(umkm.porsi_terselamatkan ?? 0);
   const co2eTotal = Number(umkm.co2e_saved_kg ?? 0);
-  const images = [row.image_url].filter(Boolean) as string[];
+  const images = [resolveImageSrc(row.image_url)].filter(Boolean) as string[];
 
   return {
     id: slug,
@@ -40,7 +41,7 @@ function rowToProductDetail(row: Record<string, any>): ProductDetail {
       isRescuePartner: Boolean(umkm.is_rescue_partner),
     },
     title: name,
-    images: images.length > 0 ? images : ['/makanan1.jpeg'],
+    images: images.length > 0 ? images : ['/makanan1.avif'],
     discountPercent: row.discount_percent ?? 0,
     stockLabel: row.stock_label ?? `${stock} porsi tersisa`,
     stockRemaining: stock,
@@ -147,10 +148,7 @@ export async function fetchRelatedProducts(
           slug,
           vendorName: umkm.business_name ?? 'UMKM ReBites',
           name: row.name ?? '',
-          image:
-            row.image_url && row.image_url.length > 0
-              ? row.image_url
-              : '/makanan1.jpeg',
+          image: resolveImageSrc(row.image_url) || '/makanan1.avif',
           originalPrice: Number(row.original_price ?? 0),
           discountedPrice: Number(row.surplus_price ?? 0),
         };

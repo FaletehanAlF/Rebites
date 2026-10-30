@@ -2,6 +2,7 @@
 
 import { supabase } from './supabase';
 import { readSellerPlan, type SellerEntitlements } from './seller-plan';
+import { resolveImageSrc } from './image-path';
 import {
   SELLER_VENDOR_NAME,
   SELLER_VENDOR_SLUG,
@@ -238,7 +239,7 @@ export async function getActiveFlashSaleProducts(
         name: (r.name as string) ?? '',
         category: (r.category as string) ?? 'Lainnya',
         description: (r.description as string) ?? '',
-        image: (r.image_url as string) ?? '/foods/ikansayur.jpg',
+        image: resolveImageSrc(r.image_url as string) || '/foods/ikansayur.avif',
         originalPrice: Number(r.original_price ?? 0),
         surplusPrice: Number(r.surplus_price ?? 0),
         discountPercent: Number(r.discount_percent ?? 0),

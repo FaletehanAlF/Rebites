@@ -208,7 +208,7 @@ export function EditProductModal({
           : 0;
       const updated = await patchSellerProduct(product.id, {
         name: trimmedName,
-        image: finalImage || '/foods/ikansayur.jpg',
+        image: finalImage || '/foods/ikansayur.avif',
         category,
         surplusPrice: Math.max(0, surplusPrice),
         stock: nextStock,

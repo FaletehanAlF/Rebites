@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { supabase } from './supabase';
+import { resolveImageSrc } from './image-path';
 
 export const SELLER_VENDOR_SLUG = 'dapur-ibu-tini';
 export const SELLER_VENDOR_NAME = 'Dapur Ibu Tini';
@@ -69,7 +70,7 @@ function rowToSellerProduct(row: ProductRow): SellerProduct {
     name: row.name ?? '',
     category: row.category ?? 'Lainnya',
     description: row.description ?? '',
-    image: row.image_url ?? '/foods/ikansayur.jpg',
+    image: resolveImageSrc(row.image_url) || '/foods/ikansayur.avif',
     originalPrice: row.original_price ?? 0,
     surplusPrice: row.surplus_price ?? 0,
     discountPercent: row.discount_percent ?? 0,

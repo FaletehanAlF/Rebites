@@ -131,7 +131,7 @@ export function SellerSection() {
             <div className="relative">
               <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] border border-border bg-muted shadow-[0_40px_80px_-56px_rgba(27,77,50,0.7)] sm:rounded-[2.5rem]">
                 <Image
-                  src="/makanan14.jpg"
+                  src="/makanan14.avif"
                   alt="Pelaku UMKM menyiapkan hasil produksi makanan untuk dijual"
                   fill
                   sizes="(min-width: 1024px) 34rem, calc(100vw - 2rem)"

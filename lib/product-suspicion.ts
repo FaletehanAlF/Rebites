@@ -51,7 +51,13 @@ export interface SuspicionFlag {
   detail: string;
 }
 
-const PLACEHOLDER_IMAGES = ['/foods/ikansayur.jpg', '/placeholder', 'placehold.co'];
+/**
+ * Foto contoh bawaan. Diperiksa sebagai AWALAN, bukan nama berkas utuh:
+ * setelah konversi AVIF, nilai lama di database masih berbunyi `.jpg` sementara
+ * berkasnya kini `.avif`. Pencocokan persis akan meleset dan produk yang masih
+ * memakai foto contoh tidak lagi ditandai.
+ */
+const PLACEHOLDER_IMAGE_PREFIXES = ['/foods/ikansayur', '/placeholder', 'placehold.co'];
 
 export function flagSuspiciousProduct(
   product: SuspicionInput,
@@ -89,7 +95,7 @@ export function flagSuspiciousProduct(
   }
 
   // 3. Foto: kosong atau masih placeholder bawaan.
-  if (!img || PLACEHOLDER_IMAGES.some((p) => img.includes(p))) {
+  if (!img || PLACEHOLDER_IMAGE_PREFIXES.some((p) => img.includes(p))) {
     flags.push({
       code: 'missing_photo',
       label: 'Foto perlu diperiksa',

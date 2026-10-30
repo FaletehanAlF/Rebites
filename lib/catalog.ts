@@ -5,6 +5,7 @@ import { supabase } from './supabase';
 import type { FoodItem, PromoCode, UrgentItem, UrgentSlot, Vendor } from './types';
 import { STORE_SETTINGS_UPDATED_EVENT } from './store-settings-storage';
 import { displayBusinessName } from './business-name';
+import { resolveImageSrc } from './image-path';
 
 export interface CatalogData {
   foodItems: FoodItem[];
@@ -36,7 +37,7 @@ function productToFoodItem(row: ProductRow): FoodItem {
     id: row.slug ?? row.id,
     name: row.name ?? '',
     vendorName: row.umkm?.business_name ?? '',
-    image: row.image_url ?? '/foods/ikansayur.jpg',
+    image: resolveImageSrc(row.image_url) || '/foods/ikansayur.avif',
     category: row.category ?? 'Lainnya',
     rating: row.rating != null ? Number(row.rating) : null,
     distanceKm: row.distance_km != null ? Number(row.distance_km) : null,
