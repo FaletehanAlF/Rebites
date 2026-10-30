@@ -185,17 +185,17 @@ export function SearchFilterBar({
   return (
     <div
       className={cn(
-        "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
+        "w-full",
         isGlass && "relative z-30",
       )}
     >
       <div
         className={cn(
           isGlass
-            ? "rounded-[28px] border border-white/25 bg-white/15 p-2 shadow-lg shadow-black/10 backdrop-blur-md sm:rounded-full"
+            ? "rounded-2xl border border-white/25 bg-white/15 p-2 shadow-[0_20px_44px_-30px_rgba(0,0,0,0.6)] backdrop-blur-md sm:rounded-full"
             : isLight
-              ? "rounded-[28px] border border-border bg-white p-2 shadow-md shadow-primary/5 sm:rounded-full"
-              : "rounded-2xl border border-border bg-white p-2.5 shadow-md shadow-primary/5 sm:p-3",
+              ? "rounded-2xl border border-border bg-white p-2 shadow-[0_18px_40px_-34px_rgba(27,77,50,0.5)] sm:rounded-full"
+              : "rounded-2xl border border-border bg-white p-2 shadow-[0_18px_40px_-34px_rgba(27,77,50,0.5)] sm:p-2.5",
         )}
       >
         <form
@@ -209,7 +209,7 @@ export function SearchFilterBar({
           <div className="relative flex-1">
             <div
               className={cn(
-                "flex w-full items-center gap-3 rounded-full px-4 py-2.5",
+                "flex min-h-11 w-full items-center gap-3 rounded-full px-4 py-2",
                 !isGlass && !isLight && "bg-secondary",
               )}
             >
@@ -276,7 +276,7 @@ export function SearchFilterBar({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[min(340px,60vh)] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-white p-1.5 shadow-xl [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-track]:bg-transparent"
+                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[min(340px,60vh)] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-white p-1.5 shadow-[0_28px_60px_-36px_rgba(27,77,50,0.55)] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-track]:bg-transparent"
                   >
                     {results.length > 0 ? (
                       results.map((item) => (
@@ -286,7 +286,7 @@ export function SearchFilterBar({
                           role="option"
                           aria-selected={false}
                           onClick={() => handleSelectResult(item.id)}
-                          className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition-colors duration-150 hover:bg-secondary"
+                          className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition-colors duration-150 hover:bg-secondary focus-visible:bg-secondary focus-visible:outline-none"
                         >
                           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-muted">
                             <SmartImage
@@ -328,7 +328,7 @@ export function SearchFilterBar({
                     ) : (
                       <div className="flex flex-col items-center gap-1 px-4 py-8 text-center">
                         <SearchX
-                          className="h-7 w-7 text-muted-foreground-400"
+                          className="h-7 w-7 text-muted-foreground/60"
                           strokeWidth={1.5}
                         />
                         <p className="mt-1 font-sans text-sm font-semibold text-foreground">
@@ -385,7 +385,7 @@ export function SearchFilterBar({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-1.5 shadow-xl"
+                    className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-1.5 shadow-[0_28px_60px_-36px_rgba(27,77,50,0.55)]"
                   >
                     {LOCATIONS.map((loc) => (
                       <li key={loc}>
@@ -425,7 +425,7 @@ export function SearchFilterBar({
                 }}
                 aria-label="Buka filter"
                 className={cn(
-                  "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-border bg-white px-3 font-sans text-sm font-semibold text-foreground shadow-sm transition-colors duration-200 active:scale-[0.98] lg:hidden",
+                  "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-border bg-white px-3 font-sans text-[13px] font-semibold text-foreground transition-colors duration-200 hover:border-primary/40 hover:bg-secondary active:scale-[0.98] lg:hidden",
                   FOCUS_RING,
                 )}
               >
@@ -436,7 +436,7 @@ export function SearchFilterBar({
               <button
                 type="submit"
                 className={cn(
-                  "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 font-sans text-sm font-semibold text-white shadow-md transition-colors duration-200 active:scale-[0.98] sm:px-7",
+                  "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 font-sans text-[13px] font-semibold text-white shadow-[0_14px_28px_-18px_rgba(27,77,50,0.7)] transition-colors duration-200 active:scale-[0.98] sm:px-6",
                   "bg-primary hover:bg-primary-dark",
                   FOCUS_RING,
                 )}
@@ -465,7 +465,7 @@ export function SearchFilterBar({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed inset-x-0 bottom-0 z-[60] max-h-[80vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl"
+              className="fixed inset-x-0 bottom-0 z-[60] max-h-[80vh] overflow-y-auto rounded-t-[1.75rem] bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-24px_60px_-32px_rgba(27,77,50,0.45)]"
             >
               <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
               <div className="flex items-center justify-between">
@@ -494,7 +494,7 @@ export function SearchFilterBar({
                           "rounded-full border px-4 py-2 text-xs font-semibold transition-colors",
                           active
                             ? "border-primary bg-primary text-white"
-                            : "border-border bg-white text-foreground hover:border-primary hover:bg-primary-dark/20",
+                            : "border-border bg-white text-foreground hover:border-primary/40 hover:bg-secondary",
                         )}
                       >
                         {opt.label}
