@@ -318,12 +318,13 @@ export function EditProductModal({
             <label htmlFor="edit-product-category" className={labelClass}>
               Kategori
             </label>
-            <select
-              id="edit-product-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className={cn(inputClass, 'appearance-none')}
-            >
+            <div className="relative">
+              <select
+                id="edit-product-category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={cn(inputClass, 'appearance-none pr-8')}
+              >
               {MENU_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -334,6 +335,10 @@ export function EditProductModal({
                 <option value={category}>{category} (lama)</option>
               )}
             </select>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -353,7 +358,7 @@ export function EditProductModal({
             />
           </div>
 
-          <div className="space-y-3 rounded-xl bg-cream-50 p-3">
+          <div className="space-y-3 rounded-xl bg-secondary p-3">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-charcoal-900">
               Metode Pengambilan
             </p>
@@ -372,7 +377,7 @@ export function EditProductModal({
             </p>
           </div>
 
-          <div className="rounded-xl bg-cream-50 p-3">
+          <div className="rounded-xl bg-secondary p-3">
             <button
               type="button"
               onClick={() => setShowAdvanced((prev) => !prev)}

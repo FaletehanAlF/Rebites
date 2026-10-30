@@ -202,7 +202,7 @@ function TimeEditor({ product }: { product: SellerProduct }) {
           <span
             className={cn(
               'absolute h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-all',
-              allDay ? 'left-4.5' : 'left-0.5'
+              allDay ? 'left-[18px]' : 'left-0.5'
             )}
           />
         </button>
@@ -292,7 +292,7 @@ function FlashStatusBadge({ status }: { status: FlashSaleStatus }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
+        'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
         meta.className
       )}
     >
@@ -431,8 +431,12 @@ function FlashSalePanel({
             occupiesSlot || editing ? 'text-primary' : 'text-muted-foreground'
           )}
         />
-        <span className="text-xs font-semibold text-foreground">Flash Sale</span>
-        <div className="ml-auto flex items-center gap-2">
+        {/* `shrink-0 whitespace-nowrap`: di kartu sempit label ini terbelah
+            menjadi "Flash" / "Sale" karena badge status di kanan menekannya. */}
+        <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-foreground">
+          Flash Sale
+        </span>
+        <div className="ml-auto flex min-w-0 items-center gap-2">
           <FlashStatusBadge status={status} />
           <button
             type="button"
@@ -726,12 +730,14 @@ function MenuCard({
   const available = isProductAvailable(product);
 
   return (
-    <Card className="flex flex-col p-3.5">
-      {/* Kepala kartu: thumbnail ringkas + nama/harga/status.
-          Ringkas 4:3 lama membuat kartu setinggi ~700px dan tidak seragam. */}
-      <div className="flex items-start gap-3">
-        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-sage-100">
-          <SmartImage src={product.image} alt={`Foto ${product.name}`} sizes="80px" />
+    <Card className="flex flex-col p-4 sm:p-5">
+      {/* Kepala kartu: thumbnail + nama/harga/status.
+          Kartu kini selebar ~430px (3 kolom, bukan 4), jadi thumbnail ikut
+          dibesarkan dan nama memakai ukuran teks normal — sebelumnya nama
+          terpotong "Papeda Kuah…" padahal masih ada ruang di baris. */}
+      <div className="flex items-start gap-3.5">
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-sage-100">
+          <SmartImage src={product.image} alt={`Foto ${product.name}`} sizes="96px" />
           {product.featured && (
             <span
               className="absolute left-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-caramel text-white shadow-sm"
@@ -773,7 +779,7 @@ function MenuCard({
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]',
-                available ? 'bg-primary/10 text-primary' : 'bg-cream-100 text-charcoal-500'
+                available ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
               )}
             >
               {available ? `Stok ${product.stock}` : product.stock <= 0 ? 'Habis' : 'Tutup'}
@@ -1049,7 +1055,7 @@ export default function MenuSayaPage() {
 
       { }
       {productsLoading ? (
-        <div className="mt-6 grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
@@ -1102,7 +1108,7 @@ export default function MenuSayaPage() {
           )}
         </div>
       ) : (
-        <div className="mt-6 grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
           {products.map((product) => (
             <MenuCard
               key={product.id}

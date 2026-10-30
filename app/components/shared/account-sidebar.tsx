@@ -4,7 +4,19 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LogOut, Coins, Receipt, Settings, Store, User, X } from 'lucide-react';
+import {
+  Bell,
+  Coins,
+  Heart,
+  LogOut,
+  MapPin,
+  Receipt,
+  Settings,
+  Store,
+  User,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRebitesCoins } from '@/hooks/use-rebites-coins';
 import { useSellerStatus } from '@/hooks/use-seller-status';
@@ -20,6 +32,7 @@ interface AccountSidebarProps {
   onClose: () => void;
   user: SidebarUser | null;
   onLogout?: () => void;
+  unreadCount?: number;
 }
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -27,9 +40,26 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
-const ACCOUNT_MENU = [
+const ACCOUNT_MENU: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  showUnread?: boolean;
+}[] = [
   { href: '/profile', label: 'Profil & Akun Saya', icon: Settings },
   { href: '/riwayatPesanan', label: 'Pesanan Saya', icon: Receipt },
+  { href: '/notifikasi/pembeli', label: 'Notifikasi', icon: Bell, showUnread: true },
+];
+
+const ACTIVITY_MENU: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}[] = [
+  { href: '/profile#sukai-makanan', label: 'Makanan Disukai', icon: Heart },
+  { href: '/toko-diikuti', label: 'Toko Diikuti', icon: Store },
+  { href: '/profile#rebites-coin', label: 'ReBites Coin', icon: Coins },
+  { href: '/profile#alamat', label: 'Alamat Pengiriman', icon: MapPin },
 ];
 
 function getInitials(fullName: string) {
@@ -46,6 +76,7 @@ export function AccountSidebar({
   onClose,
   user,
   onLogout,
+  unreadCount = 0,
 }: AccountSidebarProps) {
   useEffect(() => {
     if (!open) return;
@@ -95,8 +126,8 @@ export function AccountSidebar({
             className="fixed right-0 top-0 z-[80] flex h-full w-[88vw] max-w-[92vw] flex-col overflow-y-auto bg-secondary shadow-2xl md:w-[360px] md:max-w-none lg:w-[400px]"
           >
             { }
-            <header className="flex items-center justify-between px-8 pb-5 pt-7">
-              <h2 className="font-secondary text-xl font-semibold text-foreground">
+            <header className="flex items-center justify-between px-6 pb-4 pt-6 sm:px-7">
+              <h2 className="font-display text-lg font-semibold tracking-tight text-foreground">
                 Profil Pengguna
               </h2>
               <button
@@ -111,10 +142,10 @@ export function AccountSidebar({
                 <X className="h-5 w-5" />
               </button>
             </header>
-            <div className="mx-8 h-px bg-border" />
+            <div className="mx-6 h-px bg-border sm:mx-7" />
 
             { }
-            <div className="flex items-center gap-4 px-8 py-6">
+            <div className="flex items-center gap-4 px-6 py-5 sm:px-7">
               <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 ring-1 ring-border">
                 {avatarUrl ? (
                   <Image src={avatarUrl} alt={displayName} fill className="object-cover" unoptimized />
@@ -135,11 +166,11 @@ export function AccountSidebar({
                 </p>
               </div>
             </div>
-            <div className="mx-8 h-px bg-border" />
+            <div className="mx-6 h-px bg-border sm:mx-7" />
 
             { }
-            <div className="px-8 pt-6">
-              <div className="flex items-center gap-3.5 rounded-2xl border border-primary/40 bg-primary/15 px-4 py-3.5">
+            <div className="px-6 pt-5 sm:px-7">
+              <div className="flex items-center gap-3.5 rounded-2xl border border-primary/20 bg-white px-4 py-3.5">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm">
                   <Coins className="h-5 w-5" />
                 </span>
@@ -156,7 +187,7 @@ export function AccountSidebar({
 
             { }
             {!sellerStatusLoading && (
-              <div className="px-8 pt-6">
+              <div className="px-6 pt-5 sm:px-7">
                 {isSeller ? (
                   <Link
                     href="/dashboard/penjual"
@@ -185,19 +216,48 @@ export function AccountSidebar({
             )}
 
             { }
-            <nav aria-label="Menu akun" className="mt-5 px-8">
-              {ACCOUNT_MENU.map(({ href, label, icon: Icon }) => (
+            <nav aria-label="Menu akun" className="mt-4 px-4 sm:px-5">
+              <p className="px-4 pb-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Akun
+              </p>
+              {ACCOUNT_MENU.map(({ href, label, icon: Icon, showUnread }) => (
                 <Link
                   key={href}
                   href={href}
                   onClick={onClose}
                   className={cn(
-                    'group flex w-full items-center gap-3.5 rounded-xl px-4 py-3 font-secondary text-base font-medium text-foreground transition-colors duration-200 hover:bg-primary-dark/5 hover:text-primary',
+                    'group flex w-full items-center gap-3.5 rounded-xl px-4 py-3 font-secondary text-[15px] font-medium text-foreground transition-colors duration-200 hover:bg-white hover:text-primary',
                     FOCUS_RING,
                   )}
                 >
                   <Icon className="h-5 w-5 shrink-0 text-muted-foreground transition-colors duration-200 group-hover:text-primary" />
-                  {label}
+                  <span className="flex-1">{label}</span>
+                  {showUnread && unreadCount > 0 && (
+                    <span
+                      className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold leading-none text-white"
+                      aria-label={`${unreadCount} belum dibaca`}
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              ))}
+
+              <p className="mt-4 px-4 pb-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Aktivitas
+              </p>
+              {ACTIVITY_MENU.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={onClose}
+                  className={cn(
+                    'group flex w-full items-center gap-3.5 rounded-xl px-4 py-3 font-secondary text-[15px] font-medium text-foreground transition-colors duration-200 hover:bg-white hover:text-primary',
+                    FOCUS_RING,
+                  )}
+                >
+                  <Icon className="h-5 w-5 shrink-0 text-muted-foreground transition-colors duration-200 group-hover:text-primary" />
+                  <span className="flex-1">{label}</span>
                 </Link>
               ))}
             </nav>
@@ -205,14 +265,14 @@ export function AccountSidebar({
             { }
             <div className="flex-1" />
 
-            <div className="mx-8 h-px bg-border" />
-            <div className="px-8 py-6">
+            <div className="mx-6 h-px bg-border sm:mx-7" />
+            <div className="px-6 py-5 sm:px-7">
               {user ? (
                 <button
                   type="button"
                   onClick={onLogout}
                   className={cn(
-                    'inline-flex w-full items-center justify-center gap-2.5 rounded-2xl bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-destructive transition-colors duration-200 hover:bg-destructive',
+                    'inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-destructive px-4 py-3 font-secondary text-sm font-semibold text-white transition-colors duration-200 hover:bg-destructive/90',
                     FOCUS_RING,
                   )}
                 >
@@ -223,7 +283,7 @@ export function AccountSidebar({
                 <Link
                   href="/auth/login"
                   className={cn(
-                    'inline-flex w-full items-center justify-center rounded-2xl bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-200 hover:bg-destructive active:scale-[0.98]',
+                    'inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 font-secondary text-sm font-semibold text-white transition-colors duration-200 hover:bg-primary-dark active:scale-[0.98]',
                     FOCUS_RING,
                   )}
                 >

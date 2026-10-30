@@ -26,7 +26,7 @@ const LocationPickerMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[220px] animate-pulse rounded-xl border border-sage-100 bg-cream-100 sm:h-[260px]" />
+      <div className="h-[220px] animate-pulse rounded-xl border border-sage-100 bg-secondary sm:h-[260px]" />
     ),
   }
 );
@@ -404,7 +404,7 @@ export default function PengaturanTokoPage() {
                 </p>
               </div>
 
-              <div className="rounded-xl border border-sage-100 bg-cream-50/60 p-3.5 lg:col-span-2">
+              <div className="rounded-xl border border-sage-100 bg-secondary p-3.5 lg:col-span-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs font-semibold uppercase tracking-[0.14em] text-sage-500">
                     Koordinat Toko{" "}

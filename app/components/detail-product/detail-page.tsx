@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ProfileNavbar } from "@/app/components/shared/navbar";
-import { MobileNavbar } from "@/app/components/shared/MobileNavbar";
+import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { SiteFooter } from "@/app/components/site-footer";
 import { CartProvider, useCart } from "./cart-context";
 import { PageOrnaments } from "./page-ornaments";
@@ -84,12 +83,11 @@ function DetailPageContent({
   }, [notify]);
 
   return (
+    <BuyerShell showBottomNav={false}>
     <div className="relative min-h-screen overflow-x-clip bg-secondary text-foreground">
       <PageOrnaments />
-      <div className="lg:hidden"><MobileNavbar /></div>
-      <div className="hidden lg:block"><ProfileNavbar /></div>
 
-      <main className="relative mx-auto max-w-[1200px] px-4 pb-20 pt-[120px] sm:px-8 sm:pb-10 sm:pt-24 lg:pt-28">
+      <main className="relative mx-auto max-w-[1200px] px-4 pb-20 pt-4 sm:px-8 sm:pb-10 sm:pt-6 lg:pt-8">
         <ProductBreadcrumb product={product} onShare={handleShare} />
 
         <div className="mt-3 grid items-start gap-5 sm:mt-8 sm:gap-10 lg:grid-cols-2 lg:gap-16">
@@ -135,5 +133,6 @@ function DetailPageContent({
 
       <SiteFooter />
     </div>
+    </BuyerShell>
   );
 }
