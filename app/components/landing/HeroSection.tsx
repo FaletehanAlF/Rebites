@@ -109,7 +109,7 @@ export function HeroSection() {
             {/* Secondary image: hidden on small phones to avoid clutter */}
             <div className="absolute -bottom-0 left-4 hidden aspect-square w-32 overflow-hidden rounded-2xl border-4 border-white shadow-[0_24px_44px_-24px_rgba(27,77,50,0.55)] min-[480px]:block sm:-bottom-2 sm:-left-5 sm:w-36 sm:rounded-3xl lg:-bottom-8 lg:-left-8 lg:w-40 xl:-left-10 xl:w-44">
               <Image
-                src="/makanan13.jpg"
+                src="/makanan13.avif"
                 alt="Salah satu menu surplus yang tersedia di ReBites"
                 fill
                 sizes="(min-width: 1280px) 11rem, (min-width: 640px) 9rem, 8rem"

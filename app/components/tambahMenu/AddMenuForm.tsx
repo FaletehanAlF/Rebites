@@ -130,7 +130,7 @@ export function AddMenuForm() {
     setSavingProduct(true);
 
     (async () => {
-      let imageUrl = form.photo || '/foods/ikansayur.jpg';
+      let imageUrl = form.photo || '/foods/ikansayur.avif';
 
       if (typeof form.photo === 'string' && form.photo.startsWith('data:image')) {
         const uploaded = await uploadDataUrl(form.photo);

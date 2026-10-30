@@ -155,13 +155,22 @@ mount and renders nothing when empty (no placeholder products).
   favorites, notifications, subscriptions (schema in `supabase/migrations/`).
 - Payments via Xendit (secret key + webhook callback token, server only).
 - Category tile images come from `images.pexels.com` (`lib/categories.ts`).
-- Local photos in `public/`: `hero-makanan.avif`, `makanan1–5` / `makanan8–10` /
-  `makanan13–15`, step photos `penjual-login.avif`, `pembeli-mencaro.avif`,
-  `penerimaan.avif`, `terselamatkan.avif`, `logo.avif`. Aset yang murni dirujuk
-  kode memakai AVIF; foto makanan dan `foods/ikansayur.jpg` tetap JPG/WebP
-  karena path-nya tersimpan sebagai `products.image_url` di database.
-  `makanan6`, `makanan7`, `makanan11`, dan `makanan12` sudah tidak ada: tidak
+- Local photos in `public/`: **semuanya AVIF**. `hero-makanan.avif`, `logo.avif`,
+  `makanan1–5` / `makanan8–10` / `makanan13–15`, `foods/ikansayur.avif`, dan foto
+  langkah `penjual-login.avif`, `pembeli-mencaro.avif`, `penerimaan.avif`,
+  `terselamatkan.avif`. Tidak ada lagi JPG/JPEG/WebP di `public/`.
+  `makanan6`, `makanan7`, `makanan11`, dan `makanan12` sudah dihapus: tidak
   dirujuk kode maupun database (hanya tersisa di migrasi seed lama).
+
+  **PENTING — database masih menyimpan nama lama.** `products.image_url` (18
+  baris) dan `orders.image_url` (24 baris) masih berbunyi `/makanan1.jpeg`,
+  `/makanan9.webp`, dan seterusnya. Berkasnya kini `.avif`. Jembatannya adalah
+  `lib/image-path.ts` (`resolveImageSrc`), yang dipakai `SmartImage` dan setiap
+  mapper data (katalog, flash sale, produk penjual, pesanan, detail produk).
+  Resolver itu memetakan path lokal berekstensi lama ke `.avif` dan **tidak**
+  menyentuh URL absolut (Supabase Storage, Pexels) maupun data URI.
+  Bila kelak database diperbarui ke `.avif`, resolver tetap benar — ia hanya
+  mengubah nilai yang masih berekstensi lama.
 - FAQ contact form posts to a Formspree endpoint from `FAQSection.tsx`.
 - **Assumption**: footer social links (`instagram.com/rebites` etc.) and
   `halo@rebites.id` were not verified as real accounts.
@@ -197,7 +206,7 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 - `next build` skips ESLint (`eslint.ignoreDuringBuilds: true` in
   `next.config.js`); run `npm run lint` separately. Remaining warnings are
   pre-existing (`<img>` in seller dashboard, hook deps in `detail/toko`).
-- **`public/makanan2.jpeg` and `public/makanan5.jpeg` have a baked-in
+- **`public/makanan2.avif` and `public/makanan5.avif` have a baked-in
   transparency checkerboard** (rasterized PNG artifact) — do not use them in
   new UI. They may still be referenced by product rows in the database.
 - Unreferenced components left in place (not part of the current landing page):

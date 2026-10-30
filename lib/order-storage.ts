@@ -2,6 +2,7 @@
 
 import { supabase } from './supabase';
 import { getSellerUmkm } from './product-storage';
+import { resolveImageSrc } from './image-path';
 import type { StoredOrder, FulfillmentMode, AddressSnapshot, ShippingSnapshot } from './types';
 
 export const ORDERS_UPDATED_EVENT = 'rebites-orders-updated';
@@ -27,7 +28,7 @@ export function rowToStoredOrder(row: OrderRow): StoredOrder {
     productName: row.product_name ?? '',
     vendorName: row.vendor_name ?? '',
     vendorSlug: row.vendor_slug ?? '',
-    image: row.image_url ?? '',
+    image: resolveImageSrc(row.image_url as string | null),
     quantity: row.quantity ?? 1,
     fulfillment: (row.delivery_option === 'delivery'
       ? 'delivery'
