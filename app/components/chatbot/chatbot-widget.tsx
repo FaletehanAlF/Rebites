@@ -357,7 +357,20 @@ export function ChatbotWidget() {
               </button>
             </header>
 
-            <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-3 py-3">
+            {/*
+              `min-h-0` WAJIB ada di sini. Bawaan `min-height` sebuah flex item
+              adalah `auto`, yang berarti batas minimumnya setinggi ISI-nya.
+              Tanpa kelas ini daftar tidak pernah menyusut: ia tumbuh melewati
+              panel, `overflow-y-auto` tidak pernah aktif karena elemennya
+              sendiri setinggi isinya, lalu sisanya dipotong `overflow-hidden`
+              milik panel — persis gejala "tidak bisa di-scroll".
+              `overscroll-contain` menahan guliran agar tidak merembet ke
+              halaman di belakang panel saat sudah mentok di ujung.
+            */}
+            <div
+              ref={listRef}
+              className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 py-3"
+            >
               {messages.length === 0 && (
                 <div className="space-y-2">
                   <p className="text-[13px] text-muted-foreground">

@@ -38,7 +38,8 @@
     "test:chatbot-history": "node --test tests/chatbot-history.test.ts",
     "test:chatbot-markdown": "node --test tests/chatbot-markdown.test.ts",
     "test:chatbot-tools": "node --test tests/chatbot-tools.test.ts",
-    "test:image-path": "node --test tests/image-path.test.ts"
+    "test:image-path": "node --test tests/image-path.test.ts",
+    "test:chatbot-panel-scroll": "node --test tests/chatbot-panel-scroll.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
