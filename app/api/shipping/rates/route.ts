@@ -6,6 +6,7 @@ import {
   isSupabaseUnavailable,
 } from '@/lib/server/supabase';
 import type { ShippingRateOption } from '@/lib/types';
+import { calculateTravelMinutes } from '@/lib/delivery-estimate';
 import {
   REBITES_COURIER_CODE,
   REBITES_SERVICE_CODE,
@@ -124,6 +125,10 @@ export async function POST(req: NextRequest) {
     );
     const roadKm = estimateRoadDistanceKm(straightKm);
     const fee = calculateDeliveryFee(roadKm);
+    // Estimasi tiba memakai fungsi yang SAMA dengan checkout dan saat kurir
+    // berangkat, supaya angka di kartu ongkir tidak berbeda dengan yang
+    // nanti ditampilkan di riwayat pesanan.
+    const travelMinutes = calculateTravelMinutes(roadKm);
 
     const option: ShippingRateOption = {
       courierCode: REBITES_COURIER_CODE,
@@ -131,7 +136,8 @@ export async function POST(req: NextRequest) {
       courierName: REBITES_COURIER_NAME,
       serviceName: REBITES_SERVICE_NAME,
       price: fee,
-      duration: `Estimasi ${Math.round(roadKm)} km`,
+      distanceLabel: `${roadKm.toFixed(1)} km`,
+      etaLabel: travelMinutes > 0 ? `±${travelMinutes} menit` : '',
       serviceType: 'standard',
     };
 

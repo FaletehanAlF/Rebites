@@ -31,16 +31,20 @@ function OptionCard({
   onSelect: () => void;
 }) {
   const typeLabel = knownServiceTypeLabel(option.serviceType);
-  const duration = option.duration.trim();
+  const etaLabel = option.etaLabel.trim();
+  const distanceLabel = option.distanceLabel.trim();
+  // Untuk pembaca layar: sebut waktu dulu, jarak sebagai tambahan. Kalau
+  // waktu kosong, jangan sebut "estimasi" sama sekali.
+  const ariaDuration = etaLabel
+    ? `, estimasi tiba ${etaLabel}${distanceLabel ? `, jarak ${distanceLabel}` : ''}`
+    : '';
 
   return (
     <button
       type="button"
       role="radio"
       aria-checked={selected}
-      aria-label={`${option.courierName} ${option.serviceName}${
-        duration ? `, estimasi ${duration}` : ''
-      }, ${formatRupiah(option.price)}`}
+      aria-label={`${option.courierName} ${option.serviceName}${ariaDuration}, ${formatRupiah(option.price)}`}
       onClick={onSelect}
       className={cn(
         'flex w-full items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-all duration-200',
@@ -83,11 +87,25 @@ function OptionCard({
         <span className="mt-0.5 block truncate text-xs leading-snug text-charcoal-500">
           {option.serviceName}
         </span>
-        {duration && (
-          <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-charcoal-900">
-            <Clock3 className="h-3.5 w-3.5 shrink-0 text-primary" />
-            Estimasi tiba {duration}
+        {etaLabel ? (
+          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs font-semibold text-charcoal-900">
+            <span className="inline-flex items-center gap-1">
+              <Clock3 className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+              Estimasi tiba {etaLabel}
+            </span>
+            {distanceLabel && (
+              <span className="font-normal text-charcoal-500">· {distanceLabel}</span>
+            )}
           </span>
+        ) : (
+          // Waktu tidak dapat dihitung: tampilkan HANYA jaraknya. Kalimat
+          // "Estimasi tiba" tanpa angka adalah janji kosong.
+          distanceLabel && (
+            <span className="mt-1 flex items-center gap-1 text-xs text-charcoal-500">
+              <Clock3 className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+              Jarak {distanceLabel}
+            </span>
+          )
         )}
       </span>
 

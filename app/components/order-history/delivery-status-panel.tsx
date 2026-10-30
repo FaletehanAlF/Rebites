@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   CheckCircle2,
   Clock3,
@@ -90,6 +91,35 @@ function formatClock(d: Date): string {
   return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
 
+/**
+ * Sisa waktu menuju ETA dalam kata.
+ *
+ * ETA yang sudah lewat TIDAK disembunyikan: pembeli yang menunggu 10 menit
+ * lebih lama berhak tahu, dan menyembunyikan angka hanya membuat halaman
+ * tampak "macet" tanpa penjelasan. Yang tidak boleh adalah mengarang angka
+ * pengganti — jadi yang ditampilkan adalah fakta "sudah lewat X menit".
+ */
+function formatEtaRemaining(arrivalAt: Date, now: number): { text: string; overdue: boolean } | null {
+  const diffMs = arrivalAt.getTime() - now;
+  if (!Number.isFinite(diffMs)) return null;
+  const diffMin = Math.round(diffMs / 60_000);
+  if (diffMin <= 0) {
+    const late = Math.abs(diffMin);
+    return {
+      text: late < 1 ? 'sudah lewat estimasi' : `sudah lewat ${late} menit`,
+      overdue: true,
+    };
+  }
+  if (diffMin === 1) return { text: '±1 menit lagi', overdue: false };
+  if (diffMin < 60) return { text: `±${diffMin} menit lagi`, overdue: false };
+  const jam = Math.floor(diffMin / 60);
+  const sisa = diffMin % 60;
+  return {
+    text: sisa === 0 ? `±${jam} jam lagi` : `±${jam} jam ${sisa} menit lagi`,
+    overdue: false,
+  };
+}
+
 function PhaseIcon({ phase, className }: { phase: DeliveryPhase; className?: string }) {
   const Icon =
     phase === 'done'
@@ -134,12 +164,35 @@ export function DeliveryStatusPanel({
 
   const arrivalAt = order.estimatedArrivalAt ? new Date(order.estimatedArrivalAt) : null;
   const arrivalValid = arrivalAt != null && Number.isFinite(arrivalAt.getTime());
+  // Nilai primitif, bukan objek Date. `new Date(...)` menghasilkan objek baru
+  // tiap render, sehingga dipakai sebagai dependency effect ia akan memicu
+  // pemasangan ulang interval 30 detik terus-menerus.
+  const arrivalTs = arrivalValid ? (arrivalAt as Date).getTime() : null;
   const distanceKm =
     typeof order.distanceKm === 'number'
       ? order.distanceKm
       : typeof order.deliveryDistanceKm === 'number'
         ? order.deliveryDistanceKm
         : null;
+
+  /**
+   * Jam berdenyut untuk sisa waktu ETA.
+   *
+   * Diperbarui 30 detik sekali — cukup untuk teks "±X menit lagi" tanpa
+   * memicu render tiap detik pada panel yang mungkin ada di halaman dengan
+   * peta aktif.
+   */
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (arrivalTs == null || phase === 'done' || phase === 'cancelled') return;
+    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, [arrivalTs, phase]);
+
+  const eta =
+    arrivalTs != null && phase !== 'done'
+      ? formatEtaRemaining(new Date(arrivalTs), now)
+      : null;
 
   const liveUnavailable = phase === 'on-the-way';
   const activeIndex = PHASE_INDEX[phase];
@@ -262,8 +315,23 @@ export function DeliveryStatusPanel({
               <Clock3 className="h-3.5 w-3.5 shrink-0" aria-hidden />
               Estimasi tiba
             </dt>
-            <dd className={cn('font-semibold tabular-nums text-charcoal-900', isFull ? 'text-sm' : 'text-xs')}>
-              {formatClock(arrivalAt)}
+            <dd className={cn('text-right', isFull ? 'text-sm' : 'text-xs')}>
+              <span className="block font-semibold tabular-nums text-charcoal-900">
+                {formatClock(arrivalAt as Date)}
+              </span>
+              {/* Sisa waktu dalam kata: angka jam saja memaksa pembeli
+                  menguranginya sendiri. ETA yang sudah lewat ditampilkan
+                  apa adanya, bukan disembunyikan. */}
+              {eta && (
+                <span
+                  className={cn(
+                    'block text-[10px] font-medium',
+                    eta.overdue ? 'text-caramel-dark' : 'text-charcoal-500'
+                  )}
+                >
+                  {eta.text}
+                </span>
+              )}
             </dd>
           </div>
         )}

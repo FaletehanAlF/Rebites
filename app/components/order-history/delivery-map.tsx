@@ -4,6 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Loader2, MapPinOff, TriangleAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { MapPlan, MapPoint } from '@/lib/delivery-map-plan';
+import {
+  headingAtProgress,
+  pointAtProgress,
+  straightRoute,
+  type RouteCoordinate,
+} from '@/lib/route-geometry';
+import { fetchWithAuth } from '@/lib/auth-token';
 // CSS MapLibre diimpor statis: Next menanganinya saat build (bukan saat runtime
 // `await import(...)`, yang gagal resolve sebagai module).
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -12,44 +19,57 @@ import 'maplibre-gl/dist/maplibre-gl.css';
  * Peta pengantaran.
  *
  * Batasan yang dijaga:
- * - Tiles dari OpenFreeMap — gratis, tanpa API key, TANPA SLA. Jangan
- *   mengklaim jaminan ketersediaan.
+ * - Tiles dari OpenFreeMap — gratis, tanpa API key, TANPA SLA.
  * - Marker toko & tujuan hanya dari koordinat yang sudah divalidasi
  *   `buildMapPlan`. TIDAK ada penebakan dari alamat teks.
- * - GARIS RUTE adalah garis lurus antara dua titik nyata, BUKAN rute jalan.
- *   Repo ini belum punya layanan routing, jadi menggambarnya mengikuti jalan
- *   berarti mengarang belokan yang tidak pernah diverifikasi. Pemanggil wajib
- *   memberi keterangan bahwa garis ini perkiraan.
- * - Marker kendaraan adalah ILUSTRASI PERJALANAN, bukan posisi kurir. Tidak
- *   ada GPS kurir di database (tidak ada kolom koordinat kurir), sehingga
- *   animasi hanya boleh menyala ketika pemanggil menyatakan pengantaran
- *   sedang berlangsung, dan keterangan di UI harus menyebutnya sebagai
- *   estimasi.
- * - Animasi hanya mengubah posisi marker DOM (`setLngLat`), yaitu satu
- *   `transform` per frame — tidak ada re-render React, tidak ada layer 3D,
- *   tidak ada efek tambahan. Ini jalur termurah yang tersedia di MapLibre.
+ * - GARIS RUTE mengikuti jalan nyata dari layanan routing (lewat
+ *   `/api/delivery/route`). Bila layanan itu gagal, peta turun ke garis lurus
+ *   dan LABELNYA BERUBAH — pembeli tidak boleh mengira garis lurus sebagai
+ *   rute jalan.
+ * - Marker kendaraan tetap ILUSTRASI PERJALANAN, bukan posisi kurir: tidak
+ *   ada kolom koordinat kurir di database. Animasi hanya menyala ketika
+ *   pemanggil menyatakan pengantaran sedang berlangsung, dan keterangan di UI
+ *   menyebutnya sebagai estimasi.
+ * - Animasi hanya mengubah posisi & rotasi marker DOM (`setLngLat` + satu
+ *   `transform`), tanpa re-render React, tanpa layer 3D.
  * - `prefers-reduced-motion` mematikan animasi; kendaraan diletakkan di titik
  *   awal rute.
  */
 
 const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 
-/** Warna garis rute. Hijau primary ReBites, bukan hijau acak. */
+/** Warna garis rute & kendaraan. Hijau primary ReBites, bukan hijau acak. */
 const ROUTE_COLOR = '#1B6B3A';
 
 const ROUTE_SOURCE_ID = 'rebites-route';
 const ROUTE_HALO_LAYER_ID = 'rebites-route-halo';
 const ROUTE_LAYER_ID = 'rebites-route-line';
 
-/** Satu putaran animasi. 22 detik cukup lambat untuk terbaca, tidak membeku. */
-const ANIMATION_DURATION_MS = 22_000;
+/**
+ * Satu putaran animasi. 24 detik cukup lambat untuk terbaca, tidak membeku.
+ * Kecepatan kendaraan TIDAK diklaim sebagai kecepatan nyata — ini hanya
+ * tempo agar perjalanan terlihat, bukan estimasi waktu tempuh.
+ */
+const ANIMATION_DURATION_MS = 24_000;
 
-/** Interpolasi linear antar dua titik — cukup untuk garis lurus. */
-function lerpPoint(from: MapPoint, to: MapPoint, t: number): [number, number] {
-  return [
-    from.longitude + (to.longitude - from.longitude) * t,
-    from.latitude + (to.latitude - from.latitude) * t,
-  ];
+interface RouteApiPayload {
+  source?: unknown;
+  coordinates?: unknown;
+  fallbackReason?: unknown;
+}
+
+interface MapLibreInstance {
+  addControl: (control: unknown, position?: string) => void;
+  on: (event: string, handler: (e?: unknown) => void) => void;
+  resize: () => void;
+  addSource: (id: string, source: unknown) => void;
+  getSource: (id: string) => unknown;
+  getLayer: (id: string) => unknown;
+  removeLayer: (id: string) => void;
+  removeSource: (id: string) => void;
+  addLayer: (layer: unknown) => void;
+  fitBounds: (bounds: [[number, number], [number, number]], opts?: Record<string, unknown>) => void;
+  remove: () => void;
 }
 
 export default function DeliveryMap({
@@ -65,22 +85,90 @@ export default function DeliveryMap({
   const containerRef = useRef<HTMLDivElement | null>(null);
   // `unknown` dipakai agar tipe MapLibre tidak bocor ke props pemanggil yang
   // meng-import komponen ini secara dinamis.
-  const mapRef = useRef<unknown>(null);
-  const vehicleRef = useRef<{ setLngLat: (lngLat: [number, number]) => void } | null>(null);
+  const mapRef = useRef<MapLibreInstance | null>(null);
+  const vehicleRef = useRef<{
+    setLngLat: (lngLat: [number, number]) => void;
+    getElement: () => HTMLElement;
+  } | null>(null);
   const frameRef = useRef<number | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
+
+  const [route, setRoute] = useState<RouteCoordinate[] | null>(null);
+  const [routeSource, setRouteSource] = useState<'road' | 'straight' | null>(null);
 
   const pivot = plan.center;
   const lat = pivot?.latitude ?? null;
   const lng = pivot?.longitude ?? null;
   const zoom = plan.zoom;
-  const hasRoute = plan.origin != null && plan.destination != null;
 
+  const originLat = plan.origin?.latitude ?? null;
+  const originLng = plan.origin?.longitude ?? null;
+  const destinationLat = plan.destination?.latitude ?? null;
+  const destinationLng = plan.destination?.longitude ?? null;
+
+  /**
+   * Ambil rute jalan dari server.
+   *
+   * Kegagalan apa pun (belum login, jaringan, penyedia routing mati) TIDAK
+   * boleh mengosongkan peta: peta turun ke garis lurus dan labelnya berubah
+   * menjadi "Rute perkiraan". Yang dilarang adalah menampilkan garis lurus
+   * sambil menyebutnya rute jalan.
+   */
+  useEffect(() => {
+    if (
+      originLat == null ||
+      originLng == null ||
+      destinationLat == null ||
+      destinationLng == null
+    ) {
+      setRoute(null);
+      setRouteSource(null);
+      return;
+    }
+
+    let cancelled = false;
+    const fallback = straightRoute(
+      { latitude: originLat, longitude: originLng },
+      { latitude: destinationLat, longitude: destinationLng }
+    );
+
+    (async () => {
+      try {
+        const res = await fetchWithAuth('/api/delivery/route', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            originLatitude: originLat,
+            originLongitude: originLng,
+            destinationLatitude: destinationLat,
+            destinationLongitude: destinationLng,
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = (await res.json()) as RouteApiPayload;
+        const coords = json.coordinates;
+        if (!Array.isArray(coords) || coords.length < 2) throw new Error('geometry kosong');
+        if (cancelled) return;
+        setRoute(coords as RouteCoordinate[]);
+        setRouteSource(json.source === 'road' ? 'road' : 'straight');
+      } catch {
+        if (cancelled) return;
+        setRoute(fallback);
+        setRouteSource('straight');
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [originLat, originLng, destinationLat, destinationLng]);
+
+  // --- Inisialisasi peta -----------------------------------------------------
   useEffect(() => {
     if (lat == null || lng == null) return;
     let cancelled = false;
-    let map: { remove: () => void } | null = null;
+    let map: MapLibreInstance | null = null;
     let cleanupResize: (() => void) | null = null;
 
     (async () => {
@@ -96,7 +184,7 @@ export default function DeliveryMap({
           // Atribusi dirender sendiri di bawah peta (selalu terlihat, tidak
           // menutupi kontrol zoom). Jangan disembunyikan di balik tombol.
           attributionControl: false,
-        });
+        }) as unknown as MapLibreInstance;
         mapRef.current = instance;
         map = instance;
 
@@ -109,8 +197,6 @@ export default function DeliveryMap({
           const addMarker = (point: MapPoint, label: string, tone: 'origin' | 'destination') => {
             const el = document.createElement('div');
             const root = document.createElement('div');
-            // Container kosong diisi React lewat portal-like manual paint:
-            // cukup teks + dot agar tidak perlu render React di dalam canvas.
             root.style.cssText = 'display:flex;align-items:center;gap:6px;';
             root.innerHTML =
               `<span style="height:8px;width:8px;border-radius:9999px;background:${tone === 'origin' ? '#3B5240' : '#C8A882'};display:inline-block"></span>` +
@@ -118,84 +204,23 @@ export default function DeliveryMap({
             el.appendChild(root);
             new maplibregl.Marker({ element: el })
               .setLngLat([point.longitude, point.latitude])
-              .addTo(instance);
+              .addTo(instance as never);
           };
 
           if (plan.origin) addMarker(plan.origin, 'Toko', 'origin');
           if (plan.destination) addMarker(plan.destination, 'Tujuan', 'destination');
 
-          // Garis rute: dua layer supaya tepinya lembut tanpa blur/shadow.
-          if (plan.origin && plan.destination) {
-            const route: [number, number][] = [
-              [plan.origin.longitude, plan.origin.latitude],
-              [plan.destination.longitude, plan.destination.latitude],
-            ];
-            instance.addSource(ROUTE_SOURCE_ID, {
-              type: 'geojson',
-              data: {
-                type: 'Feature',
-                properties: {},
-                geometry: { type: 'LineString', coordinates: route },
-              },
-            });
-            instance.addLayer({
-              id: ROUTE_HALO_LAYER_ID,
-              type: 'line',
-              source: ROUTE_SOURCE_ID,
-              layout: { 'line-cap': 'round', 'line-join': 'round' },
-              paint: { 'line-color': ROUTE_COLOR, 'line-width': 10, 'line-opacity': 0.16 },
-            });
-            instance.addLayer({
-              id: ROUTE_LAYER_ID,
-              type: 'line',
-              source: ROUTE_SOURCE_ID,
-              layout: { 'line-cap': 'round', 'line-join': 'round' },
-              paint: {
-                'line-color': ROUTE_COLOR,
-                'line-width': 4,
-                'line-opacity': 0.9,
-                // Putus-putus menandai "perkiraan", bukan rute jalan nyata.
-                'line-dasharray': [2, 1.4],
-              },
-            });
-
-            // Marker kendaraan: SVG datar di dalam DOM. Bukan 3D, bukan model,
-            // jadi biaya per frame hanya satu transform.
-            const vehicleEl = document.createElement('div');
-            vehicleEl.style.cssText = 'pointer-events:none;will-change:transform;';
-            vehicleEl.innerHTML =
-              '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;' +
-              'border-radius:9999px;background:#fff;border:2px solid ' +
-              ROUTE_COLOR +
-              ';box-shadow:0 2px 6px rgba(27,43,32,.22)">' +
-              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="' +
-              ROUTE_COLOR +
-              '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-              '<circle cx="5.5" cy="17.5" r="3"></circle>' +
-              '<circle cx="18.5" cy="17.5" r="3"></circle>' +
-              '<path d="M15 6h3l1.5 4.5"></path>' +
-              '<path d="M5.5 17.5 9 8h4l3 9.5"></path>' +
-              '<path d="M9 8h4"></path>' +
-              '</svg></div>';
-
-            const vehicle = new maplibregl.Marker({
-              element: vehicleEl,
-              // Titik jangkar di tengah lingkaran, bukan di ujungnya.
-              anchor: 'center',
-            })
-              .setLngLat(route[0])
-              .addTo(instance);
-            vehicleRef.current = vehicle as unknown as {
-              setLngLat: (lngLat: [number, number]) => void;
-            };
-          }
-
-          // Tampilkan kedua titik sekaligus bila ada.
           if (plan.origin && plan.destination) {
             instance.fitBounds(
               [
-                [Math.min(plan.origin.longitude, plan.destination.longitude), Math.min(plan.origin.latitude, plan.destination.latitude)],
-                [Math.max(plan.origin.longitude, plan.destination.longitude), Math.max(plan.origin.latitude, plan.destination.latitude)],
+                [
+                  Math.min(plan.origin.longitude, plan.destination.longitude),
+                  Math.min(plan.origin.latitude, plan.destination.latitude),
+                ],
+                [
+                  Math.max(plan.origin.longitude, plan.destination.longitude),
+                  Math.max(plan.origin.latitude, plan.destination.latitude),
+                ],
               ],
               { padding: 56, maxZoom: 15, duration: 0 }
             );
@@ -237,9 +262,98 @@ export default function DeliveryMap({
       mapRef.current = null;
     };
     // Plan dianggap stabil per kombinasi titik; hindari re-init tiap render.
-    // `hasRoute` ikut karena menentukan apakah source/layer rute dibuat.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, zoom, hasRoute]);
+  }, [lat, lng, zoom]);
+
+  // --- Gambar rute + buat marker kendaraan ----------------------------------
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== 'ready' || !route || route.length < 2) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const maplibregl = (await import('maplibre-gl')).default;
+      if (cancelled || !mapRef.current) return;
+
+      // Hapus layer lama sebelum memasang yang baru, supaya rute tidak
+      // menumpuk saat data berubah.
+      [ROUTE_LAYER_ID, ROUTE_HALO_LAYER_ID].forEach((id) => {
+        if (map.getLayer(id)) map.removeLayer(id);
+      });
+      if (map.getSource(ROUTE_SOURCE_ID)) map.removeSource(ROUTE_SOURCE_ID);
+
+      map.addSource(ROUTE_SOURCE_ID, {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'LineString', coordinates: route },
+        },
+      });
+      map.addLayer({
+        id: ROUTE_HALO_LAYER_ID,
+        type: 'line',
+        source: ROUTE_SOURCE_ID,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': ROUTE_COLOR, 'line-width': 10, 'line-opacity': 0.16 },
+      });
+      map.addLayer({
+        id: ROUTE_LAYER_ID,
+        type: 'line',
+        source: ROUTE_SOURCE_ID,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ROUTE_COLOR,
+          'line-width': 4,
+          'line-opacity': 0.9,
+          // Putus-putus hanya untuk garis lurus (bukan rute jalan) — bentuk
+          // garis itu sendiri sudah memberi tahu bahwa ia perkiraan.
+          ...(routeSource === 'straight' ? { 'line-dasharray': [2, 1.4] } : {}),
+        },
+      });
+
+      // Marker kendaraan: motor hijau datar di dalam DOM. Bukan 3D, bukan
+      // model, jadi biaya per frame hanya satu transform.
+      if (!vehicleRef.current) {
+        const vehicleEl = document.createElement('div');
+        vehicleEl.style.cssText = 'pointer-events:none;will-change:transform;';
+        vehicleEl.innerHTML =
+          '<div data-vehicle-inner style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;' +
+          'border-radius:9999px;background:#fff;border:2px solid ' +
+          ROUTE_COLOR +
+          ';box-shadow:0 2px 6px rgba(27,43,32,.22);transition:transform 120ms linear">' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="' +
+          ROUTE_COLOR +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<circle cx="5.5" cy="17" r="3.2"></circle>' +
+          '<circle cx="18.5" cy="17" r="3.2"></circle>' +
+          '<path d="M5.5 17h3.5l3-6h3l3.5 6"></path>' +
+          '<path d="M12 11 10.5 7.5h3"></path>' +
+          '</svg></div>';
+
+        const marker = new maplibregl.Marker({
+          element: vehicleEl,
+          // Titik jangkar di tengah lingkaran, bukan di ujungnya.
+          anchor: 'center',
+          rotationAlignment: 'map',
+        })
+          .setLngLat(route[0])
+          .addTo(map as never);
+
+        vehicleRef.current = marker as unknown as {
+          setLngLat: (lngLat: [number, number]) => void;
+          getElement: () => HTMLElement;
+        };
+      } else {
+        vehicleRef.current.setLngLat(route[0]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [route, routeSource, status]);
 
   /**
    * Animasi kendaraan dipisah dari efek inisialisasi peta.
@@ -249,37 +363,20 @@ export default function DeliveryMap({
    * Loop hanya menyentuh marker; berhenti bersih saat unmount, saat animasi
    * dimatikan, dan saat preferensi gerak dikurangi.
    *
-   * Dependensi memakai ANGKA koordinat, bukan objek `plan.origin` —
-   * `buildMapPlan` membuat objek baru tiap render, sehingga dependensi objek
-   * akan me-restart loop animasi di setiap render dan gerakannya tersendat.
-   * Loop juga menunggu `status === 'ready'`; tanpa itu ia memutar
-   * requestAnimationFrame selamanya ketika peta gagal dimuat.
+   * Gerakan memakai PANJANG SEGMEN (`pointAtProgress`), bukan indeks titik,
+   * sehingga kendaraan tidak melaju cepat di segmen panjang lalu merayap di
+   * segmen pendek.
    */
-  const originLat = plan.origin?.latitude ?? null;
-  const originLng = plan.origin?.longitude ?? null;
-  const destinationLat = plan.destination?.latitude ?? null;
-  const destinationLng = plan.destination?.longitude ?? null;
-
   useEffect(() => {
     const reduceMotion =
       typeof window !== 'undefined' &&
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (
-      !animateRoute ||
-      status !== 'ready' ||
-      reduceMotion ||
-      originLat == null ||
-      originLng == null ||
-      destinationLat == null ||
-      destinationLng == null
-    ) {
+    if (!animateRoute || status !== 'ready' || reduceMotion || !route || route.length < 2) {
       return;
     }
 
-    const from: MapPoint = { latitude: originLat, longitude: originLng };
-    const to: MapPoint = { latitude: destinationLat, longitude: destinationLng };
     let startedAt: number | null = null;
 
     const step = (now: number) => {
@@ -292,11 +389,22 @@ export default function DeliveryMap({
       }
       if (startedAt === null) startedAt = now;
       const elapsed = (now - startedAt) % ANIMATION_DURATION_MS;
-      const t = elapsed / ANIMATION_DURATION_MS;
-      // Bolak-balik (0→1→0) supaya kendaraan tidak "melompat" ke titik awal
+      const raw = elapsed / ANIMATION_DURATION_MS;
+      // Bolak-balik (0->1->0) supaya kendaraan tidak "melompat" ke titik awal
       // tiap putaran. Halus tanpa easing tambahan per frame.
-      const eased = t <= 0.5 ? t * 2 : (1 - t) * 2;
-      vehicle.setLngLat(lerpPoint(from, to, eased));
+      const forward = raw <= 0.5;
+      const t = forward ? raw * 2 : (1 - raw) * 2;
+
+      const point = pointAtProgress(route, t);
+      if (point) {
+        vehicle.setLngLat(point);
+        // Arah ikon mengikuti arah jalan; saat kembali, hadapnya dibalik.
+        const heading = headingAtProgress(route, t) + (forward ? 0 : 180);
+        const inner = vehicle.getElement().querySelector('[data-vehicle-inner]');
+        if (inner instanceof HTMLElement) {
+          inner.style.transform = `rotate(${heading}deg)`;
+        }
+      }
       frameRef.current = requestAnimationFrame(step);
     };
 
@@ -308,7 +416,7 @@ export default function DeliveryMap({
         frameRef.current = null;
       }
     };
-  }, [animateRoute, status, originLat, originLng, destinationLat, destinationLng]);
+  }, [animateRoute, status, route]);
 
   if (plan.availability !== 'ready' || lat == null || lng == null) {
     return (
@@ -360,11 +468,15 @@ export default function DeliveryMap({
       )}
 
       {/* Legenda rute: menjelaskan arti garis hijau tanpa harus menebak.
-          Hanya muncul saat rute memang digambar. */}
-      {status === 'ready' && hasRoute && (
+          Label berubah sesuai sumber rute — garis lurus TIDAK disebut rute. */}
+      {status === 'ready' && routeSource && (
         <p className="pointer-events-none absolute left-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-charcoal-700 shadow-sm">
-          <span aria-hidden className="inline-block h-0.5 w-4 rounded-full" style={{ backgroundColor: ROUTE_COLOR }} />
-          Rute perkiraan
+          <span
+            aria-hidden
+            className="inline-block h-0.5 w-4 rounded-full"
+            style={{ backgroundColor: ROUTE_COLOR }}
+          />
+          {routeSource === 'road' ? 'Rute jalan' : 'Rute perkiraan'}
         </p>
       )}
 

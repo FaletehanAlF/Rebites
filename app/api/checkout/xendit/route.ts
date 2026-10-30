@@ -6,6 +6,8 @@ import {
   REBITES_SERVICE_NAME as REBITES_SERVICE_NAME_LOCAL,
   haversineKm as haversineKmLocal,
   calculateDeliveryFee as calculateDeliveryFeeLocal,
+  estimateRoadDistanceKm as estimateRoadDistanceKmLocal,
+  isValidCoordinatePair as isValidCoordinatePairLocal,
 } from '@/lib/shipping-tariff';
 import { createXenditInvoice, getXenditInvoice } from '@/lib/server/xendit';
 import {
@@ -505,6 +507,15 @@ export async function POST(req: NextRequest) {
     let validatedCourierServiceCode: string | null = null;
     let validatedCourierServiceName: string | null = null;
     let validatedShippingRate: number | null = null;
+    /**
+     * Jarak tempuh yang DIHITUNG SERVER, bukan kiriman klien.
+     *
+     * Sebelumnya ETA memakai `body.distanceKm`, sehingga klien bisa mengirim
+     * angka apa pun dan memengaruhi estimasi yang dilihat pembeli — padahal
+     * ongkirnya sendiri sudah dihitung dari koordinat. Satu sumber untuk
+     * keduanya: jarak yang dihitung di sini.
+     */
+    let serverRoadKm: number | null = null;
     if (body.fulfillment === 'delivery') {
       const reqCourierCode = typeof body.courierCode === 'string' ? body.courierCode.trim() : '';
       const reqServiceCode = typeof body.courierServiceCode === 'string' ? body.courierServiceCode.trim() : '';
@@ -512,9 +523,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Silakan pilih layanan pengiriman terlebih dahulu.' }, { status: 400 });
       }
       // Validasi koordinat toko & tujuan (wajib untuk ongkir lokal).
-      const vendorLatNum = typeof vendorLatitude === 'number' ? vendorLatitude : Number(vendorLatitude);
-      const vendorLngNum = typeof vendorLongitude === 'number' ? vendorLongitude : Number(vendorLongitude);
-      if (!Number.isFinite(vendorLatNum) || !Number.isFinite(vendorLngNum)) {
+      // Memakai validator bersama: null/''/(0,0) TIDAK sah, sehingga toko yang
+      // belum mengisi lokasi ditolak dengan pesan jelas alih-alih dihitung
+      // seolah berada di Teluk Guinea (~11.900 km -> ongkir plafon + ETA
+      // puluhan hari).
+      if (!isValidCoordinatePairLocal(vendorLatitude, vendorLongitude)) {
         return NextResponse.json(
           { error: 'Koordinat toko belum tersedia, ongkir belum dapat dihitung.' },
           { status: 400 }
@@ -522,9 +535,7 @@ export async function POST(req: NextRequest) {
       }
       const destLat = addressSnapshot?.latitude;
       const destLng = addressSnapshot?.longitude;
-      const destLatNum = typeof destLat === 'number' ? destLat : Number(destLat);
-      const destLngNum = typeof destLng === 'number' ? destLng : Number(destLng);
-      if (!Number.isFinite(destLatNum) || !Number.isFinite(destLngNum)) {
+      if (!isValidCoordinatePairLocal(destLat, destLng)) {
         return NextResponse.json(
           { error: 'Koordinat alamat tujuan belum tersedia, ongkir belum dapat dihitung. Lengkapi koordinat alamat dulu.' },
           { status: 400 }
@@ -535,7 +546,7 @@ export async function POST(req: NextRequest) {
         { latitude: Number(vendorLatitude), longitude: Number(vendorLongitude) },
         { latitude: Number(destLat), longitude: Number(destLng) }
       );
-      const roadKm = straightKm * 1.3;
+      const roadKm = estimateRoadDistanceKmLocal(straightKm);
       const expectedFee = calculateDeliveryFeeLocal(roadKm);
 
       // Kode layanan harus sesuai tarif lokal.
@@ -550,6 +561,8 @@ export async function POST(req: NextRequest) {
       validatedCourierServiceCode = REBITES_SERVICE_CODE_LOCAL;
       validatedCourierServiceName = REBITES_SERVICE_NAME_LOCAL;
       validatedShippingRate = expectedFee;
+      // Jarak yang sama dipakai untuk ETA dan disimpan ke orders.distance_km.
+      serverRoadKm = roadKm;
     }
     // Pickup: validated* tetap null, deliveryFee 0 (behavior lama).
     const pricing = calculatePricing({
@@ -564,13 +577,25 @@ export async function POST(req: NextRequest) {
     });
     // vendorSlug untuk preparation time; fallback ke product slug
     const estimateVendorSlug = vendorSlug || body.productSlug;
+    // Jarak untuk ETA: untuk delivery pakai jarak yang DIHITUNG SERVER dari
+    // koordinat (serverRoadKm), bukan angka kiriman klien. Pickup tidak
+    // memakai jarak sama sekali.
+    const estimateDistanceKm =
+      body.fulfillment === 'delivery' && serverRoadKm != null
+        ? serverRoadKm
+        : (distanceKm ?? 0);
     const estimate = estimateOrderMinutes({
       fulfillment: body.fulfillment as 'delivery' | 'pickup',
-      distanceKm: distanceKm ?? 0,
+      distanceKm: estimateDistanceKm,
       vendorSlug: estimateVendorSlug,
     });
     const estimatedMinutes = estimate.estimatedMinutes;
     const estimatedCompletionAt = new Date(Date.now() + estimatedMinutes * 60_000).toISOString();
+    // Angka jarak yang DISIMPAN: jarak hasil hitung server untuk delivery
+    // (agar riwayat & pelacakan memakai angka yang sama dengan ongkir),
+    // selain itu nilai lama apa adanya (tanpa mengarang).
+    const storedDistanceKm =
+      body.fulfillment === 'delivery' && serverRoadKm != null ? serverRoadKm : distanceKm;
 
     const serviceClient = createServiceClient();
 
@@ -1428,7 +1453,7 @@ export async function POST(req: NextRequest) {
         progress_status: 'disiapkan',
         estimated_minutes: estimatedMinutes,
         estimated_completion_at: estimatedCompletionAt,
-        distance_km: distanceKm,
+        distance_km: storedDistanceKm,
         preparation_minutes: estimate.preparationMinutes,
         vendor_address: vendorAddress,
         vendor_open_hours: vendorOpenHours,
@@ -1698,7 +1723,7 @@ export async function POST(req: NextRequest) {
       progress_status: 'disiapkan',
       estimated_minutes: estimatedMinutes,
       estimated_completion_at: estimatedCompletionAt,
-      distance_km: distanceKm,
+      distance_km: storedDistanceKm,
       preparation_minutes: estimate.preparationMinutes,
       vendor_address: vendorAddress,
       vendor_open_hours: vendorOpenHours,

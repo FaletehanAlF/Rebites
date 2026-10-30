@@ -39,7 +39,9 @@
     "test:chatbot-markdown": "node --test tests/chatbot-markdown.test.ts",
     "test:chatbot-tools": "node --test tests/chatbot-tools.test.ts",
     "test:image-path": "node --test tests/image-path.test.ts",
-    "test:chatbot-panel-scroll": "node --test tests/chatbot-panel-scroll.test.ts"
+    "test:chatbot-panel-scroll": "node --test tests/chatbot-panel-scroll.test.ts",
+    "test:delivery-tariff-estimate": "node --test tests/delivery-tariff-estimate.test.ts",
+    "test:route-geometry": "node --test tests/route-geometry.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

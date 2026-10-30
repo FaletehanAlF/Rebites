@@ -205,7 +205,10 @@ async function getQuote(
       serviceName: service.serviceName,
       serviceType: service.serviceType,
       price: Math.max(service.baseFeeIdr, roundToHundreds(raw + jitterIdr)),
-      duration: `+/- ${service.etaMinMinutes}-${service.etaMaxMinutes} menit`,
+      // Jarak dan waktu dipisah: keduanya dulu berbagi satu field `duration`
+      // sehingga UI menempelkan jarak setelah kata "Estimasi tiba".
+      distanceLabel: `${distanceKm.toFixed(1)} km`,
+      etaLabel: `±${service.etaMinMinutes}-${service.etaMaxMinutes} menit`,
     };
   }).sort((a, b) => a.price - b.price);
 
