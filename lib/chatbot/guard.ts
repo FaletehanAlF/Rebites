@@ -24,7 +24,8 @@ export type GuardCategory =
   | 'menulis-kode'
   | 'role-play'
   | 'dokumen-asing'
-  | 'tugas-asing';
+  | 'tugas-asing'
+  | 'akses-admin';
 
 export interface GuardBlock {
   allowed: false;
@@ -120,13 +121,38 @@ export const GUARD_MAX_INPUT_CHARS = 2_000;
 export const GUARD_MAX_OUTPUT_CHARS = 4_000;
 
 /**
+ * Permintaan yang hanya masuk akal bila penanya admin: alamat panel pengelola
+ * dan menunya.
+ *
+ * Dipisah dari RULES karena bergantung pada PROFIL, sedangkan RULES berlaku
+ * untuk semua orang. Pola ini sengaja menyasar hal yang tidak mungkin ditanyakan
+ * pembeli dengan wajar — "panel admin", "/dashboard/admin", "menu moderasi".
+ * Kata telanjang seperti "admin" atau "sanksi" TIDAK dipakai: pembeli sah
+ * bertanya "kenapa akun saya kena sanksi", dan memblokirnya akan merusak
+ * bantuan yang justru dibutuhkan.
+ */
+const ADMIN_ONLY_PATTERNS: RegExp[] = [
+  /\/dashboard\/admin\b/i,
+  /\b(panel|dashboard|halaman|menu|fitur)\s+(khusus\s+)?admin\b/i,
+  /\badmin\s+(panel|dashboard)\b/i,
+  /\b(menu|halaman|fitur)\s+(moderasi|monitoring|audit(\s+admin)?|permintaan\s+role)\b/i,
+];
+
+/**
  * Klasifikasi satu pesan pengguna.
  *
  * Urutan aturan tidak memengaruhi hasil akhir karena verdict pertama yang
  * cocok langsung dikembalikan — tetapi urutannya disusun dari yang paling
  * berbahaya (mengubah instruksi sistem) ke yang paling ringan.
+ *
+ * `profile` menentukan apakah permintaan seputar panel admin ditolak. Profil
+ * ditentukan server dari Bearer, jadi pembeli tidak dapat membuka akses admin
+ * hanya dengan mengaku admin di dalam pesan.
  */
-export function classifyInput(text: string): GuardVerdict {
+export function classifyInput(
+  text: string,
+  profile: 'publik' | 'anggota' | 'admin' = 'publik'
+): GuardVerdict {
   const value = (text ?? '').trim();
   if (!value) {
     return { allowed: false, category: 'tugas-asing', reason: 'Pesan kosong.' };
@@ -137,6 +163,18 @@ export function classifyInput(text: string): GuardVerdict {
       category: 'tugas-asing',
       reason: `Pesan melebihi ${GUARD_MAX_INPUT_CHARS} karakter.`,
     };
+  }
+
+  if (profile !== 'admin') {
+    for (const pattern of ADMIN_ONLY_PATTERNS) {
+      if (pattern.test(value)) {
+        return {
+          allowed: false,
+          category: 'akses-admin',
+          reason: 'Permintaan seputar panel admin dari profil non-admin.',
+        };
+      }
+    }
   }
 
   for (const rule of RULES) {
@@ -165,10 +203,94 @@ export function refusalMessage(category: GuardCategory): string {
       return `${base} Saya tidak bisa menampilkan atau mengubah aturan kerja saya. Silakan tanyakan hal lain tentang cara memakai ReBites.`;
     case 'dokumen-asing':
       return `${base} Saya tidak bisa menerjemahkan atau merangkum dokumen Anda. Untuk pertanyaan tentang ReBites, saya siap membantu.`;
+    case 'akses-admin':
+      return `${base} Panel pengelola situs hanya dibuka untuk akun admin, dan saya menentukan itu dari akun yang sedang dipakai — bukan dari pernyataan di percakapan. Kalau Anda perlu sesuatu dari pengelola, silakan hubungi admin ReBites. Untuk memakai ReBites sebagai pembeli atau penjual, saya siap membantu.`;
     case 'tugas-asing':
     default:
       return `${base} Pertanyaan itu di luar topik yang bisa saya bantu. Saya bisa menjelaskan cara memesan, cara berjualan, letak menu, atau paket langganan.`;
   }
+}
+
+/**
+ * Judul bagian prompt yang isinya TIDAK boleh sampai ke pengguna.
+ *
+ * Hanya bagian "internal" yang masuk daftar ini. Judul seperti
+ * "PAKET LANGGANAN PENJUAL" atau "TENTANG REBITES" sengaja TIDAK dimasukkan:
+ * jawaban sah pun bisa dimulai dengan judul semacam itu, dan menghapusnya
+ * berarti membuang jawaban yang benar. Judul di sini tidak pernah muncul
+ * pada jawaban yang wajar — tidak ada pengguna yang bertanya lalu dijawab
+ * dengan "BATAS AKSES PROFIL INI".
+ */
+const INTERNAL_SECTION_HEADINGS = [
+  'IDENTITAS DIRI (WAJIB)',
+  'TIM PENGEMBANG REBITES',
+  'ATURAN MENJAWAB SOAL PEMBUAT',
+  'ATURAN MENJAWAB',
+  'BATAS TOPIK (WAJIB)',
+  'BATAS AKSES PROFIL INI (WAJIB)',
+  'PERAN SAAT INI',
+  'GAYA BICARA',
+  'BEDAKAN DUA HAL INI',
+  'DATA NYATA LEWAT TOOLS',
+  'PRIVASI DATA',
+  'AKSI MODERASI',
+];
+
+/**
+ * Buang bagian prompt yang tersalin utuh, bukan cuma judulnya.
+ *
+ * MENGAPA INI ADA
+ * Membuang judul saja menyisakan ISINYA — dan isi itulah yang membocorkan
+ * aturan. Uji nyata sebelum fungsi ini ada menghasilkan:
+ *
+ *   masuk : "IDENTITAS DIRI (WAJIB)\n- Nama kamu: ReBitess-Asisten.\n\nHalo..."
+ *   keluar: "- Nama kamu: ReBitess-Asisten.\n\nHalo..."   <-- masih bocor
+ *
+ * Isi sebuah bagian berjalan sampai judul bagian berikutnya. Setiap judul
+ * (internal maupun tidak) mengakhiri bagian sebelumnya, sehingga teks sah
+ * sesudahnya tidak ikut terhapus.
+ */
+/** Baris yang masih dianggap bagian dari daftar/isi sebuah bagian prompt. */
+function isListOrTableLine(line: string): boolean {
+  return /^\s*(?:[-*•+]|\d+[.)]|\|)/.test(line);
+}
+
+function stripInternalSections(text: string): string {
+  const lines = text.split('\n');
+  const kept: string[] = [];
+  let skipping = false;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      if (!skipping) {
+        kept.push(line);
+        continue;
+      }
+      // Baris kosong biasanya mengakhiri bagian yang dibuang — tetapi tidak
+      // bila baris berikutnya masih butir daftar. Prompt asli ditulis
+      // "JUDUL\n- butir", namun model kadang menyalinnya dengan baris kosong
+      // setelah judul; tanpa pemeriksaan ini, butirnya lolos sendirian.
+      const next = lines.slice(index + 1).find((candidate) => candidate.trim());
+      if (next !== undefined && isListOrTableLine(next)) continue;
+      skipping = false;
+      kept.push(line);
+      continue;
+    }
+
+    const isHeading = trimmed === trimmed.toUpperCase() && /[A-Z]/.test(trimmed);
+
+    if (isHeading) {
+      skipping = INTERNAL_SECTION_HEADINGS.includes(trimmed);
+      if (skipping) continue;
+    }
+
+    if (!skipping) kept.push(line);
+  }
+
+  return kept.join('\n');
 }
 
 /**
@@ -195,12 +317,33 @@ export function sanitizeOutput(text: string): string {
   }
 
   // Buang kemunculan penanda internal prompt.
+  //
+  // Dua lapis, dan keduanya perlu:
+  //   1. BLOK — bila model menyalin sebuah bagian prompt, judulnya saja tidak
+  //      cukup dibuang. Isi di bawahnya ("- Nama kamu: ...", "- Kamu memiliki
+  //      tools ...") tetap lolos dan itu justru bagian yang membocorkan aturan.
+  //   2. INLINE — bila penanda muncul di tengah satu baris.
+  //
+  // Daftar ini harus mengikuti JUDUL BAGIAN yang benar-benar ada di
+  // lib/chatbot/knowledge.ts. Bila judulnya diganti di sana dan tidak di sini,
+  // pemeriksaan ini lolos tanpa memeriksa apa pun — model yang membocorkan
+  // prompt tetap lolos karena tidak ada lagi yang dicocokkan.
+  value = stripInternalSections(value);
+
   const markers = [
     /ATURAN MENJAWAB/gi,
     /BATAS TOPIK\s*\(WAJIB\)/gi,
     /PROFIL\s*:/gi,
     /SYSTEM PROMPT/gi,
-    /^\s*Kamu adalah Asisten ReBites.*$/gim,
+    /IDENTITAS DIRI\s*\(WAJIB\)/gi,
+    /TIM PENGEMBANG REBITES/gi,
+    /PERAN SAAT INI/gi,
+    /GAYA BICARA/gi,
+    /BATAS AKSES PROFIL INI/gi,
+    /PRIVASI DATA/gi,
+    /DATA NYATA LEWAT TOOLS/gi,
+    /AKSI MODERASI/gi,
+    /^\s*(Kamu adalah|Nama kamu:)\s+(Asisten ReBites|ReBitess-Asisten).*$/gim,
   ];
   for (const marker of markers) value = value.replace(marker, '');
 
@@ -214,5 +357,7 @@ export function sanitizeOutput(text: string): string {
 
 /** true bila keluaran tampak membocorkan aturan internal (dipakai tes). */
 export function leaksInternalPrompt(text: string): boolean {
-  return /ATURAN MENJAWAB|BATAS TOPIK|SYSTEM PROMPT/i.test(text ?? '');
+  return /ATURAN MENJAWAB|BATAS TOPIK|SYSTEM PROMPT|IDENTITAS DIRI|TIM PENGEMBANG REBITES|BATAS AKSES PROFIL INI|DATA NYATA LEWAT TOOLS|PERAN SAAT INI/i.test(
+    text ?? ''
+  );
 }

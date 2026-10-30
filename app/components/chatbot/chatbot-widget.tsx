@@ -29,6 +29,7 @@ const STORAGE_KEY = 'rebites-chatbot-transcript';
 /** Saran pembuka berbeda per profil; admin butuh pintasan yang berbeda. */
 const SUGGESTIONS_PUBLIC = [
   'Apa itu ReBites?',
+  'Siapa yang membuat ReBites?',
   'Bagaimana cara memesan makanan?',
   'Bagaimana cara mulai berjualan?',
 ];
@@ -71,6 +72,15 @@ export function ChatbotWidget() {
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  /**
+   * Profil yang BENAR-BENAR diberikan server pada balasan terakhir.
+   *
+   * `isAdmin` di atas berasal dari query klien dan hanya dipakai untuk memilih
+   * saran pertanyaan. Label mode di header memakai nilai ini, karena hanya
+   * server yang memverifikasi Bearer — klien tidak berwenang menyatakan diri
+   * admin. Sebelum balasan pertama labelnya netral, bukan tebakan.
+   */
+  const [serverProfile, setServerProfile] = useState<WireReply['profile'] | null>(null);
   const [busyAction, setBusyAction] = useState<string | null>(null);
 
   const sessionIdRef = useRef<string | null>(null);
@@ -210,6 +220,7 @@ export function ChatbotWidget() {
           return;
         }
 
+        if (json?.profile) setServerProfile(json.profile);
         if (json?.profile === 'admin') setIsAdmin(true);
         if (typeof json?.sessionId === 'string') sessionIdRef.current = json.sessionId;
 
@@ -296,7 +307,7 @@ export function ChatbotWidget() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        aria-label={open ? 'Tutup asisten ReBites' : 'Buka asisten ReBites'}
+        aria-label={open ? 'Tutup ReBitess-Asisten' : 'Buka ReBitess-Asisten'}
         aria-expanded={open}
         className={cn(
           'fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center lg:bottom-6 lg:right-6',
@@ -313,7 +324,7 @@ export function ChatbotWidget() {
           <motion.div
             ref={panelRef}
             role="dialog"
-            aria-label="Asisten ReBites"
+            aria-label="ReBitess-Asisten"
             initial={prefersReducedMotion ? false : { opacity: 0, y: 12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
@@ -329,9 +340,11 @@ export function ChatbotWidget() {
                 <Bot className="h-5 w-5" aria-hidden />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-foreground">Asisten ReBites</p>
+                <p className="truncate text-sm font-semibold text-foreground">ReBitess-Asisten</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {isAdmin ? 'Mode admin — bisa membaca data' : 'Panduan memakai ReBites'}
+                  {serverProfile === 'admin'
+                    ? 'Mode admin — bisa membaca data'
+                    : 'Panduan memakai ReBites'}
                 </p>
               </div>
               <button
@@ -348,8 +361,7 @@ export function ChatbotWidget() {
               {messages.length === 0 && (
                 <div className="space-y-2">
                   <p className="text-[13px] text-muted-foreground">
-                    Halo! Saya bisa menjelaskan cara memakai ReBites, letak menu, sampai paket
-                    langganan. Mau mulai dari mana?
+                    Halo! Saya ReBitess-Asisten. Mau mulai dari mana?
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {suggestions.map((item) => (

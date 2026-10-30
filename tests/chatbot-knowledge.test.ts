@@ -20,11 +20,20 @@ import path from 'node:path';
 
 import {
   ADMIN_ROUTES,
+  ASSISTANT_MODEL_IDENTITY,
+  ASSISTANT_NAME,
+  ASSISTANT_PROVIDER,
+  ASSISTANT_PROVIDER_LABEL,
   BUYER_ROUTES,
   PUBLIC_ROUTES,
+  REBITES_DEVELOPER,
+  REBITES_TEAM,
   SELLER_ROUTES,
   SUBSCRIPTION_FACTS_SEED,
   buildSystemPrompt,
+  modelIdentityAnswer,
+  ownerAnswer,
+  providerAnswer,
   subscriptionFacts,
   subscriptionProductLimits,
   type RouteDoc,
@@ -172,4 +181,146 @@ test('tidak ada path duplikat di dalam satu grup kecuali anchor pada halaman sam
       seen.add(route.path);
     }
   }
+});
+
+// ---------------------------------------------------------------------------
+// Identitas asisten & tim pengembang
+//
+// Nama orang adalah bagian yang PALING tidak boleh salah eja dan paling mudah
+// bergeser tanpa ada yang menyadarinya. Ketiga tes di bawah mengunci ejaan
+// resmi, memastikan identitas sampai ke KETIGA profil, dan mencegah cacat
+// kosmetik yang sempat lolos ke jawaban nyata: "Team Tony Stark Inc.."
+// ---------------------------------------------------------------------------
+
+test('identitas asisten dan tim pengembang terdefinisi lengkap', () => {
+  assert.equal(ASSISTANT_NAME, 'ReBitess-Asisten');
+  assert.equal(ASSISTANT_MODEL_IDENTITY, 'VibeCode 1.1');
+  assert.match(REBITES_DEVELOPER, /Tony Stark Inc/);
+
+  assert.equal(REBITES_TEAM.length, 3, 'tim pengembang berjumlah tiga orang');
+
+  const expected = [
+    { name: 'Faletehan Al Farabi', role: 'Backend Developer' },
+    { name: 'Aburahman Kayysan', role: 'Fullstack Developer' },
+    { name: 'Jona Alfaros', role: 'Frontend Developer' },
+  ];
+
+  for (const person of expected) {
+    const found = REBITES_TEAM.find((member) => member.name === person.name);
+    assert.ok(found, `anggota tim "${person.name}" hilang atau ejaannya berubah`);
+    assert.equal(found.role, person.role, `peran ${person.name} berbeda`);
+    assert.ok(found.duty.trim().length > 20, `tugas ${person.name} terlalu pendek`);
+  }
+});
+
+test('identitas masuk ke KETIGA profil, bukan hanya satu', () => {
+  for (const profile of ['publik', 'anggota', 'admin'] as const) {
+    const prompt = buildSystemPrompt(profile);
+
+    assert.match(prompt, /IDENTITAS DIRI/, `${profile}: blok identitas tidak ada`);
+    assert.ok(prompt.includes(ASSISTANT_NAME), `${profile}: nama asisten tidak disebut`);
+    assert.ok(
+      prompt.includes(ASSISTANT_MODEL_IDENTITY),
+      `${profile}: identitas model tidak disebut`
+    );
+    assert.ok(prompt.includes('Tony Stark'), `${profile}: organisasi pembuat tidak disebut`);
+
+    for (const member of REBITES_TEAM) {
+      assert.ok(prompt.includes(member.name), `${profile}: "${member.name}" tidak disebut`);
+    }
+  }
+});
+
+test('tidak ada titik ganda pada nama organisasi berakhiran titik', () => {
+  // "Team Tony Stark Inc." sudah berakhiran titik; kalimat yang menambah titik
+  // lagi menghasilkan "Inc.." yang terbaca sebagai salah tulis.
+  const samples = [ownerAnswer(), modelIdentityAnswer(), buildSystemPrompt('publik')];
+
+  for (const text of samples) {
+    assert.ok(!/Inc\.\./.test(text), 'nama organisasi menghasilkan titik ganda');
+  }
+
+  // Nama resmi tetap utuh saat ditulis sendiri.
+  assert.match(REBITES_DEVELOPER, /Inc\.$/, 'nama organisasi harus tetap berakhiran "Inc."');
+});
+
+test('kalimat standar owner tidak mengklaim pemilik tunggal', () => {
+  const answer = ownerAnswer();
+
+  assert.match(answer, /Tony Stark/);
+  for (const member of REBITES_TEAM) {
+    assert.ok(answer.includes(member.name), `jawaban owner harus menyebut ${member.name}`);
+  }
+  assert.ok(
+    !/\b(ceo|founder|pemilik tunggal|owner tunggal)\b/i.test(answer),
+    'peran developer bukan status kepemilikan; jangan klaim pemilik tunggal'
+  );
+});
+
+test('prompt melarang mengarang identitas yang tidak diberikan', () => {
+  const prompt = buildSystemPrompt('publik');
+
+  assert.match(prompt, /JANGAN mengubah ejaan nama/i);
+  assert.match(prompt, /pemilik tunggal|CEO|founder/i);
+  assert.match(prompt, /belum tersedia/i, 'harus mengatur jawaban bila info tidak ada');
+});
+
+// ---------------------------------------------------------------------------
+// Penyedia layanan AI
+//
+// Dua pertanyaan berbeda yang mudah tertukar: "siapa yang MEMBUAT ReBites"
+// (tim pengembang) dan "AI ini DARI MANA" (penyedia model). Menyatukan
+// jawabannya membuat salah satu pasti keliru.
+// ---------------------------------------------------------------------------
+
+test('identitas penyedia AI terdefinisi dan berbeda dari pembuat aplikasi', () => {
+  assert.match(ASSISTANT_PROVIDER, /vibecodeagent\.my\.id/);
+  assert.ok(ASSISTANT_PROVIDER_LABEL.trim().length > 3);
+
+  assert.notEqual(
+    ASSISTANT_PROVIDER_LABEL,
+    REBITES_DEVELOPER.replace(/\.$/, ''),
+    'penyedia AI tidak boleh sama dengan pembuat aplikasi'
+  );
+});
+
+test('penyedia AI disebut di KETIGA profil', () => {
+  for (const profile of ['publik', 'anggota', 'admin'] as const) {
+    const prompt = buildSystemPrompt(profile);
+    assert.ok(
+      prompt.includes(ASSISTANT_PROVIDER),
+      `${profile}: domain penyedia tidak disebut`
+    );
+    assert.ok(
+      prompt.includes(ASSISTANT_PROVIDER_LABEL),
+      `${profile}: nama penyedia tidak disebut`
+    );
+    assert.match(prompt, /PENYEDIA MODEL AI/, `${profile}: harus ada pembeda peran penyedia`);
+  }
+});
+
+test('prompt menegaskan pembuat aplikasi BUKAN penyedia AI', () => {
+  const prompt = buildSystemPrompt('publik');
+
+  // Cacat yang dicegah: model menyebut penyedia sebagai pembuat ReBites, atau
+  // menyebut tim pengembang sebagai penyedia model.
+  assert.match(prompt, /BEDAKAN DUA HAL INI/);
+  assert.match(prompt, /jangan menyebut .* sebagai pembuat ReBites/i);
+  assert.match(prompt, /PEMBUAT APLIKASI/i);
+});
+
+test('kalimat penyedia menyebut keduanya tanpa mengacak peran', () => {
+  const answer = providerAnswer();
+
+  assert.ok(answer.includes(ASSISTANT_PROVIDER), 'harus menyebut domain penyedia');
+  assert.ok(answer.includes(ASSISTANT_PROVIDER_LABEL), 'harus menyebut nama penyedia');
+  assert.match(answer, /Tony Stark/, 'harus tetap menyebut pembuat aplikasi');
+  assert.ok(!/Inc\.\./.test(answer), 'tidak boleh ada titik ganda');
+});
+
+test('kalimat identitas model kini menyebut penyedia', () => {
+  const answer = modelIdentityAnswer();
+  assert.ok(answer.includes(ASSISTANT_NAME));
+  assert.ok(answer.includes(ASSISTANT_MODEL_IDENTITY));
+  assert.ok(answer.includes(ASSISTANT_PROVIDER), 'pertanyaan "kamu AI apa" harus menyebut asal');
 });

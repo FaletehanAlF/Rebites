@@ -282,6 +282,124 @@ export const READ_TOOL_DEFINITIONS: AiToolDefinition[] = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'daftar_aktivitas',
+      description:
+        'Arus aktivitas terbaru: login, daftar akun, produk dibuat/diubah/dihapus, pesanan dibuat/dibatalkan, toko diperbarui, langganan berubah, laporan masuk, peringatan diterima. Gunakan untuk pertanyaan "apa yang dilakukan penjual/pembeli terakhir kali" atau "aktivitas terbaru".',
+      parameters: {
+        type: 'object',
+        properties: {
+          peran: {
+            type: 'string',
+            enum: ['admin', 'umkm', 'buyer'],
+            description: 'Batasi ke pelaku dengan peran ini. umkm = penjual, buyer = pembeli.',
+          },
+          jenis: {
+            type: 'string',
+            enum: [
+              'login',
+              'register',
+              'product_created',
+              'product_updated',
+              'product_deleted',
+              'order_created',
+              'order_cancelled',
+              'store_updated',
+              'subscription_changed',
+              'report_received',
+              'warning_received',
+            ],
+            description: 'Batasi ke satu jenis aktivitas.',
+          },
+          kata_kunci: str('Potongan teks deskripsi aktivitas.'),
+          hari_terakhir: num('Hanya aktivitas dalam N hari terakhir (1-30).'),
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'daftar_peringatan',
+      description:
+        'Daftar peringatan yang pernah dikirim ke pengguna atau penjual, beserta tingkat dan alasannya. Gunakan untuk pertanyaan tentang peringatan atau riwayat pelanggaran.',
+      parameters: {
+        type: 'object',
+        properties: {
+          tingkat: { type: 'number', enum: [1, 2, 3], description: 'Tingkat peringatan.' },
+          kata_kunci: str('Potongan alasan atau kategori peringatan.'),
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'daftar_sanksi',
+      description:
+        'Daftar sanksi akun (suspend, ban, delete) beserta masa berlaku dan alasannya. Pemberian sanksi TIDAK dapat dilakukan lewat asisten.',
+      parameters: {
+        type: 'object',
+        properties: {
+          jenis: { type: 'string', enum: ['suspend', 'ban', 'delete'] },
+          kata_kunci: str('Potongan alasan sanksi.'),
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'daftar_audit_admin',
+      description:
+        'Jejak tindakan admin: siapa melakukan aksi apa, pada target apa, kapan, dan alasannya. Gunakan untuk pertanyaan tentang audit atau tindakan admin sebelumnya.',
+      parameters: {
+        type: 'object',
+        properties: {
+          aksi: str('Nama aksi, mis. setujui_produk atau tolak_produk.'),
+          tipe_target: str('Tipe target, mis. product, umkm, user, report.'),
+          kata_kunci: str('Potongan alasan pada jejak audit.'),
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'daftar_ulasan',
+      description:
+        'Ulasan dan penilaian pembeli terhadap produk atau toko. Gunakan untuk pertanyaan tentang kualitas layanan, keluhan pembeli, atau rating terendah.',
+      parameters: {
+        type: 'object',
+        properties: {
+          rating_maksimal: num('Tampilkan hanya ulasan dengan rating <= nilai ini (1-5).'),
+          kata_kunci: str('Potongan isi komentar atau nama menu.'),
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'daftar_permintaan_role',
+      description:
+        'Permintaan perubahan peran pengguna (mis. pembeli ingin menjadi penjual) beserta status keputusannya. Keputusan hanya dapat diambil Super Admin lewat panel.',
+      parameters: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', enum: ['pending', 'approved', 'rejected'] },
+        },
+        required: [],
+      },
+    },
+  },
 ];
 
 /**
@@ -393,6 +511,16 @@ function asString(value: unknown): string {
 function asBool(value: unknown): boolean | undefined {
   if (value === true || value === 'true') return true;
   if (value === false || value === 'false') return false;
+  return undefined;
+}
+
+/** Angka dari model bisa datang sebagai number atau string. */
+function asNumber(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
   return undefined;
 }
 
@@ -792,6 +920,203 @@ export async function runReadTool(
 
         const { rows, truncated } = limitRows(data ?? []);
         return { ok: true, data: { langganan: rows, catatan: truncationNote(truncated) }, truncated };
+      }
+
+      case 'daftar_aktivitas': {
+        const role = asString(args.peran);
+        const type = asString(args.jenis);
+        const keyword = asString(args.kata_kunci);
+        const days = asNumber(args.hari_terakhir);
+
+        // Saat menyaring peran, join harus `!inner`: tanpa itu PostgREST tetap
+        // mengembalikan baris yang profilnya tidak cocok. Tanpa saringan peran,
+        // join biasa dipakai agar aktivitas milik akun yang sudah dihapus
+        // (user_id NULL) tetap muncul alih-alih hilang diam-diam.
+        const select = role
+          ? 'id, user_id, activity_type, description, target_type, target_id, created_at, profiles!inner(full_name, role)'
+          : 'id, user_id, activity_type, description, target_type, target_id, created_at, profiles(full_name, role)';
+
+        let query = db
+          .from('activity_logs')
+          .select(select)
+          .order('created_at', { ascending: false })
+          .limit(TOOL_ROW_LIMIT + 1);
+
+        if (role) query = query.eq('profiles.role', role);
+        if (type) query = query.eq('activity_type', type);
+        if (keyword) query = query.ilike('description', `%${keyword}%`);
+        if (days !== undefined && days > 0) {
+          // Dibatasi 30 hari: pertanyaan "sejak awal" akan menarik ribuan baris
+          // dan jawabannya tidak berguna bagi admin.
+          const span = Math.min(days, 30);
+          const since = new Date(Date.now() - span * 86_400_000).toISOString();
+          query = query.gte('created_at', since);
+        }
+
+        const { data, error } = await query;
+        if (error) return { ok: false, error: error.message };
+
+        const { rows, truncated } = limitRows(data ?? []);
+        return {
+          ok: true,
+          data: {
+            aktivitas: rows,
+            urutan: 'terbaru lebih dulu',
+            catatan: truncationNote(truncated),
+          },
+          truncated,
+        };
+      }
+
+      case 'daftar_peringatan': {
+        const level = asNumber(args.tingkat);
+        const keyword = asString(args.kata_kunci);
+
+        let query = db
+          .from('warnings')
+          .select(
+            'id, user_id, warning_level, category, reason, created_at, profiles!warnings_user_id_fkey(full_name, role)'
+          )
+          .order('created_at', { ascending: false })
+          .limit(TOOL_ROW_LIMIT + 1);
+
+        if (level !== undefined) query = query.eq('warning_level', level);
+        if (keyword) query = query.ilike('reason', `%${keyword}%`);
+
+        const { data, error } = await query;
+        if (error) return { ok: false, error: error.message };
+
+        const { rows, truncated } = limitRows(data ?? []);
+        return {
+          ok: true,
+          data: { peringatan: rows, catatan: truncationNote(truncated) },
+          truncated,
+        };
+      }
+
+      case 'daftar_sanksi': {
+        const type = asString(args.jenis);
+        const keyword = asString(args.kata_kunci);
+
+        let query = db
+          .from('sanctions')
+          .select(
+            'id, user_id, sanction_type, reason, start_at, end_at, created_at, profiles!sanctions_user_id_fkey(full_name, role)'
+          )
+          .order('created_at', { ascending: false })
+          .limit(TOOL_ROW_LIMIT + 1);
+
+        if (type) query = query.eq('sanction_type', type);
+        if (keyword) query = query.ilike('reason', `%${keyword}%`);
+
+        const { data, error } = await query;
+        if (error) return { ok: false, error: error.message };
+
+        const { rows, truncated } = limitRows(data ?? []);
+        const now = Date.now();
+        return {
+          ok: true,
+          data: {
+            sanksi: rows.map((row) => {
+              const end = (row as { end_at: string | null }).end_at;
+              return {
+                ...row,
+                // Status dihitung di sini supaya model tidak perlu menafsirkan
+                // tanggal sendiri dan salah menyebut sanksi permanen sebagai aktif.
+                status: end === null ? 'berlaku tanpa batas' : new Date(end).getTime() > now ? 'sedang berlaku' : 'sudah berakhir',
+              };
+            }),
+            catatan: truncationNote(truncated),
+          },
+          truncated,
+        };
+      }
+
+      case 'daftar_audit_admin': {
+        const action = asString(args.aksi);
+        const targetType = asString(args.tipe_target);
+        const keyword = asString(args.kata_kunci);
+
+        let query = db
+          .from('admin_audit_logs')
+          .select('id, admin_id, action, target_type, target_id, reason, created_at, profiles(full_name)')
+          .order('created_at', { ascending: false })
+          .limit(TOOL_ROW_LIMIT + 1);
+
+        if (action) query = query.eq('action', action);
+        if (targetType) query = query.eq('target_type', targetType);
+        if (keyword) query = query.ilike('reason', `%${keyword}%`);
+
+        const { data, error } = await query;
+        if (error) return { ok: false, error: error.message };
+
+        const { rows, truncated } = limitRows(data ?? []);
+        return {
+          ok: true,
+          data: { audit: rows, catatan: truncationNote(truncated) },
+          truncated,
+        };
+      }
+
+      case 'daftar_ulasan': {
+        const maxRating = asNumber(args.rating_maksimal);
+        const keyword = asString(args.kata_kunci);
+
+        let query = db
+          .from('reviews')
+          .select('id, author_name, menu_name, rating, comment, created_at, umkm_id, product_id')
+          .order('created_at', { ascending: false })
+          .limit(TOOL_ROW_LIMIT + 1);
+
+        if (maxRating !== undefined) query = query.lte('rating', maxRating);
+        if (keyword) query = query.ilike('comment', `%${keyword}%`);
+
+        const { data, error } = await query;
+        if (error) return { ok: false, error: error.message };
+
+        const { rows, truncated } = limitRows(data ?? []);
+        const ratings = (rows as Array<{ rating: number }>).map((row) => Number(row.rating));
+        return {
+          ok: true,
+          data: {
+            ulasan: rows,
+            rata_rata_rating:
+              ratings.length > 0
+                ? Math.round((ratings.reduce((sum, value) => sum + value, 0) / ratings.length) * 10) / 10
+                : null,
+            catatan: truncationNote(truncated),
+          },
+          truncated,
+        };
+      }
+
+      case 'daftar_permintaan_role': {
+        const status = asString(args.status);
+
+        let query = db
+          .from('role_change_requests')
+          .select(
+            'id, requested_by, target_user_id, current_role, requested_role, status, reason, created_at'
+          )
+          .order('created_at', { ascending: false })
+          .limit(TOOL_ROW_LIMIT + 1);
+
+        if (status) query = query.eq('status', status);
+
+        const { data, error } = await query;
+        if (error) return { ok: false, error: error.message };
+
+        const { rows, truncated } = limitRows(data ?? []);
+        return {
+          ok: true,
+          data: {
+            permintaan_role: rows,
+            catatan_keputusan:
+              'Keputusan approve/reject hanya dapat diambil Super Admin lewat panel; asisten tidak dapat mengubah peran.',
+            catatan: truncationNote(truncated),
+          },
+          truncated,
+        };
       }
 
       default:
