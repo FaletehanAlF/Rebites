@@ -50,5 +50,8 @@ next-env.d.ts
 p1b-verify.mjs
 remote_schema_verify.sql
 
+# instruksi agent lokal — tidak ikut di-commit ke GitHub
+AGENTS.md
+
 # temporary files
 .vibecode-tmp/
