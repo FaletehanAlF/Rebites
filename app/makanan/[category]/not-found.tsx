@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { ArrowLeft, Compass } from "lucide-react";
-import { ProfileNavbar } from "@/app/components/shared/navbar";
-import { SiteFooter } from "@/app/components/shared/site-footer";
+import { BuyerShell } from "@/app/components/shared/buyer-shell";
+import { SiteFooter } from "@/app/components/site-footer";
 
 export default function CategoryNotFound() {
   return (
-    <div className="flex min-h-screen flex-col bg-secondary">
-      <ProfileNavbar />
-      <main className="flex flex-1 items-center justify-center px-4 pb-16 pt-28">
+    <BuyerShell>
+      <main className="flex min-h-[65vh] items-center justify-center px-4 pb-24 pt-10 lg:pb-16">
         <div className="w-full max-w-md rounded-2xl border border-border bg-white px-6 py-14 text-center shadow-md shadow-primary/5">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
             <Compass className="h-7 w-7 text-muted-foreground" aria-hidden />
@@ -27,7 +26,7 @@ export default function CategoryNotFound() {
           </Link>
         </div>
       </main>
-      <SiteFooter />
-    </div>
+      <SiteFooter hasMobileBottomNav />
+    </BuyerShell>
   );
 }

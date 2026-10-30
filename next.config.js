@@ -26,10 +26,13 @@ const nextConfig = {
     ],
   },
   images: {
-    // AVIF lebih kecil ~20-30% dari WebP pada foto; WebP tetap jadi fallback
-    // untuk browser lama. Urutan penting: Next memilih format pertama yang
-    // didukung Accept header klien.
-    formats: ["image/avif", "image/webp"],
+    // Hanya WebP. Sebelumnya AVIF dicoba lebih dulu, dan encoder AVIF jauh
+    // lebih lambat daripada WebP pada permintaan pertama sebuah gambar —
+    // terasa sebagai "foto makanannya lama sekali muncul" tepat setelah penjual
+    // mengunggah produk baru, lalu normal setelah refresh karena hasilnya sudah
+    // tersimpan di cache optimizer. WebP didukung semua browser target dan
+    // ukurannya sudah cukup kecil untuk foto makanan.
+    formats: ["image/webp"],
     remotePatterns: [
       {
         protocol: "https",

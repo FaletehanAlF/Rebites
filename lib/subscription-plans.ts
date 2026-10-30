@@ -73,6 +73,27 @@ export function getPlanPrice(
   return billing === 'yearly' ? plan.yearly : plan.monthly;
 }
 
+/**
+ * Kelipatan harga tahunan terhadap harga bulanan (mis. 10, 12, 6).
+ *
+ * null bila salah satu harga tidak tersedia atau tidak masuk akal (<= 0),
+ * sehingga UI tidak menampilkan klaim penghematan dari angka yang tidak ada.
+ * Nilai dibulatkan ke bilangan bulat agar tidak muncul "12,0×".
+ */
+export function getYearlyMultiplier(plan: SubscriptionPlan): number | null {
+  if (!Number.isFinite(plan.monthly) || !Number.isFinite(plan.yearly)) return null;
+  if (plan.monthly <= 0 || plan.yearly <= 0) return null;
+  const ratio = plan.yearly / plan.monthly;
+  if (!Number.isFinite(ratio) || ratio <= 0) return null;
+  return Math.round(ratio);
+}
+
+/** Harga rata-rata per bulan bila membayar tahunan (dibulatkan rupiah). */
+export function getYearlyPerMonth(plan: SubscriptionPlan): number | null {
+  if (!Number.isFinite(plan.yearly) || plan.yearly <= 0) return null;
+  return Math.round(plan.yearly / 12);
+}
+
 export function computePeriodEnd(billing: BillingCycle, from = Date.now()): Date {
   const end = new Date(from);
   if (billing === 'yearly') end.setFullYear(end.getFullYear() + 1);

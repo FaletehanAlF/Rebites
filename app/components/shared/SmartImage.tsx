@@ -23,10 +23,12 @@ export function SmartImage({
   const [failed, setFailed] = useState(false);
 
   if (!src || failed) {
+    // Permukaan datar, bukan gradient: gradient pada bidang besar menambah
+    // lapisan komposit saat digulir dan tidak menambah informasi apa pun.
     return (
       <div
         className={cn(
-          'flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-secondary',
+          'flex h-full w-full items-center justify-center bg-muted',
           className
         )}
       >

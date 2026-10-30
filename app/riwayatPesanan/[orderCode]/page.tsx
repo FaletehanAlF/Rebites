@@ -298,8 +298,11 @@ function OrderDetailContent() {
           </div>
         </header>
 
-        {/* Dua kolom di desktop, satu kolom di mobile. */}
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        {/* Dua kolom di desktop: konten utama + panel pengantaran.
+            Kolom kanan dilebarkan (360px → 380–440px) karena isinya panel
+            status, peta, dan alamat; pada 360px teks status terhimpit dan
+            baris "Tujuan" memakan hampir seluruh lebar kartu. */}
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:items-start">
           <div className="space-y-5">
             {/* Timeline: sumber status nyata. */}
             <section aria-labelledby="timeline-heading" className="rounded-2xl border border-hairline bg-white p-5">
@@ -431,10 +434,17 @@ function OrderDetailContent() {
                 <h2 id="kirim-heading" className="font-display text-base font-semibold text-charcoal-900">
                   Pengantaran
                 </h2>
-                <DeliveryMap plan={mapPlan} />
+                <DeliveryMap
+                  plan={mapPlan}
+                  // Animasi kendaraan hanya saat pengantaran benar-benar
+                  // berjalan. Pada fase lain marker tetap di titik awal,
+                  // sehingga peta tidak pernah berpura-pura ada pergerakan.
+                  animateRoute={!isDone && orderStatus === 'out_for_delivery'}
+                />
                 <p className="text-[11px] leading-relaxed text-charcoal-500">
-                  Peta menampilkan titik toko dan alamat tujuan. Posisi kurir belum
-                  ditampilkan karena pelacakan GPS belum aktif.
+                  Garis hijau adalah perkiraan lurus antara titik toko dan alamat
+                  tujuan, bukan rute jalan. Ikon kendaraan hanya ilustrasi
+                  perjalanan: posisi kurir sebenarnya belum dikirim ke aplikasi.
                 </p>
                 <DeliveryStatusPanel order={order} variant="full" />
                 {dest && (

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, Info, Lock, Save } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Info, Lock, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/app/components/dashboard-penjual/Card';
 import { Reveal } from '@/app/components/shared/reveal';
@@ -353,8 +353,8 @@ export function AddMenuForm() {
                         </option>
                       ))}
                     </select>
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
-                      –¼
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      <ChevronDown className="h-3.5 w-3.5" aria-hidden />
                     </span>
                   </div>
                 </div>
@@ -466,7 +466,7 @@ export function AddMenuForm() {
             <section>
               <SectionTitle number="5" title="Metode Pengambilan" />
               <div className="space-y-3">
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-cream-50 px-4 py-3.5">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-secondary px-4 py-3.5">
                   <div>
                     <p className="text-xs font-semibold text-charcoal-900">
                       Diantar
@@ -494,7 +494,7 @@ export function AddMenuForm() {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-cream-50 px-4 py-3.5">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-secondary px-4 py-3.5">
                   <div>
                     <p className="text-xs font-semibold text-charcoal-900">
                       Ambil Sendiri

@@ -28,7 +28,15 @@ import {
   X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+
+/**
+ * Kurva masuk untuk drawer mobile: cepat di awal, melambat di ujung.
+ * Sama dengan drawer pembeli (MobileNavbar) supaya kedua panel terasa
+ * satu keluarga gerak, bukan dua animasi yang dibuat terpisah.
+ */
+const DRAWER_EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
 import { useSellerStatus } from '@/hooks/use-seller-status';
 import { useAdminMe } from '@/hooks/use-admin-me';
 import { useRoleRequestBadge } from '@/hooks/use-role-request-badge';
@@ -112,6 +120,9 @@ export function AdminSidebar({
    */
   const [monitoringMenuOpen, setMonitoringMenuOpen] = useState(false);
   const panelRef = useRef<HTMLElement | null>(null);
+  // Panel admin tidak dibungkus <MotionConfig>, jadi preferensi sistem dibaca
+  // langsung di sini. Saat aktif, drawer hanya di-fade tanpa pergeseran.
+  const prefersReducedMotion = useReducedMotion();
   // Menu "Toko Saya" hanya muncul bila admin ini benar-benar pemilik toko
   // (getSellerUmkm ber-scope user_id sesi; bukan berdasarkan role).
   const { isSeller, loading: sellerStatusLoading } = useSellerStatus();
@@ -306,7 +317,7 @@ export function AdminSidebar({
           aria-label="Ke beranda ReBites"
           className="flex h-9 w-9 shrink-0 overflow-hidden rounded-full ring-1 ring-black/5 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          <Image src="/logo.png" alt="ReBites" width={36} height={36} className="h-9 w-9 object-cover" />
+          <Image src="/logo.avif" alt="ReBites" width={36} height={36} className="h-9 w-9 object-cover" />
         </Link>
         {!compact && (
           <Link href="/home" className="min-w-0 flex-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
@@ -549,9 +560,74 @@ export function AdminSidebar({
 
   return (
     <>
-      {open && (
-        <div onClick={onClose} className="fixed inset-0 z-40 bg-charcoal-900/40 lg:hidden" aria-hidden />
-      )}
+      {/* Overlay + drawer mobile dibungkus AnimatePresence.
+          Sebelumnya keduanya dirender dengan `{open && ...}` polos: elemen
+          langsung unmount sehingga tidak ada animasi keluar sama sekali dan
+          drawer "melesat hilang". AnimatePresence menahan elemen selama exit
+          berjalan, sehingga tutup pun terasa sama halusnya dengan buka.
+
+          Hanya `transform` dan `opacity` yang dianimasikan: keduanya
+          dikomposisikan GPU, tidak memicu layout, jadi tidak ada frame
+          patah-patah saat sidebar berisi belasan tautan. */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="admin-drawer-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: prefersReducedMotion ? 0.01 : 0.18,
+              ease: 'linear',
+            }}
+            onClick={onClose}
+            // Tanpa `backdrop-blur`: sama seperti overlay drawer pembeli.
+            // Blur selayar penuh adalah operasi GPU termahal saat drawer
+            // dibuka, dan warna solid sedikit transparan memberi kesan fokus
+            // yang sama tanpa biaya render per frame.
+            className="fixed inset-0 z-40 bg-charcoal-900/45 lg:hidden"
+            aria-hidden
+          />
+        )}
+
+        {open && (
+          <motion.aside
+            key="admin-drawer-panel"
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigasi admin"
+            initial={prefersReducedMotion ? { opacity: 0 } : { x: '-100%', opacity: 0.6 }}
+            // Masuk 0.26s, keluar 0.18s: panel yang ditutup tidak perlu lama
+            // terlihat, dan menahan tombol tutup lebih dari ~200ms terasa
+            // lambat. Kedua arah memakai easing yang sama agar geraknya utuh.
+            animate={
+              prefersReducedMotion
+                ? { opacity: 1, transition: { duration: 0.01 } }
+                : {
+                    x: 0,
+                    opacity: 1,
+                    transition: { duration: 0.26, ease: DRAWER_EASE },
+                  }
+            }
+            exit={
+              prefersReducedMotion
+                ? { opacity: 0, transition: { duration: 0.01 } }
+                : {
+                    x: '-100%',
+                    opacity: 0.6,
+                    transition: { duration: 0.18, ease: DRAWER_EASE },
+                  }
+            }
+            // `will-change` hanya selama drawer ada — elemen ini unmount saat
+            // ditutup, jadi tidak ada layer GPU yang tertinggal di halaman.
+            style={{ willChange: prefersReducedMotion ? undefined : 'transform' }}
+            className="fixed inset-y-0 left-0 z-50 flex w-[264px] max-w-[85vw] flex-col bg-admin-panel shadow-admin-pop lg:hidden"
+          >
+            {content(true, false)}
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* Lebar dibaca dari `--admin-rail-w` (dipasang AdminShell), bukan
           264px tetap, supaya kolom konten & topbar ikut menyesuaikan.
@@ -562,18 +638,6 @@ export function AdminSidebar({
       >
         {content(false, collapsed)}
       </aside>
-
-      {open && (
-        <aside
-          ref={panelRef}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Navigasi admin"
-          className="fixed inset-y-0 left-0 z-50 flex w-[264px] max-w-[85vw] flex-col bg-admin-panel shadow-admin-pop lg:hidden"
-        >
-          {content(true, false)}
-        </aside>
-      )}
 
       {/* Satu tooltip untuk seluruh sidebar: menghindari N elemen absolut
           dan memastikan hanya satu yang tampil. `pointer-events-none` agar

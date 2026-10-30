@@ -419,6 +419,7 @@ export function UmkmManagementView() {
                           ) : null}
                           {item.is_verified ? 'Terverifikasi' : 'Belum verifikasi'}
                         </Badge>
+                        {!item.is_active && <Badge variant="destructive">Nonaktif</Badge>}
                         {item.is_open !== null && (
                           <Badge variant="secondary">{item.is_open ? 'Buka' : 'Tutup'}</Badge>
                         )}
@@ -469,6 +470,7 @@ export function UmkmManagementView() {
                           <Badge variant={item.is_verified ? 'success' : 'warning'}>
                             {item.is_verified ? 'Terverifikasi' : 'Belum verifikasi'}
                           </Badge>
+                          {!item.is_active && <Badge variant="destructive">Nonaktif</Badge>}
                           {item.is_open !== null && (
                             <Badge variant="secondary">
                               {item.is_open ? 'Buka' : 'Tutup'}

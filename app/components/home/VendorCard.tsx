@@ -28,7 +28,7 @@ export function VendorCard({
   return (
     <div
       className={cn(
-        'group flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white outline-none transition-all duration-300 hover:-translate-y-1 hover:border-zinc-300 hover:shadow-lg hover:shadow-primary/10',
+        'group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white outline-none transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_36px_-28px_rgba(27,77,50,0.5)]',
         FOCUS_RING
       )}
     >
@@ -47,16 +47,16 @@ export function VendorCard({
 
           <div
             className={cn(
-              'absolute left-3 top-3 flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold leading-none shadow-md',
-              isOpen ? 'bg-white text-primary' : 'bg-zinc-100 text-zinc-500'
+              'absolute left-3 top-3 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold leading-none shadow-md',
+              isOpen ? 'bg-white text-primary' : 'bg-white/90 text-muted-foreground'
             )}
           >
-            <span className={cn("h-1.5 w-1.5 rounded-full", isOpen ? "bg-primary" : "bg-zinc-400")} />
+            <span className={cn("h-1.5 w-1.5 rounded-full", isOpen ? "bg-primary" : "bg-muted-foreground/60")} />
             {isOpen ? 'Buka' : 'Tutup'}
           </div>
 
           {badgeLabel ? (
-            <div className="absolute left-3 top-10 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-foreground shadow-md">
+            <div className="absolute left-3 top-10 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-md">
               <Crown className="h-3 w-3" />
               {badgeLabel}
             </div>
@@ -77,7 +77,7 @@ export function VendorCard({
             <Star className="h-3.5 w-3.5 fill-primary text-primary" />
             {vendor.rating.toFixed(1)}
           </span>
-          <span className="hidden h-3 w-px bg-zinc-200 sm:block" />
+          <span className="hidden h-3 w-px bg-border sm:block" />
           <span className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             {vendor.openHours}
@@ -90,7 +90,10 @@ export function VendorCard({
 
         <Link
           href={`/detail/toko?id=${vendor.id}`}
-          className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark"
+          className={cn(
+            'mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark',
+            FOCUS_RING
+          )}
         >
           Lihat Toko
         </Link>

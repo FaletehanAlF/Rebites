@@ -8,8 +8,17 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+/**
+ * Baca berkas proyek sebagai teks berakhiran LF.
+ *
+ * Di Windows, `core.autocrlf=true` mengubah checkout menjadi CRLF, sehingga
+ * pola yang memeriksa akhir baris (`\n] as const`) gagal walau isi berkasnya
+ * benar. Penyeragaman di sini membuat pemeriksaan tetap memeriksa ISI, bukan
+ * bergantung pada cara Git menaruh berkas di disk.
+ */
 function readProjectFile(relativePath: string): string {
-  return readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), 'utf8');
+  return readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), 'utf8')
+    .replace(/\r\n/g, '\n');
 }
 
 test('riwayat moderasi menautkan laporan terkait ke halaman detailnya', () => {

@@ -33,7 +33,7 @@ export default function NotFound() {
 
           <div className="mt-3 flex items-center justify-center gap-2">
             <Image
-              src="/logo.png"
+              src="/logo.avif"
               alt=""
               width={20}
               height={20}

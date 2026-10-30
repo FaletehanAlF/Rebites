@@ -69,7 +69,7 @@ hooks/                     # data hooks (orders, products, reviews, …)
 lib/                       # categories, catalog, data, types, supabase, pricing,
                            #   subscription plans, store settings/hours, xendit
 supabase/migrations/       # SQL schema + RLS
-public/                    # images (makanan*.jpg, hero-makanan.jpeg, logo.png, …)
+public/                    # images (makanan*.jpg, *.avif, …)
 ```
 
 ## 4. Routes (from `npm run build`)
@@ -155,9 +155,11 @@ mount and renders nothing when empty (no placeholder products).
   favorites, notifications, subscriptions (schema in `supabase/migrations/`).
 - Payments via Xendit (secret key + webhook callback token, server only).
 - Category tile images come from `images.pexels.com` (`lib/categories.ts`).
-- Local photos in `public/`: `hero-makanan.jpeg`, `makanan1–15`, step photos
-  `penjual-login.jpg`, `pembeli-mencaro.jpg`, `penerimaan.jpg`,
-  `terselamatkan.jpg`, `logo.png`.
+- Local photos in `public/`: `hero-makanan.avif`, `makanan1–15`, step photos
+  `penjual-login.avif`, `pembeli-mencaro.avif`, `penerimaan.avif`,
+  `terselamatkan.avif`, `logo.avif`. Aset yang murni dirujuk kode memakai AVIF;
+  `makanan1–15` dan `foods/ikansayur.jpg` tetap JPG/WebP karena path-nya
+  tersimpan sebagai `products.image_url` di database.
 - FAQ contact form posts to a Formspree endpoint from `FAQSection.tsx`.
 - **Assumption**: footer social links (`instagram.com/rebites` etc.) and
   `halo@rebites.id` were not verified as real accounts.

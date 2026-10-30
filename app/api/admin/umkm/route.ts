@@ -7,6 +7,7 @@ import {
   upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 import { sanitizeSearchTerm } from '@/lib/filter-search';
+import { displayBusinessName } from '@/lib/business-name';
 
 export const runtime = 'nodejs';
 
@@ -29,6 +30,7 @@ const UMKM_SELECT = [
   'is_verified',
   'rating',
   'is_open',
+  'is_active',
   'created_at',
 ].join(', ');
 
@@ -159,7 +161,7 @@ export async function GET(req: NextRequest) {
       return {
         id: r.id,
         user_id: r.user_id ?? null,
-        business_name: r.business_name ?? 'Tidak diketahui',
+        business_name: displayBusinessName(r.business_name),
         description: r.description ?? null,
         category: r.category ?? null,
         address: r.address ?? null,
@@ -169,6 +171,7 @@ export async function GET(req: NextRequest) {
         is_verified: r.is_verified ?? false,
         rating: r.rating ?? null,
         is_open: r.is_open ?? null,
+        is_active: r.is_active !== false,
         created_at: r.created_at ?? null,
         owner: owner
           ? { id: owner.id, full_name: owner.full_name ?? null, email: owner.email ?? null }

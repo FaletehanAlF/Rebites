@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Newspaper, Search } from "lucide-react";
-import { MobileNavbar } from "@/app/components/shared/MobileNavbar";
-import { MobileBottomNav } from "@/app/components/shared/MobileBottomNav";
+import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { SmartImage } from "@/app/components/shared/SmartImage";
 
 interface PublicArticle {
@@ -108,12 +107,8 @@ export default function ArtikelPage() {
   const hasNext = offset + PAGE_LIMIT < total;
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <div className="lg:hidden">
-        <MobileNavbar />
-      </div>
-
-      <main className="pb-24 pt-[120px] sm:pt-[140px] lg:pb-10 lg:pt-8">
+    <BuyerShell>
+      <main className="min-h-screen bg-cream-50 pb-28 pt-4 sm:pt-6 lg:pb-12 lg:pt-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-caramel">
             Edukasi & Cerita
@@ -276,8 +271,6 @@ export default function ArtikelPage() {
           )}
         </div>
       </main>
-
-      <MobileBottomNav />
-    </div>
+    </BuyerShell>
   );
 }

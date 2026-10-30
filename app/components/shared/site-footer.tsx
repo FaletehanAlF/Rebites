@@ -16,7 +16,7 @@ export function SiteFooter() {
           <div>
             <Link href="/" className="flex items-center gap-3">
               <Image
-                src="/logo.png"
+                src="/logo.avif"
                 alt="ReBites"
                 width={48}
                 height={48}

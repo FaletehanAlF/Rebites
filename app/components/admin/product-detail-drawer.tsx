@@ -181,15 +181,29 @@ export function ProductDetailDrawer({ productId, onClose, onChanged }: Props) {
                   (setengah lebar) supaya nama & harga langsung terlihat
                   tanpa menggulir. Di layar >= sm kembali berdampingan. */}
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-                <div className="relative h-36 w-full shrink-0 overflow-hidden rounded-[var(--radius)] bg-sage-100/60 sm:h-32 sm:w-32">
+                <div
+                  className={cn(
+                    'relative h-36 w-full shrink-0 overflow-hidden rounded-[var(--radius)] bg-sage-100/60 sm:h-32 sm:w-32',
+                    // Produk yang ditarik penjual tetap bisa dibuka admin; foto
+                    // diredam agar statusnya terbaca sekilas tanpa menutupi isi.
+                    p.deleted_at && 'bg-muted'
+                  )}
+                >
                   <SmartImage
                     src={p.image_url ?? ''}
                     alt={p.name}
                     sizes="(max-width: 640px) 100vw, 128px"
+                    className={cn(p.deleted_at && 'grayscale opacity-60')}
                   />
+                  {p.deleted_at && (
+                    <span className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 bg-destructive px-1 py-1 text-center text-[10px] font-bold uppercase leading-tight tracking-[0.06em] text-white shadow-sm">
+                      Sudah dihapus
+                    </span>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
+                    {p.deleted_at && <Badge variant="destructive">Dihapus penjual</Badge>}
                     {verificationBadge(p.verification_status)}
                     {statusBadge(p.status)}
                     {p.category && <Badge variant="outline">{p.category}</Badge>}
@@ -270,6 +284,22 @@ export function ProductDetailDrawer({ productId, onClose, onChanged }: Props) {
                   </AdminDetailField>
                 </AdminDetailGrid>
               </AdminDetailSection>
+
+              {p.deleted_at && (
+                <div className="rounded-[var(--radius)] border border-destructive/25 bg-destructive/[0.06] px-3.5 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.06em] text-destructive">
+                    Produk sudah dihapus oleh penjual
+                  </p>
+                  <p className="mt-1 break-words text-sm leading-relaxed text-charcoal-900">
+                    Dihapus: {formatTanggalWaktu(p.deleted_at)}
+                  </p>
+                  <p className="mt-1 text-xs text-sage-500">
+                    Produk tidak lagi tayang di katalog dan tidak bisa dipesan. Barisnya sengaja
+                    disimpan agar admin tetap dapat menelusuri produk yang dilaporkan atau
+                    ditindak, beserta riwayat moderasinya.
+                  </p>
+                </div>
+              )}
 
               {p.verification_status === 'rejected' && (
                 <div className="rounded-[var(--radius)] border border-destructive/25 bg-destructive/[0.06] px-3.5 py-3">
@@ -417,7 +447,7 @@ export function ProductDetailDrawer({ productId, onClose, onChanged }: Props) {
                 </Card>
               )}
 
-              {!confirm && (
+              {!confirm && !p.deleted_at && (
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" variant="outline" size="sm" onClick={() => p.id && setWarnOpen(true)}>
                     Beri peringatan

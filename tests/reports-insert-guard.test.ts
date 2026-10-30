@@ -442,6 +442,9 @@ CREATE TABLE public.umkm_profiles (
   is_verified boolean NOT NULL DEFAULT false,
   rating numeric(2,1) NOT NULL DEFAULT 5.0,
   created_at timestamptz NOT NULL DEFAULT now(),
+  -- 20261030000000_umkm_admin_deactivate.sql:29 menambah kolom ini; policy
+  -- umkm_select_public sesudahnya bergantung padanya.
+  is_active boolean NOT NULL DEFAULT true,
   slug text NOT NULL
 );
 ALTER TABLE public.umkm_profiles ENABLE ROW LEVEL SECURITY;
@@ -452,10 +455,11 @@ ALTER TABLE public.umkm_profiles ENABLE ROW LEVEL SECURITY;
 -- dijamin unik oleh index ini, jadi fixture harus memodelkannya.
 CREATE UNIQUE INDEX IF NOT EXISTS umkm_slug_key ON public.umkm_profiles(slug);
 
--- 20260806050337_0001:84-88
+-- 20260806050337_0001:84-88, lalu digantikan
+-- 20261030000000_umkm_admin_deactivate.sql:44-47
 CREATE POLICY "umkm_select_public"
 ON public.umkm_profiles FOR SELECT
-TO anon, authenticated USING (true);
+TO anon, authenticated USING (umkm_profiles.is_active);
 
 -- ---------------------------------------------------------------------------
 -- public.products (disederhanakan: hanya FK + RLS; di luar jalur NOTIF-1H)
@@ -1435,12 +1439,21 @@ test('NOTIF-1H: paritas fixture — definisi EFEKTIF tiap policy diambil dari fi
     'definisi EFFECTIF orders_select_participants ada di admin_rls_foundation'
   );
 
-  // umkm_select_public hanya pernah didefinisikan sekali (0001) — tidak
-  // pernah ditimpa, jadi bentuknya masih yang berlaku.
+  // umkm_select_public didefinisikan 0001 lalu DIGANTI sekali oleh migrasi
+  // penonaktifan toko (is_active). Yang berlaku adalah definisi terakhir —
+  // diuji lewat effectivePolicyDefinition agar urutan file tetap dijaga.
   assert.deepEqual(
     findPolicyDefinitions('umkm_select_public', 'umkm_profiles').map((d) => d.file),
-    ['20260806050337_0001_rebites_schema.sql'],
-    'umkm_select_public tidak boleh pernah digantikan'
+    [
+      '20260806050337_0001_rebites_schema.sql',
+      '20261030000000_umkm_admin_deactivate.sql',
+    ],
+    'umkm_select_public harus didefinisikan 0001 lalu digantikan migrasi penonaktifan toko'
+  );
+  assert.equal(
+    effectivePolicyDefinition('umkm_select_public', 'umkm_profiles')?.file,
+    '20261030000000_umkm_admin_deactivate.sql',
+    'definisi EFFECTIF umkm_select_public ada di migrasi penonaktifan toko'
   );
 
   // profiles_select_own_or_admin: 0001 -> 0018 -> (rename di

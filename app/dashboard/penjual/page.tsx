@@ -3,19 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { motion, MotionConfig } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Crown } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
-import { DashboardDecor } from '@/app/components/dashboard-penjual/decor';
-import { Sidebar } from '@/app/components/dashboard-penjual/Sidebar';
-import { Topbar } from '@/app/components/dashboard-penjual/Topbar';
+import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { DetailedReportCard, type StatsPeriod } from '@/app/components/dashboard-penjual/DetailedReportCard';
 import { DemandAnalyticsCard } from '@/app/components/dashboard-penjual/DemandAnalyticsCard';
 import { FeaturedPromoCard } from '@/app/components/dashboard-penjual/FeaturedPromoCard';
 import { StoreCard } from '@/app/components/dashboard-penjual/StoreCard';
 import { StoreRatingCard } from '@/app/components/dashboard-penjual/StoreRatingCard';
 import { useSellerPlan } from '@/lib/seller-plan';
-import { useRequireSeller } from '@/hooks/use-require-seller';
 
 const SalesStatsCard = dynamic(
   () =>
@@ -31,10 +28,8 @@ const SalesStatsCard = dynamic(
 );
 
 export default function VendorDashboardPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [period, setPeriod] = useState<StatsPeriod>('7-hari');
   const { plan } = useSellerPlan();
-  const { loading } = useRequireSeller();
   const [firstName, setFirstName] = useState('');
 
   useEffect(() => {
@@ -54,30 +49,9 @@ export default function VendorDashboardPage() {
     };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-secondary">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
-  }
-
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="relative min-h-screen bg-secondary font-sans text-foreground">
-        <DashboardDecor />
-
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-        <div className="relative z-10 lg:pl-[280px]">
-          <Topbar onMenuClick={() => setSidebarOpen(true)} />
-
-          <main className="mx-auto max-w-[1400px] px-4 pb-20 pt-6 sm:px-6 lg:px-10">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-            >
+    <SellerShell>
+      <div>
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
@@ -101,7 +75,7 @@ export default function VendorDashboardPage() {
                   </Link>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             <div className="mt-7 grid grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-6">
               { }
@@ -133,9 +107,6 @@ export default function VendorDashboardPage() {
                 </Reveal>
               </div>
             </div>
-          </main>
-        </div>
-      </div>
-    </MotionConfig>
+    </SellerShell>
   );
 }

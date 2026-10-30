@@ -344,6 +344,10 @@ export async function POST(req: NextRequest) {
     // Gate toko tutup (server-authoritative): null = tidak diketahui (fail-open,
     // selaras client `isOpen ?? true`), false = penjual menandai tutup.
     let vendorIsOpen: boolean | null = null;
+    // Gate toko dinonaktifkan admin: null = baris toko tidak terbaca.
+    // RLS anon menyembunyikan toko nonaktif, jadi pada praktiknya `vendor`
+    // bernilai null dan gate di bawah menolak pesanan.
+    let vendorIsActive: boolean | null = null;
     // origin shipping tambahan (NULL = seller belum mengisi).
     let vendorCity: string | null = null;
     let vendorPostalCode: string | null = null;
@@ -359,7 +363,8 @@ export async function POST(req: NextRequest) {
         .from('umkm_profiles')
         // kolom origin shipping ikut dibaca (server-authoritative).
         // is_open ikut dibaca untuk gate toko tutup (bukan dari client).
-        .select('business_name, address, city, postal_code, phone, latitude, longitude, open_hours, is_open, slug')
+        // is_active dibaca untuk gate toko yang dinonaktifkan admin.
+        .select('business_name, address, city, postal_code, phone, latitude, longitude, open_hours, is_open, is_active, slug')
         .eq('id', product.umkm_id)
         .maybeSingle();
       if (vendor) {
@@ -368,6 +373,7 @@ export async function POST(req: NextRequest) {
         vendorAddress = vendorInfo.address as string | null;
         vendorOpenHours = vendorInfo.open_hours as string | null;
         if (typeof vendorInfo.is_open === 'boolean') vendorIsOpen = vendorInfo.is_open;
+        if (typeof vendorInfo.is_active === 'boolean') vendorIsActive = vendorInfo.is_active;
         vendorSlug = (vendorInfo.slug as string | undefined) ?? vendorSlug;
         // origin tambahan dari DB. NULL = seller belum mengisi.
         // String kosong diperlakukan sebagai NULL (tanpa fallback palsu).
@@ -408,6 +414,19 @@ export async function POST(req: NextRequest) {
     // Ditempatkan sebelum revalidasi ongkir (Biteship), reserve_stock,
     // insert order, dan invoice agar tidak ada efek samping saat tutup.
     // Frontend membaca `error` (kontrak lama) + `code` aditif STORE_CLOSED.
+    // Gate toko dinonaktifkan admin. RLS anon sudah menyembunyikan toko
+    // nonaktif sehingga `vendor` biasanya null; pemeriksaan eksplisit ini
+    // menutup jalur di mana baris toko masih terbaca (mis. perubahan policy
+    // di masa depan) agar checkout tetap menolak.
+    if (vendorIsActive === false) {
+      return NextResponse.json(
+        {
+          error: `Toko ${vendorName} sedang tidak aktif. Silakan pilih produk dari toko lain.`,
+          code: 'STORE_INACTIVE',
+        },
+        { status: 409 }
+      );
+    }
     if (vendorIsOpen === false) {
       return NextResponse.json(
         { error: `Toko ${vendorName} sedang tutup. Silakan coba lagi saat toko buka.`, code: 'STORE_CLOSED' },
@@ -1557,7 +1576,7 @@ export async function POST(req: NextRequest) {
         return handleLegacyFreePaidMarkFailure(orderCode);
       }
 
-      const siteUrl = getSiteUrl();
+      const siteUrl = getSiteUrl(req);
       const deepHref = `/riwayatPesanan?orderId=${encodeURIComponent(orderCode)}`;
       // Tahap 2D-E: dedup notif gratis (pola order-settlement): retry/crash
       // tidak boleh menggandakan payment_success/order_created.
@@ -1647,7 +1666,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const siteUrl = getSiteUrl();
+    const siteUrl = getSiteUrl(req);
     const successUrl = `${siteUrl}/detail/pesanan/sukses?orderId=${encodeURIComponent(orderCode)}`;
     const failureUrl = `${siteUrl}/riwayatPesanan?orderId=${encodeURIComponent(orderCode)}&payment=failed`;
 

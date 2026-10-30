@@ -47,6 +47,7 @@ const PRODUCT_SELECT = [
   'height_cm',
   'rating',
   'created_at',
+  'deleted_at',
 ].join(', ');
 
 type Row = Record<string, unknown>;
@@ -167,6 +168,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         is_pickup: (p.is_pickup as boolean | null) ?? null,
         rating: p.rating != null ? Number(p.rating) : null,
         created_at: (p.created_at as string | null) ?? null,
+        // Penanda soft delete. Produk yang ditarik penjual tetap dapat dibuka
+        // admin, dengan label "sudah dihapus" di UI.
+        deleted_at: (p.deleted_at as string | null) ?? null,
       },
       umkm: umkm
         ? {

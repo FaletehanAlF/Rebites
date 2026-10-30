@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   createAuthedServerClient,
+  createServiceClient,
   getAdminUser,
   getUserFromBearer,
   isSupabaseUnavailable,
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const { data: existing, error: fetchErr } = await db
       .from('products')
-      .select('id, verification_status')
+      .select('id, verification_status, deleted_at')
       .eq('id', id)
       .maybeSingle();
 
@@ -76,6 +77,17 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
     if (!existing) {
       return NextResponse.json({ error: 'Produk tidak ditemukan.' }, { status: 404 });
+    }
+
+    // Produk yang sudah ditarik penjual (soft delete) tidak lagi tayang dan
+    // tidak ada di menu penjual. Menundanya hanya menimpa alasan lama dan
+    // mencatat riwayat moderasi atas baris yang tidak bisa dilihat siapa pun
+    // selain admin.
+    if ((existing as ProductRow).deleted_at) {
+      return NextResponse.json(
+        { error: 'Produk sudah dihapus oleh penjual, sehingga tidak bisa ditunda.' },
+        { status: 409 }
+      );
     }
 
     const current = (existing as ProductRow).verification_status as string | null;
@@ -119,11 +131,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     });
 
     if (logErr) {
+      // Status produk SUDAH berubah pada titik ini. Mengembalikan 500 akan
+      // memberi tahu admin bahwa penundaan gagal padahal produk sudah tidak
+      // tayang — admin lalu mengulang tindakan yang tidak diperlukan.
       console.error('[admin/products/reject] log error', logErr.message);
-      return NextResponse.json(
-        { error: 'Produk ditolak, tetapi riwayat moderasi gagal dicatat.' },
-        { status: 500 }
-      );
+      return NextResponse.json({
+        product: updated,
+        warning:
+          'Produk sudah ditunda, tetapi riwayat moderasi gagal dicatat. Catat tindakan ini secara manual.',
+      });
     }
 
     try {
@@ -148,7 +164,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
           | string
           | undefined;
         if (sellerUserId) {
-          await notifySellerModeration(db, {
+          // Klien service role, bukan klien admin yang sedang login.
+          //
+          // notifications_insert_self mensyaratkan auth.uid() = user_id, jadi
+          // insert notifikasi untuk penjual dari klien ber-auth admin selalu
+          // ditolak RLS. Klien service role melewati RLS; insert ini hanya
+          // menyentuh baris notifikasi milik penjual produk yang ditunda,
+          // bukan tabel data lain.
+          const notifier = createServiceClient();
+          await notifySellerModeration(notifier, {
             productId: id,
             umkmUserId: sellerUserId,
             productName: productName ?? 'Produk',

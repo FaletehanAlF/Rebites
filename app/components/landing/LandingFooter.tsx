@@ -125,7 +125,7 @@ export function LandingFooter() {
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" aria-label="ReBites — beranda" className="inline-flex items-center gap-2.5">
               <Image
-                src="/logo.png"
+                src="/logo.avif"
                 alt=""
                 width={40}
                 height={40}

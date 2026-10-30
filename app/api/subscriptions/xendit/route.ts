@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     const stamp = Date.now().toString(36).toUpperCase();
     const externalId = `SUB-${shortId}-${stamp}`;
 
-    const siteUrl = getSiteUrl();
+    const siteUrl = getSiteUrl(req);
     const successUrl = `${siteUrl}/langganan/sukses?plan=${plan.slug}&billing=${billing}&external_id=${encodeURIComponent(externalId)}`;
     const failureUrl = `${siteUrl}/dashboard/penjual/langganan?payment=failed`;
 

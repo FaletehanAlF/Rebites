@@ -29,6 +29,7 @@ import {
 } from '../lib/server/biteship.ts';
 import { buildRatesCacheKey } from '../lib/server/rates-cache.ts';
 import { buildAddressRateSignature } from '../lib/location-validation.ts';
+import { calculateDeliveryFee } from '../lib/shipping-tariff.ts';
 
 const BASE_ITEM = {
   name: 'Nasi Goreng Surplus',
@@ -204,6 +205,30 @@ test('cache key tarif: koordinat & seluruh input penentu ikut membedakan key', (
   assert.equal(kOriginA, kOriginA2); // input sama -> key sama
   assert.notEqual(kOriginA, kOriginB); // koordinat beda -> key beda
   assert.notEqual(kBase, kQty); // kuantitas beda -> key beda
+});
+
+/**
+ * Plafon ongkir (BUG.md: "ongkir jangan mahal-mahal walau jaraknya jauh").
+ *
+ * Sebelumnya maksimum Rp50.000, sehingga pesanan jarak jauh menambah ongkir
+ * yang lebih besar dari harga makannya. Sekarang fee dibatasi plafon dan
+ * dinaikkan dalam kelipatan Rp100 agar pembeli melihat angka bulat.
+ */
+test('ongkir: dibatasi plafon walau jarak sangat jauh, dan tidak pernah di bawah minimum', () => {
+  for (const km of [0, 1, 5, 12, 40, 200]) {
+    const fee = calculateDeliveryFee(km);
+    assert.ok(fee >= 4000, `ongkir ${km} km tidak boleh di bawah minimum: ${fee}`);
+    assert.ok(fee <= 15000, `ongkir ${km} km harus <= plafon 15000, dapat ${fee}`);
+    assert.equal(fee % 100, 0, 'ongkir dibulatkan ratusan rupiah');
+  }
+});
+
+test('ongkir: naik seiring jarak (bukan nilai tetap) sampai menyentuh plafon', () => {
+  const near = calculateDeliveryFee(1);
+  const mid = calculateDeliveryFee(4);
+  assert.ok(mid > near, 'jarak lebih jauh harus lebih mahal sebelum plafon');
+  assert.equal(calculateDeliveryFee(40), 15000);
+  assert.equal(calculateDeliveryFee(200), 15000);
 });
 
 test('route rates & checkout memakai helper bersama dan tidak menyentuh API key', () => {

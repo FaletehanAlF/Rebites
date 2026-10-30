@@ -47,7 +47,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const { data: existing, error: fetchErr } = await db
       .from('products')
-      .select('id, verification_status')
+      .select('id, verification_status, deleted_at')
       .eq('id', id)
       .maybeSingle();
 
@@ -57,6 +57,17 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
     if (!existing) {
       return NextResponse.json({ error: 'Produk tidak ditemukan.' }, { status: 404 });
+    }
+
+    // Produk yang sudah ditarik penjual tidak boleh diaktifkan kembali:
+    // "approve" akan menghapus rejection_reason dan menampilkannya lagi di
+    // riwayat moderasi seolah produk itu masih dikelola penjual. Produk
+    // terhapus sengaja tidak tayang sampai penjual membuat produk baru.
+    if ((existing as ProductRow).deleted_at) {
+      return NextResponse.json(
+        { error: 'Produk sudah dihapus oleh penjual, sehingga tidak bisa diaktifkan kembali.' },
+        { status: 409 }
+      );
     }
 
     const current = (existing as ProductRow).verification_status as string | null;

@@ -168,7 +168,7 @@ function OrderRow({
           <p className="text-sm font-bold text-foreground">
             {order.productName}
             {order.quantity > 1 && (
-              <span className="font-medium text-muted-foreground"> Ã- {order.quantity}</span>
+              <span className="font-medium text-muted-foreground"> × {order.quantity}</span>
             )}
           </p>
           <StatusChip order={order} />
@@ -375,7 +375,28 @@ export default function PesananMasukPage() {
       </div>
 
       <div className="mt-5">
-        {!hydrated ? null : visibleOrders.length === 0 ? (
+        {!hydrated ? (
+          <div className="space-y-3" aria-label="Memuat pesanan">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                aria-hidden
+                className="flex flex-col gap-3 rounded-2xl border border-border bg-white p-3 sm:p-4 animate-pulse sm:flex-row sm:items-center sm:gap-4"
+              >
+                <div className="h-14 w-14 shrink-0 rounded-xl bg-muted" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="h-4 w-48 rounded-full bg-muted" />
+                  <div className="h-3 w-32 rounded-full bg-muted" />
+                  <div className="h-3 w-24 rounded-full bg-muted" />
+                </div>
+                <div className="flex items-center gap-2 sm:flex-col sm:items-end">
+                  <div className="h-5 w-20 rounded-full bg-muted" />
+                  <div className="h-8 w-24 rounded-full bg-muted" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : visibleOrders.length === 0 ? (
           <EmptyState hasAnyOrders={orders.length > 0} />
         ) : (
           <ul className="space-y-3">

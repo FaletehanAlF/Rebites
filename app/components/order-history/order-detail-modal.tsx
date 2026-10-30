@@ -268,7 +268,7 @@ export function OrderDetailModal({
               )}
 
               {}
-              {/* Panel pengantaran: status jujur + ilustrasi kontekstual.
+              {/* Panel pengantaran: status jujur tanpa ilustrasi posisi.
                   Tidak ada marker/posisi kurir palsu; lihat delivery-status-panel. */}
               {order.fulfillment === 'delivery' && (
                 <>
@@ -302,7 +302,7 @@ export function OrderDetailModal({
                   </p>
                   <p className="text-xs text-muted-foreground">{order.vendorName}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    Ã-{order.quantity}
+                    × {order.quantity}
                     {typeof order.unitPrice === 'number'
                       ? ` · ${formatRupiah(order.unitPrice)} / porsi`
                       : ''}

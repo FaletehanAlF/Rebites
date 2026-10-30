@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function PenjualLoginPage() {
   return (
     <AuthCenteredShell
-      imageSrc="/penjual-login.jpg"
+      imageSrc="/penjual-login.avif"
       variant="seller"
       title={
         <>

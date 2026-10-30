@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BadgeCheck, RefreshCw, Store } from 'lucide-react';
+import { BadgeCheck, Power, RefreshCw, Store } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Card, CardContent } from '@/app/components/ui/card';
@@ -19,6 +19,7 @@ import { toast } from '@/hooks/use-toast';
 import {
   AdminUmkmApiError,
   fetchAdminUmkmDetail,
+  setUmkmActive,
   toggleUmkmVerification,
   type AdminUmkmDetailResult,
 } from '@/lib/admin-umkm';
@@ -53,6 +54,10 @@ export function UmkmDetailView({ id }: { id: string }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [verifyBusy, setVerifyBusy] = useState(false);
+  // Nonaktifkan toko adalah keputusan admin yang berbeda dari verifikasi:
+  // toko nonaktif hilang dari katalog dan penjual tidak bisa membatalkannya.
+  const [activeConfirmOpen, setActiveConfirmOpen] = useState(false);
+  const [activeBusy, setActiveBusy] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   // Muat ulang (mis. setelah verifikasi) dapat berjalan tumpang tindih dengan
   // pemuatan sebelumnya; hanya respons terbaru yang boleh menulis state.
@@ -112,6 +117,32 @@ export function UmkmDetailView({ id }: { id: string }) {
       });
     } finally {
       setVerifyBusy(false);
+    }
+  };
+
+  const handleToggleActive = async () => {
+    if (activeBusy || !data) return;
+    const nextActive = !data.umkm.is_active;
+    setActiveBusy(true);
+    try {
+      const result = await setUmkmActive(id, nextActive);
+      setData((prev) =>
+        prev ? { ...prev, umkm: { ...prev.umkm, is_active: result.is_active } } : prev
+      );
+      setActiveConfirmOpen(false);
+      toast({
+        title: result.is_active ? 'Toko diaktifkan' : 'Toko dinonaktifkan',
+        description: result.is_active
+          ? 'Toko kembali tampil di katalog dan dapat menerima pesanan.'
+          : 'Toko dan produknya tidak lagi tampil di katalog pembeli.',
+      });
+    } catch (err) {
+      toast({
+        title: 'Gagal mengubah status toko',
+        description: err instanceof Error ? err.message : 'Terjadi kesalahan.',
+      });
+    } finally {
+      setActiveBusy(false);
     }
   };
 
@@ -186,6 +217,15 @@ export function UmkmDetailView({ id }: { id: string }) {
             >
               {verified ? 'Batalkan Verifikasi' : 'Verifikasi UMKM'}
             </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={umkm.is_active ? 'outline' : 'default'}
+              onClick={() => setActiveConfirmOpen(true)}
+            >
+              <Power aria-hidden className="h-3.5 w-3.5" />
+              {umkm.is_active ? 'Nonaktifkan Toko' : 'Aktifkan Toko'}
+            </Button>
           </>
         }
       />
@@ -204,6 +244,12 @@ export function UmkmDetailView({ id }: { id: string }) {
                   {verified ? <BadgeCheck aria-hidden className="h-3 w-3" /> : null}
                   {verified ? 'Terverifikasi' : 'Belum Terverifikasi'}
                 </Badge>
+                {!umkm.is_active && (
+                  <Badge variant="destructive">
+                    <Power aria-hidden className="h-3 w-3" />
+                    Nonaktif (admin)
+                  </Badge>
+                )}
                 {umkm.category && <Badge variant="secondary">{umkm.category}</Badge>}
                 <Badge variant={umkm.is_open === true ? 'success' : 'secondary'}>
                   {umkm.is_open === null ? 'Status buka tidak diketahui' : umkm.is_open ? 'Buka' : 'Tutup'}
@@ -500,6 +546,43 @@ export function UmkmDetailView({ id }: { id: string }) {
               onClick={handleToggle}
             >
               {verifyBusy ? 'Memproses…' : verified ? 'Batalkan Verifikasi' : 'Verifikasi UMKM'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={activeConfirmOpen} onOpenChange={setActiveConfirmOpen}>
+        <DialogContent className="overflow-hidden sm:max-w-md">
+          <DialogHeader className="shrink-0">
+            <DialogTitle>
+              {umkm.is_active ? 'Nonaktifkan toko ini?' : 'Aktifkan kembali toko ini?'}
+            </DialogTitle>
+            <DialogDescription>
+              {umkm.is_active
+                ? `“${umkm.business_name}” akan disembunyikan dari katalog pembeli beserta seluruh produknya, dan checkout ke toko ini ditolak. Penjual tidak dapat mengaktifkannya kembali sendiri.`
+                : `“${umkm.business_name}” akan tampil kembali di katalog dan dapat menerima pesanan seperti biasa.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 shrink-0 gap-2 border-t border-border/60 pt-4 sm:space-x-0">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={activeBusy}
+              onClick={() => setActiveConfirmOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              variant={umkm.is_active ? 'destructive' : 'default'}
+              disabled={activeBusy}
+              onClick={handleToggleActive}
+            >
+              {activeBusy
+                ? 'Memproses…'
+                : umkm.is_active
+                  ? 'Ya, nonaktifkan toko'
+                  : 'Ya, aktifkan toko'}
             </Button>
           </DialogFooter>
         </DialogContent>

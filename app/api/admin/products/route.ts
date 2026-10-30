@@ -49,6 +49,7 @@ const PRODUCT_SELECT = [
   'rejection_reason',
   'reviewed_at',
   'created_at',
+  'deleted_at',
   'umkm:umkm_profiles(id, business_name, city, is_verified)',
 ].join(', ');
 
@@ -159,6 +160,7 @@ export async function GET(req: NextRequest) {
         rejectionReason: asString(p.rejection_reason),
         reviewedAt: asString(p.reviewed_at),
         createdAt: asString(p.created_at) ?? '',
+        deletedAt: asString(p.deleted_at),
         store: umkm
           ? {
               id: asString(umkm.id),
