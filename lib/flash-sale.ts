@@ -223,7 +223,14 @@ export async function getActiveFlashSaleProducts(
       console.error('[flash-sale] gagal memuat flash sale global:', error.message);
       return [];
     }
-    return ((data ?? []) as Record<string, unknown>[]).map((row) => {
+    return ((data ?? []) as Record<string, unknown>[])
+      // Toko nonaktif tidak terbaca publik (RLS), sehingga relasi umkm kosong.
+      // Tanpa saringan ini produknya bisa tampil dengan nama vendor fallback.
+      .filter((row) => {
+        const umkm = (row as Record<string, unknown>).umkm;
+        return Boolean(umkm) && typeof umkm === 'object';
+      })
+      .map((row) => {
       const r = row as Record<string, unknown>;
       const umkm = r.umkm as Record<string, unknown> | null;
       return {

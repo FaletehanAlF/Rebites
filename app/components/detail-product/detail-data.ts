@@ -87,6 +87,9 @@ export async function fetchProductDetail(
 ): Promise<ProductDetail | undefined> {
   try {
     // Hanya produk terverifikasi yang boleh dibuka publik (pending/rejected = not-found).
+    // umkm_profiles dibatasi RLS: toko yang dinonaktifkan admin tidak terbaca,
+    // sehingga relasi `umkm` bernilai null dan halaman ini ikut menyembunyikan
+    // produknya — sekalipun baris produknya sendiri masih approved.
     let { data } = await supabase
       .from('products')
       .select('*, umkm:umkm_profiles(*)')
@@ -104,6 +107,11 @@ export async function fetchProductDetail(
     }
 
     if (!data) return undefined;
+    // Toko yang dinonaktifkan admin tidak terbaca publik (RLS), sehingga relasi
+    // umkm kosong. Produk semacam ini tidak boleh dirender tanpa identitas toko
+    // — perlakukan seperti produk yang tidak ditemukan.
+    const linkedUmkm = (data as Record<string, any>).umkm;
+    if (!linkedUmkm || typeof linkedUmkm !== 'object') return undefined;
     return rowToProductDetail(data as Record<string, any>);
   } catch (error) {
     console.error('[detail] gagal memuat detail produk:', error);
@@ -128,22 +136,25 @@ export async function fetchRelatedProducts(
       .order('rating', { ascending: false })
       .limit(5);
     if (error || !data) return [];
-    return data.map((row: Record<string, any>) => {
-      const umkm = (row.umkm ?? {}) as Record<string, any>;
-      const slug: string = row.slug ?? row.id;
-      return {
-        id: slug,
-        slug,
-        vendorName: umkm.business_name ?? 'UMKM ReBites',
-        name: row.name ?? '',
-        image:
-          row.image_url && row.image_url.length > 0
-            ? row.image_url
-            : '/makanan1.jpeg',
-        originalPrice: Number(row.original_price ?? 0),
-        discountedPrice: Number(row.surplus_price ?? 0),
-      };
-    });
+    return data
+      // Toko nonaktif tidak terbaca publik (RLS), sehingga relasi umkm kosong.
+      .filter((row: Record<string, any>) => row.umkm && typeof row.umkm === 'object')
+      .map((row: Record<string, any>) => {
+        const umkm = row.umkm as Record<string, any>;
+        const slug: string = row.slug ?? row.id;
+        return {
+          id: slug,
+          slug,
+          vendorName: umkm.business_name ?? 'UMKM ReBites',
+          name: row.name ?? '',
+          image:
+            row.image_url && row.image_url.length > 0
+              ? row.image_url
+              : '/makanan1.jpeg',
+          originalPrice: Number(row.original_price ?? 0),
+          discountedPrice: Number(row.surplus_price ?? 0),
+        };
+      });
   } catch (error) {
     console.error('[detail] gagal memuat produk terkait:', error);
     return [];

@@ -36,6 +36,8 @@ export interface AdminUmkmItem {
   is_verified: boolean;
   rating: number | null;
   is_open: boolean | null;
+  /** false = dinonaktifkan admin: toko & produknya tidak tampil ke pembeli. */
+  is_active: boolean;
   created_at: string | null;
   owner: AdminUmkmOwner | null;
   subscription: AdminUmkmSubscription | null;
@@ -105,6 +107,8 @@ export interface AdminUmkmDetail {
   is_verified: boolean;
   rating: number | null;
   is_open: boolean | null;
+  /** false = dinonaktifkan admin: toko & produknya tidak tampil ke pembeli. */
+  is_active: boolean;
   open_hours: string | null;
   tagline: string | null;
   owner_name: string | null;
@@ -212,4 +216,30 @@ export async function toggleUmkmVerification(id: string): Promise<{ is_verified:
     throw new AdminUmkmApiError('Respons verifikasi UMKM tidak valid.', 500);
   }
   return { is_verified: json.is_verified };
+}
+
+/**
+ * Menonaktifkan / mengaktifkan toko. Berbeda dengan verifikasi: toko nonaktif
+ * hilang dari katalog publik dan tidak bisa dibeli, sedangkan penjual tidak
+ * dapat mengaktifkannya kembali sendiri.
+ */
+export async function setUmkmActive(
+  id: string,
+  isActive: boolean
+): Promise<{ is_active: boolean }> {
+  const res = await adminFetch(`/api/admin/umkm/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ is_active: isActive }),
+  });
+  if (!res.ok) {
+    await parseError(res, 'Gagal mengubah status toko.');
+  }
+  const json = (await res.json().catch(() => null)) as {
+    is_active?: boolean;
+  } | null;
+  if (!json || typeof json.is_active !== 'boolean') {
+    throw new AdminUmkmApiError('Respons status toko tidak valid.', 500);
+  }
+  return { is_active: json.is_active };
 }
