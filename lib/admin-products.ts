@@ -37,6 +37,8 @@ export interface AdminProductListItem {
   rejectionReason: string | null;
   reviewedAt: string | null;
   createdAt: string;
+  /** Terisi = produk ditarik penjual (soft delete), tetap terlihat oleh admin. */
+  deletedAt: string | null;
   updatedAt: string | null;
   store: AdminProductStore | null;
 }

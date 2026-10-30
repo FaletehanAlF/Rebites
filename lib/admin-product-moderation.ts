@@ -27,6 +27,8 @@ export interface AdminProductDetail {
   is_pickup: boolean | null;
   rating: number | null;
   created_at: string | null;
+  /** Terisi = produk ditarik penjual (soft delete). Admin tetap dapat membuka detailnya. */
+  deleted_at: string | null;
   updated_at?: string | null;
 }
 

@@ -1,6 +1,7 @@
 ﻿import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { isSuperAdminUserId, type AdminActor } from '@/lib/admin-access';
+import { requestOriginFrom, resolveSiteUrl } from '@/lib/server/site-url';
 import {
   AdminProfileQueryError,
   SupabaseUnavailableError,
@@ -334,15 +335,31 @@ export async function getAdminActor(
   };
 }
 
-export function getSiteUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '');
-  if (!raw) {
-    if (process.env.NODE_ENV === 'production') {
-      console.warn(
-        '[supabase] NEXT_PUBLIC_SITE_URL tidak di-set di production - fallback ke http://localhost:3000. Set di Vercel Env (mis. https://rebites.vercel.app) agar redirect Xendit benar.'
-      );
-    }
-    return 'http://localhost:3000';
+/**
+ * Base URL aplikasi untuk URL redirect (Xendit success/failure).
+ *
+ * Aturannya ada di `lib/server/site-url.ts` agar dapat diuji tanpa Next:
+ * - Production selalu memakai NEXT_PUBLIC_SITE_URL (Host header dapat
+ *   dipalsukan, dan memakainya untuk URL pembayaran berarti open redirect).
+ * - Development memakai origin request bila konfigurasi menunjuk host lokal
+ *   dengan port berbeda — inilah yang dulu berakhir ERR_CONNECTION_REFUSED
+ *   ketika NEXT_PUBLIC_SITE_URL masih menyimpan port lama.
+ */
+export function getSiteUrl(req?: Request): string {
+  const result = resolveSiteUrl({
+    configuredUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    requestOrigin: req ? requestOriginFrom(req) : null,
+    isProduction: process.env.NODE_ENV === 'production',
+  });
+  if (result.missingInProduction) {
+    console.warn(
+      '[supabase] NEXT_PUBLIC_SITE_URL tidak di-set di production - fallback ke http://localhost:3000. Set di Vercel Env (mis. https://rebites.vercel.app) agar redirect Xendit benar.'
+    );
   }
-  return raw;
+  if (result.replacedConfiguredPort) {
+    console.warn(
+      `[supabase] NEXT_PUBLIC_SITE_URL menunjuk port berbeda dari server yang berjalan; memakai ${result.url} agar redirect Xendit tidak berakhir ERR_CONNECTION_REFUSED.`
+    );
+  }
+  return result.url;
 }

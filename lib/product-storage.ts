@@ -385,6 +385,15 @@ export async function patchSellerProduct(
   return rowToSellerProduct(data);
 }
 
+/**
+ * Menarik produk dari peredaran TANPA menghapus barisnya.
+ *
+ * Sebelumnya fungsi ini menjalankan DELETE fisik. Akibatnya admin tidak bisa
+ * lagi membuka detail produk yang dilaporkan/ditindak (endpoint detail
+ * menjawab 404) padahal admin perlu menelusurinya. Soft delete menyimpan foto,
+ * harga, dan riwayat moderasi; RLS (migration 20261029000100) menyembunyikan
+ * baris bertanda dari pembeli maupun dari daftar menu penjual.
+ */
 export async function deleteSellerProduct(productId: string): Promise<void> {
   const umkm = await getSellerUmkm();
   if (!umkm) {
@@ -393,7 +402,7 @@ export async function deleteSellerProduct(productId: string): Promise<void> {
   }
   const { error } = await supabase
     .from('products')
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .match(ownProductMatch(umkm.id, productId));
   if (error) {
     console.error('[product-storage] gagal menghapus produk:', error.message);

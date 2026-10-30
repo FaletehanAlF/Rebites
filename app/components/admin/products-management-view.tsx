@@ -303,6 +303,7 @@ export function ProductsManagementView() {
                   </AdminTd>
                   <AdminTd className="max-w-[220px]">
                     <div className="flex flex-wrap items-center gap-1">
+                      {item.deletedAt && <Badge variant="destructive">Dihapus penjual</Badge>}
                       <Badge variant={varianVerifikasiProduk(item.verificationStatus)}>
                         {labelVerifikasiProduk(item.verificationStatus)}
                       </Badge>
@@ -353,6 +354,11 @@ export function ProductsManagementView() {
                       {labelVerifikasiProduk(item.verificationStatus)}
                     </Badge>
                   </div>
+                  {item.deletedAt && (
+                    <p className="mt-2 inline-flex items-center rounded-full bg-destructive px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-white">
+                      Dihapus penjual
+                    </p>
+                  )}
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-sage-500">
                     <span className="font-semibold text-primary">
                       {formatRupiah(item.surplusPrice)}
