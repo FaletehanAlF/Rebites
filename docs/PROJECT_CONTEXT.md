@@ -155,11 +155,13 @@ mount and renders nothing when empty (no placeholder products).
   favorites, notifications, subscriptions (schema in `supabase/migrations/`).
 - Payments via Xendit (secret key + webhook callback token, server only).
 - Category tile images come from `images.pexels.com` (`lib/categories.ts`).
-- Local photos in `public/`: `hero-makanan.avif`, `makanan1–15`, step photos
-  `penjual-login.avif`, `pembeli-mencaro.avif`, `penerimaan.avif`,
-  `terselamatkan.avif`, `logo.avif`. Aset yang murni dirujuk kode memakai AVIF;
-  `makanan1–15` dan `foods/ikansayur.jpg` tetap JPG/WebP karena path-nya
-  tersimpan sebagai `products.image_url` di database.
+- Local photos in `public/`: `hero-makanan.avif`, `makanan1–5` / `makanan8–10` /
+  `makanan13–15`, step photos `penjual-login.avif`, `pembeli-mencaro.avif`,
+  `penerimaan.avif`, `terselamatkan.avif`, `logo.avif`. Aset yang murni dirujuk
+  kode memakai AVIF; foto makanan dan `foods/ikansayur.jpg` tetap JPG/WebP
+  karena path-nya tersimpan sebagai `products.image_url` di database.
+  `makanan6`, `makanan7`, `makanan11`, dan `makanan12` sudah tidak ada: tidak
+  dirujuk kode maupun database (hanya tersisa di migrasi seed lama).
 - FAQ contact form posts to a Formspree endpoint from `FAQSection.tsx`.
 - **Assumption**: footer social links (`instagram.com/rebites` etc.) and
   `halo@rebites.id` were not verified as real accounts.
