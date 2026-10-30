@@ -29,7 +29,9 @@
     "test:admin-ui-regressions": "node --test tests/admin-ui-regressions.test.ts",
     "test:admin-auth-guard": "node --test tests/admin-auth-guard.test.ts",
     "test:admin-me-status": "node --test tests/admin-me-status.test.ts",
-    "test:postgrest-pagination": "node --test tests/postgrest-pagination.test.ts"
+    "test:postgrest-pagination": "node --test tests/postgrest-pagination.test.ts",
+    "test:site-url": "node --test tests/site-url.test.ts",
+    "test:activity-log-array-concat": "node --test tests/activity-log-array-concat.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

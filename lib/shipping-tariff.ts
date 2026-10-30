@@ -16,16 +16,22 @@ export const REBITES_SERVICE_NAME = 'Antar (Estimasi Lokal)';
 
 export const ROAD_FACTOR = 1.3;
 
+/**
+ * Default tarif sengaja dibuat untuk makanan surplus berharga belasan ribu:
+ * ongkir yang mendekati harga makanan membuat pembeli batal, sehingga tarif
+ * per km ditekan dan plafonnya dibatasi. Pengelola dapat menaikkannya lewat
+ * env tanpa mengubah kode.
+ */
 export function getDeliveryTariffConfig() {
-  const base = Number(process.env.DELIVERY_BASE_FEE_IDR ?? '5000');
-  const perKm = Number(process.env.DELIVERY_PER_KM_FEE_IDR ?? '2500');
-  const minFee = Number(process.env.DELIVERY_MIN_FEE_IDR ?? '5000');
-  const maxFee = Number(process.env.DELIVERY_MAX_FEE_IDR ?? '50000');
+  const base = Number(process.env.DELIVERY_BASE_FEE_IDR ?? '4000');
+  const perKm = Number(process.env.DELIVERY_PER_KM_FEE_IDR ?? '1000');
+  const minFee = Number(process.env.DELIVERY_MIN_FEE_IDR ?? '4000');
+  const maxFee = Number(process.env.DELIVERY_MAX_FEE_IDR ?? '15000');
   return {
-    baseFee: Number.isFinite(base) && base >= 0 ? base : 5000,
-    perKmFee: Number.isFinite(perKm) && perKm >= 0 ? perKm : 2500,
-    minFee: Number.isFinite(minFee) && minFee >= 0 ? minFee : 5000,
-    maxFee: Number.isFinite(maxFee) && maxFee > 0 ? maxFee : 50000,
+    baseFee: Number.isFinite(base) && base >= 0 ? base : 4000,
+    perKmFee: Number.isFinite(perKm) && perKm >= 0 ? perKm : 1000,
+    minFee: Number.isFinite(minFee) && minFee >= 0 ? minFee : 4000,
+    maxFee: Number.isFinite(maxFee) && maxFee > 0 ? maxFee : 15000,
   };
 }
 
