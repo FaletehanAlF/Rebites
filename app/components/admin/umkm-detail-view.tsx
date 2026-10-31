@@ -194,8 +194,6 @@ export function UmkmDetailView({ id }: { id: string }) {
         eyebrow="Admin · Detail UMKM"
         title={umkm.business_name}
         description={`${umkm.city ?? 'Kota belum tersedia'} · Bergabung ${formatTanggal(umkm.created_at)}`}
-        backHref="/dashboard/admin/umkm"
-        backLabel="Daftar UMKM"
         actions={
           <>
             <Button

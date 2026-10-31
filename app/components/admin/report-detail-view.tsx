@@ -376,8 +376,6 @@ export function ReportDetailView({ reportId }: { reportId: string }) {
         <AdminPageHeader
           eyebrow="Admin · Monitoring"
           title={status === 'not-found' ? 'Laporan tidak ditemukan' : 'Gagal memuat laporan'}
-          backHref="/dashboard/admin/monitoring/laporan"
-          backLabel="Daftar Laporan"
         />
         <AdminInlineError
           message={
@@ -480,8 +478,6 @@ export function ReportDetailView({ reportId }: { reportId: string }) {
         eyebrow="Admin · Monitoring"
         title={`Laporan #${shortId}`}
         description="Tinjau kasus, perbarui triage, dan ambil tindakan moderasi."
-        backHref="/dashboard/admin/monitoring/laporan"
-        backLabel="Daftar Laporan"
         actions={
           <>
             <Badge variant={statusVariant(report.status)} className="text-xs">

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronRight, LogOut, Menu, Settings, UserCircle } from 'lucide-react';
+import { ArrowLeft, LogOut, Menu, Settings, UserCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCurrentUser } from '@/lib/current-user';
 import { useAdminPreferences } from '@/hooks/use-admin-preferences';
@@ -49,20 +49,41 @@ function getAreaTitle(pathname: string | null) {
   return 'Admin';
 }
 
-/** Label induk untuk breadcrumb ringkas di topbar. */
-function getAreaGroup(pathname: string | null): string | null {
+/**
+ * Induk halaman saat ini, ATAU null bila halaman ini dibuka dari menu samping.
+ *
+ * Dipakai untuk dua hal sekaligus di topbar:
+ *   1. tombol "Back" — hanya muncul saat halaman memang DITUMPUK dari halaman
+ *      lain, karena itulah satu-satunya keadaan di mana "kembali" punya arti
+ *      (naik satu tingkat). Halaman yang dibuka dari menu samping tidak punya
+ *      tumpukan untuk dikembalikan; menunya sendiri sudah jalan keluarnya.
+ *   2. judul breadcrumb "Induk > Halaman" — juga hanya saat bertingkat.
+ *
+ * Halaman bertingkat saat ini:
+ *   /pengguna/[id]                  <- Pengguna, Laporan, Moderasi, Permintaan Role
+ *   /umkm/[id]                      <- UMKM, Produk, Aktivitas
+ *   /monitoring/laporan/[id]        <- Laporan, Peringatan
+ * Semuanya cocok dengan pola "[segmen1]/[id]" bersegmen TIGA setelah
+ * /dashboard/admin, sehingga cukup dideteksi dari bentuk path — tidak perlu
+ * daftar rute yang harus diperbarui tiap kali halaman detail baru ditambah.
+ */
+function parentOf(pathname: string | null): { href: string; label: string } | null {
   if (!pathname) return null;
-  const normalized =
-    pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
-  if (normalized === '/dashboard/admin') return null;
-  if (normalized.startsWith('/dashboard/admin/monitoring')) return 'Monitoring';
-  if (normalized.startsWith('/dashboard/admin/umkm')) return 'UMKM';
-  if (normalized.startsWith('/dashboard/admin/pengguna')) return 'Pengguna';
-  if (normalized.startsWith('/dashboard/admin/produk')) return 'Produk';
-  if (normalized.startsWith('/dashboard/admin/pesanan')) return 'Pesanan';
-  if (normalized.startsWith('/dashboard/admin/langganan')) return 'Langganan';
-  if (normalized.startsWith('/dashboard/admin/artikel')) return 'Konten';
-  return null;
+
+  const segments = pathname
+    .replace(/\/+$/, '')
+    .replace(/^\/dashboard\/admin\/?/, '')
+    .split('/')
+    .filter(Boolean);
+
+  // Satu segmen = halaman daftar yang dibuka langsung dari menu samping.
+  if (segments.length !== 2) return null;
+
+  const [bagian, id] = segments;
+  if (!id) return null;
+
+  const label = getAreaTitle(`/dashboard/admin/${bagian}`);
+  return { href: `/dashboard/admin/${bagian}`, label };
 }
 
 export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
@@ -71,7 +92,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const areaTitle = getAreaTitle(pathname);
-  const areaGroup = getAreaGroup(pathname);
+  const parent = parentOf(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   // Bayangan topbar muncul saat halaman digulir: menegaskan bahwa bar
   // ini memang melayang tetap di atas konten, bukan sekadar garis bawah.
@@ -160,14 +181,24 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           ReBites
         </Link>
 
-        {/* Breadcrumb ringkas: grup area > judul halaman. Pada layar kecil
-            hanya judul yang tampil supaya tidak berdesakan. */}
-        <div className="hidden min-w-0 flex-1 items-center gap-1.5 lg:flex">
-          {areaGroup && (
-            <>
-              <span className="truncate text-sm font-medium text-sage-500">{areaGroup}</span>
-              <ChevronRight aria-hidden className="h-3.5 w-3.5 shrink-0 text-sage-500/70" />
-            </>
+        {/*
+          Satu label saja di topbar: judul halaman saat ini.
+
+          Sebelumnya ada breadcrumb "Grup > Halaman", dan pada halaman
+          bertingkat hasilnya terbaca "Pengguna > Pengguna" — mengulang kata
+          yang sama dua kali, lalu diulang lagi oleh judul besar di bawahnya
+          dan oleh tombol kembali. Topbar sekarang hanya menjawab "saya di
+          mana", tombol Back menjawab "bagaimana naik satu tingkat".
+        */}
+        <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">
+          {parent && (
+            <Link
+              href={parent.href}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-[13px] font-semibold text-sage-500 transition-colors hover:bg-sage-100/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              <ArrowLeft aria-hidden className="h-4 w-4" />
+              Back
+            </Link>
           )}
           <p className="truncate text-sm font-semibold text-charcoal-900">{areaTitle}</p>
         </div>
