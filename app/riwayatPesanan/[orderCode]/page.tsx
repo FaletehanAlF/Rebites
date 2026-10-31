@@ -36,6 +36,7 @@ import { toast } from '@/hooks/use-toast';
 import { DeliveryStatusPanel } from '@/app/components/order-history/delivery-status-panel';
 import { OrderStatusTimeline } from '@/app/components/order-history/order-status-timeline';
 import { CourierChat } from '@/app/components/order-history/courier-chat';
+import { DemoCourierPanel } from '@/app/components/order-history/demo-courier-panel';
 import dynamic from 'next/dynamic';
 import { buildMapPlan } from '@/lib/delivery-map-plan';
 
@@ -476,6 +477,11 @@ function OrderDetailContent() {
                     : 'Garis hijau adalah rute jalan dari toko ke alamat tujuan. Kurir belum mengirim posisi, jadi ikon motor masih berupa ilustrasi perjalanan.'}
                 </p>
                 <DeliveryStatusPanel order={order} variant="full" />
+                <DemoCourierPanel
+                  orderDbId={order.dbId}
+                  orderStatus={orderStatus}
+                  onAdvanced={load}
+                />
                 <CourierChat orderDbId={order.dbId} />
                 {dest && (
                   <div className="rounded-2xl border border-hairline bg-white p-4">

@@ -26,7 +26,9 @@ import { cn } from '@/lib/utils';
  */
 export interface CourierMessage {
   id: string;
-  senderUserId: string;
+  senderUserId: string | null;
+  /** `demo_courier` = balasan otomatis simulasi, BUKAN orang sungguhan. */
+  senderKind?: 'user' | 'demo_courier';
   body: string;
   createdAt: string | null;
   isMine: boolean;
@@ -161,23 +163,43 @@ export function CourierChat({
             Belum ada pesan. Kirim pesan pertama bila perlu menghubungi kurir.
           </p>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn('flex', message.isMine ? 'justify-end' : 'justify-start')}
-            >
+          messages.map((message) => {
+            const isDemo = message.senderKind === 'demo_courier';
+            return (
               <div
-                className={cn(
-                  'max-w-[80%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed',
-                  message.isMine
-                    ? 'bg-primary text-white'
-                    : 'bg-cream-100 text-charcoal-900'
-                )}
+                key={message.id}
+                className={cn('flex flex-col', message.isMine ? 'items-end' : 'items-start')}
               >
-                {message.body}
+                {!message.isMine && (
+                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-sage-500">
+                    {isDemo ? 'Kurir Demo' : 'Kurir'}
+                  </p>
+                )}
+                <div
+                  className={cn(
+                    'max-w-[80%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed',
+                    message.isMine
+                      ? 'bg-primary text-white'
+                      : isDemo
+                        ? 'bg-cream-100 text-charcoal-900 ring-1 ring-dashed ring-sage-500/40'
+                        : 'bg-cream-100 text-charcoal-900'
+                  )}
+                >
+                  {message.body}
+                </div>
+                {/* Jam pesan: berasal dari server, bukan dari jam perangkat
+                    pengirim — supaya kedua pihak melihat waktu yang sama. */}
+                {message.createdAt && (
+                  <p className="mt-0.5 text-[10px] tabular-nums text-charcoal-500">
+                    {new Date(message.createdAt).toLocaleTimeString('id-ID', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

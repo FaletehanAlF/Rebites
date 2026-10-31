@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   createAuthedServerClient,
+  createServiceClient,
   getUserFromBearer,
   isSupabaseUnavailable,
   upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
+import { buildDemoCourierReply } from '@/lib/demo-courier';
 
 export const runtime = 'nodejs';
 
@@ -39,12 +41,40 @@ export async function GET(req: NextRequest) {
 
     const supabase = createAuthedServerClient(authHeader as string);
 
-    const { data, error } = await supabase
-      .from('courier_messages')
-      .select('id, sender_user_id, body, created_at')
-      .eq('order_id', orderId)
-      .order('created_at', { ascending: true })
-      .limit(200);
+    /**
+     * Baca pesan dengan kolom demo.
+     *
+     * Bila migrasi kurir demo belum diterapkan, kolom `sender_kind` belum ada
+     * dan query akan gagal. Tanpa fallback ini, SELURUH chat ikut rusak
+     * hanya karena fitur demo belum aktif. Percobaan kedua memakai kolom
+     * lama, dan semua pesan diperlakukan sebagai pesan pengguna.
+     */
+    let usedDemoColumns = true;
+    let data: Array<Record<string, unknown>> | null = null;
+    let error: { message: string } | null = null;
+
+    {
+      const first = await supabase
+        .from('courier_messages')
+        .select('id, sender_user_id, sender_kind, body, created_at')
+        .eq('order_id', orderId)
+        .order('created_at', { ascending: true })
+        .limit(200);
+      data = (first.data ?? null) as Array<Record<string, unknown>> | null;
+      error = first.error;
+    }
+
+    if (error) {
+      usedDemoColumns = false;
+      const fallbackQuery = await supabase
+        .from('courier_messages')
+        .select('id, sender_user_id, body, created_at')
+        .eq('order_id', orderId)
+        .order('created_at', { ascending: true })
+        .limit(200);
+      data = (fallbackQuery.data ?? null) as Array<Record<string, unknown>> | null;
+      error = fallbackQuery.error;
+    }
 
     if (error) {
       console.error('[courier/messages] gagal membaca pesan:', error.message);
@@ -54,7 +84,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       messages: ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
         id: String(row.id),
-        senderUserId: String(row.sender_user_id),
+        senderUserId: row.sender_user_id ? String(row.sender_user_id) : null,
+        // `demo_courier` = balasan otomatis simulasi. UI WAJIB melabelinya,
+        // supaya pembeli tidak mengira sedang mengobrol dengan orang.
+        senderKind:
+          usedDemoColumns && row.sender_kind === 'demo_courier' ? 'demo_courier' : 'user',
         body: String(row.body ?? ''),
         createdAt: row.created_at ? String(row.created_at) : null,
         isMine: row.sender_user_id === user.id,
@@ -140,6 +174,7 @@ export async function POST(req: NextRequest) {
       .insert({
         order_id: orderId,
         sender_user_id: user.id,
+        sender_kind: 'user',
         body: message,
       })
       .select('id, sender_user_id, body, created_at')
@@ -150,11 +185,55 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Gagal mengirim pesan.' }, { status: 500 });
     }
 
+    /**
+     * Balasan kurir DEMO.
+     *
+     * Hanya berlaku bila pesanan ini memakai kurir demo — pesanan dengan
+     * kurir sungguhan tidak pernah dibalas otomatis. Balasan ditandai
+     * `sender_kind = 'demo_courier'`, jadi UI bisa melabelinya.
+     *
+     * Kegagalan balasan TIDAK menggagalkan pengiriman pesan pembeli: pesan
+     * yang sudah terkirim tetap terkirim.
+     */
+    if (isBuyer) {
+      try {
+        const service = createServiceClient();
+        const { data: demoAssignment } = await service
+          .from('delivery_assignments')
+          .select('is_demo')
+          .eq('order_id', orderId)
+          .maybeSingle();
+
+        if (demoAssignment?.is_demo) {
+          const { data: orderRow } = await service
+            .from('orders')
+            .select('order_code, order_status')
+            .eq('id', orderId)
+            .maybeSingle();
+
+          const reply = buildDemoCourierReply({
+            message,
+            stage: String(orderRow?.order_status ?? 'processing'),
+            orderCode: String(orderRow?.order_code ?? ''),
+          });
+          await service.from('courier_messages').insert({
+            order_id: orderId,
+            sender_user_id: null,
+            sender_kind: 'demo_courier',
+            body: reply,
+          });
+        }
+      } catch (replyErr) {
+        console.error('[courier/messages] gagal membalas sebagai kurir demo:', replyErr);
+      }
+    }
+
     const row = data as Record<string, unknown> | null;
     return NextResponse.json({
       message: {
         id: String(row?.id ?? ''),
         senderUserId: user.id,
+        senderKind: 'user',
         body: message,
         createdAt: row?.created_at ? String(row.created_at) : new Date().toISOString(),
         isMine: true,

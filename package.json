@@ -51,6 +51,8 @@
     "test:order-expiry": "node --test tests/order-expiry.test.ts",
     "test:prep-deadline": "node --test tests/prep-deadline.test.ts",
     "test:seller-orders-realtime": "node --test tests/seller-orders-realtime.test.ts",
+    "test:demo-courier": "node --test tests/demo-courier.test.ts",
+    "test:demo-courier-migration": "node --test tests/demo-courier-migration.test.ts",
     "test:delivery-tariff-estimate": "node --test tests/delivery-tariff-estimate.test.ts",
     "test:route-geometry": "node --test tests/route-geometry.test.ts"
   },
