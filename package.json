@@ -42,6 +42,7 @@
     "test:chatbot-panel-scroll": "node --test tests/chatbot-panel-scroll.test.ts",
     "test:coin-adjustment": "node --test tests/coin-adjustment.test.ts",
     "test:admin-coin-ui": "node --test tests/admin-coin-ui.test.ts",
+    "test:order-timeline-steps": "node --test tests/order-timeline-steps.test.ts",
     "test:delivery-tariff-estimate": "node --test tests/delivery-tariff-estimate.test.ts",
     "test:route-geometry": "node --test tests/route-geometry.test.ts"
   },

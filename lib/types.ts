@@ -190,6 +190,15 @@ export interface GeoPoint {
 export interface StoredOrder {
   orderId: string;
 
+  /**
+   * UUID baris `orders.id` (bukan kode `RB-...`).
+   *
+   * Dibutuhkan untuk membaca `order_status_history`, yang rujukannya lewat
+   * `order_id` berupa uuid. Tanpa ini, timeline tidak bisa menampilkan waktu
+   * nyata tiap tahap dan semuanya tetap "Menunggu".
+   */
+  dbId?: string;
+
   userId?: string;
   productId: string;
   productName: string;

@@ -1,9 +1,14 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import type { StoredOrder } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { formatOrderTime } from '@/lib/order-utils';
+import {
+  buildTimelineTimes,
+  fetchOrderStatusHistory,
+} from '@/lib/order-status-history';
 
 /**
  * Timeline status pesanan.
@@ -27,7 +32,7 @@ interface TrackStep {
   detail?: string;
 }
 
-function buildSteps(order: StoredOrder): TrackStep[] {
+function buildSteps(order: StoredOrder, times: Record<string, string | null>): TrackStep[] {
   const os = order.orderStatus ?? 'pending';
   const isDelivery = order.fulfillment === 'delivery';
   const isDone = order.status === 'completed';
@@ -40,31 +45,31 @@ function buildSteps(order: StoredOrder): TrackStep[] {
   const arrived = isDone;
 
   const created = order.createdAt;
-  // Waktu per tahap hanya diisi bila memang tercatat. ReBITES belum menyimpan
-  // timestamp transisi per tahap pada StoredOrder, jadi tahap antara sengaja
-  // null (ditampilkan "Menunggu") kecuali tanggal selesai yang nyata.
-  const completedAt = order.completedAt ?? null;
+  // Waktu per tahap diambil dari `order_status_history`. Kalau suatu tahap
+  // belum punya waktu tercatat, dibiarkan null (ditampilkan "Menunggu") —
+  // bukan jam karangan.
+  const at = (key: string) => times[key] ?? null;
 
   const steps: TrackStep[] = [
     { key: 'created', label: 'Pesanan dibuat', at: created, done: true },
-    { key: 'confirmed', label: 'Pembayaran dikonfirmasi', at: null, done: paid },
+    { key: 'confirmed', label: 'Pembayaran dikonfirmasi', at: at('confirmed'), done: paid },
     {
       key: 'prepared',
       label: 'Pesanan disiapkan toko',
-      at: null,
+      at: at('prepared'),
       done: prepared,
     },
   ];
 
   if (isDelivery) {
-    steps.push({ key: 'on-the-way', label: 'Kurir memulai pengantaran', at: null, done: started });
-    steps.push({ key: 'arrived', label: 'Pesanan sampai di tujuan', at: null, done: arrived });
+    steps.push({ key: 'on-the-way', label: 'Kurir memulai pengantaran', at: at('on-the-way'), done: started });
+    steps.push({ key: 'arrived', label: 'Pesanan sampai di tujuan', at: at('arrived'), done: arrived });
   } else {
-    steps.push({ key: 'ready', label: 'Pesanan siap diambil', at: null, done: started });
-    steps.push({ key: 'taken', label: 'Pesanan diambil', at: null, done: arrived });
+    steps.push({ key: 'ready', label: 'Pesanan siap diambil', at: at('ready'), done: started });
+    steps.push({ key: 'taken', label: 'Pesanan diambil', at: at('taken'), done: arrived });
   }
 
-  steps.push({ key: 'completed', label: 'Pesanan selesai', at: completedAt, done: isDone });
+  steps.push({ key: 'completed', label: 'Pesanan selesai', at: at('completed'), done: isDone });
 
   if (isCancelled) {
     steps.push({ key: 'cancelled', label: 'Pesanan dibatalkan', at: null, done: true });
@@ -74,7 +79,23 @@ function buildSteps(order: StoredOrder): TrackStep[] {
 }
 
 export function OrderStatusTimeline({ order }: { order: StoredOrder }) {
-  const steps = buildSteps(order);
+  // Riwayat status dibaca di sini, bukan diteruskan dari halaman induk:
+  // komponen ini dipakai di dua tempat (modal detail dan halaman detail
+  // pesanan) dan keduanya butuh waktu yang sama.
+  const [times, setTimes] = useState<Record<string, string | null>>({});
+
+  useEffect(() => {
+    let aktif = true;
+    void fetchOrderStatusHistory(order.dbId).then((riwayat) => {
+      if (!aktif) return;
+      setTimes(buildTimelineTimes(order, riwayat));
+    });
+    return () => {
+      aktif = false;
+    };
+  }, [order]);
+
+  const steps = buildSteps(order, times);
 
   return (
     <ol className="mt-2 rounded-xl px-3.5 py-3 ring-1 ring-hairline">

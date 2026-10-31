@@ -23,6 +23,9 @@ type OrderRow = Record<string, any>;
 export function rowToStoredOrder(row: OrderRow): StoredOrder {
   return {
     orderId: row.order_code ?? row.id,
+    // UUID baris, dipakai untuk membaca `order_status_history`. Kode
+    // `RB-...` bukan kunci tabel itu, jadi tanpa ini riwayat tak bisa dibaca.
+    dbId: row.id ?? undefined,
     userId: row.buyer_id ?? undefined,
     productId: row.product_slug ?? '',
     productName: row.product_name ?? '',
