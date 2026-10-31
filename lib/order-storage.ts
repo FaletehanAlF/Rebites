@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 import { getSellerUmkm } from './product-storage';
 import { resolveImageSrc } from './image-path';
 import type { StoredOrder, FulfillmentMode, AddressSnapshot, ShippingSnapshot } from './types';
+import { shouldAutoComplete } from './order-expiry';
 
 export const ORDERS_UPDATED_EVENT = 'rebites-orders-updated';
 
@@ -247,91 +248,57 @@ export async function patchOrder(
   return rowToStoredOrder(data);
 }
 
-export async function completeExpiredOrders(userId: string | null | undefined): Promise<boolean> {
+/**
+ * Selesaikan otomatis pesanan yang sudah LEWAT tenggat, TAPI hanya yang
+ * memang sudah mulai diantar / siap diambil.
+ *
+ * ATURAN (disengaja, jangan diubah tanpa alasan):
+ * - Hanya `ready_for_pickup` dan `out_for_delivery` yang boleh diselesaikan
+ *   otomatis. Pesanan yang penjualnya belum pernah memajukan status TIDAK
+ *   boleh berakhir "selesai" — pembeli bisa kehilangan barang tanpa pernah
+ *   menerimanya.
+ * - Trigger database juga menolak `paid`/`processing` -> `completed` dari
+ *   sesi pembeli, jadi percobaan ke status itu hanya membuang kuota.
+ *
+ * Sebelumnya fungsi ini justru MELEWATI kedua status yang sah dan mencoba
+ * menyelesaikan dari `paid`/`processing` — hasilnya tidak pernah berhasil,
+ * sementara pembeli tetap membayar 3 query tambahan setiap 15 detik.
+ */
+export async function completeExpiredOrders(
+  userId: string | null | undefined,
+  preloaded?: StoredOrder[]
+): Promise<boolean> {
   if (!userId) return false;
 
-  const { data: paymentRows } = await supabase
-    .from('orders')
-    .select('order_code, payment_status, total_price')
-    .eq('buyer_id', userId);
-
-  const paidSet = new Set<string>();
-  for (const row of (paymentRows ?? []) as Array<Record<string, unknown>>) {
-    const code = row.order_code as string;
-    const status = row.payment_status as string | null;
-    const total = Number(row.total_price ?? 0);
-    
-    if (status === 'paid' || total === 0) paidSet.add(code);
-  }
-
-  const orders = await getUserOrders(userId);
+  // Daftar pesanan boleh diteruskan pemanggil yang sudah mengambilnya:
+  // mengambil ulang di sini berarti satu round-trip database tambahan pada
+  // setiap refresh daftar pesanan — dan refresh itu berjalan tiap 15 detik.
+  const orders = preloaded ?? (await getUserOrders(userId));
   const now = Date.now();
-  let changed = false;    for (const order of orders) {
-    if (order.status !== 'ongoing') continue;
-    if (!paidSet.has(order.orderId)) continue;
-    
-    const os = order.orderStatus;
-    if (os === 'completed' || os === 'cancelled' || os === 'refunded') continue;
-    if (os === 'ready_for_pickup' || os === 'out_for_delivery') continue;
-    const deadline = order.estimatedCompletionAt
-      ? new Date(order.estimatedCompletionAt).getTime()
-      : new Date(order.createdAt).getTime() + (order.estimatedMinutes ?? 20) * 60_000;
-    if (Number.isFinite(deadline) && now >= deadline) {
-      // Penyelesaian otomatis: tulis langsung dengan filter buyer_id (bukan
-      // patchOrder generik) agar tidak membuka penulisan status arbitrer.
-      // Set kedua kolom agar tidak bertentangan.
-      const { data: updatedRows, error: updErr } = await supabase
-        .from('orders')
-        .update({
-          lifecycle_status: 'completed',
-          order_status: 'completed',
-          completed_at: new Date().toISOString(),
-        })
-        .eq('order_code', order.orderId)
-        .eq('buyer_id', userId ?? '')
-        .select('order_code');
-      if (!updErr && Array.isArray(updatedRows) && updatedRows.length > 0) {
-        changed = true;
-        dispatchUpdated();
-      }
+  let changed = false;
+
+  for (const order of orders) {
+    // Aturan "boleh diselesaikan otomatis atau tidak" tinggal di modul murni
+    // (lib/order-expiry.ts) supaya bisa diuji tanpa database.
+    if (!shouldAutoComplete(order, now)) continue;
+
+    const { data: updatedRows, error: updErr } = await supabase
+      .from('orders')
+      .update({
+        lifecycle_status: 'completed',
+        order_status: 'completed',
+        completed_at: new Date().toISOString(),
+      })
+      .eq('order_code', order.orderId)
+      .eq('buyer_id', userId)
+      .select('order_code');
+
+    if (!updErr && Array.isArray(updatedRows) && updatedRows.length > 0) {
+      changed = true;
+      dispatchUpdated();
     }
   }
   return changed;
-}
-
-export async function syncDeliveringNotifications(userId: string | null | undefined): Promise<boolean> {
-  if (!userId) return false;
-  const { data: paymentRows } = await supabase
-    .from('orders')
-    .select('order_code, payment_status, total_price')
-    .eq('buyer_id', userId);
-  const paidSet = new Set<string>();
-  for (const row of (paymentRows ?? []) as Array<Record<string, unknown>>) {
-    const code = row.order_code as string;
-    const status = row.payment_status as string | null;
-    const total = Number(row.total_price ?? 0);
-    if (status === 'paid' || total === 0) paidSet.add(code);
-  }
-  const orders = await getUserOrders(userId);
-  const now = Date.now();
-  let sent = false;
-  for (const order of orders) {
-    if (order.status !== 'ongoing') continue;
-    if (!paidSet.has(order.orderId)) continue;
-    // Status dikendalikan penjual (progress_status terisi ATAU status resmi
-    // out_for_delivery) - notifikasi delivering dikirim dari dashboard penjual
-    // saat status diubah, bukan dari timer estimasi.
-    if (order.progressStatus || order.orderStatus === 'out_for_delivery') continue;
-    if (!order.estimatedCompletionAt) continue;
-    const start = new Date(order.createdAt).getTime();
-    const end = new Date(order.estimatedCompletionAt).getTime();
-    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
-    const progress = (now - start) / (end - start);
-    if (progress >= 0.6 && progress < 1) {
-      sent = true;
-    }
-  }
-  return sent;
 }
 
 export async function reserveStock(productSlug: string, quantity: number): Promise<boolean> {

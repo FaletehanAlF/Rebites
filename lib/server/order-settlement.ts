@@ -113,7 +113,7 @@ export async function settleOrderPaid(
 ): Promise<SettleResult> {
   const { data: order } = await service
     .from('orders')
-    .select('order_code, payment_status, product_slug, quantity, coin_used, coin_earned, buyer_id, vendor_name, vendor_slug, product_name, total_price')
+    .select('id, order_code, payment_status, product_slug, quantity, coin_used, coin_earned, buyer_id, vendor_name, vendor_slug, product_name, total_price, estimated_minutes')
     .eq('order_code', externalId)
     .maybeSingle();
 
@@ -142,6 +142,27 @@ export async function settleOrderPaid(
   // Update kondisional atomik per baris; yang kalah mendapat 0 rows lalu
   // dibaca ulang (paid => already_paid, tidak lanjut ke koin/notif).
   // Nominal sudah divalidasi di atas; yang kalah tidak memproses ganda.
+  //
+  // ETA DIJANGKARKAN ULANG DI SINI.
+  // `estimated_completion_at` dihitung saat checkout memakai Date.now(),
+  // padahal pesanan baru dibayar beberapa menit kemudian: pembeli yang
+  // checkout 10 menit lalu sudah punya ETA yang 10 menit lebih awal, dan
+  // penjual terlihat "lambat" bahkan sebelum dia mulai menyiapkan. Jam
+  // persiapan baru berjalan setelah uang diterima, jadi ETA harus dihitung
+  // dari SAAT INI.
+  const paymentConfirmedAt = new Date();
+  const estimatedMinutesRaw = Number(row.estimated_minutes ?? 0);
+  const preparationMinutes =
+    Number.isFinite(estimatedMinutesRaw) && estimatedMinutesRaw > 0
+      ? Math.round(estimatedMinutesRaw)
+      : null;
+  // NULL bila estimasi tidak pernah tercatat (pesanan lama): jangan karang
+  // angka yang tidak punya dasar.
+  const reanchoredCompletionAt =
+    preparationMinutes == null
+      ? null
+      : new Date(paymentConfirmedAt.getTime() + preparationMinutes * 60_000).toISOString();
+
   const { data: updated, error: updErr } = await service
     .from('orders')
     .update({
@@ -149,6 +170,7 @@ export async function settleOrderPaid(
       order_status: 'paid',
       payment_method_id: paymentChannel ?? 'xendit',
       xendit_invoice_id: invoiceId,
+      ...(reanchoredCompletionAt ? { estimated_completion_at: reanchoredCompletionAt } : {}),
     } as Record<string, unknown>)
     .eq('order_code', externalId)
     .eq('payment_status', 'unpaid')

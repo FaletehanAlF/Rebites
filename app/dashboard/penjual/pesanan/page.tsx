@@ -40,6 +40,7 @@ import { Card } from '@/app/components/dashboard-penjual/Card';
 import { CourierLiveTracker } from '@/app/components/order-history/courier-live-tracker';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { CourierPositionPanel } from '@/app/components/order-history/courier-position-panel';
+import { formatPrepRemaining } from '@/lib/prep-deadline';
 
 type OrderTab = 'berlangsung' | 'selesai' | 'semua';
 
@@ -136,6 +137,27 @@ function OrderRow({
   const phase = resolveOrderPhase(order);
   const action = isOngoing ? getSellerAction(phase, order.fulfillment) : null;
 
+  /**
+   * Tenggat penyiapan, berasal dari `estimated_completion_at` server.
+   *
+   * Jam diperbarui 30 detik sekali — cukup untuk teks "Siap dalam N menit"
+   * tanpa memicu render tiap detik pada daftar yang bisa berisi banyak order.
+   */
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!isOngoing) return;
+    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, [isOngoing]);
+  // Pesanan yang belum dibayar tidak diberi hitung mundur: jam persiapan
+  // baru mulai setelah pembayaran diterima, jadi angka apa pun di sini akan
+  // menyesatkan (checkout lama bisa tampil "Lewat 20 menit" padahal penjual
+  // belum pernah menerima pesanannya).
+  const prep =
+    isOngoing && phase !== 'pending'
+      ? formatPrepRemaining(order.estimatedCompletionAt, now)
+      : null;
+
   const handleAction = async (targetStatus: string) => {
     if (processing) return;
     setProcessing(true);
@@ -185,6 +207,19 @@ function OrderRow({
           <span aria-hidden>·</span>
           <span>{formatOrderDateTime(order.createdAt)}</span>
         </p>
+        {prep && (
+          <p
+            className={cn(
+              'mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+              prep.overdue
+                ? 'bg-destructive/10 text-destructive'
+                : 'bg-primary/10 text-primary'
+            )}
+          >
+            <Clock className="h-3 w-3 shrink-0" aria-hidden />
+            {prep.text}
+          </p>
+        )}
         {order.fulfillment === 'delivery' && order.deliveryFee > 0 && (
           <p className="mt-0.5 text-xs text-sage-500">
             Ongkir {formatRupiah(order.deliveryFee)}

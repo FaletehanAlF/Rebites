@@ -5,7 +5,6 @@ import type { StoredOrder } from '@/lib/types';
 import {
   ORDERS_UPDATED_EVENT,
   completeExpiredOrders,
-  syncDeliveringNotifications,
   getUserOrders,
 } from '@/lib/order-storage';
 import { useCurrentUser } from '@/lib/current-user';
@@ -29,12 +28,14 @@ export function useOrders() {
       return;
     }
     try {
-      await completeExpiredOrders(userId);
-      await syncDeliveringNotifications(userId);
+      // Ambil daftar SEKALI, lalu teruskan ke penyelesaian otomatis: fungsi
+      // itu tidak perlu mengambil ulang daftar yang sama (satu round-trip
+      // database hilang dari setiap refresh 15 detik).
       const list = await getUserOrders(userId);
       setOrders(list);
-      // Simpan pesan error, BUKAN array kosong: pembeli harus bisa membedakan
-      // "gagal memuat" dari "memang belum ada pesanan".
+      // Penyelesaian otomatis berjalan SETELAH daftar tampil, supaya pembeli
+      // tidak menunggu urusan housekeeping sebelum melihat pesanannya.
+      void completeExpiredOrders(userId, list);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Gagal memuat pesanan.');
