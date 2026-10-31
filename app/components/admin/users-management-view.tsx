@@ -241,6 +241,7 @@ export function UsersManagementView() {
               <AdminTh>Email</AdminTh>
               <AdminTh>Peran</AdminTh>
               <AdminTh>Status Penjual</AdminTh>
+              <AdminTh>Koin</AdminTh>
               <AdminTh>Terdaftar</AdminTh>
             </AdminTableHead>
             <tbody>
@@ -310,6 +311,11 @@ export function UsersManagementView() {
                         </span>
                       )}
                     </AdminTd>
+                    {/* Saldo koin dihitung server dari seluruh ledger, satu
+                        query agregat per halaman — bukan satu query per baris. */}
+                    <AdminTd className="whitespace-nowrap tabular-nums font-semibold text-charcoal-900">
+                      {(item.coin_balance ?? 0).toLocaleString('id-ID')}
+                    </AdminTd>
                     <AdminTd className="whitespace-nowrap text-xs text-sage-500">
                       {formatTanggal(item.created_at)}
                     </AdminTd>
@@ -356,12 +362,17 @@ export function UsersManagementView() {
                     <p className="text-xs text-sage-500">
                       Terdaftar {formatTanggal(item.created_at)}
                     </p>
-                    {href && (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                        Detail
-                        <ChevronRight aria-hidden className="h-3.5 w-3.5" />
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-semibold tabular-nums text-charcoal-700">
+                        {(item.coin_balance ?? 0).toLocaleString('id-ID')} Koin
+                      </p>
+                      {href && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                          Detail
+                          <ChevronRight aria-hidden className="h-3.5 w-3.5" />
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               );

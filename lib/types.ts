@@ -264,7 +264,7 @@ export interface OrderReview {
   createdAt: string;
 }
 
-export type CoinTransactionType = "earned" | "spent" | "refund";
+export type CoinTransactionType = "earned" | "spent" | "refund" | "adjustment";
 
 export interface CoinTransaction {
   id: string;

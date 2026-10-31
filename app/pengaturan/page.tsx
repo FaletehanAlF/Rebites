@@ -41,9 +41,10 @@ const ACCOUNT_LINKS = [
     description: "Perbarui alamat utama untuk pengiriman pesanan.",
   },
   {
-    href: "/profile#rebites-coin",
+    href: "/pengaturan/coin",
     icon: Coins,
-    title: "ReBites Coin",      description: "Lihat saldo dan koin yang didapat dari pesanan selesai.",
+    title: "ReBites Coin",
+    description: "Lihat saldo dan riwayat koin, termasuk yang diberikan tim ReBites.",
   },
   {
     href: "/toko-diikuti",

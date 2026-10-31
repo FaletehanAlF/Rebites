@@ -42,6 +42,8 @@ export interface AdminUserItem {
   /** Ditentukan dari toko + subscription aktif-periode, BUKAN dari role. */
   seller_status: AdminSellerStatus;
   seller: AdminUserSeller | null;
+  /** Saldo ReBites Coin, dihitung server dari seluruh ledger user ini. */
+  coin_balance: number;
 }
 
 export interface AdminUserListResult {
@@ -233,4 +235,73 @@ export async function fetchAdminRoleHistory(
     limit: json.limit ?? limit,
     offset: json.offset ?? offset,
   };
+}
+
+// ---------------------------------------------------------------------------
+// ReBites Coin
+// ---------------------------------------------------------------------------
+
+export interface AdminCoinHistoryItem {
+  id: string;
+  type: string;
+  amount: number;
+  description: string;
+  orderCode: string | null;
+  createdAt: string | null;
+}
+
+export interface AdminUserCoinsResult {
+  balance: number;
+  history: AdminCoinHistoryItem[];
+  historyLimit: number;
+  /** true hanya bila server mengenali pemanggil sebagai Super Admin. */
+  canAdjust: boolean;
+  maxPerAction: number;
+}
+
+export async function fetchAdminUserCoins(id: string): Promise<AdminUserCoinsResult> {
+  const res = await adminFetch(`/api/admin/users/${encodeURIComponent(id)}/coins`);
+  if (!res.ok) {
+    await parseError(res, 'Gagal memuat koin pengguna.');
+  }
+  const json = (await res.json().catch(() => null)) as AdminUserCoinsResult | null;
+  if (!json || typeof json.balance !== 'number' || !Array.isArray(json.history)) {
+    throw new AdminUsersApiError('Respons koin pengguna tidak valid.', 500);
+  }
+  return {
+    balance: json.balance,
+    history: json.history,
+    historyLimit: json.historyLimit ?? json.history.length,
+    canAdjust: json.canAdjust === true,
+    maxPerAction: json.maxPerAction ?? 0,
+  };
+}
+
+/**
+ * Beri atau tarik koin. `delta` negatif = menarik.
+ *
+ * Kewenangan diperiksa SERVER. Parameter `canAdjust` sengaja tidak ada di sini:
+ * komponen yang menyembunyikan tombol BUKAN pengaman, hanya kenyamanan.
+ */
+export async function adjustAdminUserCoins(
+  id: string,
+  delta: number,
+  reason: string
+): Promise<{ balance: number; auditRecorded: boolean }> {
+  const res = await adminFetch(`/api/admin/users/${encodeURIComponent(id)}/coins`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ delta, reason }),
+  });
+  if (!res.ok) {
+    await parseError(res, 'Gagal menyesuaikan koin.');
+  }
+  const json = (await res.json().catch(() => null)) as {
+    balance?: number;
+    auditRecorded?: boolean;
+  } | null;
+  if (!json || typeof json.balance !== 'number') {
+    throw new AdminUsersApiError('Respons penyesuaian koin tidak valid.', 500);
+  }
+  return { balance: json.balance, auditRecorded: json.auditRecorded !== false };
 }

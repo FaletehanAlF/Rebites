@@ -58,7 +58,7 @@ const ACTIVITY_MENU: {
 }[] = [
   { href: '/profile#sukai-makanan', label: 'Makanan Disukai', icon: Heart },
   { href: '/toko-diikuti', label: 'Toko Diikuti', icon: Store },
-  { href: '/profile#rebites-coin', label: 'ReBites Coin', icon: Coins },
+  { href: '/pengaturan/coin', label: 'ReBites Coin', icon: Coins },
   { href: '/profile#alamat', label: 'Alamat Pengiriman', icon: MapPin },
 ];
 

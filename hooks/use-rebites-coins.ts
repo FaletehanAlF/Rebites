@@ -40,10 +40,22 @@ function deriveSnapshot(transactions: CoinTransaction[]): CoinsSnapshot {
   let earned = 0;
   let spent = 0;
   for (const tx of transactions) {
-    // saldo = (earned + refund) - spent, selaras dengan RPC
+    // saldo = (earned + refund + adjustment) - spent, selaras dengan RPC
     // spend_order_coins / refund_order_coins di database.
-    if (tx.type === 'earned' || (tx.type as string) === 'refund') earned += tx.amount;
-    else spent += tx.amount;
+    //
+    // `adjustment` adalah koin yang diberi Super Admin lewat panel admin —
+    // jadi PENAMBAH. Tanpa baris ini, tipe tersebut jatuh ke cabang `else`
+    // dan dihitung sebagai pengurang: koin dari admin justru MENGURANGI
+    // saldo yang dilihat user.
+    if (
+      tx.type === 'earned' ||
+      (tx.type as string) === 'refund' ||
+      (tx.type as string) === 'adjustment'
+    ) {
+      earned += tx.amount;
+    } else {
+      spent += tx.amount;
+    }
   }
   return {
     balance: Math.max(0, earned - spent),

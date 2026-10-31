@@ -12,6 +12,7 @@ import {
 } from '@/lib/server/seller-status';
 import { isSuperAdminUserId } from '@/lib/admin-access';
 import { sanitizeSearchTerm } from '@/lib/filter-search';
+import { computeCoinBalance } from '@/lib/coin-adjustment';
 
 export const runtime = 'nodejs';
 
@@ -243,6 +244,38 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Saldo koin untuk seluruh halaman sekaligus.
+    //
+    // SATU query untuk semua user di halaman ini, bukan satu query per user:
+    // daftar bisa memuat 100 baris, dan N+1 di sini berarti 100 round-trip
+    // tambahan hanya untuk menampilkan satu kolom angka. Pola yang sama
+    // dipakai untuk batch toko & subscription di atas.
+    //
+    // Saldo dihitung dari SELURUH baris ledger tiap user, bukan dari beberapa
+    // baris terakhir — angka yang lebih kecil dari seharusnya akan membuat
+    // kolom ini menyesatkan.
+    const { data: coinData, error: coinErr } = ids.length > 0
+      ? await db
+          .from('coin_transactions')
+          .select('user_id, type, amount')
+          .in('user_id', ids)
+          .limit(20_000)
+      : { data: [] as Row[], error: null };
+
+    if (coinErr) {
+      console.error('[admin/users] coin error', coinErr.message);
+    }
+
+    const coinRowsByUserId = new Map<string, { type: string; amount: number }[]>();
+    for (const row of ((coinData ?? []) as unknown) as Row[]) {
+      const key = row.user_id;
+      if (typeof key !== 'string') continue;
+      const amount = Number(row.amount);
+      const daftar = coinRowsByUserId.get(key) ?? [];
+      daftar.push({ type: String(row.type ?? ''), amount: Number.isFinite(amount) ? amount : 0 });
+      coinRowsByUserId.set(key, daftar);
+    }
+
     const users = rows.map((r) => {
       const umkm =
         typeof r.id === 'string' ? (umkmByUserId.get(r.id) ?? null) : null;
@@ -268,6 +301,9 @@ export async function GET(req: NextRequest) {
             }
           : null,
         seller_status,
+        coin_balance: computeCoinBalance(
+          typeof r.id === 'string' ? (coinRowsByUserId.get(r.id) ?? []) : []
+        ),
         seller: umkm
           ? {
               umkm_id: umkm.id ?? null,

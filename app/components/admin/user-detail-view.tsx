@@ -4,6 +4,7 @@ import { ShieldAlert, Store, User } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { UserRoleEditor } from '@/app/components/admin/user-role-editor';
+import { CoinAdjustmentPanel } from '@/app/components/admin/coin-adjustment-panel';
 import { AdminPageHeader } from './admin-page-header';
 import {
   formatTanggalWaktu,
@@ -123,6 +124,8 @@ export function UserDetailView({
         </Card>
 
         <SellerStatusCard user={user} />
+
+        <CoinAdjustmentPanel userId={user.id} />
 
         <UserRoleEditor
           userId={user.id}
