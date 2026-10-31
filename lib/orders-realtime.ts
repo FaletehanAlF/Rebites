@@ -42,10 +42,17 @@ export interface OrdersRealtimeOptions {
   debounceMs?: number;
   /** Pemisah nama kanal; berguna saat beberapa pemakai berjalan bersamaan. */
   label: string;
+  /**
+   * Tabel yang dilanggan. Default `orders`.
+   *
+   * `order_status_history` dipakai timeline supaya tahap yang baru selesai
+   * muncul tanpa perlu refresh halaman.
+   */
+  table?: 'orders' | 'order_status_history';
 }
 
 /**
- * Berlangganan perubahan `orders`.
+ * Berlangganan perubahan satu tabel.
  *
  * Mengembalikan fungsi pembongkar yang WAJIB dipanggil saat pemakai berhenti
  * (unmount / subscriber terakhir pergi). Tanpa itu kanal Realtime tertinggal
@@ -55,9 +62,10 @@ export function subscribeOrdersRealtime({
   onChange,
   debounceMs = DEFAULT_DEBOUNCE_MS,
   label,
+  table = 'orders',
 }: OrdersRealtimeOptions): () => void {
   channelCounter += 1;
-  const channelName = `rebites-orders-${label}-${channelCounter}`;
+  const channelName = `rebites-${table}-${label}-${channelCounter}`;
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   const schedule = () => {
@@ -72,7 +80,7 @@ export function subscribeOrdersRealtime({
     .channel(channelName)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'public', table: 'orders' },
+      { event: '*', schema: 'public', table },
       () => schedule()
     )
     .subscribe();

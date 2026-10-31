@@ -58,9 +58,18 @@ test('ada langganan postgres_changes pada tabel orders', () => {
     REALTIME.includes("'postgres_changes'"),
     'langganan harus memakai postgres_changes'
   );
-  assert.ok(
-    REALTIME.includes("table: 'orders'"),
-    'langganan harus menunjuk tabel orders'
+  // Tabel sekarang bisa dipilih (timeline riwayat status memakai tabel lain),
+  // jadi yang mengunci "orders" adalah NILAI DEFAULT-nya. Tanpa default yang
+  // benar, dashboard penjual akan berlangganan tabel yang salah.
+  assert.match(
+    REALTIME,
+    /table = 'orders'/,
+    'tabel langganan default harus orders'
+  );
+  assert.match(
+    REALTIME,
+    /\{\s*event: '\*',\s*schema: 'public',\s*table\s*\}/,
+    'payload langganan harus memakai tabel yang dipilih'
   );
 });
 

@@ -196,6 +196,31 @@ export async function settleOrderPaid(
     return { settled: false, reason: 'update_failed' };
   }
 
+  /**
+   * Catat 'paid' ke riwayat status.
+   *
+   * Tanpa ini, timeline pembeli menampilkan "Tercatat" tanpa jam pada tahap
+   * "Pembayaran dikonfirmasi" — padahal pembayaran adalah peristiwa yang
+   * punya waktu pasti. Transisi status lain (`transitionOrderStatus`) sudah
+   * menulis riwayat; settlement pembayaran dulu tidak, sehingga tahap yang
+   * paling awal justru kehilangan jamnya.
+   *
+   * Kegagalan di sini TIDAK membatalkan pembayaran: uang sudah diterima, dan
+   * status order sudah paid. Riwayat hanya melengkapi tampilan.
+   */
+  const paidAt = new Date().toISOString();
+  const orderId = row.id as string | undefined;
+  if (orderId) {
+    const { error: historyErr } = await service
+      .from('order_status_history')
+      .insert({ order_id: orderId, status: 'paid', note: null, created_at: paidAt });
+    if (historyErr) {
+      console.error('[order-settlement] gagal mencatat riwayat paid', historyErr.message, {
+        orderCode: externalId,
+      });
+    }
+  }
+
   const coinUsed = Number(row.coin_used ?? 0);
   const coinEarned = Number(row.coin_earned ?? 0);
   const buyerId = row.buyer_id as string;

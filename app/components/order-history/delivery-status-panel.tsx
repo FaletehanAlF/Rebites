@@ -169,6 +169,31 @@ export function DeliveryStatusPanel({
 
   const arrivalAt = order.estimatedArrivalAt ? new Date(order.estimatedArrivalAt) : null;
   const arrivalValid = arrivalAt != null && Number.isFinite(arrivalAt.getTime());
+
+  /**
+   * Estimasi yang SELALU tampil, sejak pesanan dibayar.
+   *
+   * `estimatedArrivalAt` baru terisi ketika penjual mulai mengantar, jadi
+   * sebelumnya panel tidak menampilkan estimasi apa pun selama fase
+   * persiapan — pembeli hanya melihat "Menunggu". Padahal server sudah
+   * menyimpan `estimatedCompletionAt` (persiapan + pengantaran) sejak
+   * checkout dan sudah dijangkarkan ulang saat pembayaran diterima.
+   *
+   * Urutan prioritas:
+   * 1. `estimatedArrivalAt` — angka paling akurat, hanya ada saat diantar.
+   * 2. `estimatedCompletionAt` — dipakai selama persiapan.
+   *
+   * Tanpa keduanya: tidak ada baris estimasi sama sekali (jangan karang).
+   */
+  const completionAt = order.estimatedCompletionAt
+    ? new Date(order.estimatedCompletionAt)
+    : null;
+  const completionValid = completionAt != null && Number.isFinite(completionAt.getTime());
+
+  const estimateAt = arrivalValid ? arrivalAt : completionValid ? completionAt : null;
+  const estimateIsArrival = arrivalValid;
+  const estimateValid = estimateAt != null;
+
   // Nilai primitif, bukan objek Date. `new Date(...)` menghasilkan objek baru
   // tiap render, sehingga dipakai sebagai dependency effect ia akan memicu
   // pemasangan ulang interval 30 detik terus-menerus.
@@ -222,9 +247,14 @@ export function DeliveryStatusPanel({
   );
   const courierAge = formatPositionAge(courierLocation?.recordedAt, now);
 
+  // Sisa waktu memakai estimasi yang sedang berlaku: ETA pengantaran bila
+  // sudah ada, selain itu tenggat persiapan. Sebelumnya hanya ETA pengantaran
+  // yang dihitung, jadi selama fase persiapan pembeli tidak melihat sisa
+  // waktu sama sekali.
+  const estimateTs = estimateAt ? (estimateAt as Date).getTime() : null;
   const eta =
-    arrivalTs != null && phase !== 'done'
-      ? formatEtaRemaining(new Date(arrivalTs), now)
+    estimateTs != null && phase !== 'done'
+      ? formatEtaRemaining(new Date(estimateTs), now)
       : null;
 
   const liveUnavailable = phase === 'on-the-way';
@@ -357,15 +387,15 @@ export function DeliveryStatusPanel({
           </div>
         )}
 
-        {arrivalValid && (
+        {estimateValid && (
           <div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
             <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
               <Clock3 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              Estimasi tiba
+              {estimateIsArrival ? 'Estimasi tiba' : 'Estimasi siap'}
             </dt>
             <dd className={cn('text-right', isFull ? 'text-sm' : 'text-xs')}>
               <span className="block font-semibold tabular-nums text-charcoal-900">
-                {formatClock(arrivalAt as Date)}
+                {formatClock(estimateAt as Date)}
               </span>
               {/* Sisa waktu dalam kata: angka jam saja memaksa pembeli
                   menguranginya sendiri. ETA yang sudah lewat ditampilkan
