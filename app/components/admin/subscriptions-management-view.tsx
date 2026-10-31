@@ -9,7 +9,6 @@ import { Card, CardContent } from '@/app/components/ui/card';
 import {
   AdminPageHeader,
   ADMIN_PAGE_WRAPPER,
-  ADMIN_BACK_LABEL,
 } from './admin-page-header';
 import {
   AdminEmptyState,
@@ -166,8 +165,6 @@ export function SubscriptionsManagementView() {
         eyebrow="Admin · Langganan"
         title="Manajemen Langganan"
         description="Langganan UMKM (hanya-baca)."
-        backHref="/dashboard/admin"
-        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

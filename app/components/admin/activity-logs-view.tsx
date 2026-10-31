@@ -20,7 +20,6 @@ import { ProductDetailDrawer } from './product-detail-drawer';
 import {
   AdminPageHeader,
   ADMIN_PAGE_WRAPPER,
-  ADMIN_BACK_LABEL,
 } from './admin-page-header';
 import {
   AdminEmptyState,
@@ -216,8 +215,6 @@ export function ActivityLogsView() {
         eyebrow="Admin · Monitoring"
         title="Monitoring Aktivitas"
         description="Pantau aktivitas terbaru pengguna dan UMKM di platform."
-        backHref="/dashboard/admin"
-        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1.5 text-xs font-bold">

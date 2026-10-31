@@ -18,7 +18,7 @@ import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { SmartImage } from '@/app/components/shared/SmartImage';
-import { AdminPageHeader, ADMIN_PAGE_WRAPPER, ADMIN_BACK_LABEL } from './admin-page-header';
+import { AdminPageHeader, ADMIN_PAGE_WRAPPER } from './admin-page-header';
 import {
   AdminEmptyState,
   AdminErrorState,
@@ -198,8 +198,6 @@ export function UmkmManagementView() {
         eyebrow="Admin · UMKM"
         title="Manajemen UMKM"
         description="Daftar toko UMKM beserta status verifikasi dan langganannya."
-        backHref="/dashboard/admin"
-        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

@@ -11,7 +11,6 @@ import { Card, CardContent } from '@/app/components/ui/card';
 import {
   AdminPageHeader,
   ADMIN_PAGE_WRAPPER,
-  ADMIN_BACK_LABEL,
 } from './admin-page-header';
 import {
   AdminEmptyState,
@@ -154,8 +153,6 @@ export function UsersManagementView() {
         eyebrow="Admin · Pengguna"
         title="Manajemen Pengguna"
         description="Pantau pengguna terdaftar beserta peran dan status tokonya."
-        backHref="/dashboard/admin"
-        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

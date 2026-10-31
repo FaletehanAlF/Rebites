@@ -29,7 +29,7 @@ import {
   type ReportItem,
   type ReportSeverity,
 } from '@/lib/admin-reports';
-import { AdminPageHeader, ADMIN_PAGE_WRAPPER, ADMIN_BACK_LABEL } from './admin-page-header';
+import { AdminPageHeader, ADMIN_PAGE_WRAPPER } from './admin-page-header';
 import { AdminErrorState, AdminForbiddenState, AdminLoadingState } from './admin-state';
 import { waktuLalu } from './admin-format';
 import { ADMIN_DETAIL_LABEL } from './admin-detail';
@@ -307,8 +307,6 @@ export function ModerationHub() {
         eyebrow="Admin · Moderasi"
         title="Moderasi"
         description="Pantau antrean laporan, sebaran tingkat, dan lompat ke halaman kelola."
-        backHref="/dashboard/admin"
-        backLabel={ADMIN_BACK_LABEL}
         actions={
           <Button type="button" variant="outline" size="sm" onClick={load}>
             <RefreshCw aria-hidden className="h-3.5 w-3.5" />

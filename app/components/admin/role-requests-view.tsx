@@ -8,7 +8,7 @@ import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Textarea } from '@/app/components/ui/textarea';
-import { AdminPageHeader, ADMIN_PAGE_WRAPPER, ADMIN_BACK_LABEL } from './admin-page-header';
+import { AdminPageHeader, ADMIN_PAGE_WRAPPER } from './admin-page-header';
 import {
   AdminEmptyState,
   AdminErrorState,
@@ -307,8 +307,6 @@ export function RoleRequestsView() {
         eyebrow="Admin · Permintaan Role"
         title="Permintaan Role"
         description="Persetujuan perubahan peran pengguna. Admin tim mengajukan; hanya Super Admin yang memutuskan."
-        backHref="/dashboard/admin"
-        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

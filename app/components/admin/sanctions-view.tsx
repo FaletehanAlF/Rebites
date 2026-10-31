@@ -16,7 +16,6 @@ import {
 import {
   AdminPageHeader,
   ADMIN_PAGE_WRAPPER,
-  ADMIN_BACK_LABEL,
 } from './admin-page-header';
 import {
   AdminEmptyState,
@@ -240,8 +239,6 @@ export function SanctionsView() {
         eyebrow="Admin · Monitoring"
         title="Sanksi"
         description="Riwayat tindakan sanksi yang diberikan admin."
-        backHref="/dashboard/admin"
-        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

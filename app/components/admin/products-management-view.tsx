@@ -17,7 +17,6 @@ import { ProductDetailDrawer } from './product-detail-drawer';
 import {
   AdminPageHeader,
   ADMIN_PAGE_WRAPPER,
-  ADMIN_BACK_LABEL,
 } from './admin-page-header';
 import {
   AdminEmptyState,
@@ -178,8 +177,6 @@ export function ProductsManagementView() {
         eyebrow="Admin · Kelola"
         title="Produk"
         description="Semua produk UMKM. Produk baru langsung aktif; admin dapat menunda atau mengaktifkan kembali."
-        backHref="/dashboard/admin"
-        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1.5 text-xs font-bold">
