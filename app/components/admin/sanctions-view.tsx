@@ -239,8 +239,6 @@ export function SanctionsView() {
         eyebrow="Admin · Monitoring"
         title="Sanksi"
         description="Riwayat tindakan sanksi yang diberikan admin."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

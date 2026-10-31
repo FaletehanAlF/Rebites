@@ -367,8 +367,6 @@ export function ReportsView() {
         eyebrow="Admin · Monitoring"
         title="Laporan"
         description="Laporan pengguna sebagai kasus moderasi."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="text-xs">

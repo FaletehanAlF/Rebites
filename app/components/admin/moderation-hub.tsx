@@ -307,8 +307,6 @@ export function ModerationHub() {
         eyebrow="Admin · Moderasi"
         title="Moderasi"
         description="Pantau antrean laporan, sebaran tingkat, dan lompat ke halaman kelola."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <Button type="button" variant="outline" size="sm" onClick={load}>
             <RefreshCw aria-hidden className="h-3.5 w-3.5" />

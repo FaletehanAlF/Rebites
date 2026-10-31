@@ -198,8 +198,6 @@ export function UmkmManagementView() {
         eyebrow="Admin · UMKM"
         title="Manajemen UMKM"
         description="Daftar toko UMKM beserta status verifikasi dan langganannya."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

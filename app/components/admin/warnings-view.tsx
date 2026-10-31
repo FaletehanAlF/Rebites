@@ -176,8 +176,6 @@ export function WarningsView() {
         eyebrow="Admin · Monitoring"
         title="Peringatan"
         description="Ringkasan peringatan per pengguna dan riwayatnya."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

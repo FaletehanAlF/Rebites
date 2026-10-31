@@ -473,8 +473,6 @@ export function OrdersManagementView() {
         eyebrow="Admin · Pesanan"
         title="Manajemen Pesanan"
         description="Pembayaran, status, dan pengiriman setiap pesanan."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

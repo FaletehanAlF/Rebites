@@ -177,8 +177,6 @@ export function ProductsManagementView() {
         eyebrow="Admin · Kelola"
         title="Produk"
         description="Semua produk UMKM. Produk baru langsung aktif; admin dapat menunda atau mengaktifkan kembali."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1.5 text-xs font-bold">

@@ -307,8 +307,6 @@ export function RoleRequestsView() {
         eyebrow="Admin · Permintaan Role"
         title="Permintaan Role"
         description="Persetujuan perubahan peran pengguna. Admin tim mengajukan; hanya Super Admin yang memutuskan."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

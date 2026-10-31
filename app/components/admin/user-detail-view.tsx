@@ -91,8 +91,6 @@ export function UserDetailView({
         eyebrow="Admin · Detail Pengguna"
         title={user.full_name?.trim() || user.email || 'Pengguna'}
         description="Rincian akun, status seller, dan UMKM milik pengguna ini."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
       />
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">

@@ -179,8 +179,6 @@ export function AuditLogsView() {
         eyebrow="Admin · Monitoring"
         title="Log Audit"
         description="Jejak audit tindakan administratif: siapa, tindakan apa, objek terdampak, dan hasilnya. Bersifat read-only."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="text-xs">

@@ -153,8 +153,6 @@ export function UsersManagementView() {
         eyebrow="Admin · Pengguna"
         title="Manajemen Pengguna"
         description="Pantau pengguna terdaftar beserta peran dan status tokonya."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

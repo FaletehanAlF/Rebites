@@ -165,8 +165,6 @@ export function SubscriptionsManagementView() {
         eyebrow="Admin · Langganan"
         title="Manajemen Langganan"
         description="Langganan UMKM (hanya-baca)."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

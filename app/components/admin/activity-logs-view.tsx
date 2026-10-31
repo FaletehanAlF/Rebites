@@ -215,8 +215,6 @@ export function ActivityLogsView() {
         eyebrow="Admin · Monitoring"
         title="Monitoring Aktivitas"
         description="Pantau aktivitas terbaru pengguna dan UMKM di platform."
-        backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1.5 text-xs font-bold">
