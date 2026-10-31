@@ -13,7 +13,7 @@ import {
   type AuditLogItem,
 } from '@/lib/admin-audit-logs';
 import { formatMetadataSafe } from '@/lib/admin-metadata';
-import { AdminPageHeader, ADMIN_PAGE_WRAPPER } from './admin-page-header';
+import { AdminPageHeader, ADMIN_PAGE_WRAPPER, ADMIN_BACK_LABEL } from './admin-page-header';
 import {
   AdminEmptyState,
   AdminErrorState,
@@ -180,7 +180,7 @@ export function AuditLogsView() {
         title="Log Audit"
         description="Jejak audit tindakan administratif: siapa, tindakan apa, objek terdampak, dan hasilnya. Bersifat read-only."
         backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
+        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="text-xs">

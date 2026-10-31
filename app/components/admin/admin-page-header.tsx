@@ -13,6 +13,17 @@ export const ADMIN_PAGE_WRAPPER =
   // artikel (minWidth 1080px) nyaris tidak muat di dalam padding.
   'mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 lg:px-8';
 
+/**
+ * Label tautan kembali. Sengaja satu kata tanpa nama tujuan.
+ *
+ * Sebelumnya tiap halaman menulis tujuan sendiri ("Dashboard Admin",
+ * "Kembali ke dasbor", "Kembali ke laporan"). Di halaman bertingkat, teks
+ * itu mengulang informasi yang sudah ada pada judul halaman di bawahnya,
+ * dan daftar panjang berbeda-beda antar halaman membuat sudut kiri atas
+ * terasa berisik. Ikon panah + "Back" cukup menjelaskan arahnya.
+ */
+export const ADMIN_BACK_LABEL = 'Back';
+
 // Hierarki tipografi admin (satu sumber kebenaran):
 //   page title 28-32px / weight 700
 //   eyebrow (metadata) 12px / weight 600
@@ -30,7 +41,7 @@ export function AdminPageHeader({
   title,
   description,
   backHref,
-  backLabel = 'Kembali ke dasbor',
+  backLabel = ADMIN_BACK_LABEL,
   actions,
   children,
   className,

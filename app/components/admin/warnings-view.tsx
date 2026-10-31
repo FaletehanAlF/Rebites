@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import {
   AdminPageHeader,
   ADMIN_PAGE_WRAPPER,
+  ADMIN_BACK_LABEL,
 } from './admin-page-header';
 import {
   AdminEmptyState,
@@ -177,7 +178,7 @@ export function WarningsView() {
         title="Peringatan"
         description="Ringkasan peringatan per pengguna dan riwayatnya."
         backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
+        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">

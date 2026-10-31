@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/app/components/ui/card';
 import {
   AdminPageHeader,
   ADMIN_PAGE_WRAPPER,
+  ADMIN_BACK_LABEL,
 } from './admin-page-header';
 import {
   AdminEmptyState,
@@ -368,7 +369,7 @@ export function ReportsView() {
         title="Laporan"
         description="Laporan pengguna sebagai kasus moderasi."
         backHref="/dashboard/admin"
-        backLabel="Dashboard Admin"
+        backLabel={ADMIN_BACK_LABEL}
         actions={
           <>
             <Badge variant="secondary" className="text-xs">

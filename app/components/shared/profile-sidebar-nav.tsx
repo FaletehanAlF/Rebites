@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ChevronDown,
   Flame,
   Heart,
   Home,
@@ -21,7 +20,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CATEGORIES } from "@/lib/categories";
 import { scrollToId } from "@/lib/scroll";
 import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
@@ -236,9 +234,6 @@ export function BuyerSidebarNav({
   const { isSeller, loading: sellerStatusLoading } = useSellerStatus();
   const [activeSection, setActiveSection] = useState<SectionId>("home");
   const [hash, setHash] = useState("");
-  const [makananOpen, setMakananOpen] = useState(
-    pathname?.startsWith("/makanan") ?? false,
-  );
 
   useEffect(() => {
     if (pathname !== "/home") {
@@ -278,10 +273,6 @@ export function BuyerSidebarNav({
       observer.disconnect();
       window.removeEventListener("hashchange", syncFromHash);
     };
-  }, [pathname]);
-
-  useEffect(() => {
-    if (pathname?.startsWith("/makanan")) setMakananOpen(true);
   }, [pathname]);
 
   // Hash dipakai agar sub-menu akun (/profile#alamat, dst.) punya active state
@@ -365,126 +356,27 @@ export function BuyerSidebarNav({
             Beranda
           </NavRow>
 
-          {collapsed ? (
-            <SectionLink
-              href="/home#rekomendasi"
-              sectionId="rekomendasi"
-              active={makananActive}
-              collapsed={collapsed}
-              onNavigate={onHomeSectionNavigate}
-              icon={UtensilsCrossed}
-            >
-              Makanan
-            </SectionLink>
-          ) : (
-            <div>
-              <button
-                type="button"
-                aria-expanded={makananOpen}
-                aria-controls="buyer-sidebar-kategori"
-                onClick={() => setMakananOpen((value) => !value)}
-                className={cn(
-                  "group flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-[13px] font-medium transition-colors duration-150",
-                  makananActive
-                    ? "bg-emerald-50 font-semibold text-emerald-900 shadow-[inset_3px_0_0_0_#1b4d32]"
-                    : "text-charcoal-900 hover:bg-emerald-50/60 hover:text-emerald-900",
-                  FOCUS_RING,
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white shadow-[0_1px_2px_0_rgba(27,77,50,0.06)] transition-colors",
-                    makananActive
-                      ? "text-emerald-900"
-                      : "text-muted-foreground group-hover:text-emerald-800",
-                  )}
-                >
-                  <UtensilsCrossed className="h-[18px] w-[18px]" aria-hidden />
-                </span>
-                <span className="flex-1 text-left">Makanan</span>
-                <ChevronDown
-                  className={cn(
-                    "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
-                    makananOpen && "rotate-180",
-                  )}
-                  aria-hidden
-                />
-              </button>
+          {/*
+            Menu "Makanan" adalah satu tautan langsung ke katalog (/makanan),
+            tanpa chevron dan tanpa sub-menu.
 
-              {makananOpen && (
-                <div
-                  id="buyer-sidebar-kategori"
-                  className="ml-[44px] mt-1.5 space-y-0.5 border-l border-border pl-3"
-                >
-                  {/*
-                    Sub-menu utama menuju KATALOG (/makanan), bukan ke anchor
-                    beranda. Beranda hanya berisi rekomendasi; seluruh daftar
-                    makanan hidup di halaman katalog.
-                  */}
-                  <Link
-                    href="/makanan"
-                    aria-current={
-                      pathname === "/makanan" ? "page" : undefined
-                    }
-                    className={cn(
-                      "flex min-h-9 items-center rounded-lg px-2.5 text-[12px] transition-colors duration-150",
-                      pathname === "/makanan"
-                        ? "bg-muted font-semibold text-emerald-900"
-                        : "text-muted-foreground hover:bg-emerald-50/40 hover:text-emerald-900",
-                      FOCUS_RING,
-                    )}
-                  >
-                    <span className="truncate">Semua makanan</span>
-                  </Link>
-
-                  <Link
-                    href="/home#rekomendasi"
-                    aria-current={
-                      isHome && activeSection === "rekomendasi"
-                        ? "page"
-                        : undefined
-                    }
-                    onClick={(event) => {
-                      if (pathname !== "/home") return;
-                      event.preventDefault();
-                      scrollToId("rekomendasi");
-                      window.history.replaceState(null, "", "#rekomendasi");
-                      onHomeSectionNavigate("rekomendasi");
-                    }}
-                    className={cn(
-                      "flex min-h-9 items-center rounded-lg px-2.5 text-[12px] transition-colors duration-150",
-                      isHome && activeSection === "rekomendasi"
-                        ? "bg-muted font-semibold text-emerald-900"
-                        : "text-muted-foreground hover:bg-emerald-50/40 hover:text-emerald-900",
-                      FOCUS_RING,
-                    )}
-                  >
-                    <span className="truncate">Rekomendasi hari ini</span>
-                  </Link>
-
-                  {CATEGORIES.map((category) => {
-                    const active = pathname === `/makanan/${category.id}`;
-                    return (
-                      <Link
-                        key={category.id}
-                        href={`/makanan/${category.id}`}
-                        aria-current={active ? "page" : undefined}
-                        className={cn(
-                          "flex min-h-9 items-center rounded-lg px-2.5 text-[12px] transition-colors duration-150",
-                          active
-                            ? "bg-muted font-semibold text-emerald-900"
-                            : "text-muted-foreground hover:bg-emerald-50/40 hover:text-emerald-900",
-                          FOCUS_RING,
-                        )}
-                      >
-                        <span className="truncate">{category.name}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
+            Dulu ini sebuah tombol buka-tutup: di beranda ia menggulir ke
+            bagian rekomendasi, dan daftar kategori baru terbuka setelah
+            diketuk. Akibatnya menekan "Makanan" di beranda TIDAK membawa
+            pengguna ke halaman lain — padahal bagi pembaca, mengklik menu
+            samping artinya pindah halaman. Karena itu sekarang perilakunya
+            sama dengan menu lain: beranda tetap di Beranda selama halaman
+            belum berpindah, dan menekan Makanan membuka katalog.
+          */}
+          <NavRow
+            href="/makanan"
+            title="Makanan"
+            active={makananActive}
+            collapsed={collapsed}
+            icon={UtensilsCrossed}
+          >
+            Makanan
+          </NavRow>
 
           <SectionLink
             href="/home#flashSale"
