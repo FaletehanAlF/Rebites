@@ -8,7 +8,6 @@ import {
   Clock,
   MapPin,
   Package,
-  PackageCheck,
   PackageOpen,
   ShoppingBag,
   Store,
@@ -28,10 +27,13 @@ import {
   getOrderSubStatus,
 } from '@/lib/order-utils';
 import {
+  getSellerAction,
+  resolveOrderPhase,
+} from '@/lib/order-status-source';
+import {
   transitionOrderStatus,
   getStatusLabel,
   getStatusColor,
-  getValidActions,
 } from '@/lib/order-state-machine';
 import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { Card } from '@/app/components/dashboard-penjual/Card';
@@ -116,27 +118,22 @@ function StatusChip({ order }: { order: StoredOrder }) {
 
 function OrderRow({
   order,
-  onAdvance,
-  onComplete,
   onStatusChange,
 }: {
   order: StoredOrder;
-  onAdvance: (order: StoredOrder) => void;
-  onComplete: (orderId: string) => void;
   onStatusChange?: (orderId: string) => void;
 }) {
   const [processing, setProcessing] = useState(false);
   const isOngoing = order.status === 'ongoing';
-  const subStatus = getOrderSubStatus(order);
-  // Tahap awal (disiapkan) -> penjual bisa lanjut ke siap-diambil / diantar.
-  const isPreparing = isOngoing && (subStatus === 'diproses' || subStatus === 'disiapkan');
-  const advanceLabel = order.fulfillment === 'delivery' ? 'Sedang Diantar' : 'Siap Diambil';
-  const AdvanceIcon = order.fulfillment === 'delivery' ? Truck : PackageCheck;
 
-  // Legacy state-machine flow (orderStatus), dipakai bila progressStatus belum ada
-  const orderStatus = order.orderStatus ?? 'processing';
-  const actions = getValidActions(orderStatus, order.fulfillment);
-  const hasStateMachineActions = actions.length > 0 && !order.progressStatus && isOngoing;
+  // Fase operacional berasal dari SATU sumber (lib/order-status-source.ts).
+  // Sebelumnya syarat tombol memakai `!order.progressStatus`, dan
+  // progress_status selalu berisi 'disiapkan' dari checkout — sehingga
+  // tombol "Mulai Siapkan Pesanan" tidak pernah muncul dan UI jatuh ke
+  // tombol cadangan yang mencoba `paid -> out_for_delivery`, transisi yang
+  // ditolak trigger database.
+  const phase = resolveOrderPhase(order);
+  const action = isOngoing ? getSellerAction(phase, order.fulfillment) : null;
 
   const handleAction = async (targetStatus: string) => {
     if (processing) return;
@@ -204,56 +201,35 @@ function OrderRow({
         <p className="text-sm font-bold text-primary">
           {formatRupiah(order.total)}
         </p>
-        {hasStateMachineActions ? (
-          <div className="flex flex-col gap-2">
-            {actions.map((action) => (
-              <button
-                key={action.action}
-                type="button"
-                disabled={processing}
-                onClick={() => handleAction(action.targetStatus)}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                  action.targetStatus === 'processing'
-                    ? 'bg-primary shadow-primary/25 hover:bg-primary-dark'
-                    : action.targetStatus === 'ready_for_pickup'
-                      ? 'bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-700'
-                      : action.targetStatus === 'out_for_delivery'
-                        ? 'bg-purple-600 shadow-purple-600/25 hover:bg-purple-700'
-                        : 'bg-primary shadow-primary/25 hover:bg-primary-dark'
-                )}
-              >
-                {action.targetStatus === 'processing' && <Package className="h-3.5 w-3.5" />}
-                {action.targetStatus === 'ready_for_pickup' && <CheckCheck className="h-3.5 w-3.5" />}
-                {action.targetStatus === 'out_for_delivery' && <Truck className="h-3.5 w-3.5" />}
-                {processing ? 'Memproses...' : action.label}
-              </button>
-            ))}
-          </div>
-        ) : isOngoing ? (
-          isPreparing ? (
-            <button
-              type="button"
-              onClick={() => onAdvance(order)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
-            >
-              <AdvanceIcon className="h-3.5 w-3.5" />
-              {advanceLabel}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onComplete(order.orderId)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
-            >
-              <CheckCheck className="h-3.5 w-3.5" />
-              Tandai Selesai
-            </button>
-          )
+        {action ? (
+          <button
+            type="button"
+            disabled={processing}
+            onClick={() => handleAction(action.targetStatus)}
+            title={action.description}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+              action.tone === 'primary'
+                ? 'bg-primary shadow-primary/25 hover:bg-primary-dark'
+                : action.tone === 'emerald'
+                  ? 'bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-700'
+                  : 'bg-purple-600 shadow-purple-600/25 hover:bg-purple-700'
+            )}
+          >
+            {action.targetStatus === 'processing' && <Package className="h-3.5 w-3.5" />}
+            {action.targetStatus === 'ready_for_pickup' && <CheckCheck className="h-3.5 w-3.5" />}
+            {action.targetStatus === 'out_for_delivery' && <Truck className="h-3.5 w-3.5" />}
+            {action.targetStatus === 'completed' && <CheckCheck className="h-3.5 w-3.5" />}
+            {processing ? 'Memproses...' : action.label}
+          </button>
         ) : (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
             <ClipboardList className="h-3.5 w-3.5" />
-            {order.status === 'completed' ? 'Selesai diproses' : 'Menunggu aksi'}
+            {phase === 'pending'
+              ? 'Menunggu pembayaran'
+              : order.status === 'completed'
+                ? 'Selesai diproses'
+                : 'Menunggu aksi'}
           </span>
         )}
       </div>
@@ -304,29 +280,6 @@ export default function PesananMasukPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  const handleAdvance = useCallback(async (order: StoredOrder) => {
-    const target = order.fulfillment === 'delivery' ? 'out_for_delivery' : 'ready_for_pickup';
-    const result = await transitionOrderStatus(order.orderId, target);
-    if (result.success) {
-      window.dispatchEvent(new Event(ORDERS_UPDATED_EVENT));
-    } else {
-      alert(result.error ?? 'Gagal mengubah status pesanan');
-    }
-  }, []);
-
-  const handleComplete = useCallback(async (orderId: string) => {
-    const result = await transitionOrderStatus(
-      orderId,
-      'completed',
-      'Pesanan ditandai selesai oleh penjual'
-    );
-    if (result.success) {
-      window.dispatchEvent(new Event(ORDERS_UPDATED_EVENT));
-    } else {
-      alert(result.error ?? 'Gagal menandai pesanan selesai');
-    }
   }, []);
 
   const tabs = [
@@ -404,8 +357,6 @@ export default function PesananMasukPage() {
               <OrderRow
                 key={order.orderId}
                 order={order}
-                onAdvance={handleAdvance}
-                onComplete={handleComplete}
                 onStatusChange={() => {}}
               />
             ))}

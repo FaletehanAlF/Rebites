@@ -1,5 +1,6 @@
 import type { StoredOrder } from './types';
 import { paymentMethods } from '@/app/components/checkout/payment-methods';
+import { resolveOrderPhase } from './order-status-source';
 
 export function paymentMethodName(id?: string): string {
   if (!id) return '-';
@@ -52,40 +53,51 @@ export type OrderSubStatus =
   | 'siap-diambil'
   | 'selesai';
 
+/**
+ * Sub-status tampilan, diturunkan dari FASE OPERASIONAL yang tunggal.
+ *
+ * `getOrderSubStatus` dulu memprioritaskan `progress_status`, sementara
+ * halaman detail memakai `order_status`. Satu pesanan bisa tampil berbeda di
+ * dua layar. Sekarang keduanya membaca fase yang sama
+ * (lihat `lib/order-status-source.ts`).
+ *
+ * Pemetaan fase -> sub-status:
+ * - pending                  -> 'disiapkan' (masih menunggu pembayaran)
+ * - paid                     -> 'disiapkan' (lunas, belum dimasak)
+ * - processing               -> 'disiapkan' (sedang disiapkan)
+ * - out_for_delivery         -> 'diantar'
+ * - ready_for_pickup         -> 'siap-diambil'
+ * - completed / cancelled    -> 'selesai'
+ */
 export function getOrderSubStatus(
   order: StoredOrder,
   progress = getOrderProgress(order)
 ): OrderSubStatus {
-  if (order.status === 'completed') return 'selesai';
+  const phase = resolveOrderPhase(order);
 
-  // Status progres yang dikendalikan penjual di dashboard (disiapkan ->
-  // siap-diambil / diantar). Prioritas utama.
-  if (order.progressStatus) return order.progressStatus;
-
-  // Fallback: status lama berbasis orderStatus (paid/processing/etc) untuk kompatibilitas pesanan lama
-  const orderStatus = order.orderStatus;
-  if (orderStatus) {
-    switch (orderStatus) {
-      case 'ready_for_pickup':
-        return 'siap-diambil';
-      case 'out_for_delivery':
-        return 'diantar';
-      case 'processing':
-        return order.fulfillment === 'delivery' ? 'diproses' : 'disiapkan';
-      case 'paid':
-        return order.fulfillment === 'delivery' ? 'diproses' : 'disiapkan';
-      case 'completed':
-        return 'selesai';
-    }
+  switch (phase) {
+    case 'completed':
+    case 'cancelled':
+      return 'selesai';
+    case 'out_for_delivery':
+      return 'diantar';
+    case 'ready_for_pickup':
+      return 'siap-diambil';
+    case 'paid':
+      return 'disiapkan';
+    case 'processing':
+      return 'disiapkan';
+    case 'pending':
+      // Pesanan yang belum dibayar belum punya tahap "diproses" yang
+      // berarti; label yang jujur adalah masih disiapkan.
+      return progress >= 0.6
+        ? order.fulfillment === 'delivery'
+          ? 'diantar'
+          : 'siap-diambil'
+        : 'disiapkan';
+    default:
+      return 'disiapkan';
   }
-
-  return progress >= 0.6
-    ? order.fulfillment === 'delivery'
-      ? 'diantar'
-      : 'siap-diambil'
-    : order.fulfillment === 'delivery'
-      ? 'diproses'
-      : 'disiapkan';
 }
 
 export const SUB_STATUS_LABEL: Record<OrderSubStatus, string> = {
