@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Filter, Search, X } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -22,14 +22,30 @@ import { cn } from '@/lib/utils';
 const KONTROL =
   'h-10 w-full rounded-[var(--radius)] border border-border bg-white text-sm text-charcoal-900 transition-colors placeholder:text-sage-500 hover:border-sage-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 
-// Label kontrol: 12px bold dengan warna teks gelap agar terbaca jelas di
-// atas kotak input (sebelumnya abu-abu `sage-500`).
-const LABEL = 'text-xs font-bold uppercase tracking-[0.06em] text-charcoal-700';
+/**
+ * Label kontrol: satu baris ikon + teks, huruf biasa (bukan kapital semua).
+ *
+ * Sebelumnya `uppercase tracking-wide`. Kapital semua membuat label filter
+ * admin terbaca seperti judul bagian dan berbeda dari filter di beranda
+ * (yang memakai huruf biasa), sehingga dua halaman terasa dari aplikasi
+ * berbeda. Ikon kecil di depan label juga mengikuti pola beranda.
+ */
+// `charcoal-700` (bukan 600): token 600 tidak ada di tailwind.config.ts, dan
+// kelas warna yang tidak terdefinisi menghasilkan CSS kosong tanpa error
+// build — teksnya diam-diam mewarisi warna induk.
+const LABEL = 'flex items-center gap-1.5 text-xs font-semibold text-charcoal-700';
 
-/** Lebar dropdown berdasarkan teks terpanjang, dibatasi agar tidak melebar liar. */
+/**
+ * Lebar dropdown berdasarkan teks terpanjang, dibatasi agar tidak melebar liar.
+ *
+ * Batas atas 24ch (dulu 30ch): pada halaman yang punya tiga dropdown + rentang
+ * tanggal dalam satu baris, 30ch per dropdown memakan ruang sehingga kotak
+ * pencarian tinggal beberapa piksel. 24ch masih memuat label terpanjang
+ * ("Semua jenis aktivitas", 21 karakter) tanpa terpotong.
+ */
 function lebarKontrol(options: { label: string }[]): string {
   const terpanjang = options.reduce((maks, opsi) => Math.max(maks, opsi.label.length), 0);
-  return `${Math.min(Math.max(terpanjang + 6, 11), 30)}ch`;
+  return `${Math.min(Math.max(terpanjang + 4, 10), 24)}ch`;
 }
 
 /** Inline style untuk lebar berbasis `ch` (dipakai lewat CSS variable di bawah). */
@@ -64,10 +80,15 @@ export function AdminSearchInput({
    */
   labelVisible?: boolean;
 }) {
-  // `flex-[1_1_18rem]` + `min-w-0`: pada toolbar flex pencarian punya basis
-  // 18rem dan membungkus ke baris berikutnya saat filter penuh, sedangkan
-  // `min-w-0` mencegah overflow ketika dipakai di dalam grid.
-  const UKURAN = 'w-full min-w-0 sm:w-auto sm:flex-[1_1_18rem] sm:max-w-md';
+  // `flex-[0_1_18rem]`: grow 0, shrink 1, basis 18rem.
+  //
+  // `grow` HARUS 0. Versi sebelumnya `flex-[1_1_18rem]` (grow 1) membuat kotak
+  // pencarian memanjang mengisi sisa baris, sehingga filter tanggal tidak
+  // kebagian tempat dan turun ke baris kedua — bahkan pada layar 1920px yang
+  // masih lapang. Itu penyebab sebenarnya "filter tidak sejajar", bukan
+  // kurangnya ruang. Dengan grow 0, semua kontrol muat sebaris dan yang
+  // menyusut hanya pencarian ketika layar benar-benar sempit.
+  const UKURAN = 'w-full min-w-0 sm:w-[18rem] sm:flex-none sm:max-w-md';
 
   const field = (
     <div className="relative w-full min-w-0">
@@ -110,7 +131,10 @@ export function AdminSearchInput({
   // sama seperti AdminSelect dan AdminDateInput.
   return (
     <label className={cn('flex flex-col gap-1.5', UKURAN, className)}>
-      <span className={LABEL}>{label}</span>
+      <span className={LABEL}>
+        <Search aria-hidden className="h-3.5 w-3.5 shrink-0 text-primary" />
+        {label}
+      </span>
       {field}
     </label>
   );
@@ -134,7 +158,10 @@ export function AdminDateInput({
       // ikon menimpa dua digit terakhir tanggal.
       style={widthVar('--admin-date-w', '13ch')}
     >
-      <span className={LABEL}>{label}</span>
+      <span className={LABEL}>
+        <CalendarDays aria-hidden className="h-3.5 w-3.5 shrink-0 text-primary" />
+        {label}
+      </span>
       <input
         type="date"
         value={value}
@@ -174,7 +201,12 @@ export function AdminDateRange({
   className?: string;
 }) {
   return (
-    <div className={cn('flex w-full min-w-0 items-end gap-2 sm:w-auto', className)}>
+    <div
+      className={cn(
+        'flex w-full min-w-0 items-end gap-2 sm:w-auto sm:shrink-0',
+        className
+      )}
+    >
       <AdminDateInput
         value={from}
         onChange={onFromChange}
@@ -206,10 +238,16 @@ export function AdminSelect({
 }) {
   return (
     <label
-      className={cn('flex w-full min-w-0 flex-col gap-1.5 sm:w-[var(--admin-select-w)]', className)}
+      className={cn(
+        'flex w-full min-w-0 flex-col gap-1.5 sm:w-[var(--admin-select-w)] sm:shrink-0',
+        className
+      )}
       style={widthVar('--admin-select-w', lebarKontrol(options))}
     >
-      <span className={LABEL}>{label}</span>
+      <span className={LABEL}>
+        <Filter aria-hidden className="h-3.5 w-3.5 shrink-0 text-primary" />
+        {label}
+      </span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -225,7 +263,16 @@ export function AdminSelect({
   );
 }
 
-/** Baris alat di atas tabel: pencarian + filter, membungkus otomatis di layar kecil. */
+/**
+ * Baris alat di atas tabel: pencarian + filter.
+ *
+ * `flex-nowrap` pada layar >= sm BUKAN pilihan gaya: dengan `flex-wrap`,
+ * menyempitnya area konten (sidebar admin dibuka) membuat baris tidak muat
+ * lalu filter tanggal terdorong ke baris kedua, sehingga "Dari tanggal" dan
+ * "Sampai tanggal" tidak lagi sejajar dengan filter lain. Satu baris selalu,
+ * dan yang menyusut hanya kotak pencarian (satu-satunya item ber-`flex-shrink`
+ * yang boleh mengecil) — filter lain lebarnya tetap agar tidak terbaca sesak.
+ */
 export function AdminToolbar({
   children,
   className,
@@ -237,8 +284,13 @@ export function AdminToolbar({
     <div
       className={cn(
         // gap horizontal lebih lebar daripada vertikal: pada satu baris,
-        // label filter (huruf kapital) berdempet ke kotak pencarian bila
-        // jaraknya sama dengan jarak antar-baris.
+        // label filter berdempet ke kotak pencarian bila jaraknya sama
+        // dengan jarak antar-baris.
+        //
+        // Sengaja TETAP `flex-wrap`. Satu baris dipaksa lewat penyebabnya
+        // (kotak pencarian tidak lagi `grow`, lihat AdminSearchInput), bukan
+        // lewat `nowrap` — `nowrap` akan membuat kontrol meluber ke samping
+        // pada layar 1024-1280px.
         'mb-4 flex flex-col gap-y-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-x-4',
         className
       )}
