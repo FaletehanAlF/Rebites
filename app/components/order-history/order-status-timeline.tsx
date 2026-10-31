@@ -1,14 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import type { StoredOrder } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { formatOrderTime } from '@/lib/order-utils';
-import {
-  buildTimelineTimes,
-  fetchOrderStatusHistory,
-} from '@/lib/order-status-history';
+import { buildTimelineTimes } from '@/lib/order-status-history';
+import { useOrderStatusHistory } from '@/hooks/use-order-status-history';
 
 /**
  * Timeline status pesanan.
@@ -79,21 +76,11 @@ function buildSteps(order: StoredOrder, times: Record<string, string | null>): T
 }
 
 export function OrderStatusTimeline({ order }: { order: StoredOrder }) {
-  // Riwayat status dibaca di sini, bukan diteruskan dari halaman induk:
-  // komponen ini dipakai di dua tempat (modal detail dan halaman detail
-  // pesanan) dan keduanya butuh waktu yang sama.
-  const [times, setTimes] = useState<Record<string, string | null>>({});
-
-  useEffect(() => {
-    let aktif = true;
-    void fetchOrderStatusHistory(order.dbId).then((riwayat) => {
-      if (!aktif) return;
-      setTimes(buildTimelineTimes(order, riwayat));
-    });
-    return () => {
-      aktif = false;
-    };
-  }, [order]);
+  // Riwayat status dibaca lewat hook, bukan di dalam komponen: modal detail dan
+  // halaman detail pesanan memakai komponen ini, dan hook ini menyimpan
+  // hasilnya per `dbId` sehingga tidak ada query ganda.
+  const { history } = useOrderStatusHistory(order.dbId);
+  const times = buildTimelineTimes(order, history);
 
   const steps = buildSteps(order, times);
 

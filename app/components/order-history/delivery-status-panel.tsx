@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   CheckCircle2,
   Clock3,
+  Hourglass,
   MapPin,
   Navigation,
   PackageCheck,
@@ -13,6 +14,8 @@ import {
 } from 'lucide-react';
 import type { StoredOrder } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { formatElapsedSince, resolveWaitSince } from '@/lib/delivery-wait-time';
+import { useOrderStatusHistory } from '@/hooks/use-order-status-history';
 
 /**
  * Panel status pengantaran untuk pembeli.
@@ -176,18 +179,33 @@ export function DeliveryStatusPanel({
         : null;
 
   /**
-   * Jam berdenyut untuk sisa waktu ETA.
+   * Jam berdenyut.
    *
-   * Diperbarui 30 detik sekali — cukup untuk teks "±X menit lagi" tanpa
-   * memicu render tiap detik pada panel yang mungkin ada di halaman dengan
-   * peta aktif.
+   * Diperbarui 30 detik sekali — cukup untuk teks "±X menit lagi" dan
+   * "sudah menunggu X" tanpa memicu render tiap detik pada panel yang
+   * mungkin ada di halaman dengan peta aktif.
+   *
+   * Interval JALAN selama pesanan masih berjalan, walaupun tidak ada ETA:
+   * kalau hanya berjalan saat ada ETA, teks "sudah menunggu" akan basi
+   * pada pesanan yang estimasinya belum terisi.
    */
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    if (arrivalTs == null || phase === 'done' || phase === 'cancelled') return;
+    if (phase === 'done' || phase === 'cancelled') return;
     const id = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(id);
-  }, [arrivalTs, phase]);
+  }, [phase]);
+
+  /**
+   * Berapa lama pembeli sudah menunggu pada tahap yang sedang berjalan.
+   *
+   * Dihitung dari perubahan status TERAKHIR yang tercatat, bukan dari waktu
+   * pesanan dibuat — yang penting bagi pembeli adalah sudah menunggu berapa
+   * lama di tahap ini, bukan umur pesanan.
+   */
+  const { lastStatusChangeAt } = useOrderStatusHistory(order.dbId);
+  const waitSince = resolveWaitSince(order, lastStatusChangeAt);
+  const waited = formatElapsedSince(waitSince, now);
 
   const eta =
     arrivalTs != null && phase !== 'done'
@@ -309,6 +327,18 @@ export function DeliveryStatusPanel({
       )}
 
       <dl className="divide-y divide-hairline border-t border-hairline">
+        {waited && (
+          <div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
+            <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
+              <Hourglass className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              Sudah menunggu
+            </dt>
+            <dd className="font-semibold tabular-nums text-charcoal-900 text-right">
+              {waited}
+            </dd>
+          </div>
+        )}
+
         {arrivalValid && (
           <div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
             <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
