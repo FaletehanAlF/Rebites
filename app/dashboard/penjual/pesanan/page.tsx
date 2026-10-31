@@ -39,6 +39,7 @@ import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { Card } from '@/app/components/dashboard-penjual/Card';
 import { CourierLiveTracker } from '@/app/components/order-history/courier-live-tracker';
 import { SmartImage } from '@/app/components/shared/SmartImage';
+import { CourierPositionPanel } from '@/app/components/order-history/courier-position-panel';
 
 type OrderTab = 'berlangsung' | 'selesai' | 'semua';
 
@@ -234,11 +235,17 @@ function OrderRow({
         )}
       </div>
       {/*
-        Pelacak kurir live sengaja tidak dipasang di kartu penjual: sebelumnya
+        Pelacak kurir live TIDAK dipasang di kartu penjual: sebelumnya
         komponen ini langsung memancarkan GPS perangkat ke kanal Broadcast
         publik. Penjual bukan kurir, dan kanal itu bisa diterima siapa pun yang
-        mengetahui kode pesanan. Aktifkan kembali hanya lewat jalur ber-RLS.
+        mengetahui kode pesanan.
+
+        Yang ditampilkan ke penjual hanyalah POSISI yang dibaca dari tabel
+        ber-RLS (bukan koordinat perangkat penjual), lewat panel di bawah.
       */}
+      {order.fulfillment === 'delivery' && (
+        <CourierPositionPanel orderDbId={order.dbId} className="sm:col-span-full" />
+      )}
     </li>
   );
 }

@@ -10,6 +10,7 @@ import {
   straightRoute,
   type RouteCoordinate,
 } from '@/lib/route-geometry';
+import { projectOntoRoute } from '@/lib/courier-location';
 import { fetchWithAuth } from '@/lib/auth-token';
 // CSS MapLibre diimpor statis: Next menanganinya saat build (bukan saat runtime
 // `await import(...)`, yang gagal resolve sebagai module).
@@ -77,10 +78,22 @@ export default function DeliveryMap({
   className,
   /** true = pengantaran sedang berjalan; menyalakan animasi kendaraan. */
   animateRoute = false,
+  /**
+   * Posisi kurir NYATA (dari GPS perangkat kurir).
+   *
+   * Kalau ada, markerKendaraan mengikuti posisi ini — bukan animasi
+   * ilustratif. Posisi diproyeksikan ke rute supaya motor meluncur tepat di
+   * atas jalan, bukan meleset ke gang kecil.
+   *
+   * `null` berarti kurir belum mengirim posisi: animasi ilustratif yang
+   * dipakai, dan label UI menjelaskan bahwa itu ilustrasi.
+   */
+  courierPosition = null,
 }: {
   plan: MapPlan;
   className?: string;
   animateRoute?: boolean;
+  courierPosition?: { latitude: number; longitude: number } | null;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   // `unknown` dipakai agar tipe MapLibre tidak bocor ke props pemanggil yang
@@ -356,6 +369,34 @@ export default function DeliveryMap({
   }, [route, routeSource, status]);
 
   /**
+   * Marker kendaraan mengikuti POSISI KURIR NYATA bila tersedia.
+   *
+   * Dipisah dari animasi ilustratif: bila posisi GPS kurir ada, marker
+   * DIPINDAH ke titik itu (diproyeksikan ke rute) dan animasi illustratif
+   * DIMATIKAN. Dua-duanya tidak pernah berjalan bersamaan — kalau animasi
+   * tetap jalan, motor akan melompat balik dan forth saat posisi GPS juga
+   * bergerak, dan pengguna tidak tahu mana yang benar.
+   *
+   * Arah ikon mengikuti arah jalan di titik tersebut.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    const vehicle = vehicleRef.current;
+    if (!map || !vehicle || status !== 'ready' || !route || route.length < 2) return;
+    if (!courierPosition) return;
+
+    const projection = projectOntoRoute(route, courierPosition);
+    if (!projection) return;
+
+    vehicle.setLngLat(projection.position);
+    const heading = headingAtProgress(route, projection.progress);
+    const inner = vehicle.getElement().querySelector('[data-vehicle-inner]');
+    if (inner instanceof HTMLElement) {
+      inner.style.transform = `rotate(${heading}deg)`;
+    }
+  }, [courierPosition, route, status]);
+
+  /**
    * Animasi kendaraan dipisah dari efek inisialisasi peta.
    *
    * Memisahkan berarti perubahan status pengantaran tidak akan membuang dan
@@ -373,7 +414,16 @@ export default function DeliveryMap({
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (!animateRoute || status !== 'ready' || reduceMotion || !route || route.length < 2) {
+    // Posisi kurir nyata menang: animasi ilustratif harus mati supaya
+    // marker tidak bergerak bolak-balik mengabaikan posisi GPS.
+    if (
+      !animateRoute ||
+      courierPosition != null ||
+      status !== 'ready' ||
+      reduceMotion ||
+      !route ||
+      route.length < 2
+    ) {
       return;
     }
 
@@ -416,7 +466,7 @@ export default function DeliveryMap({
         frameRef.current = null;
       }
     };
-  }, [animateRoute, status, route]);
+  }, [animateRoute, courierPosition, status, route]);
 
   if (plan.availability !== 'ready' || lat == null || lng == null) {
     return (
@@ -477,6 +527,20 @@ export default function DeliveryMap({
             style={{ backgroundColor: ROUTE_COLOR }}
           />
           {routeSource === 'road' ? 'Rute jalan' : 'Rute perkiraan'}
+        </p>
+      )}
+
+      {/* Legenda motor: menjelaskan apakah motor yang terlihat adalah posisi
+          kurir NYATA atau animasi ilustratif. Tanpa ini, pengguna bisa
+          mengira motor hijau menunjukkan lokasi kurir padahal cuma ilustrasi. */}
+      {status === 'ready' && (
+        <p className="pointer-events-none absolute bottom-8 left-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-charcoal-700 shadow-sm">
+          <span
+            aria-hidden
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: ROUTE_COLOR }}
+          />
+          {courierPosition ? 'Posisi kurir (live)' : 'Motor ilustratif'}
         </p>
       )}
 

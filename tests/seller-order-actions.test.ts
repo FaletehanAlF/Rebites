@@ -148,7 +148,12 @@ test('modul sumber kebenaran tidak memakai progress_status sebagai penentu', () 
 
 test('alur dua langkah dari paid bisa diselesaikan', () => {
   // Uji alur PENUH yang dipakai penjual: paid -> processing -> diantar.
-  let order = { status: 'ongoing', orderStatus: 'paid', progressStatus: 'disiapkan' };
+  let order = {
+    status: 'ongoing',
+    orderStatus: 'paid',
+    progressStatus: 'disiapkan',
+    fulfillment: 'delivery',
+  };
 
   const first = getSellerAction(resolveOrderPhase(order), order.fulfillment);
   assert.ok(first, 'harus ada aksi pada status paid');

@@ -15,7 +15,9 @@ import {
 import type { StoredOrder } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { formatElapsedSince, resolveWaitSince } from '@/lib/delivery-wait-time';
+import { formatPositionAge } from '@/lib/courier-location';
 import { useOrderStatusHistory } from '@/hooks/use-order-status-history';
+import { useCourierLocation } from '@/hooks/use-courier-location';
 
 /**
  * Panel status pengantaran untuk pembeli.
@@ -207,6 +209,19 @@ export function DeliveryStatusPanel({
   const waitSince = resolveWaitSince(order, lastStatusChangeAt);
   const waited = formatElapsedSince(waitSince, now);
 
+  /**
+   * Posisi kurir LIVE.
+   *
+   * Hook ini hanya aktif saat pesanan sedang diantar, jadi tidak ada
+   * langganan Realtime untuk pesanan yang tidak sedang berjalan.
+   */
+  const isOnTheWay = phase === 'on-the-way';
+  const { location: courierLocation, freshness: courierFreshness } = useCourierLocation(
+    order.dbId,
+    isOnTheWay
+  );
+  const courierAge = formatPositionAge(courierLocation?.recordedAt, now);
+
   const eta =
     arrivalTs != null && phase !== 'done'
       ? formatEtaRemaining(new Date(arrivalTs), now)
@@ -216,13 +231,16 @@ export function DeliveryStatusPanel({
   const activeIndex = PHASE_INDEX[phase];
   const chipLabel =
     phase === 'on-the-way'
-      ? 'GPS belum aktif'
+      ? courierFreshness === 'aktif'
+        ? 'Kurir dalam perjalanan'
+        : courierFreshness === 'terlambat'
+          ? 'Posisi terlambat'
+          : 'Menunggu posisi kurir'
       : phase === 'done'
         ? 'Pengantaran selesai'
         : phase === 'cancelled'
           ? 'Dibatalkan'
           : 'Menunggu pengantaran';
-
   return (
     <div
       className={cn(
@@ -396,11 +414,39 @@ export function DeliveryStatusPanel({
           role="status"
           className="flex items-start gap-2 border-t border-hairline bg-cream-50 px-4 py-2.5 sm:px-5"
         >
-          <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" aria-hidden />
+          {courierFreshness === 'aktif' ? (
+            <Navigation className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+          ) : (
+            <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" aria-hidden />
+          )}
           <p className="text-xs leading-relaxed text-charcoal-500">
-            <span className="font-semibold text-charcoal-900">Posisi kurir belum tersedia.</span>{' '}
-            Pelacakan lokasi langsung belum diaktifkan; status pengantaran di atas selalu
-            diperbarui dari sistem pesanan.
+            {courierFreshness === 'aktif' ? (
+              <>
+                <span className="font-semibold text-charcoal-900">
+                  Posisi kurir diperbarui otomatis.
+                </span>{' '}
+                Kurir mengirim posisi dari perangkatnya
+                {courierAge ? ` (${courierAge})` : ''}. Ikon motor di peta mengikuti
+                posisi itu.
+              </>
+            ) : courierFreshness === 'terlambat' ? (
+              <>
+                <span className="font-semibold text-charcoal-900">
+                  Posisi kurir terlambat.
+                </span>{' '}
+                Data posisi terakhir diterima{' '}
+                {courierAge ?? 'beberapa waktu lalu'}, jadi posisinya mungkin sudah tidak
+                akurat. Status pengantaran di atas tetap diperbarui dari sistem pesanan.
+              </>
+            ) : (
+              <>
+                <span className="font-semibold text-charcoal-900">
+                  Posisi kurir belum tersedia.
+                </span>{' '}
+                Kurir belum mengirim posisi untuk pesanan ini. Status pengantaran di atas
+                tetap diperbarui dari sistem pesanan.
+              </>
+            )}
           </p>
         </div>
       )}

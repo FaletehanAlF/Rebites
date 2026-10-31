@@ -31,9 +31,11 @@ import { transitionOrderStatus } from '@/lib/order-state-machine';
 import { getReviewFor, saveReview } from '@/lib/review-storage';
 import { useCurrentUser } from '@/lib/current-user';
 import { useOrders } from '@/hooks/use-orders';
+import { useCourierLocation } from '@/hooks/use-courier-location';
 import { toast } from '@/hooks/use-toast';
 import { DeliveryStatusPanel } from '@/app/components/order-history/delivery-status-panel';
 import { OrderStatusTimeline } from '@/app/components/order-history/order-status-timeline';
+import { CourierChat } from '@/app/components/order-history/courier-chat';
 import dynamic from 'next/dynamic';
 import { buildMapPlan } from '@/lib/delivery-map-plan';
 
@@ -109,6 +111,20 @@ function OrderDetailContent() {
   }, [order, userId]);
 
   const orderStatus = order?.orderStatus ?? 'processing';
+
+  /**
+   * Posisi kurir LIVE.
+   *
+   * Hanya dibaca untuk pesanan yang sedang diantar. Hook ini menotalkan
+   * langganan Realtime-nya sendiri, jadi tidak ada biaya langganan untuk
+   * pesanan yang tidak diantar.
+   */
+  const isDelivering = orderStatus === 'out_for_delivery';
+  const { location: courierLocation, freshness: courierFreshness } = useCourierLocation(
+    order?.dbId,
+    isDelivering
+  );
+
   const canConfirmReceipt =
     order?.status === 'ongoing' &&
     (orderStatus === 'ready_for_pickup' || orderStatus === 'out_for_delivery');
@@ -440,13 +456,27 @@ function OrderDetailContent() {
                   // berjalan. Pada fase lain marker tetap di titik awal,
                   // sehingga peta tidak pernah berpura-pura ada pergerakan.
                   animateRoute={!isDone && orderStatus === 'out_for_delivery'}
+                  // Posisi kurir NYATA (dari GPS perangkat kurir). Bila
+                  // ada, motor mengikuti posisi itu dan animasi ilustratif
+                  // dimatikan.
+                  courierPosition={
+                    courierFreshness === 'tidak_tersedia'
+                      ? null
+                      : courierLocation
+                        ? {
+                            latitude: courierLocation.latitude,
+                            longitude: courierLocation.longitude,
+                          }
+                        : null
+                  }
                 />
                 <p className="text-[11px] leading-relaxed text-charcoal-500">
-                  Garis hijau adalah perkiraan lurus antara titik toko dan alamat
-                  tujuan, bukan rute jalan. Ikon kendaraan hanya ilustrasi
-                  perjalanan: posisi kurir sebenarnya belum dikirim ke aplikasi.
+                  {courierFreshness === 'aktif' || courierFreshness === 'terlambat'
+                    ? 'Ikon motor menunjukkan posisi kurir sebenarnya, diperbarui otomatis dari perangkatnya. Garis hijau adalah rute jalan dari toko ke alamat tujuan.'
+                    : 'Garis hijau adalah rute jalan dari toko ke alamat tujuan. Kurir belum mengirim posisi, jadi ikon motor masih berupa ilustrasi perjalanan.'}
                 </p>
                 <DeliveryStatusPanel order={order} variant="full" />
+                <CourierChat orderDbId={order.dbId} />
                 {dest && (
                   <div className="rounded-2xl border border-hairline bg-white p-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-sage-500">

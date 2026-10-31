@@ -13,6 +13,7 @@ import {
   Receipt,
   Settings,
   Store,
+  Truck,
   User,
   X,
   type LucideIcon,
@@ -21,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { useRebitesCoins } from '@/hooks/use-rebites-coins';
 import { useSellerStatus } from '@/hooks/use-seller-status';
 import { useProfile } from '@/hooks/use-profile';
+import { useIsCourier } from '@/hooks/use-is-courier';
 
 export interface SidebarUser {
   fullName: string;
@@ -100,6 +102,9 @@ export function AccountSidebar({
   const { balance, totalEarned } = useRebitesCoins();
   const { avatarUrl } = useProfile();
   const { isSeller, loading: sellerStatusLoading } = useSellerStatus();
+  // Status kurir hanya diperiksa saat sidebar terbuka: user yang tidak
+  // pernah membuka sidebar tidak perlu memanggil endpoint ini.
+  const { isCourier } = useIsCourier(open);
 
   return (
     <AnimatePresence>
@@ -242,6 +247,20 @@ export function AccountSidebar({
                   )}
                 </Link>
               ))}
+
+              {isCourier && (
+                <Link
+                  href="/dashboard/kurir"
+                  onClick={onClose}
+                  className={cn(
+                    'group flex w-full items-center gap-3.5 rounded-xl px-4 py-3 font-secondary text-[15px] font-medium text-foreground transition-colors duration-200 hover:bg-white hover:text-primary',
+                    FOCUS_RING,
+                  )}
+                >
+                  <Truck className="h-5 w-5 shrink-0 text-muted-foreground transition-colors duration-200 group-hover:text-primary" />
+                  <span className="flex-1">Dashboard Kurir</span>
+                </Link>
+              )}
 
               <p className="mt-4 px-4 pb-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Aktivitas
