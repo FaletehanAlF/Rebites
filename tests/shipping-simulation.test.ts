@@ -583,7 +583,13 @@ test('mock provider: quote deterministik, lokal, dan berlabel simulasi', async (
     assert.ok(Number.isInteger(option.price) && option.price > 0);
     assert.match(option.courierName, /Simulasi/);
     assert.match(option.serviceName, /Simulasi/);
-    assert.ok(option.duration.length > 0);
+    // Jarak dan waktu adalah dua field terpisah. Sebelumnya keduanya berbagi
+    // satu field `duration`, sehingga UI menempelkan jarak setelah kata
+    // "Estimasi tiba" ("Estimasi tiba Estimasi 5 km").
+    assert.ok(option.etaLabel.length > 0, 'label waktu wajib terisi');
+    assert.match(option.etaLabel, /menit/);
+    assert.ok(option.distanceLabel.length > 0, 'label jarak wajib terisi');
+    assert.match(option.distanceLabel, /km/);
     if (i > 0) {
       assert.ok(option.price >= first.options[i - 1].price);
     }

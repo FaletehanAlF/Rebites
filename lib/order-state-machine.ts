@@ -196,9 +196,12 @@ export async function transitionOrderStatus(
       const rawDistance = (order as Record<string, any>).distance_km;
       const parsedDistance = rawDistance == null ? NaN : Number(rawDistance);
       const distanceKm =
-        Number.isFinite(parsedDistance) && parsedDistance >= 0 ? parsedDistance : null;
-      if (deliveryOption !== 'pickup' && distanceKm != null) {
-        const travelMinutes = calculateTravelMinutes(distanceKm);
+        Number.isFinite(parsedDistance) && parsedDistance > 0 ? parsedDistance : null;
+      const travelMinutes = distanceKm == null ? 0 : calculateTravelMinutes(distanceKm);
+      // ETA hanya ditulis bila benar-benar bisa dihitung. Jarak 0/unknown
+      // menghasilkan travel 0 menit, dan menulis ETA = "sekarang" untuk
+      // pengantaran nyata adalah janji palsu — lebih baik tidak ada ETA.
+      if (deliveryOption !== 'pickup' && distanceKm != null && travelMinutes > 0) {
         const estimatedArrivalAt = new Date(deliveryStartedAt.getTime() + travelMinutes * 60_000);
         updatePayload.estimated_arrival_at = estimatedArrivalAt.toISOString();
         updatePayload.delivery_distance_km = distanceKm;

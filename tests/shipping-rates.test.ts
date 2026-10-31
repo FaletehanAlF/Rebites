@@ -210,15 +210,22 @@ test('cache key tarif: koordinat & seluruh input penentu ikut membedakan key', (
 /**
  * Plafon ongkir (BUG.md: "ongkir jangan mahal-mahal walau jaraknya jauh").
  *
- * Sebelumnya maksimum Rp50.000, sehingga pesanan jarak jauh menambah ongkir
- * yang lebih besar dari harga makannya. Sekarang fee dibatasi plafon dan
- * dinaikkan dalam kelipatan Rp100 agar pembeli melihat angka bulat.
+ * Riwayat angka, supaya batas baru tidak terasa sewenang-wenang:
+ * - Awalnya maksimum Rp50.000, sehingga pesanan jarak jauh menambah ongkir
+ *   yang lebih besar dari harga makannya.
+ * - Lalu diturunkan ke plafon Rp15.000 dengan minimum Rp4.000. Plafon itu
+ *   masih terlalu tinggi: satu porsi makanan surplus dijual Rp10.000-15.000,
+ *   jadi ongkir Rp15.000 membuat totalnya nyaris dua kali lipat.
+ * - Sekarang: base Rp3.000 + Rp1.000/km, minimum Rp3.000, plafon Rp10.000.
+ *
+ * Tes ini mengunci BATAS, bukan angka tengah, karena batas itulah yang
+ * melindungi pembeli.
  */
 test('ongkir: dibatasi plafon walau jarak sangat jauh, dan tidak pernah di bawah minimum', () => {
   for (const km of [0, 1, 5, 12, 40, 200]) {
     const fee = calculateDeliveryFee(km);
-    assert.ok(fee >= 4000, `ongkir ${km} km tidak boleh di bawah minimum: ${fee}`);
-    assert.ok(fee <= 15000, `ongkir ${km} km harus <= plafon 15000, dapat ${fee}`);
+    assert.ok(fee >= 3000, `ongkir ${km} km tidak boleh di bawah minimum 3000: ${fee}`);
+    assert.ok(fee <= 10000, `ongkir ${km} km harus <= plafon 10000, dapat ${fee}`);
     assert.equal(fee % 100, 0, 'ongkir dibulatkan ratusan rupiah');
   }
 });
@@ -227,8 +234,10 @@ test('ongkir: naik seiring jarak (bukan nilai tetap) sampai menyentuh plafon', (
   const near = calculateDeliveryFee(1);
   const mid = calculateDeliveryFee(4);
   assert.ok(mid > near, 'jarak lebih jauh harus lebih mahal sebelum plafon');
-  assert.equal(calculateDeliveryFee(40), 15000);
-  assert.equal(calculateDeliveryFee(200), 15000);
+  assert.equal(calculateDeliveryFee(40), 10000);
+  assert.equal(calculateDeliveryFee(200), 10000);
+  // Plafon tidak boleh terlampaui oleh jarak sejauh apa pun.
+  assert.ok(calculateDeliveryFee(1000) <= 10000);
 });
 
 test('route rates & checkout memakai helper bersama dan tidak menyentuh API key', () => {

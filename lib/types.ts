@@ -165,7 +165,15 @@ export interface ShippingRateOption {
   courierName: string;
   serviceName: string;
   price: number;
-  duration: string;
+  /**
+   * Label JARAK, mis. `5 km`. Dipisahkan dari waktu karena keduanya dulu
+   * berbagi satu field `duration`: API mengisinya dengan jarak, lalu kartu
+   * checkout menempelkannya setelah kata "Estimasi tiba" sehingga pembeli
+   * membaca "Estimasi tiba Estimasi 5 km".
+   */
+  distanceLabel: string;
+  /** Label WAKTU, mis. `±22 menit`. Kosong bila tidak dapat dihitung. */
+  etaLabel: string;
   serviceType: string;
 }
 
