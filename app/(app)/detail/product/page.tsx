@@ -1,8 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { DetailProductContent } from '@/app/components/detail-product/detail-product-content';
-import { ProfileNavbar } from '@/app/components/shared/navbar';
-import { MobileNavbar } from '@/app/components/shared/MobileNavbar';
 
 export const metadata: Metadata = {
   title: 'Detail Produk - ReBites',
@@ -13,27 +11,19 @@ export const metadata: Metadata = {
 /**
  * The *application* product detail route.
  *
- * The application shell (mobile navbar + profile navbar with notifications,
- * account sidebar and logout) is passed in here as the route's `shell`, not
- * baked into `detail-page.tsx`. That is what keeps `/preview/product` — the
- * public showcase route used by the landing page — free of account UI and out
- * of the supabase/auth bundle.
+ * The application shell is passed in here as the route's `shell`, not baked
+ * into `detail-page.tsx`. `buyerShell: true` wraps the page in `BuyerShell`
+ * (desktop topbar + sidebar with profile/logout + mobile navbar) — the same
+ * chrome every other buyer application page uses. That is what keeps
+ * `/preview/product` — the public showcase route used by the landing page —
+ * free of account UI and out of the supabase/auth bundle.
  */
 export default function DetailProductPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-secondary" />}>
       <DetailProductContent
         shell={{
-          header: (
-            <>
-              <div className="lg:hidden">
-                <MobileNavbar />
-              </div>
-              <div className="hidden lg:block">
-                <ProfileNavbar />
-              </div>
-            </>
-          ),
+          buyerShell: true,
           productPath: '/detail/product',
           seeAllHref: '/home',
         }}

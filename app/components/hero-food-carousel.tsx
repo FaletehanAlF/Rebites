@@ -164,9 +164,11 @@ const FOODS: FeaturedFood[] = [
 type PlateFood = FeaturedFood & { id?: string };
 
 function foodItemToPlate(food: FoodItem): PlateFood {
+  // `rating` bisa null (belum ada ulasan) — pakai konvensi repo `?? 0` untuk
+  // perhitungan; field ini tidak dirender oleh carousel (hanya name + image).
   const reviewCount = Math.max(
     40,
-    Math.round(food.rating * 42 + (food.distanceKm || 1) * 7),
+    Math.round((food.rating ?? 0) * 42 + (food.distanceKm || 1) * 7),
   );
   return {
     id: food.id,
@@ -178,7 +180,7 @@ function foodItemToPlate(food: FoodItem): PlateFood {
     price: food.discountedPrice,
     originalPrice: food.originalPrice,
     badge: "Best Seller",
-    rating: food.rating,
+    rating: food.rating ?? 0,
     reviewCount,
     stockLabel: food.stockLabel,
     description: `${food.name} dari ${food.vendorName}, menu berkualitas dengan harga yang terjangkau.`,
