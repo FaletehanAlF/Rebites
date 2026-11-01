@@ -1,4 +1,6 @@
+
 import { Quote } from 'lucide-react';
+
 import { Reveal } from '@/app/components/shared/reveal';
 import { SectionHeading } from '@/app/components/landing/SectionHeading';
 import { TESTIMONIALS } from '@/app/components/landing/testimonials';
@@ -6,10 +8,9 @@ import { TESTIMONIALS } from '@/app/components/landing/testimonials';
 /**
  * Ulasan pengguna di halaman landing.
  *
- * Isinya data demo dari `testimonials.ts` — belum ada ulasan publik yang
- * bisa diverifikasi di aplikasi — jadi section ini sengaja menutup dengan
- * catatan bahwa yang ditampilkan bukan testimoni pelanggan terverifikasi.
- * Ketika data riil tersedia, cukup ganti isi datasetnya.
+ * Data masih berupa demo dan belum merupakan ulasan pelanggan
+ * yang dapat diverifikasi. Ketika data riil tersedia, cukup
+ * ganti isi dataset testimonials.ts.
  */
 export function TestimonialsSection() {
   return (
@@ -27,24 +28,32 @@ export function TestimonialsSection() {
 
         <ul className="mt-10 grid gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-5">
           {TESTIMONIALS.map((item, index) => (
-            <Reveal key={item.name} as="li" delay={Math.min(index, 3) * 0.06}>
+            <Reveal
+              key={item.name}
+              as="li"
+              delay={Math.min(index, 3) * 0.06}
+            >
               <figure className="flex h-full flex-col rounded-2xl border border-border bg-white p-6 sm:p-7">
                 <Quote
                   className="h-6 w-6 shrink-0 text-primary/40"
                   aria-hidden
                 />
+
                 <blockquote className="mt-4 flex-1 text-[15px] leading-[1.8] text-foreground">
                   {item.quote}
                 </blockquote>
+
                 <figcaption className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
                   <div>
                     <p className="font-display text-sm font-semibold tracking-tight text-primary">
                       {item.name}
                     </p>
+
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                       {item.role}
                     </p>
                   </div>
+
                   <span className="rounded-full bg-accent px-3 py-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
                     {item.audience}
                   </span>
@@ -55,8 +64,8 @@ export function TestimonialsSection() {
         </ul>
 
         <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-          Cerita di atas adalah contoh tampilan (data demo), bukan ulasan
-          pelanggan terverifikasi.
+          Catatan: ulasan yang ditampilkan merupakan data demo,
+          bukan testimoni pelanggan yang telah terverifikasi.
         </p>
       </div>
     </section>

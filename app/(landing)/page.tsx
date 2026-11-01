@@ -7,11 +7,20 @@ import { TestimonialsSection } from '@/app/components/landing/TestimonialsSectio
 import { MembershipSection } from '@/app/components/landing/MembershipSection';
 import { FAQSection } from '@/app/components/landing/FAQSection';
 import { ContactCTASection } from '@/app/components/landing/ContactCTASection';
+import { HeroStack } from '../components/landing/HeroStack';
+
+import {
+  HorizontalSections,
+  HorizontalPanel,
+} from '@/app/components/landing/HorizontalSections';
 
 export default function Home() {
   return (
     <PublicShell intro>
-      <HeroSection />
+      {/* Hero tetap di-pin dengan efek stack */}
+      <HeroStack mode="stack">
+        <HeroSection />
+      </HeroStack>
       <HowItWorksSection />
       <WhyReBitesSection />
       <FoodDiscoverySection />

@@ -1,101 +1,97 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Surfaces — white is the primary surface, very light neutral is secondary */
+    /* Base surfaces */
     --background: 0 0% 100%;
-    --foreground: 150 25% 10%;
+    --foreground: 137 18% 18%;
     --card: 0 0% 100%;
-    --card-foreground: 150 25% 10%;
+    --card-foreground: 137 18% 18%;
     --popover: 0 0% 100%;
-    --popover-foreground: 150 25% 10%;
+    --popover-foreground: 137 18% 18%;
 
-    /* ReBites brand palette — source of truth for the public landing pages
-       (`app/(landing)/`). HSL triplets so they fit the `hsl(var(--…))`
-       mapping in tailwind.config.ts; the hex in each comment is the exact
-       brand value each token resolves to. White (#FFFFFF) is already
-       `--background` above and stays the primary surface. */
-    --brand-forest: 153 44% 25%;        /* #245C43 Primary Forest Green */
-    --brand-forest-dark: 153 44% 20%;   /* hover/active shade of the forest green */
-    --brand-charcoal: 120 11% 14%;      /* #202820 Charcoal Green */
-    --brand-amber: 34.1 80.6% 55.5%;    /* #E99A32 Warm Amber */
-    --brand-sage: 84 22% 95.5%;         /* #F4F6F1 Soft Sage */
-    --brand-muted: 126.7 4.4% 40.2%;    /* #626B63 Muted Text */
+    /* ReBites brand palette */
+    --brand-forest: 149 54% 31%;        /* #247A4D */
+    --brand-forest-dark: 151 56% 22%;   /* #185638 */
+    --brand-ink: 137 18% 18%;           /* #25352A */
+    --brand-mint: 136 49% 91%;          /* #DDF3E4 */
+    --brand-canvas: 105 20% 96%;        /* #F5F8F4 */
+    --brand-muted: 132 7% 40%;          /* #5F6D62 */
 
-    /* Brand — the ReBites deep green (default tokens, used by every route) */
-    --primary: 148 41% 23%;
-    --primary-dark: 148 42% 17%;
+    /* Primary */
+    --primary: 149 54% 31%;
+    --primary-dark: 151 56% 22%;
     --primary-foreground: 0 0% 100%;
     --primary-foreground-strong: 0 0% 100%;
 
-    /* Secondary / muted — neutral, never warm */
-    --secondary: 150 17% 98%;
-    --secondary-foreground: 148 41% 23%;
-    --muted: 150 14% 95%;
-    --muted-foreground: 150 6% 40%;
+    /* Secondary */
+    --secondary: 105 20% 96%;
+    --secondary-foreground: 151 56% 22%;
 
-    /* Accent — subtle green for selected and hover states */
-    --accent: 148 30% 94%;
-    --accent-foreground: 148 41% 20%;
+    /* Muted */
+    --muted: 120 15% 95%;
+    --muted-foreground: 132 7% 40%;
 
-    /* Semantic status colours (restrained, never competing with the brand) */
+    /* Accent */
+    --accent: 136 49% 91%;
+    --accent-foreground: 151 56% 22%;
+
+    /* Semantic status colors */
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 98%;
+
     --warning: 35 90% 38%;
     --warning-foreground: 0 0% 100%;
-    --success: 145 60% 32%;
+
+    --success: 149 54% 31%;
     --success-foreground: 0 0% 100%;
 
-    /* Lines and focus */
-    --border: 144 11% 91%;
-    --input: 144 10% 88%;
-    --ring: 148 41% 23%;
+    /* Borders and focus */
+    --border: 130 12% 89%;
+    --input: 130 12% 86%;
+    --ring: 149 54% 31%;
 
-    /* Charts — green and neutral only */
-    --chart-1: 148 41% 23%;
-    --chart-2: 145 55% 34%;
-    --chart-3: 145 35% 55%;
-    --chart-4: 150 20% 72%;
-    --chart-5: 150 6% 40%;
+    /* Charts */
+    --chart-1: 149 54% 31%;
+    --chart-2: 160 38% 39%;
+    --chart-3: 136 38% 61%;
+    --chart-4: 130 25% 75%;
+    --chart-5: 132 7% 40%;
 
-    --radius: 0.25rem;
+    --radius: 0.375rem;
   }
 
   /**
-   * Landing theme scope.
+   * Landing theme
    *
-   * The five public routes in `app/(landing)/` render their entire tree
-   * (navbar, sections, footer) inside `.theme-landing` — see
-   * `app/components/landing/landing-shell.tsx` — so the brand palette above
-   * replaces the default role tokens there and nowhere else. Buyer pages,
-   * the seller dashboard and the auth screens keep the `:root` tokens
-   * untouched, which is why this is a scope instead of a global edit.
+   * Public landing pages use the ReBites brand palette.
+   * Other routes keep the root tokens unless they opt into this theme.
    *
-   * Surfaces stay light: white `--background` remains the dominant page
-   * colour, every light surface role resolves to the same Soft Sage value,
-   * and `--border` already renders as a neutral, sage-toned hairline.
+   * White remains the main surface. Green is reserved for important
+   * actions, mint for gentle highlights, and neutral colors for readability.
    */
   .theme-landing {
-    /* Charcoal Green — headings and readable text */
-    --foreground: var(--brand-charcoal);
-    --card-foreground: var(--brand-charcoal);
-    --popover-foreground: var(--brand-charcoal);
+    /* Main text */
+    --foreground: var(--brand-ink);
+    --card-foreground: var(--brand-ink);
+    --popover-foreground: var(--brand-ink);
 
-    /* Primary Forest Green — buttons, links, navigation, brand accents */
+    /* Primary brand */
     --primary: var(--brand-forest);
     --primary-dark: var(--brand-forest-dark);
     --ring: var(--brand-forest);
 
-    /* Soft Sage — subtle surfaces (chips, hover states, icon tiles, placeholders) */
-    --secondary: var(--brand-sage);
-    --secondary-foreground: var(--brand-forest);
-    --muted: var(--brand-sage);
-    --accent: var(--brand-sage);
-    --accent-foreground: var(--brand-forest);
+    /* Soft surfaces */
+    --secondary: var(--brand-canvas);
+    --secondary-foreground: var(--brand-forest-dark);
+    --muted: var(--brand-canvas);
+    --accent: var(--brand-mint);
+    --accent-foreground: var(--brand-forest-dark);
 
-    /* Muted Text — descriptions and supporting copy */
+    /* Supporting text */
     --muted-foreground: var(--brand-muted);
   }
 
@@ -129,9 +125,11 @@
   .text-balance {
     text-wrap: balance;
   }
+
   .grain-overlay {
     position: relative;
   }
+
   .grain-overlay::after {
     content: '';
     position: absolute;
@@ -143,29 +141,36 @@
   }
 }
 
+/* Lenis smooth scrolling */
 html.lenis,
 html.lenis body {
   height: auto;
 }
+
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
 
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
+
 ::-webkit-scrollbar-track {
   background: hsl(var(--secondary));
 }
+
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.5);
-  border-radius: 0;
+  background: hsl(var(--primary) / 0.45);
+  border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary));
 }
 
+/* Reduced motion accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -175,12 +180,13 @@ html.lenis body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
   .lenis.lenis-smooth {
     scroll-behavior: auto !important;
   }
 }
 
-
+/* Dialog and bottom-sheet panel */
 .dialog-panel {
   position: fixed;
   inset-inline: 0;
@@ -194,25 +200,31 @@ html.lenis body {
   max-height: 92dvh;
   animation: dialog-sheet-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
 .dialog-panel[data-state='closed'] {
   animation: dialog-sheet-out 220ms ease-in forwards;
 }
+
 @keyframes dialog-sheet-in {
   from {
     transform: translateY(102%);
   }
+
   to {
     transform: translateY(0);
   }
 }
+
 @keyframes dialog-sheet-out {
   from {
     transform: translateY(0);
   }
+
   to {
     transform: translateY(102%);
   }
 }
+
 .dialog-panel-handle {
   width: 2.75rem;
   height: 5px;
@@ -234,28 +246,34 @@ html.lenis body {
     max-height: 85dvh;
     animation: dialog-modal-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
   }
+
   .dialog-panel[data-state='closed'] {
     animation: dialog-modal-out 150ms ease-in forwards;
   }
+
   .dialog-panel-handle {
     display: none;
   }
 }
+
 @keyframes dialog-modal-in {
   from {
     opacity: 0;
     transform: translate(-50%, -48%) scale(0.96);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
 }
+
 @keyframes dialog-modal-out {
   from {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
+
   to {
     opacity: 0;
     transform: translate(-50%, -48%) scale(0.97);

@@ -7,6 +7,7 @@ import { Reveal } from '@/app/components/shared/reveal';
 import { SectionHeading } from '@/app/components/landing/SectionHeading';
 import { cn } from '@/lib/utils';
 
+
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2';
 
@@ -88,7 +89,7 @@ export function HowItWorksSection() {
     <section
       id="cara-kerja"
       aria-labelledby="how-it-works-title"
-      className="scroll-mt-20 border-t border-border bg-white"
+      className="relative z-10 scroll-mt-20 border-t border-border bg-white rounded-[30px] sm:rounded-[70px]"
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
         <SectionHeading
