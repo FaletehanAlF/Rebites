@@ -3,12 +3,8 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-<<<<<<< HEAD:app/components/detail-product/detail-page.tsx
 import { BuyerShell } from "@/app/components/shared/buyer-shell";
-import { SiteFooter } from "@/app/components/site-footer";
-=======
 import { SiteFooter } from "@/app/components/shared/app-footer";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/detail-product/detail-page.tsx
 import { CartProvider, useCart } from "./cart-context";
 import { PageOrnaments } from "./page-ornaments";
 import { ProductBreadcrumb } from "./product-breadcrumb";

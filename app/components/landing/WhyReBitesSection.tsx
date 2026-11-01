@@ -134,7 +134,7 @@ export function WhyReBitesSection() {
       ref={sectionRef}
       id="kenapa"
       aria-labelledby="why-heading"
-      className="border-t border-border bg-white"
+      className="relative z-10 border-t border-border bg-white"
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
         <div ref={headingRef}>

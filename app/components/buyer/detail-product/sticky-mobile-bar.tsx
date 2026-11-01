@@ -3,14 +3,9 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
-<<<<<<< HEAD:app/components/detail-product/sticky-mobile-bar.tsx
 import { cn } from "@/lib/utils";
-import type { ProductDetail } from "@/app/components/detail-product/data";
-import { formatIDR } from "@/app/components/detail-product/data";
-=======
 import type { ProductDetail } from "@/app/components/buyer/detail-product/data";
 import { formatIDR } from "@/app/components/buyer/detail-product/data";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/detail-product/sticky-mobile-bar.tsx
 import { EASE } from "./anim";
 
 export function StickyMobileBar({

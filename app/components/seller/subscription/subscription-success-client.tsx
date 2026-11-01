@@ -187,17 +187,12 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
       <main className="min-h-screen bg-secondary">
         <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col items-center justify-center px-4 text-center">
           <h1 className="font-display text-2xl font-medium text-foreground">Langganan ReBites</h1>
-<<<<<<< HEAD:app/components/subscription/subscription-success-client.tsx
           <p className="mt-2 text-sm text-muted-foreground">
             {planSlug
               ? 'Paket yang dipilih tidak dikenali. Pilih paket langganan terlebih dahulu.'
               : 'Pilih paket langganan terlebih dahulu.'}
           </p>
-          <Link href="/#langganan" className="mt-6 inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-white">
-=======
-          <p className="mt-2 text-sm text-muted-foreground">Pilih paket langganan terlebih dahulu.</p>
           <Link href="/#langganan" className="mt-6 inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary-dark">
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/seller/subscription/subscription-success-client.tsx
             Lihat Paket
           </Link>
           <Link href="/dashboard/penjual/langganan" className="mt-3 text-xs font-semibold text-primary hover:underline">
@@ -287,14 +282,10 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
             </div>
           </dl>
           <div className="mt-7 flex flex-col gap-2.5 sm:flex-row">
-<<<<<<< HEAD:app/components/subscription/subscription-success-client.tsx
             <Link
               href={resolvePostPaymentHref({ hasStore })}
-              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm shadow-primary/25 hover:bg-primary-dark"
+              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-dark"
             >
-=======
-            <Link href="/dashboard/penjual" className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-dark">
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/seller/subscription/subscription-success-client.tsx
               <LayoutDashboard className="h-4 w-4" />
               {hasStore ? 'Ke Dashboard Penjual' : 'Ke Beranda'}
             </Link>

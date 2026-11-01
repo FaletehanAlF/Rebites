@@ -6,26 +6,13 @@ import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { Crown } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
-<<<<<<< HEAD
-import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
-import { DetailedReportCard, type StatsPeriod } from '@/app/components/dashboard-penjual/DetailedReportCard';
-import { DemandAnalyticsCard } from '@/app/components/dashboard-penjual/DemandAnalyticsCard';
-import { FeaturedPromoCard } from '@/app/components/dashboard-penjual/FeaturedPromoCard';
-import { StoreCard } from '@/app/components/dashboard-penjual/StoreCard';
-import { StoreRatingCard } from '@/app/components/dashboard-penjual/StoreRatingCard';
-import { useSellerPlan } from '@/lib/seller-plan';
-=======
-import { Sidebar } from '@/app/components/seller/dashboard-penjual/Sidebar';
-import { Topbar } from '@/app/components/seller/dashboard-penjual/Topbar';
-import { MobileSellerNav } from '@/app/components/seller/dashboard-penjual/MobileSellerNav';
+import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
 import { DetailedReportCard, type StatsPeriod } from '@/app/components/seller/dashboard-penjual/DetailedReportCard';
 import { DemandAnalyticsCard } from '@/app/components/seller/dashboard-penjual/DemandAnalyticsCard';
 import { FeaturedPromoCard } from '@/app/components/seller/dashboard-penjual/FeaturedPromoCard';
 import { StoreCard } from '@/app/components/seller/dashboard-penjual/StoreCard';
 import { StoreRatingCard } from '@/app/components/seller/dashboard-penjual/StoreRatingCard';
 import { useSellerPlan } from '@/lib/seller-plan';
-import { useRequireSeller } from '@/hooks/seller/use-require-seller';
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 
 const SalesStatsCard = dynamic(
   () =>
@@ -63,24 +50,12 @@ export default function VendorDashboardPage() {
   }, []);
 
   return (
-<<<<<<< HEAD
     <SellerShell>
-      <div>
-=======
-    <MotionConfig reducedMotion="user">
-      <div className="relative min-h-screen bg-secondary font-sans text-foreground">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-        <div className="relative z-10 lg:pl-[280px]">
-          <Topbar onMenuClick={() => setSidebarOpen(true)} />
-
-          <main className="mx-auto max-w-[1400px] px-4 pb-20 pt-6 sm:px-6 lg:px-10">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-            >
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+      >
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
@@ -104,7 +79,7 @@ export default function VendorDashboardPage() {
                   </Link>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             <div className="mt-7 grid grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-6">
               { }
@@ -136,15 +111,6 @@ export default function VendorDashboardPage() {
                 </Reveal>
               </div>
             </div>
-<<<<<<< HEAD
     </SellerShell>
-=======
-          </main>
-        </div>
-
-        <MobileSellerNav />
-      </div>
-    </MotionConfig>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
   );
 }

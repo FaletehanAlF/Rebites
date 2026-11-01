@@ -14,8 +14,7 @@ import {
   Mail,
   Lock,
 } from "lucide-react";
-<<<<<<< HEAD
-import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/use-seller-status";
+import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/seller/use-seller-status";
 import {
   CurrentUserRoleError,
   fetchCurrentUserRole,
@@ -29,9 +28,6 @@ import {
   parseCooldownSeconds,
   useEmailCooldown,
 } from "@/lib/auth-email";
-=======
-import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/seller/use-seller-status";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 

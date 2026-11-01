@@ -9,15 +9,11 @@ import { FAQSection } from '@/app/components/landing/FAQSection';
 import { ContactCTASection } from '@/app/components/landing/ContactCTASection';
 import { HeroStack } from '../components/landing/HeroStack';
 
-import {
-  HorizontalSections,
-  HorizontalPanel,
-} from '@/app/components/landing/HorizontalSections';
+
 
 export default function Home() {
   return (
     <PublicShell intro>
-      {/* Hero tetap di-pin dengan efek stack */}
       <HeroStack mode="stack">
         <HeroSection />
       </HeroStack>

@@ -43,14 +43,9 @@ import {
 } from '@/lib/flash-sale';
 import type { UrgentSlot } from '@/lib/types';
 import type { SellerProduct } from '@/lib/product-storage';
-<<<<<<< HEAD
-import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
-import { Card } from '@/app/components/dashboard-penjual/Card';
-import { Badge } from '@/app/components/ui/badge';
-=======
 import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
 import { Card } from '@/app/components/seller/dashboard-penjual/Card';
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
+import { Badge } from '@/app/components/ui/badge';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import {
   Dialog,
@@ -207,11 +202,7 @@ function TimeEditor({ product }: { product: SellerProduct }) {
           <span
             className={cn(
               'absolute h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-all',
-<<<<<<< HEAD
-              allDay ? 'left-[18px]' : 'left-0.5'
-=======
               allDay ? 'left-5' : 'left-0.5'
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
             )}
           />
         </button>
@@ -739,7 +730,6 @@ function MenuCard({
   const available = isProductAvailable(product);
 
   return (
-<<<<<<< HEAD
     <Card className="flex flex-col p-4 sm:p-5">
       {/* Kepala kartu: thumbnail + nama/harga/status.
           Kartu kini selebar ~430px (3 kolom, bukan 4), jadi thumbnail ikut
@@ -755,23 +745,6 @@ function MenuCard({
             >
               <Crown className="h-3 w-3" aria-hidden />
             </span>
-=======
-    <Card className="flex flex-col p-4">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
-        <SmartImage src={product.image} alt={`Foto ${product.name}`} />
-        {product.featured && (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white shadow-sm">
-            <Crown className="h-3 w-3" />
-            Unggulan
-          </span>
-        )}
-        <span
-          className={cn(
-            'absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em]',
-            available
-              ? 'bg-white/95 text-primary'
-              : 'bg-white/95 text-muted-foreground'
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
           )}
         </div>
 

@@ -8,13 +8,8 @@ import {
   PackageOpen,
   SearchX,
 } from "lucide-react";
-<<<<<<< HEAD:app/components/makanan-category/category-view.tsx
-import { SiteFooter } from "@/app/components/site-footer";
-import { BuyerShell } from "@/app/components/shared/buyer-shell";
-=======
 import { SiteFooter } from "@/app/components/shared/app-footer";
-import { MobileBottomNav } from "@/app/components/shared/MobileBottomNav";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/makanan-category/category-view.tsx
+import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { FoodCard } from "@/app/components/shared/FoodCard";
 import { ProductDetailModal } from "@/app/components/shared/ProductDetailModalLazy";
 import { StoreClosedModal } from "@/app/components/shared/StoreClosedModal";

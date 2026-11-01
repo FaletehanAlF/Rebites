@@ -8,12 +8,7 @@ import { formatRupiah } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { useCountdown, formatCountdown } from "@/hooks/buyer/use-countdown";
 import { SmartImage } from "@/app/components/shared/SmartImage";
-<<<<<<< HEAD:app/components/home/FlashSaleSection.tsx
-import { useLikedFoods } from "@/hooks/use-liked-foods";
-=======
 import { useLikedFoods } from "@/hooks/buyer/use-liked-foods";
-import { Marquee } from "@/app/components/shared/marquee";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/FlashSaleSection.tsx
 import type { UrgentItem, UrgentSlot } from "@/lib/types";
 import {
   getActiveFlashSaleProducts,
@@ -114,12 +109,6 @@ function SectionCountdown({
   const [h, m, s] = text.split(":");
 
   return (
-<<<<<<< HEAD:app/components/home/FlashSaleSection.tsx
-    <div className="rounded-xl bg-white px-4 py-3 shadow-sm">
-      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-        {label}
-      </p>
-=======
     <div
       id="flashSale"
       className="rounded-2xl bg-white px-5 py-3.5 shadow-sm"
@@ -129,7 +118,6 @@ function SectionCountdown({
           {label}
         </p>
       </div>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/FlashSaleSection.tsx
 
       <div
         className="mt-1 flex items-baseline gap-1 font-sans text-2xl font-bold tabular-nums leading-none text-sale"
@@ -201,17 +189,10 @@ function UrgentCard({
           : undefined
       }
       className={cn(
-<<<<<<< HEAD:app/components/home/FlashSaleSection.tsx
-        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white outline-none transition-colors duration-150",
-        isActive
-          ? "cursor-pointer hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
-          : "cursor-default",
-=======
         "group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white outline-none transition-colors duration-300",
         isActive
           ? "cursor-pointer hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           : "cursor-default opacity-95",
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/FlashSaleSection.tsx
       )}
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
@@ -225,11 +206,7 @@ function UrgentCard({
         />
 
         {!isActive && (
-<<<<<<< HEAD:app/components/home/FlashSaleSection.tsx
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-foreground/30">
-=======
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-foreground/40">
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/FlashSaleSection.tsx
             <span className="rounded-full bg-white px-4 py-1.5 font-sans text-xs font-bold uppercase tracking-[0.14em] text-foreground shadow">
               Akan Datang
             </span>
@@ -250,13 +227,8 @@ function UrgentCard({
             if (isActive) toggle(item.id);
           }}
           className={cn(
-<<<<<<< HEAD:app/components/home/FlashSaleSection.tsx
-            "absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white text-muted-foreground shadow-sm transition-colors hover:text-sale",
-            liked && isActive && "text-sale",
-=======
             "absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-muted-foreground shadow-sm transition-colors hover:bg-white hover:text-sale",
             liked && isActive && "bg-white text-sale",
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/FlashSaleSection.tsx
             !isActive && "opacity-60",
           )}
         >
@@ -424,37 +396,10 @@ export function FlashSaleSection({
     <section
       id="flashSale"
       data-nav="green"
-<<<<<<< HEAD:app/components/home/FlashSaleSection.tsx
-      className="scroll-mt-20 bg-primary py-10 sm:py-12 lg:py-14"
+      className="relative scroll-mt-20 overflow-hidden bg-primary"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-=======
-      className="relative overflow-hidden bg-primary"
-    >
-      <div className="relative bg-primary py-3">
-        <Marquee pauseOnHover>
-          {[
-            "SELAMATKAN MAKANAN",
-            "HARGA LEBIH HEMAT",
-            "SURPLUS, BUKAN SISA",
-            "LAYAK KONSUMSI",
-            "DISKON HINGGA 50%",
-            "LEBIH HEMAT, LEBIH BERMAKNA",
-          ].map((t, i) => (
-            <span
-              key={i}
-              className="mx-6 flex items-center gap-3 font-sans text-lg font-medium tracking-tight text-white lg:text-xl"
-            >
-              {t}
-            </span>
-          ))}
-        </Marquee>
-      </div>
-
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/FlashSaleSection.tsx
           <div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-sale" aria-hidden />
@@ -463,13 +408,8 @@ export function FlashSaleSection({
               </span>
             </div>
 
-<<<<<<< HEAD:app/components/home/FlashSaleSection.tsx
-            <h2 className="mt-2.5 font-sans text-lg font-bold tracking-tight text-white sm:text-[22px] lg:text-[26px]">
-              Segera beli
-=======
             <h2 className="mt-3 font-sans text-[22px] font-semibold tracking-tight text-white sm:text-[28px]">
               Segera <span className="text-white">Beli</span>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/FlashSaleSection.tsx
             </h2>
 
             <p className="mt-1.5 max-w-md font-sans text-xs leading-relaxed text-white/80 sm:text-sm">
@@ -511,13 +451,8 @@ export function FlashSaleSection({
                 className={cn(
                   "flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-left font-sans transition-colors duration-150 sm:px-4",
                   isActive
-<<<<<<< HEAD:app/components/home/FlashSaleSection.tsx
-                    ? "border-white bg-white text-primary"
-                    : "border-white/30 bg-transparent text-white hover:border-white/70",
-=======
                     ? "border-transparent bg-primary text-white hover:bg-white hover:text-primary"
                     : "border-white/60 bg-white text-primary hover:bg-primary-dark hover:text-white",
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/FlashSaleSection.tsx
                   FOCUS_RING,
                 )}
               >
@@ -578,17 +513,9 @@ export function FlashSaleSection({
                 />
               ))}
             </motion.div>
-<<<<<<< HEAD:app/components/home/FlashSaleSection.tsx
           )}
 
           {!catalogLoading && visibleItems.length === 0 && (
-            <div className="rounded-2xl border border-white/20 bg-white/10 px-6 py-10 text-center">
-              <h3 className="font-sans text-lg font-bold text-white sm:text-xl">
-                {activeSlot
-                  ? "Belum ada menu di slot ini"
-                  : "Flash sale dimulai pukul 09.00 WIB"}
-=======
-          ) : (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -599,8 +526,9 @@ export function FlashSaleSection({
                 Flash Sale
               </p>
               <h3 className="mt-3 font-sans text-3xl font-semibold text-white sm:text-4xl">
-                Flash sale dimulai pukul 09.00 WIB
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/FlashSaleSection.tsx
+                {activeSlot
+                  ? "Belum ada menu di slot ini"
+                  : "Flash sale dimulai pukul 09.00 WIB"}
               </h3>
               {/*
                 Hitungan waktu sengaja tidak diulang di sini: header section
@@ -613,7 +541,7 @@ export function FlashSaleSection({
                   ? "Coba pilih slot waktu lain atau kembali lagi nanti."
                   : "Jangan sampai kelewatan — nantikan harga spesialnya."}
               </p>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

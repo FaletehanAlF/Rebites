@@ -60,16 +60,8 @@ export function CategorySection() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div>
-<<<<<<< HEAD:app/components/home/CategorySection.tsx
-          <p className="font-secondary text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-            Kategori
-          </p>
-          <h2 className="mt-2 font-sans text-lg font-bold tracking-tight text-foreground sm:text-[22px] lg:text-[26px]">
-            Jelajahi kategori
-=======
           <h2 className="font-sans text-lg font-semibold tracking-tight text-foreground sm:text-[22px] lg:text-[28px]">
             Jelajahi Kategori
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/CategorySection.tsx
           </h2>
           <p className="mt-1 max-w-md font-sans text-xs text-muted-foreground sm:text-sm">
             Temukan berbagai makanan sesuai seleramu yang masih layak dinikmati.
@@ -90,36 +82,17 @@ export function CategorySection() {
                 href={`/makanan/${category.id}`}
                 aria-label={`Lihat makanan kategori ${category.name}`}
                 className={cn(
-                  "group flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl border border-border bg-white px-3 py-3 text-center transition-colors duration-150 hover:border-primary/40 sm:min-h-[104px]",
+                  "group flex h-[90px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-border bg-white px-3 py-4 text-center transition-colors duration-300 hover:border-primary/40 sm:h-[110px] sm:gap-3 sm:rounded-2xl sm:px-4 sm:py-6 lg:h-[132px]",
                   FOCUS_RING,
                 )}
               >
-<<<<<<< HEAD:app/components/home/CategorySection.tsx
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-primary transition-colors duration-150 group-hover:bg-primary group-hover:text-white sm:h-9 sm:w-9">
-                  <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-primary transition-colors group-hover:bg-primary group-hover:text-white sm:h-10 sm:w-10">
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </span>
-                <span className="line-clamp-2 font-sans text-[11.5px] font-semibold leading-tight text-foreground">
+                <span className="font-sans text-[11px] font-semibold leading-tight text-foreground sm:text-[13px]">
                   {category.name}
                 </span>
               </Link>
-=======
-                <Link
-                  href={`/makanan/${category.id}`}
-                  aria-label={`Lihat makanan kategori ${category.name}`}
-                  className={cn(
-                    "group flex h-[90px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-border bg-white px-3 py-4 text-center transition-colors duration-300 hover:border-primary/40 sm:h-[110px] sm:gap-3 sm:rounded-2xl sm:px-4 sm:py-6 lg:h-[132px]",
-                    FOCUS_RING,
-                  )}
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-primary transition-colors group-hover:bg-primary group-hover:text-white sm:h-10 sm:w-10">
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </span>
-                  <span className="font-sans text-[11px] font-semibold leading-tight text-foreground sm:text-[13px]">
-                    {category.name}
-                  </span>
-                </Link>
-              </motion.div>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/CategorySection.tsx
             );
           })}
         </div>

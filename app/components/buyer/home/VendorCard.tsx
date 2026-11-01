@@ -28,11 +28,7 @@ export function VendorCard({
   return (
     <div
       className={cn(
-<<<<<<< HEAD:app/components/home/VendorCard.tsx
-        'group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white outline-none transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_36px_-28px_rgba(27,77,50,0.5)]',
-=======
         'group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white outline-none transition-colors duration-300 hover:border-primary/40',
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/VendorCard.tsx
         FOCUS_RING
       )}
     >
@@ -51,28 +47,16 @@ export function VendorCard({
 
           <div
             className={cn(
-<<<<<<< HEAD:app/components/home/VendorCard.tsx
-              'absolute left-3 top-3 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold leading-none shadow-md',
-              isOpen ? 'bg-white text-primary' : 'bg-white/90 text-muted-foreground'
-            )}
-          >
-            <span className={cn("h-1.5 w-1.5 rounded-full", isOpen ? "bg-primary" : "bg-muted-foreground/60")} />
-=======
               'absolute left-3 top-3 flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold leading-none shadow-md',
               isOpen ? 'bg-white text-primary' : 'bg-muted text-muted-foreground'
             )}
           >
             <span className={cn("h-1.5 w-1.5 rounded-full", isOpen ? "bg-primary" : "bg-muted-foreground")} />
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/VendorCard.tsx
             {isOpen ? 'Buka' : 'Tutup'}
           </div>
 
           {badgeLabel ? (
-<<<<<<< HEAD:app/components/home/VendorCard.tsx
-            <div className="absolute left-3 top-10 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-md">
-=======
             <div className="absolute left-3 top-10 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-primary-foreground shadow-md">
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/VendorCard.tsx
               <Crown className="h-3 w-3" />
               {badgeLabel}
             </div>

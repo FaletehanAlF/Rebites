@@ -3,11 +3,7 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { MotionConfig } from 'framer-motion';
-<<<<<<< HEAD:app/components/dashboard-penjual/SellerShell.tsx
 import { RefreshCw, WifiOff } from 'lucide-react';
-import { DashboardDecor } from './decor';
-=======
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/seller/dashboard-penjual/SellerShell.tsx
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { MobileSellerNav } from './MobileSellerNav';

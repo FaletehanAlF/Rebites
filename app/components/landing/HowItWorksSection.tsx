@@ -7,43 +7,6 @@ import { Reveal } from '@/app/components/shared/reveal';
 import { SectionHeading } from '@/app/components/landing/SectionHeading';
 import { cn } from '@/lib/utils';
 
-<<<<<<< HEAD
-const STEPS = [
-  {
-    num: '01',
-    title: 'Pelaku UMKM mendaftar & mengunggah',
-    description:
-      'Mendaftar akun, melengkapi profil usaha, lalu mengunggah makanan surplus yang masih layak konsumsi beserta harga, stok, dan waktu penjualannya.',
-    image: '/penjual-login.avif',
-    alt: 'Pelaku UMKM mendaftar dan mengunggah menu di ReBites',
-  },
-  {
-    num: '02',
-    title: 'Pembeli mencari & melihat detail',
-    description:
-      'Menjelajahi kategori dan pencarian, lalu memeriksa detail produk surplus di sekitarnya sebelum menentukan jumlah pembelian.',
-    image: '/pembeli-mencaro.avif',
-    alt: 'Pembeli mencari makanan surplus di ReBites',
-  },
-  {
-    num: '03',
-    title: 'Pilih metode penerimaan pesanan',
-    description:
-      'Memilih diantar atau diambil langsung di lokasi penjual, kemudian memilih metode pembayaran untuk menyelesaikan pesanan.',
-    image: '/penerimaan.avif',
-    alt: 'Pilihan metode penerimaan pesanan di ReBites',
-  },
-  {
-    num: '04',
-    title: 'Makanan berhasil diselamatkan',
-    description:
-      'Menikmati makanan berkualitas dengan harga lebih terjangkau, sekaligus membantu mengurangi food loss dan food waste di Indonesia.',
-    image: '/terselamatkan.avif',
-    alt: 'Makanan surplus yang berhasil diselamatkan',
-  },
-];
-=======
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2';

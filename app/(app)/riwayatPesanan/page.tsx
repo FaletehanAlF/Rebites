@@ -1,13 +1,8 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-<<<<<<< HEAD
-import { OrderHistoryView } from '@/app/components/order-history/order-history-view';
-import { RiwayatSidebarShell } from '@/app/components/order-history/riwayat-sidebar-shell';
-import { RequireAuth } from '@/app/components/auth/require-auth';
-=======
 import { OrderHistoryView } from '@/app/components/buyer/order-history/order-history-view';
 import { RiwayatSidebarShell } from '@/app/components/buyer/order-history/riwayat-sidebar-shell';
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
+import { RequireAuth } from '@/app/components/auth/require-auth';
 
 export const metadata: Metadata = {
   title: 'Pesanan Saya | ReBites',

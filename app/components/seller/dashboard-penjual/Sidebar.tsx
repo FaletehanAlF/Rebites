@@ -16,11 +16,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-<<<<<<< HEAD:app/components/dashboard-penjual/Sidebar.tsx
 import { useAdminMe } from '@/hooks/use-admin-me';
-import { DotPattern } from './decor';
-=======
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/seller/dashboard-penjual/Sidebar.tsx
 
 interface SidebarProps {
   open: boolean;

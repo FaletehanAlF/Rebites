@@ -1,11 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-<<<<<<< HEAD
-import { CheckoutView } from '@/app/components/checkout/checkout-view';
-import { BuyerShell } from '@/app/components/shared/buyer-shell';
-=======
 import { CheckoutView } from '@/app/components/buyer/checkout/checkout-view';
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
+import { BuyerShell } from '@/app/components/shared/buyer-shell';
 
 export const metadata: Metadata = {
   title: 'Detail Pesanan - ReBites',

@@ -10,17 +10,13 @@ import {
 } from '@/app/components/ui/dialog';
 import type { AddressLabel, DeliveryAddress } from '@/lib/types';
 import { cn } from '@/lib/utils';
-<<<<<<< HEAD:app/components/checkout/address-form-view.tsx
-import type { AddressFormValues } from '@/hooks/use-addresses';
+import type { AddressFormValues } from '@/hooks/buyer/use-addresses';
 import { parseCoordinatePairInput } from '@/lib/location-validation';
 import { resolveFormCoordinates } from '@/lib/delivery-map-plan';
 import {
   requestDeviceLocation,
   type DeviceLocationReason,
 } from '@/lib/device-location';
-=======
-import type { AddressFormValues } from '@/hooks/buyer/use-addresses';
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/checkout/address-form-view.tsx
 import { useCheckout } from './checkout-context';
 
 /** Peta pemilih dimuat hanya saat form alamat dibuka (MapLibre berat). */

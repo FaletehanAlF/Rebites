@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, ChevronDown, Info, Lock, Save } from 'lucide-react';
+import { CheckCircle2, Info, Lock, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/app/components/seller/dashboard-penjual/Card';
 import { Reveal } from '@/app/components/shared/reveal';
@@ -353,13 +353,11 @@ export function AddMenuForm() {
                         </option>
                       ))}
                     </select>
-<<<<<<< HEAD:app/components/tambahMenu/AddMenuForm.tsx
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-=======
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground"
+                    >
                       ▾
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/seller/tambahMenu/AddMenuForm.tsx
                     </span>
                   </div>
                 </div>

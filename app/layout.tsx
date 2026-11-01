@@ -68,13 +68,6 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${beVietnamPro.variable}`}
     >
       <body className="font-sans antialiased">
-<<<<<<< HEAD
-        {children}
-        {/* Asisten melayang untuk semua halaman: pengunjung, pembeli, penjual,
-            dan admin. Profil perilakunya ditentukan server dari status sesi,
-            bukan dari klien. */}
-        <ChatbotMount />
-=======
         {/*
          * Progressive-enhancement fallback: reveal animations ship inline
          * `opacity:0` and only clear once React hydrates, and the preloader
@@ -88,7 +81,10 @@ export default function RootLayout({
           <style dangerouslySetInnerHTML={{ __html: noJsCss }} />
         </noscript>
         {children}
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
+        {/* Asisten melayang untuk semua halaman: pengunjung, pembeli, penjual,
+            dan admin. Profil perilakunya ditentukan server dari status sesi,
+            bukan dari klien. */}
+        <ChatbotMount />
       </body>
     </html>
   );

@@ -18,12 +18,8 @@ import {
 import { cn } from "@/lib/utils";
 import { useCatalog } from "@/lib/catalog";
 import type { FoodItem, Vendor } from "@/lib/types";
-<<<<<<< HEAD
-import { SiteFooter } from "@/app/components/site-footer";
-import { BuyerShell } from "@/app/components/shared/buyer-shell";
-=======
 import { SiteFooter } from "@/app/components/shared/app-footer";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
+import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { ProductDetailModal } from "@/app/components/shared/ProductDetailModalLazy";
 import { CategoryRow } from "@/app/components/buyer/detail-toko/category-row";
 import { useProductDetail } from "@/app/components/buyer/detail-product/use-product-detail";

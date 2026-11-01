@@ -42,7 +42,6 @@ export function CTAButtons({
       <motion.button
         type="button"
         onClick={handleOrder}
-<<<<<<< HEAD:app/components/detail-product/cta-buttons.tsx
         disabled={isOutOfStock}
         whileHover={reduce || isOutOfStock ? undefined : { scale: 1.02 }}
         whileTap={reduce || isOutOfStock ? undefined : { scale: 0.98 }}
@@ -50,13 +49,8 @@ export function CTAButtons({
           "inline-flex flex-1 items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           isOutOfStock
             ? "cursor-not-allowed bg-charcoal-900/10 text-charcoal-400"
-            : "bg-primary text-white hover:bg-primary-dark hover:shadow-[0_20px_45px_-20px_rgba(27,77,50,0.65)]",
+            : "bg-primary text-white hover:bg-primary-dark",
         )}
-=======
-        whileHover={reduce ? undefined : { scale: 1.02 }}
-        whileTap={reduce ? undefined : { scale: 0.98 }}
-        className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/detail-product/cta-buttons.tsx
       >
         {isOutOfStock ? (
           <>Stok Habis</>

@@ -6,10 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { useCatalog } from "@/lib/catalog";
 import { FoodCard } from "@/app/components/shared/FoodCard";
 import { SearchFilterBar } from "@/app/components/shared/SearchFilterBar";
-<<<<<<< HEAD:app/components/home/UrgentDealsSection.tsx
 import { cn } from "@/lib/utils";
-=======
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/UrgentDealsSection.tsx
 import type { FilterKey } from "@/lib/types";
 
 const MAX_ITEMS = 8;
@@ -63,17 +60,6 @@ export function UrgentDealsSection({
   return (
     <section
       id="rekomendasi"
-<<<<<<< HEAD:app/components/home/UrgentDealsSection.tsx
-      data-nav="neutral"
-      className="scroll-mt-20 bg-background py-10 sm:py-12 lg:py-14"
-    >
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-sale" aria-hidden />
-          <span className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-primary sm:text-[11px]">
-            Rekomendasi untukmu
-          </span>
-=======
       data-nav="green"
       className="relative flex min-h-screen scroll-mt-20 flex-col justify-center overflow-hidden bg-primary py-10 sm:py-16 lg:py-20"
     >
@@ -97,15 +83,7 @@ export function UrgentDealsSection({
               Pilihan makanan surplus dengan rating terbaik dari UMKM terdekat.
             </p>
           </div>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/UrgentDealsSection.tsx
         </div>
-
-        <h2 className="mt-2.5 font-sans text-lg font-bold tracking-tight text-foreground sm:text-[22px] lg:text-[26px]">
-          Menu unggulan hari ini
-        </h2>
-        <p className="mt-1.5 max-w-xl font-sans text-xs text-muted-foreground sm:text-sm">
-          Pilihan makanan surplus dengan rating terbaik dari UMKM terdekat.
-        </p>
 
         <div className="mt-5 sm:mt-6">
           <SearchFilterBar
@@ -120,70 +98,9 @@ export function UrgentDealsSection({
           />
         </div>
 
-<<<<<<< HEAD:app/components/home/UrgentDealsSection.tsx
         {loading && (
           <div className="mt-8 flex h-40 items-center justify-center text-sm text-muted-foreground">
             Memuat menu...
-=======
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => scrollByStep(-1)}
-            disabled={!canLeft}
-            aria-label="Geser rekomendasi makanan ke kiri"
-            className={cn(
-              "absolute -left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-foreground shadow-sm transition-all duration-200 hover:bg-primary-dark hover:text-white active:scale-[0.95] sm:-left-5 sm:h-11 sm:w-11",
-              !canLeft &&
-                "cursor-default opacity-35 hover:bg-white hover:text-foreground",
-              FOCUS_RING,
-            )}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-
-          <div
-            ref={scrollRef}
-            className="mt-2 grid snap-x snap-mandatory auto-cols-[80%] grid-flow-col gap-4 overflow-x-auto scroll-smooth pb-4 sm:auto-cols-[calc((100%-1.25rem)/2)] sm:gap-5 sm:pb-6 lg:auto-cols-[calc((100%-3.75rem)/4)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {loading && (
-              <div className="flex h-56 items-center justify-center text-sm text-white/70 col-span-full">
-                Memuat menu...
-              </div>
-            )}
-            {!loading && items.length === 0 && (
-              <div className="flex h-56 items-center justify-center text-sm text-white/70 col-span-full">
-                Belum ada menu tersedia.
-              </div>
-            )}
-            {!loading && items.length > 0 && (
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  hidden: {},
-                  visible: { transition: { staggerChildren: 0.06 } },
-                }}
-                className="contents"
-              >
-                {items.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 24 },
-                      visible: {
-                        opacity: 1,
-                        y: 0,
-                        transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-                      },
-                    }}
-                    className="min-w-0 snap-start"
-                  >
-                    <FoodCard item={item} onViewDetail={onViewDetail} />
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/UrgentDealsSection.tsx
           </div>
         )}
 
@@ -212,15 +129,8 @@ export function UrgentDealsSection({
           <Link
             href="/makanan"
             className={cn(
-<<<<<<< HEAD:app/components/home/UrgentDealsSection.tsx
               "inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-6 font-sans text-sm font-semibold text-white transition-colors hover:bg-primary-dark",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-=======
-              "absolute -right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-foreground shadow-sm transition-all duration-200 hover:bg-primary-dark hover:text-white active:scale-[0.95] sm:-right-5 sm:h-11 sm:w-11",
-              !canRight &&
-                "cursor-default opacity-35 hover:bg-white hover:text-foreground",
-              FOCUS_RING,
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/UrgentDealsSection.tsx
             )}
           >
             Lihat Semua Makanan

@@ -35,16 +35,10 @@ import {
   getStatusLabel,
   getStatusColor,
 } from '@/lib/order-state-machine';
-<<<<<<< HEAD
-import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
-import { Card } from '@/app/components/dashboard-penjual/Card';
-import { CourierLiveTracker } from '@/app/components/order-history/courier-live-tracker';
-=======
 import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
 import { Card } from '@/app/components/seller/dashboard-penjual/Card';
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 import { SmartImage } from '@/app/components/shared/SmartImage';
-import { CourierPositionPanel } from '@/app/components/order-history/courier-position-panel';
+import { CourierPositionPanel } from '@/app/components/buyer/order-history/courier-position-panel';
 import { formatPrepRemaining } from '@/lib/prep-deadline';
 
 type OrderTab = 'berlangsung' | 'selesai' | 'semua';
@@ -242,7 +236,6 @@ function OrderRow({
         <p className="text-sm font-bold text-primary">
           {formatRupiah(order.total)}
         </p>
-<<<<<<< HEAD
         {action ? (
           <button
             type="button"
@@ -250,12 +243,12 @@ function OrderRow({
             onClick={() => handleAction(action.targetStatus)}
             title={action.description}
             className={cn(
-              'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-              action.tone === 'primary'
-                ? 'bg-primary shadow-primary/25 hover:bg-primary-dark'
-                : action.tone === 'emerald'
-                  ? 'bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-700'
-                  : 'bg-purple-600 shadow-purple-600/25 hover:bg-purple-700'
+              'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+              action.targetStatus === 'processing'
+                ? 'bg-primary hover:bg-primary-dark'
+                : action.targetStatus === 'ready_for_pickup'
+                  ? 'bg-success hover:bg-success/90'
+                  : 'bg-primary hover:bg-primary-dark'
             )}
           >
             {action.targetStatus === 'processing' && <Package className="h-3.5 w-3.5" />}
@@ -264,54 +257,6 @@ function OrderRow({
             {action.targetStatus === 'completed' && <CheckCheck className="h-3.5 w-3.5" />}
             {processing ? 'Memproses...' : action.label}
           </button>
-=======
-        {hasStateMachineActions ? (
-          <div className="flex flex-col gap-2">
-            {actions.map((action) => (
-              <button
-                key={action.action}
-                type="button"
-                disabled={processing}
-                onClick={() => handleAction(action.targetStatus)}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                  action.targetStatus === 'processing'
-                    ? 'bg-primary hover:bg-primary-dark'
-                    : action.targetStatus === 'ready_for_pickup'
-                      ? 'bg-success hover:bg-success/90'
-                      : action.targetStatus === 'out_for_delivery'
-                        ? 'bg-primary hover:bg-primary-dark'
-                        : 'bg-primary hover:bg-primary-dark'
-                )}
-              >
-                {action.targetStatus === 'processing' && <Package className="h-3.5 w-3.5" />}
-                {action.targetStatus === 'ready_for_pickup' && <CheckCheck className="h-3.5 w-3.5" />}
-                {action.targetStatus === 'out_for_delivery' && <Truck className="h-3.5 w-3.5" />}
-                {processing ? 'Memproses...' : action.label}
-              </button>
-            ))}
-          </div>
-        ) : isOngoing ? (
-          isPreparing ? (
-            <button
-              type="button"
-              onClick={() => onAdvance(order)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
-            >
-              <AdvanceIcon className="h-3.5 w-3.5" />
-              {advanceLabel}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onComplete(order.orderId)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
-            >
-              <CheckCheck className="h-3.5 w-3.5" />
-              Tandai Selesai
-            </button>
-          )
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
         ) : (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
             <ClipboardList className="h-3.5 w-3.5" />

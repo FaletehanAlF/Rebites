@@ -7,14 +7,32 @@ import { ArrowRight, Recycle, Store, Tag } from "lucide-react";
 import { Button } from "@/app/components/shared/Button";
 import { SmartImage } from "@/app/components/shared/SmartImage";
 import { scrollToId } from "@/lib/scroll";
+import { motion, type Variants } from "framer-motion";
 import { useCurrentUser } from "@/lib/current-user";
 import { getSellerStoreSettings } from "@/lib/store-settings-storage";
 
 const HERO_IMAGE =
   "https://images.pexels.com/photos/16134564/pexels-photo-16134564.jpeg?auto=compress&cs=tinysrgb&w=1200";
 
+const UMKM_IMAGE = "/terselamatkan.jpg";
+
 const SIDE_LINK =
   "inline-flex w-fit items-center gap-1.5 rounded-full font-sans text-[13px] font-semibold text-primary transition-colors duration-150 hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+/** Varian animasi masuk hero (kontainer bertahap + per kartu). */
+const container: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 /**
  * Hero beranda pembeli.
@@ -73,10 +91,6 @@ export function Hero() {
       data-nav="neutral"
       className="scroll-mt-20 bg-secondary px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-6 lg:px-8 lg:pb-12"
     >
-<<<<<<< HEAD:app/components/home/Hero.tsx
-      <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:grid-rows-2 lg:gap-5">
-        <div className="relative flex min-h-[360px] flex-col justify-between overflow-hidden rounded-2xl bg-primary lg:row-span-2 lg:min-h-[460px]">
-=======
       <motion.div
         variants={container}
         initial="hidden"
@@ -87,7 +101,6 @@ export function Hero() {
           variants={item}
           className="relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[400px] lg:min-h-[640px]"
         >
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/Hero.tsx
           <div className="absolute inset-0">
             <SmartImage
               src={HERO_IMAGE}
@@ -99,8 +112,7 @@ export function Hero() {
           {/* Scrim warna solid (bukan gradient) agar teks tetap terbaca. */}
           <div aria-hidden className="absolute inset-0 bg-primary/85" />
 
-<<<<<<< HEAD:app/components/home/Hero.tsx
-          <div className="relative flex flex-col gap-6 p-6 sm:p-8 lg:p-10">
+          <div className="relative flex h-full flex-col justify-between gap-6 p-6 sm:p-10 lg:p-14">
             {/*
               Header beranda: sapaan singkat + tautan kontekstual. Diletakkan di
               dalam panel hero (bukan baris terpisah) agar tidak ada blok judul
@@ -114,58 +126,39 @@ export function Hero() {
               <Link
                 href="/riwayatPesanan"
                 className="inline-flex items-center gap-1.5 rounded-full font-sans text-[12px] font-semibold text-white/80 transition-colors duration-150 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
-=======
-          <div className="relative flex h-full flex-col justify-end p-6 sm:p-10 lg:p-14">
-            <h1 className="max-w-2xl font-sans text-2xl font-semibold leading-[1.05] tracking-tight text-primary-foreground sm:text-4xl lg:text-[3.85rem]">
-              Temukan Makanan Surplus,
-              <br className="hidden sm:block" />
-              <span className="relative inline-block">
-                Hemat dan Nikmat
-                <span className="absolute inset-x-0 -bottom-1 h-[3px] rounded-full bg-primary sm:-bottom-2" />
-              </span>
-            </h1>
-            <p className="mt-3 max-w-lg font-secondary text-xs leading-relaxed text-white sm:mt-5 sm:text-[15px] lg:text-[16px]">
-              Temukan makanan surplus berkualitas dari UMKM di sekitarmu dengan
-              harga lebih bersahabat.
-            </p>
-
-            <div className="mt-5 sm:mt-8">
-              <Button
-                variant="outlineLight"
-                size="sm"
-                onClick={() => scrollToId("rekomendasi")}
-                className="group px-5 py-2.5 text-[12px] sm:scale-105 sm:px-7 sm:py-3.5 sm:text-[13px] lg:scale-110 lg:px-8"
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/Hero.tsx
               >
                 Pesanan saya
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden />
               </Link>
             </div>
 
-<<<<<<< HEAD:app/components/home/Hero.tsx
             <div>
-              <h1 className="max-w-xl font-sans text-[1.6rem] font-bold leading-[1.15] tracking-tight text-white sm:text-[2rem] lg:text-[2.4rem]">
-                Temukan makanan surplus,
-                <br className="hidden sm:block" /> hemat dan tetap nikmat
+              <h1 className="max-w-2xl font-sans text-2xl font-semibold leading-[1.05] tracking-tight text-primary-foreground sm:text-4xl lg:text-[3.85rem]">
+                Temukan Makanan Surplus,
+                <br className="hidden sm:block" />
+                <span className="relative inline-block">
+                  Hemat dan Nikmat
+                  <span className="absolute inset-x-0 -bottom-1 h-[3px] rounded-full bg-primary sm:-bottom-2" />
+                </span>
               </h1>
-              <p className="mt-3 max-w-md font-secondary text-[13px] leading-relaxed text-white/85 sm:text-[15px]">
-                Makanan surplus berkualitas dari UMKM di sekitarmu, dengan harga
-                yang lebih bersahabat.
+              <p className="mt-3 max-w-lg font-secondary text-xs leading-relaxed text-white sm:mt-5 sm:text-[15px] lg:text-[16px]">
+                Temukan makanan surplus berkualitas dari UMKM di sekitarmu dengan
+                harga lebih bersahabat.
               </p>
 
-              <div className="mt-6 flex flex-wrap items-center gap-3">
+              <div className="mt-5 flex flex-wrap items-center gap-3 sm:mt-8">
                 <Button
-                  variant="light"
+                  variant="outlineLight"
                   size="sm"
                   onClick={() => scrollToId("rekomendasi")}
-                  className="gap-2 px-5 py-2.5 text-[13px]"
+                  className="group px-5 py-2.5 text-[12px] sm:scale-105 sm:px-7 sm:py-3.5 sm:text-[13px] lg:scale-110 lg:px-8"
                 >
                   Jelajahi Makanan
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Button>
 
                 <Button
-                  variant="outlineLight"
+                  variant="light"
                   size="sm"
                   onClick={handleMulaiJual}
                   className="px-5 py-2.5 text-[13px]"
@@ -175,13 +168,7 @@ export function Hero() {
               </div>
             </div>
 
-            <p className="flex items-center gap-2 font-secondary text-[11px] text-white/75 sm:text-xs">
-              <Recycle className="h-4 w-4 text-white/80" aria-hidden />
-              1000+ porsi makanan berhasil diselamatkan
-            </p>
-          </div>
-=======
-            <p className="mt-3 flex items-center gap-2 font-secondary text-[11px] text-primary-foreground/75 sm:mt-5 sm:text-sm">
+            <p className="flex items-center gap-2 font-secondary text-[11px] text-primary-foreground/75 sm:text-sm">
               <Recycle className="h-3.5 w-3.5 text-primary-foreground sm:h-4 sm:w-4" />
               1000+ porsi makanan berhasil diselamatkan
             </p>
@@ -254,7 +241,6 @@ export function Hero() {
               </Button>
             </div>
           </motion.div>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/home/Hero.tsx
         </div>
 
         <article className="flex flex-col justify-between gap-5 rounded-2xl border border-border bg-white p-5 sm:p-6">

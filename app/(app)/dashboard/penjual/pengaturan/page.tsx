@@ -3,15 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-<<<<<<< HEAD
 import { AlertTriangle, ImageIcon, LocateFixed, Store, Trash2 } from "lucide-react";
-import { SellerShell } from "@/app/components/dashboard-penjual/SellerShell";
-import { Card } from "@/app/components/dashboard-penjual/Card";
-=======
-import { AlertTriangle, ImageIcon, Store, Trash2 } from "lucide-react";
 import { SellerShell } from "@/app/components/seller/dashboard-penjual/SellerShell";
 import { Card } from "@/app/components/seller/dashboard-penjual/Card";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 import {
   getSellerStoreSettings,
   updateStoreSettings,

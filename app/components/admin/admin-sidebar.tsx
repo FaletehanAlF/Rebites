@@ -110,7 +110,7 @@ export function AdminSidebar({
   const pathname = usePathname();
   const inMonitoring = pathname
     ? pathname === '/dashboard/admin/monitoring' ||
-      pathname.startsWith('/dashboard/admin/monitoring/')
+    pathname.startsWith('/dashboard/admin/monitoring/')
     : false;
   const [monitoringOpen, setMonitoringOpen] = useState(inMonitoring);
   /**
@@ -605,19 +605,19 @@ export function AdminSidebar({
               prefersReducedMotion
                 ? { opacity: 1, transition: { duration: 0.01 } }
                 : {
-                    x: 0,
-                    opacity: 1,
-                    transition: { duration: 0.26, ease: DRAWER_EASE },
-                  }
+                  x: 0,
+                  opacity: 1,
+                  transition: { duration: 0.26, ease: DRAWER_EASE },
+                }
             }
             exit={
               prefersReducedMotion
                 ? { opacity: 0, transition: { duration: 0.01 } }
                 : {
-                    x: '-100%',
-                    opacity: 0.6,
-                    transition: { duration: 0.18, ease: DRAWER_EASE },
-                  }
+                  x: '-100%',
+                  opacity: 0.6,
+                  transition: { duration: 0.18, ease: DRAWER_EASE },
+                }
             }
             // `will-change` hanya selama drawer ada — elemen ini unmount saat
             // ditutup, jadi tidak ada layer GPU yang tertinggal di halaman.

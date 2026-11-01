@@ -1,22 +1,68 @@
 ﻿"use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-<<<<<<< HEAD
-import { Bell, User } from "lucide-react";
-=======
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell, ChevronDown, MapPin, User, X } from "lucide-react";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
 import { useProfile } from "@/hooks/use-profile";
 import { useNotifications } from "@/hooks/use-notifications";
+import { AccountSidebar } from "./account-sidebar";
 import { BUYER_TOPBAR_OFFSET_CLASS } from "./profile-sidebar-nav";
+
+const LOCATIONS = ["Depok", "Jakarta Selatan", "Bekasi", "Bogor", "Tangerang"];
+
+const NAV_LINKS = [
+  { id: "home", label: "Beranda" },
+  { id: "rekomendasi", label: "Makanan" },
+  { id: "flashSale", label: "Diskon Kilat" },
+  { id: "umkm", label: "UMKM" },
+  { id: "langganan", label: "Langganan" },
+];
 
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+
+// Module scope so React keeps the same component type across renders -
+// defining it inside ProfileNavbar remounted both buttons (losing focus,
+// restarting transitions) on every navbar render.
+function IconButton({
+  label,
+  children,
+  onClick,
+  badge,
+}: {
+  label: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+  badge?: number;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={cn(
+        "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200",
+        "text-muted-foreground hover:bg-muted hover:text-primary",
+        FOCUS_RING,
+      )}
+    >
+      {children}
+      {badge !== undefined && badge > 0 && (
+        <span
+          className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white"
+        >
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
 
 /**
  * Topbar desktop untuk area pembeli.
@@ -61,7 +107,6 @@ export function BuyerTopbar({ collapsed = false }: { collapsed?: boolean }) {
           )}
         </Link>
 
-<<<<<<< HEAD
         <Link
           href="/profile"
           aria-label="Buka halaman profil"
@@ -88,7 +133,9 @@ export function BuyerTopbar({ collapsed = false }: { collapsed?: boolean }) {
         </Link>
       </div>
     </header>
-=======
+  );
+}
+
 function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -417,6 +464,5 @@ export function ProfileNavbar({
         onLogout={handleLogout}
       />
     </>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
   );
 }
