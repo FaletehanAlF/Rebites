@@ -5,7 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Check, Clock, LayoutDashboard, Store, XCircle } from 'lucide-react';
 import { getSubscriptionPlan, computePeriodEnd, type BillingCycle } from '@/lib/subscription-plans';
+import {
+  resolveSuccessStatus,
+  resolvePostPaymentHref,
+  type SuccessStatus,
+} from '@/lib/subscription-success';
 import { supabase } from '@/lib/supabase';
+import { fetchWithAuth, getValidAuthHeader } from '@/lib/auth-token';
 
 const METHOD_NAMES: Record<string, string> = {
   qris: 'QRIS',
@@ -23,25 +29,63 @@ interface Props {
   externalId?: string;
 }
 
+/**
+ * Halaman konfirmasi setelah pembayaran langganan.
+ *
+ * Dua aturan keamanan dipegang di sini:
+ *  1. `plan` yang tidak dikenal atau kosong TIDAK pernah dianggap paket aktif.
+ *     Sebelumnya `plan` null hanya menampilkan "pilih paket", sementara
+ *     `plan: 'standard'` (ejaan lain dari 'standar') jatuh ke cabang sukses dan
+ *     menampilkan "Langganan Aktif!" tanpa bukti pembayaran apa pun.
+ *  2. Tujuan redirect ditentukan dari kondisi akun, bukan diasumsikan penjual:
+ *     pembeli yang belum punya toko (daftar penjualan bisa dibatalkan di tengah
+ *     alur Xendit) tidak boleh dilempar ke dashboard penjual.
+ */
 export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }: Props) {
   const plan = getSubscriptionPlan(planSlug);
   const billing: BillingCycle = billingParam === 'yearly' ? 'yearly' : 'monthly';
   const router = useRouter();
 
-  const [status, setStatus] = useState<'loading' | 'pending' | 'active' | 'failed'>(
-    externalId ? 'pending' : 'active'
+  const [status, setStatus] = useState<SuccessStatus>(() =>
+    resolveSuccessStatus({ externalId })
   );
+  // null = belum diperiksa. Dipakai untuk memilih tujuan redirect tombol
+  // maupun navigasi otomatis; tidak memengaruhi status pembayaran.
+  const [hasStore, setHasStore] = useState<boolean | null>(null);
   const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (status !== 'active') return;
+    let cancelled = false;
+    (async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      if (!userId) {
+        if (!cancelled) setHasStore(false);
+        return;
+      }
+      const { data: umkm } = await supabase
+        .from('umkm_profiles')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (!cancelled) setHasStore(!!umkm);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    // Navigasi otomatis hanya setelah tujuan diketahui; menebak lebih dahulu
+    // membuat pembeli sempat terbawa ke dashboard penjual lalu dipentalikan.
+    if (status !== 'active' || hasStore === null) return;
     redirectTimer.current = setTimeout(() => {
-      router.replace('/dashboard/penjual');
+      router.replace(resolvePostPaymentHref({ hasStore }));
     }, 2500);
     return () => {
       if (redirectTimer.current) clearTimeout(redirectTimer.current);
     };
-  }, [status, router]);
+  }, [status, hasStore, router]);
 
   useEffect(() => {
     if (!externalId) return;
@@ -83,32 +127,29 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
 
     const check = async () => {
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
-        if (token) {
-          const res = await fetch('/api/subscriptions/xendit/verify', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ externalId }),
-          });
-          if (res.ok && !cancelled) {
-            const json = (await res.json()) as { status?: string };
-            if (json.status === 'active') {
-              setStatus('active');
-              if (interval) clearInterval(interval);
-              return;
-            }
-            if (json.status === 'expired') {
-              setStatus('failed');
-              if (interval) clearInterval(interval);
-              return;
-            }
-            setStatus('pending');
+        const authHeader = await getValidAuthHeader();
+        const res = await fetchWithAuth('/api/subscriptions/xendit/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: authHeader,
+          },
+          body: JSON.stringify({ externalId }),
+        });
+        if (res.ok && !cancelled) {
+          const json = (await res.json()) as { status?: string };
+          if (json.status === 'active') {
+            setStatus('active');
+            if (interval) clearInterval(interval);
             return;
           }
+          if (json.status === 'expired') {
+            setStatus('failed');
+            if (interval) clearInterval(interval);
+            return;
+          }
+          setStatus('pending');
+          return;
         }
       } catch {
       }
@@ -120,14 +161,16 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
     };
 
     check();
+    // Interval polling tidak boleh lebih sering dari batas server
+    // (VERIFY_CHECK_WINDOW 15 dtk di lib/server/verify-throttle.ts).
     interval = setInterval(() => {
-      elapsed += 3000;
-      if (elapsed >= 90_000) {
+      elapsed += 15000;
+      if (elapsed >= 180000) {
         clearInterval(interval);
         return;
       }
       check();
-    }, 3000);
+    }, 15000);
 
     return () => {
       cancelled = true;
@@ -137,13 +180,23 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
   }, [externalId]);
 
   if (!plan) {
+    // `plan` kosong ATAU tidak dikenal (mis. 'standard' alih-alih 'standar').
+    // Halaman ini tidak punya bukti apa pun soal status langganan pengguna,
+    // jadi yang ditampilkan hanya pilihan paket — bukan "Langganan Aktif".
     return (
       <main className="min-h-screen bg-secondary">
         <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col items-center justify-center px-4 text-center">
           <h1 className="font-display text-2xl font-medium text-foreground">Langganan ReBites</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Pilih paket langganan terlebih dahulu.</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {planSlug
+              ? 'Paket yang dipilih tidak dikenali. Pilih paket langganan terlebih dahulu.'
+              : 'Pilih paket langganan terlebih dahulu.'}
+          </p>
           <Link href="/#langganan" className="mt-6 inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-white">
             Lihat Paket
+          </Link>
+          <Link href="/dashboard/penjual/langganan" className="mt-3 text-xs font-semibold text-primary hover:underline">
+            Cek langganan saya
           </Link>
         </div>
       </main>
@@ -229,13 +282,16 @@ export function SubscriptionSuccessClient({ planSlug, billingParam, externalId }
             </div>
           </dl>
           <div className="mt-7 flex flex-col gap-2.5 sm:flex-row">
-            <Link href="/dashboard/penjual" className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm shadow-primary/25 hover:bg-primary-dark">
+            <Link
+              href={resolvePostPaymentHref({ hasStore })}
+              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm shadow-primary/25 hover:bg-primary-dark"
+            >
               <LayoutDashboard className="h-4 w-4" />
-              Ke Dashboard Penjual
+              {hasStore ? 'Ke Dashboard Penjual' : 'Ke Beranda'}
             </Link>
-            <Link href="/home" className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-primary px-5 text-sm font-semibold text-primary hover:bg-primary-dark/20">
+            <Link href="/dashboard/penjual/langganan" className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-primary px-5 text-sm font-semibold text-primary hover:bg-primary-dark/20">
               <Store className="h-4 w-4" />
-              Ke Beranda
+              Cek Langganan
             </Link>
           </div>
           <p className="mt-5 text-xs leading-relaxed text-muted-foreground">Pembayaran diproses aman via Xendit.</p>

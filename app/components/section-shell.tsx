@@ -44,7 +44,9 @@ export function SectionShell({
     >
       <SoftBlob
         className={cn(
-          'pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full blur-3xl',
+          // `blur-3xl` (filter 64px pada bidang 448px) diganti gradien radial
+          // di SoftBlob: glow sama, tanpa biaya filter saat halaman digulir.
+          'pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full',
           tone === 'green' ? 'bg-white/[0.06]' : 'bg-primary/[0.06]',
         )}
       />

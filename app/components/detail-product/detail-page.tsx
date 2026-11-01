@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { SiteFooter } from "@/app/components/site-footer";
 import { CartProvider, useCart } from "./cart-context";
 import { PageOrnaments } from "./page-ornaments";
@@ -30,7 +31,12 @@ import { EASE } from "./anim";
  */
 export interface DetailProductShell {
   /** Fixed chrome rendered above the product content. */
-  header: ReactNode;
+  header?: ReactNode;
+  /**
+   * Bungkus halaman dengan `BuyerShell` (UI akun pembeli, tanpa bottom nav).
+   * Hanya diaktifkan oleh route aplikasi; showcase publik membiarkannya off.
+   */
+  buyerShell?: boolean;
   /** Route used to open another product inside the same context. */
   productPath: string;
   /** Target of the related-products "Lihat Semua" link. */
@@ -104,12 +110,12 @@ function DetailPageContent({
     }
   }, [notify]);
 
-  return (
+  const page = (
     <div className="relative min-h-screen overflow-x-clip bg-secondary text-foreground">
       <PageOrnaments />
       {shell.header}
 
-      <main className="relative mx-auto max-w-[1200px] px-4 pb-20 pt-[120px] sm:px-8 sm:pb-10 sm:pt-24 lg:pt-28">
+      <main className="relative mx-auto max-w-[1200px] px-4 pb-20 pt-4 sm:px-8 sm:pb-10 sm:pt-6 lg:pt-8">
         <ProductBreadcrumb product={product} onShare={handleShare} />
 
         <div className="mt-3 grid items-start gap-5 sm:mt-8 sm:gap-10 lg:grid-cols-2 lg:gap-16">
@@ -159,5 +165,11 @@ function DetailPageContent({
 
       <SiteFooter />
     </div>
+  );
+
+  return shell.buyerShell ? (
+    <BuyerShell showBottomNav={false}>{page}</BuyerShell>
+  ) : (
+    page
   );
 }

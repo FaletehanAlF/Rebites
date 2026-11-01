@@ -8,7 +8,6 @@ import {
   Clock,
   MapPin,
   Package,
-  PackageCheck,
   PackageOpen,
   ShoppingBag,
   Store,
@@ -20,10 +19,7 @@ import type { StoredOrder } from '@/lib/types';
 import {
   ORDERS_UPDATED_EVENT,
   getSellerOrders,
-  patchOrder,
-  getOrderById,
 } from '@/lib/order-storage';
-import { notifyOrderCompleted, notifyOrderDelivering } from '@/lib/order-notifications';
 import { getSellerUmkm } from '@/lib/product-storage';
 import {
   SUB_STATUS_LABEL,
@@ -31,14 +27,20 @@ import {
   getOrderSubStatus,
 } from '@/lib/order-utils';
 import {
+  getSellerAction,
+  resolveOrderPhase,
+} from '@/lib/order-status-source';
+import {
   transitionOrderStatus,
   getStatusLabel,
   getStatusColor,
-  getValidActions,
 } from '@/lib/order-state-machine';
 import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { Card } from '@/app/components/dashboard-penjual/Card';
+import { CourierLiveTracker } from '@/app/components/order-history/courier-live-tracker';
 import { SmartImage } from '@/app/components/shared/SmartImage';
+import { CourierPositionPanel } from '@/app/components/order-history/courier-position-panel';
+import { formatPrepRemaining } from '@/lib/prep-deadline';
 
 type OrderTab = 'berlangsung' | 'selesai' | 'semua';
 
@@ -118,27 +120,43 @@ function StatusChip({ order }: { order: StoredOrder }) {
 
 function OrderRow({
   order,
-  onAdvance,
-  onComplete,
   onStatusChange,
 }: {
   order: StoredOrder;
-  onAdvance: (order: StoredOrder) => void;
-  onComplete: (orderId: string) => void;
   onStatusChange?: (orderId: string) => void;
 }) {
   const [processing, setProcessing] = useState(false);
   const isOngoing = order.status === 'ongoing';
-  const subStatus = getOrderSubStatus(order);
-  // Tahap awal (disiapkan) -> penjual bisa lanjut ke siap-diambil / diantar.
-  const isPreparing = isOngoing && (subStatus === 'diproses' || subStatus === 'disiapkan');
-  const advanceLabel = order.fulfillment === 'delivery' ? 'Sedang Diantar' : 'Siap Diambil';
-  const AdvanceIcon = order.fulfillment === 'delivery' ? Truck : PackageCheck;
 
-  // Legacy state-machine flow (orderStatus), dipakai bila progressStatus belum ada
-  const orderStatus = order.orderStatus ?? 'processing';
-  const actions = getValidActions(orderStatus, order.fulfillment);
-  const hasStateMachineActions = actions.length > 0 && !order.progressStatus && isOngoing;
+  // Fase operacional berasal dari SATU sumber (lib/order-status-source.ts).
+  // Sebelumnya syarat tombol memakai `!order.progressStatus`, dan
+  // progress_status selalu berisi 'disiapkan' dari checkout — sehingga
+  // tombol "Mulai Siapkan Pesanan" tidak pernah muncul dan UI jatuh ke
+  // tombol cadangan yang mencoba `paid -> out_for_delivery`, transisi yang
+  // ditolak trigger database.
+  const phase = resolveOrderPhase(order);
+  const action = isOngoing ? getSellerAction(phase, order.fulfillment) : null;
+
+  /**
+   * Tenggat penyiapan, berasal dari `estimated_completion_at` server.
+   *
+   * Jam diperbarui 30 detik sekali — cukup untuk teks "Siap dalam N menit"
+   * tanpa memicu render tiap detik pada daftar yang bisa berisi banyak order.
+   */
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!isOngoing) return;
+    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, [isOngoing]);
+  // Pesanan yang belum dibayar tidak diberi hitung mundur: jam persiapan
+  // baru mulai setelah pembayaran diterima, jadi angka apa pun di sini akan
+  // menyesatkan (checkout lama bisa tampil "Lewat 20 menit" padahal penjual
+  // belum pernah menerima pesanannya).
+  const prep =
+    isOngoing && phase !== 'pending'
+      ? formatPrepRemaining(order.estimatedCompletionAt, now)
+      : null;
 
   const handleAction = async (targetStatus: string) => {
     if (processing) return;
@@ -170,16 +188,43 @@ function OrderRow({
           <p className="text-sm font-bold text-foreground">
             {order.productName}
             {order.quantity > 1 && (
-              <span className="font-medium text-muted-foreground"> Ã- {order.quantity}</span>
+              <span className="font-medium text-muted-foreground"> × {order.quantity}</span>
             )}
           </p>
           <StatusChip order={order} />
         </div>
-        <p className="mt-1 truncate text-xs text-muted-foreground">
-          {order.orderId} ·{' '}
-          {order.fulfillment === 'delivery' ? 'Diantar' : 'Ambil sendiri'} ·{' '}
-          {formatOrderDateTime(order.createdAt)}
+        <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+          <span className="font-medium text-charcoal-500">{order.orderId}</span>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1 font-medium text-charcoal-700">
+            {order.fulfillment === 'delivery' ? (
+              <Truck className="h-3 w-3 shrink-0" aria-hidden />
+            ) : (
+              <Store className="h-3 w-3 shrink-0" aria-hidden />
+            )}
+            {order.fulfillment === 'delivery' ? 'Diantar' : 'Ambil sendiri'}
+          </span>
+          <span aria-hidden>·</span>
+          <span>{formatOrderDateTime(order.createdAt)}</span>
         </p>
+        {prep && (
+          <p
+            className={cn(
+              'mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+              prep.overdue
+                ? 'bg-destructive/10 text-destructive'
+                : 'bg-primary/10 text-primary'
+            )}
+          >
+            <Clock className="h-3 w-3 shrink-0" aria-hidden />
+            {prep.text}
+          </p>
+        )}
+        {order.fulfillment === 'delivery' && order.deliveryFee > 0 && (
+          <p className="mt-0.5 text-xs text-sage-500">
+            Ongkir {formatRupiah(order.deliveryFee)}
+          </p>
+        )}
         {order.fulfillment === 'delivery' && order.addressSnapshot && (
           <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 shrink-0" />
@@ -192,59 +237,50 @@ function OrderRow({
         <p className="text-sm font-bold text-primary">
           {formatRupiah(order.total)}
         </p>
-        {hasStateMachineActions ? (
-          <div className="flex flex-col gap-2">
-            {actions.map((action) => (
-              <button
-                key={action.action}
-                type="button"
-                disabled={processing}
-                onClick={() => handleAction(action.targetStatus)}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                  action.targetStatus === 'processing'
-                    ? 'bg-primary shadow-primary/25 hover:bg-primary-dark'
-                    : action.targetStatus === 'ready_for_pickup'
-                      ? 'bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-700'
-                      : action.targetStatus === 'out_for_delivery'
-                        ? 'bg-purple-600 shadow-purple-600/25 hover:bg-purple-700'
-                        : 'bg-primary shadow-primary/25 hover:bg-primary-dark'
-                )}
-              >
-                {action.targetStatus === 'processing' && <Package className="h-3.5 w-3.5" />}
-                {action.targetStatus === 'ready_for_pickup' && <CheckCheck className="h-3.5 w-3.5" />}
-                {action.targetStatus === 'out_for_delivery' && <Truck className="h-3.5 w-3.5" />}
-                {processing ? 'Memproses...' : action.label}
-              </button>
-            ))}
-          </div>
-        ) : isOngoing ? (
-          isPreparing ? (
-            <button
-              type="button"
-              onClick={() => onAdvance(order)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
-            >
-              <AdvanceIcon className="h-3.5 w-3.5" />
-              {advanceLabel}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onComplete(order.orderId)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
-            >
-              <CheckCheck className="h-3.5 w-3.5" />
-              Tandai Selesai
-            </button>
-          )
+        {action ? (
+          <button
+            type="button"
+            disabled={processing}
+            onClick={() => handleAction(action.targetStatus)}
+            title={action.description}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+              action.tone === 'primary'
+                ? 'bg-primary shadow-primary/25 hover:bg-primary-dark'
+                : action.tone === 'emerald'
+                  ? 'bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-700'
+                  : 'bg-purple-600 shadow-purple-600/25 hover:bg-purple-700'
+            )}
+          >
+            {action.targetStatus === 'processing' && <Package className="h-3.5 w-3.5" />}
+            {action.targetStatus === 'ready_for_pickup' && <CheckCheck className="h-3.5 w-3.5" />}
+            {action.targetStatus === 'out_for_delivery' && <Truck className="h-3.5 w-3.5" />}
+            {action.targetStatus === 'completed' && <CheckCheck className="h-3.5 w-3.5" />}
+            {processing ? 'Memproses...' : action.label}
+          </button>
         ) : (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
             <ClipboardList className="h-3.5 w-3.5" />
-            {order.status === 'completed' ? 'Selesai diproses' : 'Menunggu aksi'}
+            {phase === 'pending'
+              ? 'Menunggu pembayaran'
+              : order.status === 'completed'
+                ? 'Selesai diproses'
+                : 'Menunggu aksi'}
           </span>
         )}
       </div>
+      {/*
+        Pelacak kurir live TIDAK dipasang di kartu penjual: sebelumnya
+        komponen ini langsung memancarkan GPS perangkat ke kanal Broadcast
+        publik. Penjual bukan kurir, dan kanal itu bisa diterima siapa pun yang
+        mengetahui kode pesanan.
+
+        Yang ditampilkan ke penjual hanyalah POSISI yang dibaca dari tabel
+        ber-RLS (bukan koordinat perangkat penjual), lewat panel di bawah.
+      */}
+      {order.fulfillment === 'delivery' && (
+        <CourierPositionPanel orderDbId={order.dbId} className="sm:col-span-full" />
+      )}
     </li>
   );
 }
@@ -286,31 +322,6 @@ export default function PesananMasukPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  const handleAdvance = useCallback((order: StoredOrder) => {
-    const next = order.fulfillment === 'delivery' ? 'diantar' : 'siap-diambil';
-    patchOrder(order.orderId, { progressStatus: next }).then((updated) => {
-      // Notifikasi pembeli: "Siap Diambil" / "Sedang Diantar" (best-effort).
-      if (updated) notifyOrderDelivering(updated).catch(() => {});
-    });
-  }, []);
-
-  const handleComplete = useCallback((orderId: string) => {
-    getOrderById(orderId).then((order) => {
-      patchOrder(orderId, {
-        status: 'completed',
-        completedAt: new Date().toISOString(),
-      });
-
-      if (order) {
-        notifyOrderCompleted({
-          ...order,
-          status: 'completed',
-          completedAt: new Date().toISOString(),
-        });
-      }
-    });
   }, []);
 
   const tabs = [
@@ -359,7 +370,28 @@ export default function PesananMasukPage() {
       </div>
 
       <div className="mt-5">
-        {!hydrated ? null : visibleOrders.length === 0 ? (
+        {!hydrated ? (
+          <div className="space-y-3" aria-label="Memuat pesanan">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                aria-hidden
+                className="flex flex-col gap-3 rounded-2xl border border-border bg-white p-3 sm:p-4 animate-pulse sm:flex-row sm:items-center sm:gap-4"
+              >
+                <div className="h-14 w-14 shrink-0 rounded-xl bg-muted" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="h-4 w-48 rounded-full bg-muted" />
+                  <div className="h-3 w-32 rounded-full bg-muted" />
+                  <div className="h-3 w-24 rounded-full bg-muted" />
+                </div>
+                <div className="flex items-center gap-2 sm:flex-col sm:items-end">
+                  <div className="h-5 w-20 rounded-full bg-muted" />
+                  <div className="h-8 w-24 rounded-full bg-muted" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : visibleOrders.length === 0 ? (
           <EmptyState hasAnyOrders={orders.length > 0} />
         ) : (
           <ul className="space-y-3">
@@ -367,8 +399,6 @@ export default function PesananMasukPage() {
               <OrderRow
                 key={order.orderId}
                 order={order}
-                onAdvance={handleAdvance}
-                onComplete={handleComplete}
                 onStatusChange={() => {}}
               />
             ))}

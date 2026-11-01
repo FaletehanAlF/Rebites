@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { CheckoutView } from '@/app/components/checkout/checkout-view';
+import { BuyerShell } from '@/app/components/shared/buyer-shell';
 
 export const metadata: Metadata = {
   title: 'Detail Pesanan - ReBites',
@@ -10,8 +11,10 @@ export const metadata: Metadata = {
 
 export default function DetailPesananPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-secondary" />}>
-      <CheckoutView />
-    </Suspense>
+    <BuyerShell showBottomNav={false}>
+      <Suspense fallback={<main className="min-h-screen bg-secondary" />}>
+        <CheckoutView />
+      </Suspense>
+    </BuyerShell>
   );
 }

@@ -56,10 +56,13 @@ export function ProductInfo({
           <span aria-hidden className="text-muted-foreground">
             ·
           </span>
-          <span className="inline-flex items-center gap-1 text-muted-foreground">
-            <MapPin className="h-4 w-4 text-primary" />
-            {product.distanceKm.toLocaleString("id-ID")} km dari kamu
-          </span>
+          {/* jarak hanya tampil jika angka nyata; NULL disembunyikan. */}
+          {typeof product.distanceKm === 'number' && (
+            <span className="inline-flex items-center gap-1 text-muted-foreground">
+              <MapPin className="h-4 w-4 text-primary" />
+              {product.distanceKm.toLocaleString("id-ID")} km dari kamu
+            </span>
+          )}
         </motion.div>
 
         <motion.div

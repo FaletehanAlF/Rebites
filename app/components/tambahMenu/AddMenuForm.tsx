@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, Info, Lock, Save } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Info, Lock, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/app/components/dashboard-penjual/Card';
 import { Reveal } from '@/app/components/shared/reveal';
@@ -17,7 +17,8 @@ import { useSellerPlan } from '@/lib/seller-plan';
 import { PhotoPicker } from './PhotoPicker';
 import { MenuPreviewCard } from './MenuPreviewCard';
 import { NumberField } from './NumberField';
-import { DEFAULT_MENU_FORM, MENU_CATEGORIES } from './types';
+import { ShippingInfoSection } from './ShippingInfoSection';
+import { DEFAULT_MENU_FORM, MENU_CATEGORIES, parseShippingNumber } from './types';
 import type { MenuFormState } from './types';
 
 const inputCls =
@@ -64,6 +65,11 @@ export function AddMenuForm() {
   const [limitReached, setLimitReached] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
   const [productCount, setProductCount] = useState(0);
+  // input package opsional sebagai teks mentah ('' = kosong = NULL).
+  const [weightRaw, setWeightRaw] = useState('');
+  const [lengthRaw, setLengthRaw] = useState('');
+  const [widthRaw, setWidthRaw] = useState('');
+  const [heightRaw, setHeightRaw] = useState('');
   const { plan } = useSellerPlan();
 
   const refreshCount = useCallback(() => {
@@ -87,6 +93,31 @@ export function AddMenuForm() {
   const handleSave = () => {
     setTouched(true);
     if (!form.name.trim() || savingProduct) return;
+    // minimal satu metode pengambilan harus aktif.
+    if (!form.isDelivery && !form.isPickup) {
+      setSaveError('Pilih minimal satu metode pengambilan: Diantar atau Ambil Sendiri.');
+      return;
+    }
+    // dimensi boleh kosong (NULL); jika diisi harus angka positif.
+    const weightParsed = parseShippingNumber(weightRaw);
+    const lengthParsed = parseShippingNumber(lengthRaw);
+    const widthParsed = parseShippingNumber(widthRaw);
+    const heightParsed = parseShippingNumber(heightRaw);
+    if (!weightParsed.ok || !lengthParsed.ok || !widthParsed.ok || !heightParsed.ok) {
+      setSaveError('Berat dan dimensi harus berupa angka positif. Kosongkan jika belum tahu.');
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      return;
+    }
+    // Berat wajib bila Diantar aktif: tanpa weight_gram server menolak
+    // /api/shipping/rates (product_no_weight) dan checkout, sehingga toggle
+    // Diantar hanya menjadi janji yang tidak bisa dipenuhi.
+    if (form.isDelivery && weightParsed.value === null) {
+      setSaveError(
+        'Isi berat makanan (gram) agar pembeli bisa memilih Diantar. Atau matikan toggle Diantar.'
+      );
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      return;
+    }
 
     setSaveError('');
 
@@ -99,7 +130,7 @@ export function AddMenuForm() {
     setSavingProduct(true);
 
     (async () => {
-      let imageUrl = form.photo || '/foods/ikansayur.jpg';
+      let imageUrl = form.photo || '/foods/ikansayur.avif';
 
       if (typeof form.photo === 'string' && form.photo.startsWith('data:image')) {
         const uploaded = await uploadDataUrl(form.photo);
@@ -122,6 +153,14 @@ export function AddMenuForm() {
         endTime: form.endTime,
         isSurplusToday: form.isSurplusToday,
         featured: false,
+        // kapabilitas fulfillment pilihan seller.
+        isDelivery: form.isDelivery,
+        isPickup: form.isPickup,
+        // package opsional (NULL jika kosong, tanpa angka palsu).
+        weightGram: weightParsed.value,
+        lengthCm: lengthParsed.value,
+        widthCm: widthParsed.value,
+        heightCm: heightParsed.value,
       });
 
       setSavingProduct(false);
@@ -142,6 +181,10 @@ export function AddMenuForm() {
 
   const handleReset = () => {
     setForm(DEFAULT_MENU_FORM);
+    setWeightRaw('');
+    setLengthRaw('');
+    setWidthRaw('');
+    setHeightRaw('');
     setTouched(false);
     setSaved(false);
     setSaveError('');
@@ -214,7 +257,8 @@ export function AddMenuForm() {
             Menu Berhasil Ditambahkan
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            {savedName} telah masuk ke daftar menu tokomu dan siap dipesan pembeli.
+            {savedName} telah masuk ke daftar menu tokomu dan sudah aktif di
+            marketplace.
           </p>
           <div className="mt-6 grid gap-3">
             <Link
@@ -309,8 +353,8 @@ export function AddMenuForm() {
                         </option>
                       ))}
                     </select>
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
-                      –¼
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      <ChevronDown className="h-3.5 w-3.5" aria-hidden />
                     </span>
                   </div>
                 </div>
@@ -417,6 +461,87 @@ export function AddMenuForm() {
                   />
                 </button>
               </div>
+            </section>
+
+            <section>
+              <SectionTitle number="5" title="Metode Pengambilan" />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-secondary px-4 py-3.5">
+                  <div>
+                    <p className="text-xs font-semibold text-charcoal-900">
+                      Diantar
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-sage-500">
+                      Pembeli bisa memilih pengiriman ke alamat
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form.isDelivery}
+                    aria-label="Aktifkan pengiriman diantar"
+                    onClick={() => set('isDelivery', !form.isDelivery)}
+                    className={cn(
+                      'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+                      form.isDelivery ? 'bg-primary' : 'bg-sage-100'
+                    )}
+                  >
+                    <motion.span
+                      animate={{ x: form.isDelivery ? 20 : 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm"
+                    />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-secondary px-4 py-3.5">
+                  <div>
+                    <p className="text-xs font-semibold text-charcoal-900">
+                      Ambil Sendiri
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-sage-500">
+                      Pembeli mengambil langsung di toko
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form.isPickup}
+                    aria-label="Aktifkan ambil sendiri"
+                    onClick={() => set('isPickup', !form.isPickup)}
+                    className={cn(
+                      'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+                      form.isPickup ? 'bg-primary' : 'bg-sage-100'
+                    )}
+                  >
+                    <motion.span
+                      animate={{ x: form.isPickup ? 20 : 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm"
+                    />
+                  </button>
+                </div>
+                <p className="text-[11px] text-sage-500">
+                  Minimal satu metode harus aktif.
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <SectionTitle number="6" title="Informasi Pengiriman" />
+              <ShippingInfoSection
+                idPrefix="menu"
+                weightRaw={weightRaw}
+                lengthRaw={lengthRaw}
+                widthRaw={widthRaw}
+                heightRaw={heightRaw}
+                onWeightChange={setWeightRaw}
+                onLengthChange={setLengthRaw}
+                onWidthChange={setWidthRaw}
+                onHeightChange={setHeightRaw}
+                isDelivery={form.isDelivery}
+                variant="add"
+              />
             </section>
 
               {saveError && (

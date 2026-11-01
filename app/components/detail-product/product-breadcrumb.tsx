@@ -13,8 +13,6 @@ export function ProductBreadcrumb({
   onShare: () => void;
 }) {
   const searchParams = useSearchParams();
-  // `from=home` historically pointed at `/homePage`, a route that no longer
-  // exists (renamed to `/home`); the application home is the correct target.
   const fromPage = searchParams.get("from") === "home" ? "/home" : "/";
 
   return (

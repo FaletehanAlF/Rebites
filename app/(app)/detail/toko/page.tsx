@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { useCatalog } from "@/lib/catalog";
 import type { FoodItem, Vendor } from "@/lib/types";
 import { SiteFooter } from "@/app/components/site-footer";
+import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { ProductDetailModal } from "@/app/components/shared/ProductDetailModalLazy";
 import { CategoryRow } from "@/app/components/detail-toko/category-row";
 import { useProductDetail } from "@/app/components/detail-product/use-product-detail";
@@ -60,7 +61,9 @@ function sellerProductToFoodItem(
     vendorName: vendor.name,
     image: sp.image,
     category: sp.category as FoodItem["category"],
-    rating: 4.7,
+    // Rating asli dari database (products.rating). Null = belum ada rating
+    // tercatat; kartu produk menyembunyikannya (tidak mengarang angka).
+    rating: sp.rating ?? null,
     distanceKm: vendor.distanceKm,
     availableFrom: sp.startTime,
     availableTo: sp.endTime,
@@ -70,6 +73,8 @@ function sellerProductToFoodItem(
     discountPercent: pricing.isFlash
       ? getFlashDiscountPercent(sp)
       : sp.discountPercent,
+    // Stok numerik diteruskan agar kartu memakai angka, bukan teks label.
+    ...({ stock: sp.stock } as { stock: number }),
   };
 }
 
@@ -310,7 +315,7 @@ function StoreDetailContent() {
     setStoreError(null);
 
     const load = async () => {
-      const result = await getStoreProductsBySlug(storeId ?? "");
+      const result = await getStoreProductsBySlug(storeId ?? "", { onlyApproved: true });
       if (!mounted) return;
       setStoreProducts(result.products);
       setStoreError(result.error);
@@ -423,9 +428,9 @@ function StoreDetailContent() {
   }
 
   return (
-    <main className="min-h-screen bg-secondary font-sans text-foreground">
-      { }
-      <StoreHeroCard vendor={vendor} openNow={openNow} />
+    <BuyerShell>
+      <main className="min-h-screen bg-secondary font-sans text-foreground">
+        <StoreHeroCard vendor={vendor} openNow={openNow} />
 
       { }
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
@@ -621,7 +626,7 @@ function StoreDetailContent() {
         </section>
       </div>
 
-      <SiteFooter />
+      <SiteFooter hasMobileBottomNav />
 
       <AnimatePresence>
         {selectedProduct && (
@@ -632,6 +637,7 @@ function StoreDetailContent() {
         )}
       </AnimatePresence>
     </main>
+    </BuyerShell>
   );
 }
 

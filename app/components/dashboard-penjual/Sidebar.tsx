@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   LayoutGrid,
   Settings,
+  ShieldCheck,
   ShoppingBag,
   Star,
   TrendingUp,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAdminMe } from '@/hooks/use-admin-me';
 import { DotPattern } from './decor';
 
 interface SidebarProps {
@@ -107,6 +109,10 @@ function NavItemLink({ item, onClose }: { item: NavItem; onClose?: () => void })
 }
 
 function SidebarContent({ onClose }: { onClose: () => void }) {
+  // Tautan "Panel Admin" hanya untuk akun dengan status admin terverifikasi
+  // server (GET /api/admin/me). Penjual biasa mendapat `me = null`.
+  const { me } = useAdminMe();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -122,7 +128,7 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
           aria-label="Ke beranda ReBites"
           className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full ring-1 ring-black/5 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          <Image src="/logo.png" alt="ReBites" width={40} height={40} className="h-10 w-10 object-cover" />
+          <Image src="/logo.avif" alt="ReBites" width={40} height={40} className="h-10 w-10 object-cover" />
         </Link>
         <Link href="/home" className="min-w-0 flex-1">
           <p className="font-display text-xl font-semibold leading-none tracking-tight text-primary">
@@ -147,6 +153,25 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
           <NavItemLink key={item.id} item={item} onClose={onClose} />
         ))}
       </nav>
+
+      {me && (
+        <div className="relative border-t border-sage-100 px-4 py-3">
+          <Link
+            href="/dashboard/admin"
+            onClick={onClose}
+            className={cn(
+              'group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors',
+              'text-charcoal-500 hover:bg-sage-100/60 hover:text-charcoal-900'
+            )}
+          >
+            <ShieldCheck
+              aria-hidden
+              className="h-[18px] w-[18px] shrink-0 text-sage-500 group-hover:text-caramel"
+            />
+            <span className="flex-1">Panel Admin</span>
+          </Link>
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -9,7 +9,18 @@ export function SoftBlob({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
-      className={cn('pointer-events-none absolute rounded-full blur-3xl', className)}
+      className={cn(
+        // Tepi lembut dibuat dengan `mask-image`, bukan `filter: blur()`.
+        // `blur-3xl` (radius 64px) dipakai belasan kali di landing/home;
+        // setiap filter blur pada bidang besar harus dihitung ulang saat
+        // digulir — itu yang terasa sebagai scroll "patah-patah". Mask
+        // memberi gradien transparan yang sama secara visual tanpa biaya
+        // filter.
+        'pointer-events-none absolute rounded-full',
+        '[mask-image:radial-gradient(circle_at_center,black_30%,transparent_72%)]',
+        '[-webkit-mask-image:radial-gradient(circle_at_center,black_30%,transparent_72%)]',
+        className
+      )}
     />
   );
 }

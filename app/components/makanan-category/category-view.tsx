@@ -9,7 +9,7 @@ import {
   SearchX,
 } from "lucide-react";
 import { SiteFooter } from "@/app/components/site-footer";
-import { MobileBottomNav } from "@/app/components/shared/MobileBottomNav";
+import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { FoodCard } from "@/app/components/shared/FoodCard";
 import { ProductDetailModal } from "@/app/components/shared/ProductDetailModalLazy";
 import { StoreClosedModal } from "@/app/components/shared/StoreClosedModal";
@@ -107,6 +107,7 @@ export default function CategoryView({
     !isLoading && !isCategoryEmpty && filteredItems.length === 0;
 
   return (
+    <BuyerShell>
     <div className="flex min-h-screen flex-col bg-secondary">
       <main className="flex-1">
         {}
@@ -277,8 +278,7 @@ export default function CategoryView({
         </section>
       </main>
 
-      <MobileBottomNav />
-      <SiteFooter />
+      <SiteFooter hasMobileBottomNav />
 
       <AnimatePresence>
         {selectedProduct && (
@@ -296,5 +296,6 @@ export default function CategoryView({
         availableTo={storeClosedModal.availableTo}
       />
     </div>
+    </BuyerShell>
   );
 }

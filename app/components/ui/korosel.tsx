@@ -111,6 +111,9 @@ const OptionWheel = ({
   const dragRef = useRef<{ coord: number; start: number; id: number } | null>(null);
   const dragMovedRef = useRef(false);
   const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Hemat CPU: loop rAF & auto-rotate dihentikan saat wheel di luar viewport
+  // atau tab tidak aktif — kedua loop hanya berjalan saat benar-benar terlihat.
+  const visibleRef = useRef(true);
   const [selectedIndex, setSelectedIndex] = useState(defaultSelected);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -140,6 +143,10 @@ const OptionWheel = ({
   cfgRef.current = cfg;
 
   const runFrame = useCallback((now: number) => {
+    if (!visibleRef.current) {
+      rafRef.current = null;
+      return;
+    }
     const dt = Math.min((now - lastRef.current) / 1000, 0.05);
     lastRef.current = now;
     const cfg = cfgRef.current;
@@ -215,6 +222,7 @@ const OptionWheel = ({
   }, [isPlateMode]);
 
   const startLoop = useCallback(() => {
+    if (!visibleRef.current) return;
     if (rafRef.current != null) {
       cancelAnimationFrame(rafRef.current);
     }
@@ -249,7 +257,7 @@ const OptionWheel = ({
       clearTimeout(autoTimerRef.current);
       autoTimerRef.current = null;
     }
-    if (!autoRotate) return;
+    if (!autoRotate || !visibleRef.current) return;
     const jitter = (Math.random() - 0.5) * 2;
     const delay = Math.max(1000, autoRotateInterval + autoRotateInterval * 0.3 * jitter);
     autoTimerRef.current = setTimeout(() => {
@@ -269,6 +277,45 @@ const OptionWheel = ({
     resetAutoTimer();
     return pauseAutoTimer;
   }, [resetAutoTimer, pauseAutoTimer]);
+
+  // IntersectionObserver + visibilitychange: nyalakan ulang loop & auto-rotate
+  // hanya saat komponen kembali terlihat. Tanpa ini, karusel menggambar & memutar
+  // terus di background dan menghabiskan CPU saat pengguna scroll ke bawah.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    let inView = true;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        update();
+      },
+      { threshold: 0.05 }
+    );
+    io.observe(el);
+    const onVis = () => update();
+    document.addEventListener('visibilitychange', onVis);
+    function update() {
+      const visible = inView && !document.hidden;
+      if (visible === visibleRef.current) return;
+      visibleRef.current = visible;
+      if (visible) {
+        lastRef.current = performance.now();
+        startLoop();
+        resetAutoTimer();
+      } else {
+        pauseAutoTimer();
+        if (rafRef.current != null) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+      }
+    }
+    return () => {
+      io.disconnect();
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [startLoop, resetAutoTimer, pauseAutoTimer]);
 
   useEffect(() => {
     const el = rootRef.current;

@@ -13,9 +13,11 @@ import { QuantityStepperCard } from "./quantity-stepper-card";
 import { FulfillmentToggle } from "./fulfillment-toggle";
 import { PickupInfoCard } from "./pickup-info-row";
 import { DeliveryAddressSection } from "./delivery-address-section";
+import { ShippingOptionSection } from "./shipping-option-section";
 import { PaymentSummaryCard } from "./payment-summary-card";
 import { StickyMobileBar } from "./sticky-mobile-bar";
 import { CheckoutSuccessDialog } from "./checkout-success-dialog";
+import { CheckoutPriceReviewDialog } from "./checkout-price-review-dialog";
 import { useCurrentUser } from "@/lib/current-user";
 import { toast } from "@/hooks/use-toast";
 
@@ -33,6 +35,20 @@ function buildOrderDraft(product: ProductDetail): OrderDraft {
     discountedPrice: product.discountedPrice,
     stockRemaining: product.stockRemaining,
     distanceKm: product.distanceKm,
+    // kapabilitas fulfillment untuk gating UI (server validasi ulang).
+    isDelivery: product.isDelivery ?? true,
+    isPickup: product.isPickup ?? true,
+    // Berat NULL = ongkir pasti ditolak server (product_no_weight). Tandai di
+    // sini agar toggle Diantar tidak menawarkan janji yang gagal belakangan.
+    deliveryUnavailableReason:
+      (product.isDelivery ?? true) && !(product.weightGram != null)
+        ? 'weight_missing'
+        : null,
+    // package dari ProductDetail (NULL = belum diketahui).
+    weightGram: product.weightGram ?? null,
+    lengthCm: product.lengthCm ?? null,
+    widthCm: product.widthCm ?? null,
+    heightCm: product.heightCm ?? null,
     pickupTime: product.pickupTime,
     pickupLocation: product.pickupLocation,
     reservedUntil: new Date(
@@ -81,6 +97,7 @@ function CheckoutContent({
 
               <PickupInfoCard />
               <DeliveryAddressSection />
+              <ShippingOptionSection />
             </div>
 
             {}
@@ -94,6 +111,7 @@ function CheckoutContent({
       </main>
 
       <CheckoutSuccessDialog />
+      <CheckoutPriceReviewDialog />
     </CheckoutProvider>
   );
 }

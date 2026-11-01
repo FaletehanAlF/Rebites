@@ -29,6 +29,7 @@ import RotatingText from "@/app/components/RotatingText";
 const NAV_LINKS = [
   { href: "/#top", label: "Beranda", target: "top" },
   { href: "/#about", label: "Tentang", target: "about" },
+  { href: "/#rekomendasi", label: "Rekomendasi", target: "rekomendasi" },
   { href: "/#cara-kerja", label: "Cara Kerja", target: "cara-kerja" },
   { href: "/#langganan", label: "Langganan", target: "langganan" },
   { href: "/#testimoni", label: "Testimoni", target: "testimoni" },
@@ -38,22 +39,15 @@ const NAV_LINKS = [
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
+// Latar hero + warna fade di bawah harus selalu sepasang.
+// Mau balik ke versi hijau muda? Ganti jadi "bg-secondary" & "from-secondary".
+const HERO_BG = "bg-white";
+const HERO_FADE = "from-white";
+
 const TRUST_ITEMS = [
-  {
-    icon: Star,
-    value: "4.9/5",
-    label: "Rating pembeli",
-  },
-  {
-    icon: Store,
-    value: "40+ UMKM",
-    label: "Mitra Depok",
-  },
-  {
-    icon: UtensilsCrossed,
-    value: "1000+ porsi",
-    label: "Diselamatkan",
-  },
+  { icon: Star, value: "4.9/5", label: "Rating pembeli" },
+  { icon: Store, value: "40+ UMKM", label: "Mitra Depok" },
+  { icon: UtensilsCrossed, value: "1000+ porsi", label: "Diselamatkan" },
 ];
 
 type LeafProps = {
@@ -69,6 +63,7 @@ type LeafProps = {
   speedY: number;
   speedX: number;
   radius: string;
+  /** Satu `useScroll()` dipakai bersama oleh semua daun. */
   scrollY: MotionValue<number>;
 };
 
@@ -87,8 +82,10 @@ function Leaf({
   radius,
   scrollY,
 }: LeafProps) {
-  const y = useTransform(scrollY, (value) => value * speedY);
-  const x = useTransform(scrollY, (value) => value * speedX);
+  // transform-only (tanpa layout/repaint), di-subscribe dari satu scroll value
+  // bersama alih-alih 6 listener window terpisah.
+  const y = useTransform(scrollY, (v) => v * speedY);
+  const x = useTransform(scrollY, (v) => v * speedX);
 
   return (
     <motion.div
@@ -105,8 +102,7 @@ function Leaf({
         x,
         rotate,
         opacity,
-        filter: `${blur ? `blur(${blur}px) ` : ""
-          }saturate(1.35) brightness(0.96) contrast(1.1)`,
+        filter: `${blur ? `blur(${blur}px) ` : ""}saturate(1.35) brightness(0.96) contrast(1.1)`,
         borderRadius: radius,
       }}
     >
@@ -198,6 +194,7 @@ function HeroFoodBackdrop() {
     },
   ];
 
+  // Satu subscription scroll untuk 6 daun parallax, bukan satu per daun.
   const { scrollY } = useScroll();
 
   return (
@@ -206,28 +203,30 @@ function HeroFoodBackdrop() {
       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
     >
       {leaves.map((leaf, index) => (
-        <Leaf
-          key={`${leaf.src}-${index}`}
-          {...leaf}
-          scrollY={scrollY}
-        />
+        <Leaf key={`${leaf.src}-${index}`} {...leaf} scrollY={scrollY} />
       ))}
 
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white to-transparent" />
+      <div
+        className={cn(
+          "absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t to-transparent",
+          HERO_FADE,
+        )}
+      />
     </div>
   );
 }
 
 export function HeroSection() {
-  const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [activeNav, setActiveNav] = useState("Beranda");
-  const [mounted, setMounted] = useState(false);
-  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState<boolean>(false);
+  const [scrolled, setScrolled] = useState<boolean>(false);
+  const [activeNav, setActiveNav] = useState<string>("Beranda");
+  const [overDark, setOverDark] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>("");
 
   const lang = "id" as "id" | "en";
 
-  const t = (id: string, en: string) => {
+  const t = (id: string, en: string): string => {
     return lang === "en" ? en : id;
   };
 
@@ -238,8 +237,15 @@ export function HeroSection() {
   useEffect(() => {
     if (!mounted) return;
 
+    const sections = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-nav]"),
+    );
+
     const probeY = 128;
 
+    // Gabungkan event scroll/resize jadi satu pengukuran per frame:
+    // tiap pass membaca banyak getBoundingClientRect() yang kalau tidak
+    // di-batch memaksa layout di setiap scroll event (bersaing dengan Lenis).
     let rafId: number | null = null;
 
     const update = () => {
@@ -250,6 +256,18 @@ export function HeroSection() {
 
         setScrolled(window.scrollY > 32);
 
+        // Deteksi section hijau di bawah nav (untuk nav mode gelap)
+        let currentNav: string | undefined;
+        for (const section of sections) {
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= probeY && rect.bottom > probeY) {
+            currentNav = section.dataset.nav;
+            break;
+          }
+        }
+        setOverDark(currentNav === "green");
+
+        // Link nav aktif
         let label = NAV_LINKS[0].label;
         let bestTop = -Infinity;
 
@@ -278,41 +296,28 @@ export function HeroSection() {
 
     update();
 
-    window.addEventListener("scroll", update, {
-      passive: true,
-    });
-
+    window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
 
     return () => {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-      }
-
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
   }, [mounted]);
 
-  const scrollToTarget = (target: string) => {
-    const element = target
-      ? document.getElementById(target)
-      : null;
+  const navIsDark = mounted && overDark;
 
+  const scrollToTarget = (target: string) => {
+    const element = target ? document.getElementById(target) : null;
     if (!element) return;
 
     const lenis = window.__lenis;
 
     if (lenis) {
-      lenis.scrollTo(element, {
-        offset: -104,
-        duration: 1.1,
-      });
+      lenis.scrollTo(element, { offset: -104, duration: 1.1 });
     } else {
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -329,30 +334,23 @@ export function HeroSection() {
     scrollToTarget(target);
   };
 
-  const handleSearchSubmit = (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmed = query.trim();
 
     if (trimmed) {
       window.dispatchEvent(
-        new CustomEvent("rebites:hero-search", {
-          detail: trimmed,
-        }),
+        new CustomEvent("rebites:hero-search", { detail: trimmed }),
       );
     }
 
-    setActiveNav("Beranda");
+    setActiveNav("Rekomendasi");
     scrollToTarget("rekomendasi");
   };
 
   return (
-    <div
-      className="overflow-x-hidden bg-white"
-      data-nav="neutral"
-    >
+    <div className={cn("overflow-x-hidden", HERO_BG)} data-nav="neutral">
       <header className="fixed inset-x-0 top-0 z-50">
         <div className="px-4 pt-3 sm:px-6 sm:pt-4 lg:px-8">
           <div className="mx-auto w-full">
@@ -360,7 +358,12 @@ export function HeroSection() {
               className={cn(
                 "flex h-20 min-w-fit items-center justify-between px-5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-6 lg:px-8",
                 scrolled
-                  ? "mx-auto w-full max-w-4xl rounded-full border border-border/70 bg-white/90 px-6 text-primary shadow-[0_20px_44px_-26px_rgba(27,77,50,0.35)] backdrop-blur-xl sm:px-7 xl:max-w-5xl"
+                  ? cn(
+                    "mx-auto w-full max-w-4xl rounded-full border px-6 shadow-[0_20px_44px_-26px_rgba(27,77,50,0.45)] backdrop-blur-xl sm:px-7 xl:max-w-5xl",
+                    navIsDark
+                      ? "border-white/15 bg-primary/70 text-white"
+                      : "border-border/70 bg-white/90 text-primary",
+                  )
                   : "mx-auto w-full max-w-7xl rounded-none border-b border-transparent bg-transparent",
               )}
             >
@@ -377,11 +380,13 @@ export function HeroSection() {
                   className="h-10 w-10 rounded-full object-cover"
                 />
 
-                <span className="font-display text-2xl font-medium tracking-tight text-primary">
-                  <span className="font-display text-2xl font-medium">
-                    Re
-                  </span>
-
+                <span
+                  className={cn(
+                    "font-display text-2xl font-medium tracking-tight transition-colors duration-500",
+                    navIsDark ? "text-white" : "text-primary",
+                  )}
+                >
+                  <span className="font-display text-2xl font-medium">Re</span>
                   <span className="font-display text-2xl font-light italic">
                     Bites
                   </span>
@@ -390,35 +395,35 @@ export function HeroSection() {
 
               <ul className="hidden items-center gap-5 lg:flex">
                 {NAV_LINKS.map((link) => (
-                  <li
-                    key={link.label}
-                    className="relative"
-                  >
+                  <li key={link.label} className="relative">
                     <Link
                       href={link.href}
                       onClick={(event) =>
-                        scrollToSection(
-                          event,
-                          link.label,
-                          link.target,
-                        )
+                        scrollToSection(event, link.label, link.target)
                       }
                       aria-current={
-                        activeNav === link.label
-                          ? "page"
-                          : undefined
+                        activeNav === link.label ? "page" : undefined
                       }
                       className={cn(
                         "relative py-1 font-secondary text-sm transition-colors duration-300",
                         activeNav === link.label
-                          ? "font-semibold text-primary"
-                          : "text-primary/80 hover:text-primary",
+                          ? navIsDark
+                            ? "font-semibold text-white"
+                            : "font-semibold text-primary"
+                          : navIsDark
+                            ? "text-white/80 hover:text-white"
+                            : "text-primary/80 hover:text-primary",
                       )}
                     >
                       {link.label}
 
                       {activeNav === link.label && (
-                        <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-primary" />
+                        <span
+                          className={cn(
+                            "absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full",
+                            navIsDark ? "bg-white" : "bg-primary",
+                          )}
+                        />
                       )}
                     </Link>
                   </li>
@@ -429,7 +434,10 @@ export function HeroSection() {
                 <Link
                   href="/auth/login"
                   className={cn(
-                    "hidden items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 font-secondary text-sm font-semibold text-white shadow-[0_14px_30px_-18px_rgba(27,77,50,0.65)] transition-all duration-300 hover:-translate-y-px hover:bg-primary-dark sm:flex",
+                    "hidden items-center gap-1.5 rounded-full px-5 py-2.5 font-secondary text-sm font-semibold shadow-[0_14px_30px_-18px_rgba(27,77,50,0.65)] transition-all duration-300 hover:-translate-y-px hover:bg-primary-dark hover:text-white sm:flex",
+                    navIsDark
+                      ? "bg-white text-primary"
+                      : "bg-primary text-white",
                     FOCUS_RING,
                   )}
                 >
@@ -439,15 +447,12 @@ export function HeroSection() {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setOpen((value) => !value)
-                  }
-                  aria-label={
-                    open ? "Tutup menu" : "Buka menu"
-                  }
+                  onClick={() => setOpen((value) => !value)}
+                  aria-label={open ? "Tutup menu" : "Buka menu"}
                   aria-expanded={open}
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center text-primary lg:hidden",
+                    "flex h-10 w-10 items-center justify-center lg:hidden",
+                    navIsDark ? "text-white" : "text-primary",
                     FOCUS_RING,
                   )}
                 >
@@ -463,22 +468,10 @@ export function HeroSection() {
             <AnimatePresence initial={false}>
               {open && (
                 <motion.div
-                  initial={{
-                    opacity: 0,
-                    y: -8,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: -8,
-                  }}
-                  transition={{
-                    duration: 0.25,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                   className="mt-2 overflow-hidden rounded-3xl border border-border/70 bg-white p-3 shadow-[0_28px_56px_-28px_rgba(27,77,50,0.5)] lg:hidden"
                 >
                   <ul className="flex flex-col">
@@ -487,11 +480,7 @@ export function HeroSection() {
                         <Link
                           href={link.href}
                           onClick={(event) =>
-                            scrollToSection(
-                              event,
-                              link.label,
-                              link.target,
-                            )
+                            scrollToSection(event, link.label, link.target)
                           }
                           className={cn(
                             "flex items-center justify-between rounded-2xl px-4 py-3 font-secondary text-sm transition-colors duration-300",
@@ -525,7 +514,10 @@ export function HeroSection() {
 
       <section
         id="top"
-        className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-white px-4 pb-14 pt-28 sm:px-6 lg:px-8 lg:pt-28"
+        className={cn(
+          "relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 pb-14 pt-28 sm:px-6 lg:px-8 lg:pt-28",
+          HERO_BG,
+        )}
       >
         <HeroFoodBackdrop />
 
@@ -535,10 +527,7 @@ export function HeroSection() {
               <MapPin className="h-3.5 w-3.5 text-primary" />
 
               <span className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                {t(
-                  "Khusus Wilayah Kota Depok",
-                  "Only in Depok City",
-                )}
+                {t("Khusus Wilayah Kota Depok", "Only in Depok City")}
               </span>
             </div>
 
@@ -558,45 +547,29 @@ export function HeroSection() {
                 lineHeight={1.05}
                 letterSpacing="-0.02em"
                 className="text-primary"
-                style={{
-                  fontStyle: "italic",
-                }}
+                style={{ fontStyle: "italic" }}
               />
 
               <div className="flex w-full items-baseline justify-center">
                 <RotatingText
-                  texts={[
-                    "makanan.",
-                    "UMKM.",
-                    "masyarakat.",
-                    "lingkungan.",
-                  ]}
+                  texts={["makanan.", "UMKM.", "masyarakat.", "lingkungan."]}
                   mainClassName="font-display font-light italic text-primary"
                   style={{
-                    fontSize:
-                      "clamp(2rem, 4.5vw, 3.5rem)",
+                    fontSize: "clamp(2rem, 4.5vw, 3.5rem)",
                     lineHeight: 1.05,
                     letterSpacing: "-0.01em",
                   }}
                   rotationInterval={2200}
                   staggerDuration={0.03}
-                  transition={{
-                    type: "spring",
-                    damping: 25,
-                    stiffness: 300,
-                  }}
-                  exit={{
-                    y: "-120%",
-                    opacity: 0,
-                  }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  exit={{ y: "-120%", opacity: 0 }}
                 />
               </div>
             </div>
 
             <p className="mt-6 max-w-2xl font-sans text-base leading-[1.8] text-muted-foreground sm:text-lg">
-              Nikmati makanan surplus berkualitas dari
-              UMKM Kota Depok dengan harga lebih hemat,
-              tetap layak konsumsi, dan tanpa membuang
+              Nikmati makanan surplus berkualitas dari UMKM Kota Depok dengan
+              harga lebih hemat, tetap layak konsumsi, dan tanpa membuang
               makanan.
             </p>
 
@@ -612,10 +585,7 @@ export function HeroSection() {
                   aria-hidden
                 />
 
-                <label
-                  htmlFor="hero-search"
-                  className="sr-only"
-                >
+                <label htmlFor="hero-search" className="sr-only">
                   Cari makanan surplus
                 </label>
 
@@ -623,19 +593,14 @@ export function HeroSection() {
                   id="hero-search"
                   type="search"
                   value={query}
-                  onChange={(event) =>
-                    setQuery(event.target.value)
-                  }
+                  onChange={(event) => setQuery(event.target.value)}
                   placeholder="Cari ayam geprek, soto mie, sate..."
                   autoComplete="off"
                   className="h-11 w-full bg-transparent font-inter text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
                 />
 
                 <span className="hidden shrink-0 items-center gap-1 rounded-full border border-primary/10 bg-primary/5 px-3 py-1.5 font-inter text-xs font-semibold text-primary sm:inline-flex">
-                  <MapPin
-                    className="h-3.5 w-3.5 text-primary"
-                    aria-hidden
-                  />
+                  <MapPin className="h-3.5 w-3.5 text-primary" aria-hidden />
                   Depok
                 </span>
 
@@ -658,7 +623,7 @@ export function HeroSection() {
                 <button
                   type="button"
                   onClick={() => {
-                    setActiveNav("Beranda");
+                    setActiveNav("Rekomendasi");
                     scrollToTarget("rekomendasi");
                   }}
                   className={cn(
@@ -667,12 +632,8 @@ export function HeroSection() {
                   )}
                 >
                   Jelajahi Makanan
-
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-primary shadow-sm transition-transform duration-300 group-hover:translate-x-0.5">
-                    <ArrowRight
-                      className="h-3.5 w-3.5"
-                      aria-hidden
-                    />
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                   </span>
                 </button>
 
@@ -698,16 +659,11 @@ export function HeroSection() {
                     className="flex items-center gap-2.5 text-left"
                   >
                     <span className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/15 bg-white text-primary shadow-sm">
-                      <item.icon
-                        className="h-4 w-4"
-                        aria-hidden
-                      />
+                      <item.icon className="h-4 w-4" aria-hidden />
                     </span>
 
                     <span>
-                      <dt className="sr-only">
-                        {item.label}
-                      </dt>
+                      <dt className="sr-only">{item.label}</dt>
 
                       <dd className="font-display text-sm font-bold leading-none text-primary">
                         {item.value}

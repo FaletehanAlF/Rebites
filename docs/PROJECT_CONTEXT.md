@@ -74,9 +74,10 @@ hooks/                     # data hooks (orders, products, reviews, …)
 lib/                       # categories, catalog, data, types, supabase, pricing,
                            #   subscription plans, store settings/hours, xendit
 supabase/migrations/       # SQL schema + RLS
-public/                    # images (makanan*.jpg, hero-makanan.jpeg, logo.png, …)
+public/                    # images (makanan*.jpg, *.avif, …)
 ```
 
+<<<<<<< HEAD
 Route groups `(landing)` / `(app)` do **not** affect URLs. There is
 deliberately no `(app)/layout.tsx` and no `(landing)/layout.tsx`: app chrome
 (MobileNavbar/ProfileNavbar) is rendered per page today, so layouts would be
@@ -93,6 +94,34 @@ Dynamic (ƒ): `/langganan/sukses`, `/api/checkout/xendit(+verify)`,
 `/api/subscriptions/xendit(+verify)`, `/api/webhooks/xendit`.
 Note: bare `/langganan` has never existed (404 by design — only
 `pembayaran`/`sukses` do).
+=======
+## 4. Routes (from `npm run build`)
+
+Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
+`/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`,
+`/langganan/pembayaran`, **`/dashboard/admin/*`** (see §5.1).
+SSG (●): `/makanan/[category]` (8 paths).
+Dynamic (ƒ): `/langganan/sukses`, `/api/checkout/xendit(+verify)`,
+`/api/orders/[code]`, `/api/profile(+addresses|avatar)`,
+`/api/subscriptions/xendit(+verify)`, `/api/webhooks/xendit`,
+`/api/admin/**` (role-guarded helper routes).
+
+## 5.1 Admin panel (merged from `feature/admin-full-update`)
+
+Area `/dashboard/admin/**` + `app/components/admin/**`, protected by RBAC:
+every admin route/row passes an admin-verification wrapper (see
+`lib/admin-*` helpers and cookie/session `me` status). Two roles only:
+`super_admin` (full) and `admin` (proposer/`super_admin` approval for role
+changes). Verified sub-areas: overview, artikel, langganan, moderasi,
+monitoring (+ aktivitas/audit/laporan/peringatan/sanksi), pengaturan,
+pengguna (+detail), permintaan-role, pesanan, produk, profile, riwayat,
+system, UMKM (+detail).
+
+Admin UX conventions (unittest-checked in `tests/`): localStorage-backed
+preferences (`lib/admin-preferences.ts`, `ADMIN_LOCAL_STORAGE_KEYS`), audit
+trail writes attempt best-effort inserts into `admin_audit_logs`, and shared
+fetch helpers in `lib/` get 401-retry with one refresh.
+>>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
 
 ## 5. Landing page architecture (`/`)
 
@@ -154,6 +183,11 @@ with pathname checks:
   --success`; `--radius: 0.25rem`. No cream/beige/caramel surfaces.
 - **Tailwind** (`tailwind.config.ts`): `font-display`/`font-sans` → Plus Jakarta
   Sans, `font-secondary` → Be Vietnam Pro; `bg-sale` shares the destructive hue.
+- **Admin-only palette** (also in `tailwind.config.ts` + `.admin-root` overrides
+  in `app/globals.css`): tokens like `forest`, `cream`, `charcoal-*`, `sage-*`,
+  `caramel` remain valid and are reserved for the admin dashboard; buyer-facing
+  surfaces must keep using the white/green tokens above. `ring-hairline`,
+  `border-hairline` are hairline-neutral greys usable in both areas.
 - **Utilities**: `.text-balance`, `.grain-overlay` (3.5% noise texture used on
   landing sections), `[id] { scroll-margin-top: 6.5rem }` for anchor offsets.
 - **Motion**: `app/components/shared/reveal.tsx` (`Reveal`, framer in-view);
@@ -170,9 +204,22 @@ with pathname checks:
   favorites, notifications, subscriptions (schema in `supabase/migrations/`).
 - Payments via Xendit (secret key + webhook callback token, server only).
 - Category tile images come from `images.pexels.com` (`lib/categories.ts`).
-- Local photos in `public/`: `hero-makanan.jpeg`, `makanan1–15`, step photos
-  `penjual-login.jpg`, `pembeli-mencaro.jpg`, `penerimaan.jpg`,
-  `terselamatkan.jpg`, `logo.png`.
+- Local photos in `public/`: **semuanya AVIF**. `hero-makanan.avif`, `logo.avif`,
+  `makanan1–5` / `makanan8–10` / `makanan13–15`, `foods/ikansayur.avif`, dan foto
+  langkah `penjual-login.avif`, `pembeli-mencaro.avif`, `penerimaan.avif`,
+  `terselamatkan.avif`. Tidak ada lagi JPG/JPEG/WebP di `public/`.
+  `makanan6`, `makanan7`, `makanan11`, dan `makanan12` sudah dihapus: tidak
+  dirujuk kode maupun database (hanya tersisa di migrasi seed lama).
+
+  **PENTING — database masih menyimpan nama lama.** `products.image_url` (18
+  baris) dan `orders.image_url` (24 baris) masih berbunyi `/makanan1.jpeg`,
+  `/makanan9.webp`, dan seterusnya. Berkasnya kini `.avif`. Jembatannya adalah
+  `lib/image-path.ts` (`resolveImageSrc`), yang dipakai `SmartImage` dan setiap
+  mapper data (katalog, flash sale, produk penjual, pesanan, detail produk).
+  Resolver itu memetakan path lokal berekstensi lama ke `.avif` dan **tidak**
+  menyentuh URL absolut (Supabase Storage, Pexels) maupun data URI.
+  Bila kelak database diperbarui ke `.avif`, resolver tetap benar — ia hanya
+  mengubah nilai yang masih berekstensi lama.
 - FAQ contact form posts to a Formspree endpoint from `FAQSection.tsx`.
 - **Assumption**: footer social links (`instagram.com/rebites` etc.) and
   `halo@rebites.id` were not verified as real accounts.
@@ -181,7 +228,10 @@ with pathname checks:
 
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
 `SUPABASE_SERVICE_ROLE_KEY` (server only), `NEXT_PUBLIC_SITE_URL`,
-`XENDIT_SECRET_KEY`, `XENDIT_CALLBACK_TOKEN` / `XENDIT_WEBHOOK_TOKEN`.
+`XENDIT_SECRET_KEY`, `XENDIT_CALLBACK_TOKEN` / `XENDIT_WEBHOOK_TOKEN`,
+`BITESHIP_API_KEY`, `BITESHIP_COURIERS`, `BITESHIP_WEBHOOK_SECRET`,
+`DELIVERY_BASE_FEE_IDR` / `DELIVERY_PER_KM_FEE_IDR` / `DELIVERY_MIN_FEE_IDR` /
+`DELIVERY_MAX_FEE_IDR`, `SUPER_ADMIN_USER_ID` (admin bootstrap id).
 
 Never prefix server secrets with `NEXT_PUBLIC_`.
 
@@ -194,6 +244,8 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 | `npm run build` | production build + type check (lint skipped: `eslint.ignoreDuringBuilds`) |
 | `npm run lint` | `next lint` |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm run typecheck:tests` | type-check `tests/` via `tsconfig.tests.json` |
+| `npm run test:<name>` | 20 focused suites (`node --test`, e.g. checkout price/failure, admin guard/health/analytics, stock release, shipping rates); see `package.json` |
 | `npm start` | serve production build |
 
 ## 10. Known issues / technical debt (verified)
@@ -203,7 +255,7 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 - `next build` skips ESLint (`eslint.ignoreDuringBuilds: true` in
   `next.config.js`); run `npm run lint` separately. Remaining warnings are
   pre-existing (`<img>` in seller dashboard, hook deps in `detail/toko`).
-- **`public/makanan2.jpeg` and `public/makanan5.jpeg` have a baked-in
+- **`public/makanan2.avif` and `public/makanan5.avif` have a baked-in
   transparency checkerboard** (rasterized PNG artifact) — do not use them in
   new UI. They may still be referenced by product rows in the database.
 - Unreferenced components left in place (not part of the current landing page):
@@ -213,6 +265,7 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   fabricated testimonials), `landing/partner-marquee.tsx`,
   `landing/catalog-sections.tsx`, `components/hero-food-carousel.tsx`,
   `components/flash-sale-grid.tsx`, and `RevealWords` in `shared/reveal.tsx`.
+<<<<<<< HEAD
 - No automated tests; visual verification is manual (browser at 320/375/768/
   1024/1440/1920 — no horizontal overflow observed on `/`).
 - Stale `/homePage` links: fixed inside `detail-product/` (breadcrumb,
@@ -221,13 +274,35 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   `/home`) — pre-existing, out of scope for the separation refactor.
 - `npm run typecheck` reads generated `.next/types`; after moving routes, run
   `npm run build` first or stale types cause false TS2307 errors.
+=======
+- 20 automated `node --test` suites exist (`tests/*`, wired as npm
+  `test:<name>` scripts) covering checkout pricing/idempotency/failure,
+  Xendit fail-closed paths, admin RBAC and UI regressions, stock release and
+  shipping; run them before touching those areas. Visual verification for new
+  UI stays manual (browser at 320/375/768/1024/1440/1920 — no horizontal
+  overflow observed).
+- **EOL caveat (Windows, `core.autocrlf=true`)**: `tests/admin-ui-regressions`
+  has one EOL-sensitive regex (`ADMIN_ROLE_DECISIONS_SEEN_KEY,\n] as const`);
+  if a fresh checkout smudges `lib/admin-preferences.ts` to CRLF the suite can
+  fail spuriously — restore the file to LF (`git cat-file blob
+  :0:lib/admin-preferences.ts` → workdir) or add a `.gitattributes`
+  `text=auto eol=lf` rule for `tests/` fixtures later.
+>>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
 
 ## 11. Conventions for future work
 
 - Keep pages as Server Components; add `"use client"` only for genuine
   interactivity.
+<<<<<<< HEAD
 - Respect the landing/app boundary (§5a): public pages under `app/(landing)/`
   must never render account UI; route-supplied shells, not pathname checks.
+=======
+- Buyer pages that require a session wrap the whole view in
+  `<RequireAuth>` (see `notifikasi/pembeli/page.tsx`): the guard lives OUTSIDE
+  the shell so navbar/title/skeleton are hidden before redirect.
+- Home navigation links point to `/home` — never `/homePage` (the
+  `/homePage` path does not exist; it was a transient develop bug).
+>>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
 - Reuse the design tokens; do not introduce new fonts, palettes or gradients.
 - Preserve landing section ids and navbar/footer anchor behavior.
 - Do not fabricate stats, testimonials, partners or logos anywhere in the UI.

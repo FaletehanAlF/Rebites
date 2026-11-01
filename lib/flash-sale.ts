@@ -2,6 +2,7 @@
 
 import { supabase } from './supabase';
 import { readSellerPlan, type SellerEntitlements } from './seller-plan';
+import { resolveImageSrc } from './image-path';
 import {
   SELLER_VENDOR_NAME,
   SELLER_VENDOR_SLUG,
@@ -216,13 +217,21 @@ export async function getActiveFlashSaleProducts(
       .select('*, umkm:umkm_profiles(business_name)')
       .not('flash_sale_price', 'is', null)
       .eq('status', 'available')
+      .eq('verification_status', 'approved')
       .gt('stock', 0)
       .order('created_at', { ascending: false });
     if (error) {
       console.error('[flash-sale] gagal memuat flash sale global:', error.message);
       return [];
     }
-    return ((data ?? []) as Record<string, unknown>[]).map((row) => {
+    return ((data ?? []) as Record<string, unknown>[])
+      // Toko nonaktif tidak terbaca publik (RLS), sehingga relasi umkm kosong.
+      // Tanpa saringan ini produknya bisa tampil dengan nama vendor fallback.
+      .filter((row) => {
+        const umkm = (row as Record<string, unknown>).umkm;
+        return Boolean(umkm) && typeof umkm === 'object';
+      })
+      .map((row) => {
       const r = row as Record<string, unknown>;
       const umkm = r.umkm as Record<string, unknown> | null;
       return {
@@ -230,7 +239,7 @@ export async function getActiveFlashSaleProducts(
         name: (r.name as string) ?? '',
         category: (r.category as string) ?? 'Lainnya',
         description: (r.description as string) ?? '',
-        image: (r.image_url as string) ?? '/foods/ikansayur.jpg',
+        image: resolveImageSrc(r.image_url as string) || '/foods/ikansayur.avif',
         originalPrice: Number(r.original_price ?? 0),
         surplusPrice: Number(r.surplus_price ?? 0),
         discountPercent: Number(r.discount_percent ?? 0),
@@ -240,6 +249,9 @@ export async function getActiveFlashSaleProducts(
         allDay: (r.all_day as boolean) ?? false,
         isSurplusToday: (r.is_surplus_today as boolean) ?? true,
         featured: (r.featured as boolean) ?? false,
+        // kapabilitas fulfillment (DB NOT NULL DEFAULT true).
+        isDelivery: (r.is_delivery as boolean) ?? true,
+        isPickup: (r.is_pickup as boolean) ?? true,
         vendorName: (umkm?.business_name as string) ?? (r.vendor_name as string) ?? SELLER_VENDOR_NAME,
         flashSale:
           r.flash_sale_price != null
@@ -291,7 +303,8 @@ export async function getActiveFlashSaleProducts(
         image: p.image,
         category: p.category as UrgentItem['category'],
         rating: 4.7,
-        distanceKm: 1.8,
+        // jarak seller-flash belum diketahui -> NULL (jangan karang 1.8 km).
+        distanceKm: null,
         availableFrom: p.startTime,
         availableTo: p.endTime,
         stockLabel: `${p.stock} porsi tersisa`,

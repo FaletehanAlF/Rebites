@@ -9,6 +9,15 @@ const WAVE_FILL = 'hsl(var(--secondary))';
 const WAVE_LINE = 'hsl(var(--muted-foreground))';
 const WAVE_LINE_BRAND = 'hsl(var(--primary))';
 
+const FOOTER_FOCUS =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary';
+
+const FOOTER_LINK =
+  `inline-flex items-center rounded-sm font-sans text-[14px] text-primary-foreground/80 transition-colors duration-200 hover:text-white ${FOOTER_FOCUS}`;
+
+const FOOTER_HEADING =
+  'font-secondary text-[10px] font-semibold uppercase tracking-[0.22em] text-primary-foreground/70';
+
 function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
@@ -94,7 +103,7 @@ function FooterWave() {
   );
 }
 
-function BackToTop() {
+function BackToTop({ hasMobileBottomNav }: { hasMobileBottomNav: boolean }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -105,9 +114,7 @@ function BackToTop() {
   }, []);
 
   const scrollTop = () => {
-    const lenis = (window as unknown as { __lenis?: { scrollTo: (t: number | HTMLElement, o?: unknown) => void } }).__lenis;
-    if (lenis) lenis.scrollTo(0, { duration: 1 });
-    else window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -115,7 +122,7 @@ function BackToTop() {
       type="button"
       onClick={scrollTop}
       aria-label="Kembali ke atas"
-      className={`fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary shadow-[0_18px_38px_-18px_rgba(0,0,0,0.55)] transition-all duration-300 hover:bg-primary-dark hover:text-white ${
+      className={`fixed ${hasMobileBottomNav ? 'bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4' : 'bottom-6 right-6'} z-50 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-secondary text-primary shadow-[0_18px_38px_-18px_rgba(0,0,0,0.55)] transition-all duration-300 hover:bg-white active:scale-95 lg:bottom-6 lg:right-6 ${FOOTER_FOCUS} ${
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
       }`}
     >
@@ -124,7 +131,11 @@ function BackToTop() {
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({
+  hasMobileBottomNav = false,
+}: {
+  hasMobileBottomNav?: boolean;
+}) {
   return (
     <footer
       data-nav="green"
@@ -132,33 +143,34 @@ export function SiteFooter() {
     >
       <FooterWave />
 
-      <div className="mx-auto max-w-7xl px-4 pb-10 pt-32 sm:px-6 lg:px-8 lg:pt-36">
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1.2fr_1.4fr] lg:gap-8 lg:items-end">
+      <div className={`mx-auto max-w-7xl px-4 ${hasMobileBottomNav ? 'pb-[calc(9.5rem+env(safe-area-inset-bottom))]' : 'pb-10'} pt-28 sm:px-6 lg:px-8 lg:pb-8 lg:pt-32`}>
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1.2fr_1.4fr] lg:items-end lg:gap-8">
           {/* Brand - widest column */}
           <div className="text-center sm:text-left">
-            <Link href="/" className="inline-flex items-center gap-3">
+            <Link
+              href="/"
+              className={`inline-flex items-center gap-3 rounded-lg ${FOOTER_FOCUS}`}
+            >
               <Image
-                src="/logo.png"
+                src="/logo.avif"
                 alt="ReBites"
                 width={48}
                 height={48}
-                className="h-12 w-12 rounded-full object-cover ring-1 ring-white/20"
+                className="h-11 w-11 rounded-full object-cover ring-1 ring-white/20"
               />
               <span className="flex items-baseline gap-0.5 text-primary-foreground">
-                <span className="font-display text-3xl font-bold tracking-tight">Re</span>
-                <span className="font-display text-3xl font-light italic">Bites</span>
+                <span className="font-display text-2xl font-bold tracking-tight">Re</span>
+                <span className="font-display text-2xl font-light italic">Bites</span>
               </span>
             </Link>
 
-            <p
-              className="mx-auto mt-5 max-w-xs font-sans text-sm leading-relaxed text-primary-foreground/70 sm:mx-0"
-            >
+            <p className="mx-auto mt-4 max-w-xs font-sans text-[13px] leading-[1.7] text-primary-foreground/70 sm:mx-0">
               Marketplace khusus penjualan makanan surplus yang masih layak
               konsumsi dari pelaku UMKM Indonesia, untuk mengurangi food loss
               dan food waste.
             </p>
 
-            <div className="mt-7 flex items-center justify-center gap-3 sm:justify-start">
+            <div className="mt-6 flex items-center justify-center gap-2.5 sm:justify-start">
               {SOCIALS.map(({ label, href, Icon }) => (
                 <a
                   key={label}
@@ -166,9 +178,9 @@ export function SiteFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary transition-colors duration-300 hover:bg-primary-dark hover:text-white"
+                  className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition-colors duration-200 hover:bg-white hover:text-primary ${FOOTER_FOCUS}`}
                 >
-                  <Icon className="h-[18px] w-[18px]" />
+                  <Icon className="h-4 w-4" />
                 </a>
               ))}
             </div>
@@ -176,12 +188,13 @@ export function SiteFooter() {
 
           {/* Explore */}
           <nav aria-label="Jelajahi" className="text-center sm:text-left">
-            <ul className="space-y-3.5">
+            <p className={FOOTER_HEADING}>Jelajahi</p>
+            <ul className="mt-4 space-y-2.5">
               {EXPLORE_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="font-sans text-[15px] text-primary-foreground transition-colors duration-300 hover:text-primary"
+                    className={`${FOOTER_LINK} min-h-[26px]`}
                   >
                     {link.label}
                   </Link>
@@ -192,13 +205,14 @@ export function SiteFooter() {
 
           {/* Legal */}
           <nav aria-label="Legal" className="text-center sm:text-left">
-            <ul className="space-y-3.5">
+            <p className={FOOTER_HEADING}>Legal</p>
+            <ul className="mt-4 space-y-2.5">
               <li>
                 <a
                   href="mailto:halo@rebites.id"
-                  className="inline-flex items-center justify-center gap-2 font-sans text-[15px] text-primary-foreground transition-colors duration-300 hover:text-primary sm:justify-start"
+                  className={`${FOOTER_LINK} min-h-[26px] gap-2`}
                 >
-                  <Mail className="h-4 w-4 shrink-0 opacity-70" />
+                  <Mail className="h-3.5 w-3.5 shrink-0 opacity-70" />
                   halo@rebites.id
                 </a>
               </li>
@@ -206,7 +220,7 @@ export function SiteFooter() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="font-sans text-[15px] text-primary-foreground transition-colors duration-300 hover:text-primary"
+                    className={`${FOOTER_LINK} min-h-[26px]`}
                   >
                     {link.label}
                   </Link>
@@ -217,12 +231,11 @@ export function SiteFooter() {
 
           {/* Support */}
           <nav aria-label="Dukungan" className="text-center sm:text-left">
-            <ul className="space-y-3.5">
+            <p className={FOOTER_HEADING}>Dukungan</p>
+            <ul className="mt-4 space-y-3">
               <li>
-                <span
-                  className="inline-flex items-start gap-2 text-left font-sans text-[15px] leading-relaxed text-primary-foreground/70"
-                >
-                  <MapPin className="mt-1 h-4 w-4 shrink-0 opacity-70" />
+                <span className="inline-flex items-start gap-2 text-left font-sans text-[13px] leading-[1.65] text-primary-foreground/70">
+                  <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-70" />
                   SMK Taruna Bhakti, Jl. Pekapuran, RT.02/RW.06, Curug, Kec. Cimanggis, Kota Depok,
                   Jawa Barat 16953
                 </span>
@@ -231,10 +244,10 @@ export function SiteFooter() {
           </nav>
 
           {/* Giant wordmark */}
-          <div className="col-span-full flex flex-col items-center gap-6 sm:col-span-2 lg:col-span-1 lg:items-end">
+          <div className="col-span-full flex flex-col items-center gap-5 sm:col-span-2 lg:col-span-1 lg:items-end">
             <p
-              className="text-center font-display font-medium leading-none tracking-tight text-primary-foreground lg:text-right"
-              style={{ fontSize: 'clamp(3.5rem, 6.5vw, 6.5rem)' }}
+              className="text-center font-display font-medium leading-none tracking-tight text-primary-foreground/90 lg:text-right"
+              style={{ fontSize: 'clamp(3rem, 5.5vw, 5rem)' }}
             >
               Re
               <span className="font-light italic">Bites</span>
@@ -254,17 +267,15 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div
-          className="mt-16 border-t border-white/10 pt-7"
-        >
-          <p className="text-center font-sans text-xs text-primary-foreground/70">
+        <div className="mt-12 border-t border-white/10 pt-6">
+          <p className="text-center font-sans text-xs leading-relaxed text-primary-foreground/70">
             © {new Date().getFullYear()} ReBites. Dibuat oleh{' '}
-            <span className="text-primary-foreground">Tim Sixquit</span> - SMK Taruna Bhakti.
+            <span className="font-medium text-primary-foreground/90">Tim Sixquit</span> — SMK Taruna Bhakti.
           </p>
         </div>
       </div>
 
-      <BackToTop />
+      <BackToTop hasMobileBottomNav={hasMobileBottomNav} />
     </footer>
   );
 }

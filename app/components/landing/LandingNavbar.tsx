@@ -123,7 +123,7 @@ export function LandingNavbar() {
             className="flex shrink-0 items-center gap-2.5"
           >
             <Image
-              src="/logo.png"
+              src="/logo.avif"
               alt=""
               width={36}
               height={36}

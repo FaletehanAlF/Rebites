@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function ForgotPasswordPage() {
   return (
     <AuthCenteredShell
-      imageSrc="/hero-makanan.jpeg"
+      imageSrc="/hero-makanan.avif"
       variant="buyer"
       title={
         <>

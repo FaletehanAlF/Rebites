@@ -53,7 +53,7 @@ export function BuyerSection() {
           <div className="relative">
             <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] border border-border bg-muted shadow-[0_40px_80px_-56px_rgba(27,77,50,0.7)] sm:rounded-[2.5rem]">
               <Image
-                src="/pembeli-mencaro.jpg"
+                src="/pembeli-mencaro.avif"
                 alt="Pembeli mencari dan memesan makanan surplus di ReBites"
                 fill
                 sizes="(min-width: 1024px) 32rem, calc(100vw - 2rem)"

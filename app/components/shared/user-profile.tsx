@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
@@ -15,7 +16,6 @@ import {
   Loader2,
   Mail,
   MapPin,
-  Menu,
   Package,
   Phone,
   Receipt,
@@ -42,9 +42,7 @@ import { formatOrderDateTime } from "@/lib/order-utils";
 import { formatRupiah } from "@/lib/data";
 import type { StoredOrder } from "@/lib/types";
 import { SmartImage } from "./SmartImage";
-import { ProfileSidebarNav } from "./profile-sidebar-nav";
-import { MobileNavbar } from "./MobileNavbar";
-import { MobileBottomNav } from "./MobileBottomNav";
+import { BuyerShell } from "./buyer-shell";
 import {
   Dialog,
   DialogContent,
@@ -907,9 +905,8 @@ function LikedFoodsSection() {
 
 export function UserProfile() {
   const { userId } = useCurrentUser();
+  const router = useRouter();
   const [orders, setOrders] = useState<StoredOrder[] | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isIkutiTokoDialogOpen, setIsIkutiTokoDialogOpen] = useState(false);
   const [isSukaiMakananDialogOpen, setIsSukaiMakananDialogOpen] =
     useState(false);
 
@@ -974,6 +971,34 @@ export function UserProfile() {
     };
   }, [userId]);
 
+  // Tautan akun memakai hash (mis. #sukai-makanan) karena section terkait
+  // berupa dialog. Buka dialog yang sesuai saat halaman dimuat / hash berubah.
+  useEffect(() => {
+    const syncHash = () => {
+      const hash = window.location.hash.replace(/^#/, "");
+      if (hash === "sukai-makanan") {
+        setIsSukaiMakananDialogOpen(true);
+      } else if (hash === "toko-diikuti") {
+        // Daftar toko yang diikuti kini punya halaman khusus: deep-link
+        // hash lama dialihkan ke sana tanpa duplikasi dialog.
+        router.replace("/toko-diikuti");
+      } else if (hash) {
+        // Section biasa (#rebites-coin, #alamat) digulir manual supaya
+        // deep-link dari sidebar tetap bekerja setelah halaman ter-render.
+        document.getElementById(hash)?.scrollIntoView({ block: "start" });
+      }
+    };
+
+    const timer = window.setTimeout(syncHash, 0);
+    window.addEventListener("hashchange", syncHash);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("hashchange", syncHash);
+    };
+    // router stabil di App Router, efek cukup berjalan sekali saat mount.
+  }, [router]);
+
   const { savedPorsi, totalPesanan, co2eKg } = useMemo(() => {
     if (!orders) return { savedPorsi: 0, totalPesanan: 0, co2eKg: 0 };
     return {
@@ -1000,34 +1025,8 @@ export function UserProfile() {
   const phoneLabel = addressLoading ? "Memuat…" : selectedAddress?.phone || "-";
 
   return (
-    <div className="relative min-h-screen bg-secondary lg:bg-secondary">
-      {}
-      <div className="lg:hidden"><MobileNavbar /></div>
-      <div className="hidden lg:block">
-        <ProfileSidebarNav
-          open={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
-      </div>
-
-      <div className="lg:pl-[280px]">
-        <MobileBottomNav />
-        {}
-        <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Buka navigasi"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <span className="font-display text-base font-semibold text-primary">
-            My Profile
-          </span>
-        </div>
-
-        <main className="relative mx-auto max-w-[1100px] px-4 pb-24 pt-[120px] sm:pb-20 sm:pt-6 lg:px-8 lg:pt-8">
+    <BuyerShell>
+        <main className="relative mx-auto w-full max-w-7xl px-4 pb-28 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pb-12 lg:pt-8">
           {}
           <div className="hidden lg:block">
             <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-primary">
@@ -1125,10 +1124,9 @@ export function UserProfile() {
 
             {}
             <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:w-auto lg:min-w-[520px] lg:max-w-[600px]">
-              <button
-                type="button"
-                onClick={() => setIsIkutiTokoDialogOpen(true)}
-                className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white"
+              <Link
+                href="/toko-diikuti"
+                className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-zinc-100 group-hover:bg-primary-dark group-hover:text-white">
                   <Store className="h-4 w-4" />
@@ -1142,7 +1140,7 @@ export function UserProfile() {
                 <span className="mt-1 inline-flex items-center gap-1 font-secondary text-xs font-semibold text-primary">
                   Lihat <ArrowRight className="h-3 w-3" />
                 </span>
-              </button>
+              </Link>
 
               <button
                 type="button"
@@ -1163,7 +1161,10 @@ export function UserProfile() {
                 </span>
               </button>
 
-              <div className="col-span-2 flex flex-col items-start gap-2 rounded-2xl border border-warning/50 bg-primary/15 p-4 sm:col-span-1">
+              <div
+                id="rebites-coin"
+                className="col-span-2 flex scroll-mt-24 flex-col items-start gap-2 rounded-2xl border border-warning/50 bg-primary/15 p-4 sm:col-span-1"
+              >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-warning/50">
                   <Coins className="h-4 w-4" />
                 </span>
@@ -1289,36 +1290,7 @@ export function UserProfile() {
               </DialogContent>
             </Dialog>
 
-            {}
-          <Dialog
-            open={isIkutiTokoDialogOpen}
-            onOpenChange={setIsIkutiTokoDialogOpen}
-          >
-            <DialogContent className="bg-white p-6 sm:p-7">
-              <DialogHeader>
-                <DialogTitle className="font-display text-lg font-semibold text-primary">
-                  Toko Diikuti
-                </DialogTitle>
-                <DialogDescription className="font-secondary text-sm text-muted-foreground">
-                  Toko yang kamu ikuti lewat tombol &quot;Ikuti Toko&quot; di halaman
-                  detail toko.
-                </DialogDescription>
-              </DialogHeader>
-              <FollowedStoresSection />
-              <DialogFooter>
-                <button
-                  type="button"
-                  onClick={() => setIsIkutiTokoDialogOpen(false)}
-                  className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-zinc-50"
-                >
-                  Tutup
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {}
-          <Dialog
+            <Dialog
             open={isSukaiMakananDialogOpen}
             onOpenChange={setIsSukaiMakananDialogOpen}
           >
@@ -1346,11 +1318,12 @@ export function UserProfile() {
 
           {}
           <motion.section
+            id="alamat"
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
             viewport={VIEWPORT}
-            className="mt-6 rounded-[20px] border border-zinc-100 bg-white p-6 shadow-sm sm:p-7"
+            className="mt-6 scroll-mt-24 rounded-[20px] border border-zinc-100 bg-white p-6 shadow-sm sm:p-7"
           >
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-display text-base font-semibold text-primary">
@@ -1537,7 +1510,6 @@ export function UserProfile() {
 
           <div className="mt-6 space-y-6"></div>
         </main>
-      </div>
-    </div>
+    </BuyerShell>
   );
 }
