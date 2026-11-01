@@ -1,6 +1,10 @@
 import type { StoredOrder } from './types';
+<<<<<<< HEAD
 import { paymentMethods } from '@/app/components/checkout/payment-methods';
 import { resolveOrderPhase } from './order-status-source';
+=======
+import { paymentMethods } from '@/app/components/buyer/checkout/payment-methods';
+>>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 
 export function paymentMethodName(id?: string): string {
   if (!id) return '-';

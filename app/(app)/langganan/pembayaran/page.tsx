@@ -1,6 +1,6 @@
 ﻿import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { SubscriptionCheckoutView } from '@/app/components/subscription/subscription-checkout-view';
+import { SubscriptionCheckoutView } from '@/app/components/seller/subscription/subscription-checkout-view';
 
 export const metadata: Metadata = {
   title: 'Pembayaran Langganan | ReBites',
@@ -14,17 +14,17 @@ export default function SubscriptionPaymentPage() {
       <div className="mx-auto w-full max-w-[980px]">
         <Suspense
           fallback={
-            <div className="overflow-hidden rounded-[20px] bg-white shadow-[0_24px_64px_rgba(0,0,0,0.14)]">
+            <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-2">
                 <div className="h-[420px] animate-pulse bg-white p-8">
-                  <div className="h-6 w-32 rounded bg-muted" />
+                  <div className="h-6 w-32 rounded-full bg-muted" />
                   <div className="mt-6 space-y-3">
-                    <div className="h-4 rounded bg-muted" />
-                    <div className="h-4 rounded bg-muted" />
+                    <div className="h-4 rounded-full bg-muted" />
+                    <div className="h-4 rounded-full bg-muted" />
                   </div>
                 </div>
                 <div className="h-[420px] animate-pulse bg-muted p-8">
-                  <div className="h-32 rounded bg-muted" />
+                  <div className="h-32 rounded-full bg-muted" />
                 </div>
               </div>
             </div>

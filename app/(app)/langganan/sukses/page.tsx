@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { SubscriptionSuccessClient } from '@/app/components/subscription/subscription-success-client';
+import { SubscriptionSuccessClient } from '@/app/components/seller/subscription/subscription-success-client';
 
 export const metadata: Metadata = {
   title: 'Langganan Aktif | ReBites',

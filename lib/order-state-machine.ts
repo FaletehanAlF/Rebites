@@ -98,19 +98,19 @@ export function getStatusLabel(status: string): string {
 
 export function getStatusColor(status: string): { bg: string; text: string; dot: string } {
   const colors: Record<string, { bg: string; text: string; dot: string }> = {
-    pending: { bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-500' },
+    pending: { bg: 'bg-warning/10', text: 'text-warning', dot: 'bg-warning' },
     paid: { bg: 'bg-primary/10', text: 'text-primary', dot: 'bg-primary' },
     processing: { bg: 'bg-warning/10', text: 'text-warning', dot: 'bg-warning' },
-    ready_for_pickup: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-    out_for_delivery: { bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-500' },
+    ready_for_pickup: { bg: 'bg-success/10', text: 'text-success', dot: 'bg-success' },
+    out_for_delivery: { bg: 'bg-primary/10', text: 'text-primary', dot: 'bg-primary' },
     completed: { bg: 'bg-muted', text: 'text-muted-foreground', dot: 'bg-muted-foreground' },
     cancelled: { bg: 'bg-destructive/10', text: 'text-destructive', dot: 'bg-destructive' },
-    refunded: { bg: 'bg-gray-50', text: 'text-gray-700', dot: 'bg-gray-500' },
+    refunded: { bg: 'bg-muted', text: 'text-muted-foreground', dot: 'bg-muted-foreground' },
     preparing: { bg: 'bg-warning/10', text: 'text-warning', dot: 'bg-warning' },
-    ready: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+    ready: { bg: 'bg-success/10', text: 'text-success', dot: 'bg-success' },
     failed: { bg: 'bg-destructive/10', text: 'text-destructive', dot: 'bg-destructive' },
   };
-  return colors[status] ?? { bg: 'bg-gray-50', text: 'text-gray-700', dot: 'bg-gray-500' };
+  return colors[status] ?? { bg: 'bg-muted', text: 'text-muted-foreground', dot: 'bg-muted-foreground' };
 }
 
 export async function transitionOrderStatus(

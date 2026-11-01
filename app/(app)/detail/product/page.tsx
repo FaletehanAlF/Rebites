@@ -1,6 +1,12 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
+<<<<<<< HEAD
 import { DetailProductContent } from '@/app/components/detail-product/detail-product-content';
+=======
+import { DetailProductContent } from '@/app/components/buyer/detail-product/detail-product-content';
+import { ProfileNavbar } from '@/app/components/shared/navbar';
+import { MobileNavbar } from '@/app/components/shared/MobileNavbar';
+>>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 
 export const metadata: Metadata = {
   title: 'Detail Produk - ReBites',

@@ -28,8 +28,8 @@ import {
 } from '@/lib/product-storage';
 import { isProductAvailable } from '@/lib/product-storage';
 import { useSellerPlan, type SellerEntitlements } from '@/lib/seller-plan';
-import { useStoreProducts } from '@/hooks/use-store-products';
-import { useSellerStatus } from '@/hooks/use-seller-status';
+import { useStoreProducts } from '@/hooks/seller/use-store-products';
+import { useSellerStatus } from '@/hooks/seller/use-seller-status';
 import {
   countFlashSaleProducts,
   FLASH_SLOTS,
@@ -43,9 +43,14 @@ import {
 } from '@/lib/flash-sale';
 import type { UrgentSlot } from '@/lib/types';
 import type { SellerProduct } from '@/lib/product-storage';
+<<<<<<< HEAD
 import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { Card } from '@/app/components/dashboard-penjual/Card';
 import { Badge } from '@/app/components/ui/badge';
+=======
+import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
+import { Card } from '@/app/components/seller/dashboard-penjual/Card';
+>>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import {
   Dialog,
@@ -54,7 +59,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/app/components/ui/dialog';
-import { EditProductModal } from '@/app/components/tambahMenu/EditProductModal';
+import { EditProductModal } from '@/app/components/seller/tambahMenu/EditProductModal';
 
 function ProductLimitMeter({ products }: { products: SellerProduct[] }) {
   const { plan } = useSellerPlan();
@@ -74,7 +79,7 @@ function ProductLimitMeter({ products }: { products: SellerProduct[] }) {
         <p
           className={cn(
             'text-xs font-bold',
-            isFull ? 'text-primary' : 'text-primary'
+            isFull ? 'text-warning' : 'text-primary'
           )}
         >
           {isUnlimited ? `${count} produk · tanpa batas` : `${count}/${max} produk`}
@@ -85,7 +90,7 @@ function ProductLimitMeter({ products }: { products: SellerProduct[] }) {
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500',
-              isFull ? 'bg-primary' : 'bg-primary'
+              isFull ? 'bg-warning' : 'bg-primary'
             )}
             style={{ width: `${percent}%` }}
           />
@@ -120,7 +125,7 @@ function StockEditor({ product }: { product: SellerProduct }) {
           <button
             type="button"
             onClick={() => handleSave(Math.max(0, stock - 1))}
-            className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white text-foreground transition-colors hover:bg-secondary"
+            className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-white text-foreground transition-colors hover:bg-secondary"
           >
             <Minus className="h-3 w-3" />
           </button>
@@ -130,14 +135,14 @@ function StockEditor({ product }: { product: SellerProduct }) {
             onChange={(e) => setStock(Math.max(0, Number(e.target.value)))}
             onBlur={() => handleSave(stock)}
             onKeyDown={(e) => e.key === 'Enter' && handleSave(stock)}
-            className="h-7 w-14 rounded-md border border-primary bg-white px-2 text-center text-xs font-bold text-foreground outline-none ring-2 ring-primary/20"
+            className="h-7 w-14 rounded-xl border border-primary bg-white px-2 text-center text-xs font-bold text-foreground outline-none ring-2 ring-primary/20"
             min={0}
             autoFocus
           />
           <button
             type="button"
             onClick={() => handleSave(stock + 1)}
-            className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white text-foreground transition-colors hover:bg-secondary"
+            className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-white text-foreground transition-colors hover:bg-secondary"
           >
             <Plus className="h-3 w-3" />
           </button>
@@ -149,7 +154,7 @@ function StockEditor({ product }: { product: SellerProduct }) {
           className={cn(
             'rounded-full px-2.5 py-0.5 text-xs font-bold transition-colors',
             stock > 0
-              ? 'bg-primary/10 text-primary hover:bg-primary-dark'
+              ? 'bg-primary/10 text-primary hover:bg-primary/20'
               : 'bg-destructive/15 text-destructive hover:bg-destructive/25'
           )}
         >
@@ -202,7 +207,11 @@ function TimeEditor({ product }: { product: SellerProduct }) {
           <span
             className={cn(
               'absolute h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-all',
+<<<<<<< HEAD
               allDay ? 'left-[18px]' : 'left-0.5'
+=======
+              allDay ? 'left-5' : 'left-0.5'
+>>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
             )}
           />
         </button>
@@ -215,14 +224,14 @@ function TimeEditor({ product }: { product: SellerProduct }) {
             type="time"
             value={startTime}
             onChange={(e) => handleTimeChange('startTime', e.target.value)}
-            className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="h-7 flex-1 rounded-xl border border-border bg-white px-2 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
           <span className="text-xs text-muted-foreground">–</span>
           <input
             type="time"
             value={endTime}
             onChange={(e) => handleTimeChange('endTime', e.target.value)}
-            className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="h-7 flex-1 rounded-xl border border-border bg-white px-2 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
       )}
@@ -239,7 +248,7 @@ function TimeEditor({ product }: { product: SellerProduct }) {
         <span
           className={cn(
             'h-1.5 w-1.5 rounded-full',
-            available ? 'bg-primary/100' : 'bg-destructive'
+            available ? 'bg-primary' : 'bg-destructive'
           )}
         />
         {available
@@ -297,7 +306,7 @@ function FlashStatusBadge({ status }: { status: FlashSaleStatus }) {
       )}
     >
       {status === 'active' && (
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary/100" />
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
       )}
       {meta.label}
     </span>
@@ -501,7 +510,7 @@ function FlashSalePanel({
                     setPrice(event.target.value);
                     setError('');
                   }}
-                  className="h-8 w-full rounded-lg border border-border bg-white pl-7 pr-2 text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="h-8 w-full rounded-xl border border-border bg-white pl-7 pr-2 text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
               <div className="shrink-0 text-right">
@@ -581,7 +590,7 @@ function FlashSalePanel({
             <button
               type="button"
               onClick={handleSave}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/20 transition-colors hover:bg-primary-dark"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
               Simpan
@@ -730,6 +739,7 @@ function MenuCard({
   const available = isProductAvailable(product);
 
   return (
+<<<<<<< HEAD
     <Card className="flex flex-col p-4 sm:p-5">
       {/* Kepala kartu: thumbnail + nama/harga/status.
           Kartu kini selebar ~430px (3 kolom, bukan 4), jadi thumbnail ikut
@@ -745,6 +755,23 @@ function MenuCard({
             >
               <Crown className="h-3 w-3" aria-hidden />
             </span>
+=======
+    <Card className="flex flex-col p-4">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+        <SmartImage src={product.image} alt={`Foto ${product.name}`} />
+        {product.featured && (
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white shadow-sm">
+            <Crown className="h-3 w-3" />
+            Unggulan
+          </span>
+        )}
+        <span
+          className={cn(
+            'absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em]',
+            available
+              ? 'bg-white/95 text-primary'
+              : 'bg-white/95 text-muted-foreground'
+>>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
           )}
         </div>
 
@@ -939,7 +966,7 @@ function FlashSaleSectionHeader({
           </div>
           <Link
             href="/dashboard/penjual/langganan"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
           >
             <Crown className="h-3.5 w-3.5" />
             Lihat Paket
@@ -1000,7 +1027,7 @@ export default function MenuSayaPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
       >
-        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
+        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
           Menu Saya
         </h1>
       </motion.div>
@@ -1014,7 +1041,7 @@ export default function MenuSayaPage() {
             plan.upgradeSlug && (
               <Link
                 href={`/langganan/pembayaran?plan=${plan.upgradeSlug}&billing=monthly`}
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
               >
                 <Lock className="h-3.5 w-3.5" />
                 Naikkan kuota via upgrade
@@ -1023,7 +1050,7 @@ export default function MenuSayaPage() {
           ) : (
             <Link
               href="/dashboard/penjual/tambahMenu"
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
             >
               <Plus className="h-3.5 w-3.5" />
               Tambah Menu
@@ -1034,7 +1061,7 @@ export default function MenuSayaPage() {
         <ProductLimitMeter products={products} />
 
         {isLimitReached && (
-          <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
             <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-primary" />
             Batas produk tercapai ({products.length}/{plan.maxProducts}). Hapus salah satu
             menu atau upgrade paket untuk menambah lagi.
@@ -1045,7 +1072,7 @@ export default function MenuSayaPage() {
       <FlashSaleSectionHeader plan={plan} quota={flashQuota} used={flashUsed} />
 
       {quotaBlocked && (
-        <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
+        <p className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
           <XCircle className="h-3.5 w-3.5 shrink-0" />
           {flashQuota === 0
             ? 'Fitur Flash Sale tersedia mulai dari paket Standar. Upgrade paket untuk menambahkan produk ke Flash Sale.'
@@ -1060,7 +1087,7 @@ export default function MenuSayaPage() {
             <div
               key={i}
               aria-hidden
-              className="h-72 animate-pulse rounded-2xl bg-white shadow-sm shadow-primary/5"
+              className="h-72 animate-pulse rounded-2xl bg-white shadow-sm"
             />
           ))}
         </div>
@@ -1080,14 +1107,14 @@ export default function MenuSayaPage() {
           <button
             type="button"
             onClick={refreshProducts}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
           >
             Coba Lagi
           </button>
         </div>
       ) : products.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
+        <div className="mt-6 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border bg-white p-10 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
             <Utensils className="h-6 w-6" />
           </span>
           <div>
@@ -1100,7 +1127,7 @@ export default function MenuSayaPage() {
           {!isLimitReached && (
             <Link
               href="/dashboard/penjual/tambahMenu"
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
             >
               <Plus className="h-3.5 w-3.5" />
               Tambah Menu
@@ -1134,7 +1161,7 @@ export default function MenuSayaPage() {
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
         <DialogContent className="max-w-sm rounded-2xl border-border bg-white p-6">
           <DialogHeader>
-            <DialogTitle className="font-display text-lg font-medium tracking-tight text-primary">
+            <DialogTitle className="font-display text-lg font-semibold tracking-tight text-primary">
               Flash Sale belum tersedia
             </DialogTitle>
             <DialogDescription className="text-xs leading-relaxed text-muted-foreground">
@@ -1145,7 +1172,7 @@ export default function MenuSayaPage() {
           <Link
             href="/dashboard/penjual/langganan"
             onClick={() => setUpgradeOpen(false)}
-            className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
+            className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
           >
             <Crown className="h-3.5 w-3.5" />
             Lihat Paket

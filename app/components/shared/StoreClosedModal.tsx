@@ -54,7 +54,7 @@ export function StoreClosedModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/40 p-4"
           role="dialog"
           aria-modal="true"
           aria-label="Toko sedang tutup"
@@ -65,7 +65,7 @@ export function StoreClosedModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.95 }}
             transition={{ duration: 0.3, ease: EASE }}
-            className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white p-8 text-center shadow-2xl"
+            className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-white p-8 text-center shadow-lg"
           >
             {}
             <button
@@ -83,7 +83,7 @@ export function StoreClosedModal({
             </div>
 
             {}
-            <h2 className="mt-5 font-display text-xl font-bold text-foreground">
+            <h2 className="mt-5 font-display text-xl font-semibold text-foreground">
               Toko Sedang Tutup
             </h2>
 
@@ -100,7 +100,7 @@ export function StoreClosedModal({
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 w-full rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark active:scale-[0.98]"
+              className="mt-6 w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-dark active:scale-[0.98]"
             >
               Mengerti
             </button>

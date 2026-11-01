@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Sparkles } from 'lucide-react';
-import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
-import { AddMenuForm } from '@/app/components/tambahMenu/AddMenuForm';
+import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
+import { AddMenuForm } from '@/app/components/seller/tambahMenu/AddMenuForm';
 
 export default function TambahMenuPage() {
   return (
@@ -23,14 +23,14 @@ export default function TambahMenuPage() {
         </Link>
 
         <div className="mt-4 flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-muted text-primary">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-primary">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Menu Saya
             </p>
-            <h1 className="mt-0.5 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
+            <h1 className="mt-0.5 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
               Tambah Menu Baru
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">

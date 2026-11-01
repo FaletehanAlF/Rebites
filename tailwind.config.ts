@@ -118,6 +118,16 @@ const config: Config = {
         // Single source of truth: every colour below maps to a token in app/globals.css.
         // `sale` shares the destructive hue on purpose — one red value, two roles.
         sale: 'hsl(var(--destructive))',
+        // ReBites brand palette (app/globals.css) for places that need an exact
+        // brand colour instead of a role token — e.g. the amber word highlight.
+        brand: {
+          DEFAULT: 'hsl(var(--brand-forest))',
+          forest: 'hsl(var(--brand-forest))',
+          charcoal: 'hsl(var(--brand-charcoal))',
+          amber: 'hsl(var(--brand-amber))',
+          sage: 'hsl(var(--brand-sage))',
+          muted: 'hsl(var(--brand-muted))',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

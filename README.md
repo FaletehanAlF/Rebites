@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ReBites
 
 Aplikasi marketplace makanan ReBites — Next.js App Router + Supabase.
@@ -122,3 +123,6 @@ bukan di database — belum ada endpoint pengaturan admin.
   `app/components/order-history/courier-live-tracker.tsx` — pelacakan lokasi
   kurir belum diaktifkan.
 - Proyek memakai **Supabase V1**. Jangan membuat konfigurasi V2.
+=======
+  GTNIC
+>>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34

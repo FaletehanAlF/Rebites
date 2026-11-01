@@ -56,7 +56,7 @@ export function MagneticButton({
   };
 
   const base = cn(
-    'group relative inline-flex items-center justify-center gap-2 rounded-[var(--radius)] px-7 py-3.5 font-sans text-sm font-medium tracking-tight transition-colors duration-300',
+    'group relative inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 font-sans text-sm font-medium tracking-tight transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
     variant === 'default' &&
       'bg-primary text-primary-foreground-strong hover:bg-primary-dark',
     variant === 'outline' &&

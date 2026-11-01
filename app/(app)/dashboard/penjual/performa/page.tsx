@@ -4,20 +4,20 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { Crown, TrendingUp } from 'lucide-react';
-import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
-import { TopCategoryCard } from '@/app/components/dashboard-penjual/TopCategoryCard';
-import { BestSellingMenuRow } from '@/app/components/dashboard-penjual/BestSellingMenuRow';
-import { StoreRatingCard } from '@/app/components/dashboard-penjual/StoreRatingCard';
+import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
+import { TopCategoryCard } from '@/app/components/seller/dashboard-penjual/TopCategoryCard';
+import { BestSellingMenuRow } from '@/app/components/seller/dashboard-penjual/BestSellingMenuRow';
+import { StoreRatingCard } from '@/app/components/seller/dashboard-penjual/StoreRatingCard';
 
 const SalesActivityChartCard = dynamic(
   () =>
-    import('@/app/components/dashboard-penjual/SalesActivityChartCard').then(
+    import('@/app/components/seller/dashboard-penjual/SalesActivityChartCard').then(
       (m) => m.SalesActivityChartCard
     ),
   {
     ssr: false,
     loading: () => (
-      <div className="h-[340px] animate-pulse rounded-3xl border border-border/60 bg-muted/40" />
+      <div className="h-[340px] animate-pulse rounded-2xl border border-border/60 bg-muted/40" />
     ),
   }
 );
@@ -32,7 +32,7 @@ export default function PerformaTokoPage() {
       >
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
+            <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
               Performa Toko
             </h1>
           </div>

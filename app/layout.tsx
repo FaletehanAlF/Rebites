@@ -36,6 +36,9 @@ export const metadata: Metadata = {
   title: 'ReBites - Selamatkan Makanan Surplus, Kurangi Food Waste',
   description:
     'Marketplace yang mempertemukan pelaku UMKM kuliner dengan pembeli untuk menyelamatkan makanan surplus yang masih layak konsumsi. Dari dapur UMKM, ke piring yang butuh.',
+  icons: {
+    icon: '/logo.png',
+  },
   openGraph: {
     title: 'ReBites - Selamatkan Makanan Surplus',
     description:
@@ -43,6 +46,16 @@ export const metadata: Metadata = {
     type: 'website',
   },
 };
+
+const noJsCss = `
+  [style*="opacity:0"], [style*="opacity: 0"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  [class~="z-[200]"] {
+    display: none !important;
+  }
+`;
 
 export default function RootLayout({
   children,
@@ -55,11 +68,27 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${beVietnamPro.variable}`}
     >
       <body className="font-sans antialiased">
+<<<<<<< HEAD
         {children}
         {/* Asisten melayang untuk semua halaman: pengunjung, pembeli, penjual,
             dan admin. Profil perilakunya ditentukan server dari status sesi,
             bukan dari klien. */}
         <ChatbotMount />
+=======
+        {/*
+         * Progressive-enhancement fallback: reveal animations ship inline
+         * `opacity:0` and only clear once React hydrates, and the preloader
+         * can only be dismissed from JS. Without JavaScript this keeps every
+         * section readable and hides the overlay instead of leaving a blank,
+         * blocked page. `dangerouslySetInnerHTML` is required so the CSS
+         * quotes survive — <style> is a raw-text element and would otherwise
+         * keep the HTML-escaped `&quot;` and break the rules.
+         */}
+        <noscript>
+          <style dangerouslySetInnerHTML={{ __html: noJsCss }} />
+        </noscript>
+        {children}
+>>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
       </body>
     </html>
   );

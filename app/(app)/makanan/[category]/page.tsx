@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CATEGORIES, getCategoryBySlug } from "@/lib/categories";
-import CategoryView from "@/app/components/makanan-category/category-view";
+import CategoryView from "@/app/components/buyer/makanan-category/category-view";
 
 interface CategoryPageProps {
   params: { category: string };

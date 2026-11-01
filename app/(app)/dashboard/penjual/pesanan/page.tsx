@@ -35,9 +35,14 @@ import {
   getStatusLabel,
   getStatusColor,
 } from '@/lib/order-state-machine';
+<<<<<<< HEAD
 import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { Card } from '@/app/components/dashboard-penjual/Card';
 import { CourierLiveTracker } from '@/app/components/order-history/courier-live-tracker';
+=======
+import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
+import { Card } from '@/app/components/seller/dashboard-penjual/Card';
+>>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { CourierPositionPanel } from '@/app/components/order-history/courier-position-panel';
 import { formatPrepRemaining } from '@/lib/prep-deadline';
@@ -237,6 +242,7 @@ function OrderRow({
         <p className="text-sm font-bold text-primary">
           {formatRupiah(order.total)}
         </p>
+<<<<<<< HEAD
         {action ? (
           <button
             type="button"
@@ -258,6 +264,54 @@ function OrderRow({
             {action.targetStatus === 'completed' && <CheckCheck className="h-3.5 w-3.5" />}
             {processing ? 'Memproses...' : action.label}
           </button>
+=======
+        {hasStateMachineActions ? (
+          <div className="flex flex-col gap-2">
+            {actions.map((action) => (
+              <button
+                key={action.action}
+                type="button"
+                disabled={processing}
+                onClick={() => handleAction(action.targetStatus)}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                  action.targetStatus === 'processing'
+                    ? 'bg-primary hover:bg-primary-dark'
+                    : action.targetStatus === 'ready_for_pickup'
+                      ? 'bg-success hover:bg-success/90'
+                      : action.targetStatus === 'out_for_delivery'
+                        ? 'bg-primary hover:bg-primary-dark'
+                        : 'bg-primary hover:bg-primary-dark'
+                )}
+              >
+                {action.targetStatus === 'processing' && <Package className="h-3.5 w-3.5" />}
+                {action.targetStatus === 'ready_for_pickup' && <CheckCheck className="h-3.5 w-3.5" />}
+                {action.targetStatus === 'out_for_delivery' && <Truck className="h-3.5 w-3.5" />}
+                {processing ? 'Memproses...' : action.label}
+              </button>
+            ))}
+          </div>
+        ) : isOngoing ? (
+          isPreparing ? (
+            <button
+              type="button"
+              onClick={() => onAdvance(order)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
+            >
+              <AdvanceIcon className="h-3.5 w-3.5" />
+              {advanceLabel}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onComplete(order.orderId)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
+            >
+              <CheckCheck className="h-3.5 w-3.5" />
+              Tandai Selesai
+            </button>
+          )
+>>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
         ) : (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
             <ClipboardList className="h-3.5 w-3.5" />
@@ -344,7 +398,7 @@ export default function PesananMasukPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
       >
-        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
+        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
           Pesanan Masuk
         </h1>
       </motion.div>
@@ -360,7 +414,7 @@ export default function PesananMasukPage() {
             className={cn(
               'rounded-full px-4 py-2 text-xs font-semibold transition-colors',
               tab === item.value
-                ? 'bg-primary text-white shadow-sm shadow-primary/25'
+                ? 'bg-primary text-white'
                 : 'border border-border bg-white text-muted-foreground hover:text-foreground'
             )}
           >

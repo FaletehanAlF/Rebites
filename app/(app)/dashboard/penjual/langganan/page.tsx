@@ -16,8 +16,8 @@ import {
   getActiveSubscription,
   type StoredSubscription,
 } from '@/lib/subscription-storage';
-import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
-import { Card } from '@/app/components/dashboard-penjual/Card';
+import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
+import { Card } from '@/app/components/seller/dashboard-penjual/Card';
 import { Reveal } from '@/app/components/shared/reveal';
 
 function formatDate(iso: string): string {
@@ -57,7 +57,7 @@ export default function LanggananPenjualPage() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Dashboard Penjual
         </p>
-        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
+        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em] text-primary">
           Paket Langganan
         </h1>
         <p className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
@@ -114,7 +114,7 @@ export default function LanggananPenjualPage() {
           </dl>
 
           {!subscription && (
-            <p className="mt-3 inline-flex items-start gap-1.5 rounded-lg bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
+            <p className="mt-3 inline-flex items-start gap-1.5 rounded-xl bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
               <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               Kamu belum berlangganan aktif. Pilih paket di bawah, Basic 24.999/bulan wajib untuk mulai berjualan.
             </p>
@@ -139,7 +139,7 @@ export default function LanggananPenjualPage() {
               className={cn(
                 'rounded-full px-5 py-2 text-xs font-medium transition-colors',
                 billing === mode.key
-                  ? 'bg-primary text-white shadow-sm shadow-primary/20'
+                  ? 'bg-primary text-white'
                   : 'text-muted-foreground hover:text-primary'
               )}
             >
@@ -214,7 +214,7 @@ export default function LanggananPenjualPage() {
                       className={cn(
                         'inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold transition-colors',
                         plan.popular
-                          ? 'bg-primary text-white shadow-sm shadow-primary/25 hover:bg-primary-dark'
+                          ? 'bg-primary text-white hover:bg-primary-dark'
                           : 'border border-primary text-primary hover:bg-primary-dark/10'
                       )}
                     >
