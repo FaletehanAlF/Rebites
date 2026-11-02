@@ -12,6 +12,8 @@ import { useLikedFoods } from "@/hooks/use-liked-foods";
 import type { UrgentItem, UrgentSlot } from "@/lib/types";
 import {
   getActiveFlashSaleProducts,
+  FLASH_SLOTS,
+  formatFlashScheduleLabel,
   type FlashSaleCardItem,
 } from "@/lib/flash-sale";
 import { PRODUCTS_UPDATED_EVENT } from "@/lib/product-storage";
@@ -146,7 +148,7 @@ function UrgentCard({
   endsAtIso,
   onViewDetail,
 }: {
-  item: UrgentItem;
+  item: FlashSaleCardItem;
   startsAtIso: string;
   endsAtIso: string;
   onViewDetail?: (id: string) => void;
@@ -201,10 +203,15 @@ function UrgentCard({
         />
 
         {!isActive && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-foreground/30">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 bg-foreground/30">
             <span className="rounded-full bg-white px-4 py-1.5 font-sans text-xs font-bold uppercase tracking-[0.14em] text-foreground shadow">
               Akan Datang
             </span>
+            {item.startsAt && (
+              <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground shadow">
+                {formatFlashScheduleLabel(item.startsAt)}
+              </span>
+            )}
           </div>
         )}
 
@@ -282,6 +289,12 @@ function UrgentCard({
             </div>
           ))}
 
+        {!isActive && item.startsAt && (
+          <div className="mt-2 mb-2 rounded-lg bg-secondary px-2.5 py-1 text-[10px] font-bold text-charcoal-900 shadow-sm">
+            {formatFlashScheduleLabel(item.startsAt)}
+          </div>
+        )}
+
         <div className="mt-3 flex items-baseline gap-2">
           <span className="text-xs text-muted-foreground line-through">
             {formatRupiah(item.originalPrice)}
@@ -327,6 +340,9 @@ export function FlashSaleSection({
 }) {
   const { realSlot, setSelectedSlot, activeSlot } = useSlotRotation();
   const reducedMotion = useReducedMotion();
+
+  type StatusFilter = 'Semua' | 'Berlangsung' | 'Akan Datang';
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('Semua');
 
   const activeSlotDef = activeSlot
     ? (SLOTS.find((s) => s.key === activeSlot) ?? null)
@@ -382,10 +398,22 @@ export function FlashSaleSection({
    * yang sama sudah ada di daftar flash sale.
    */
   const dynamicIds = new Set(dynamicSlotItems.map((item) => item.id));
-  const visibleItems: FlashSaleCardItem[] = [
+  let baseVisible: FlashSaleCardItem[] = [
     ...staticSlotItems.filter((item) => !dynamicIds.has(item.id)),
     ...dynamicSlotItems,
   ];
+
+  if (statusFilter !== 'Semua') {
+    baseVisible = baseVisible.filter((item) => {
+      const startMs = item.startsAt ? new Date(item.startsAt).getTime() : 0;
+      const endMs = item.endsAt ? new Date(item.endsAt).getTime() : Infinity;
+      const nowMs = Date.now();
+      const isActiveStatus = nowMs >= startMs && nowMs < endMs;
+      return statusFilter === 'Berlangsung' ? isActiveStatus : !isActiveStatus && startMs > nowMs;
+    });
+  }
+
+  const visibleItems: FlashSaleCardItem[] = baseVisible;
 
   return (
     <section
@@ -475,6 +503,25 @@ export function FlashSaleSection({
               </button>
             );
           })}
+        </div>
+
+        {/* Filter status */}
+        <div className="mt-4 flex flex-wrap gap-1.5 sm:mt-5">
+          {(['Semua', 'Berlangsung', 'Akan Datang'] as StatusFilter[]).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setStatusFilter(f)}
+              className={cn(
+                'rounded-full px-3 py-1 text-[11px] font-semibold shadow-sm transition-colors',
+                statusFilter === f
+                  ? 'bg-white text-primary shadow-white/30'
+                  : 'bg-white/10 text-white/80 hover:bg-white/20'
+              )}
+            >
+              {f}
+            </button>
+          ))}
         </div>
 
         <div className="mt-5 sm:mt-6">
