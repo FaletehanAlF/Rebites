@@ -508,10 +508,10 @@ export function FlashSaleSection({
               type="button"
               onClick={() => setStatusFilter(f)}
               className={cn(
-                'rounded-full px-3 py-1 text-[11px] font-semibold shadow-sm transition-colors',
+                'rounded-full border px-3 py-1 text-[11px] font-bold shadow-sm transition-colors',
                 statusFilter === f
-                  ? 'bg-white text-primary shadow-white/30'
-                  : 'bg-white/10 text-white/80 hover:bg-white/20'
+                  ? 'border-white bg-white text-primary shadow-white/20'
+                  : 'border-white/40 bg-white/15 text-white hover:border-white/80 hover:bg-white/25'
               )}
             >
               {f}
