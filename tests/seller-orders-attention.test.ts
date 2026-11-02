@@ -27,7 +27,7 @@ function readProjectFile(relativePath: string): string {
   );
 }
 
-const PAGE = readProjectFile('app/dashboard/penjual/pesanan/page.tsx');
+const PAGE = readProjectFile('app/(app)/dashboard/penjual/pesanan/page.tsx');
 const PAGE_CODE = PAGE.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\{\s*\}/g, '');
 const TOPBAR = readProjectFile('app/components/dashboard-penjual/Topbar.tsx');
 

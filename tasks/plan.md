@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Implementation Plan: Separate the public landing page from the ReBites application
 
 ## Overview
@@ -108,7 +107,9 @@ clean.
 
 - None outstanding. Route URL (`/preview/product`) and constraints scope were
   confirmed with the user before implementation.
-=======
+
+---
+
 # Implementation Plan: Cara Kerja Horizontal Scroll Redesign
 
 ## Overview
@@ -142,4 +143,3 @@ Replace the vertical timeline in `HowItWorks` with a GSAP ScrollTrigger-scrubbed
 
 ## Open Questions
 - None
->>>>>>> d0731afe550acef6d24336e1b9d005e38887e53a

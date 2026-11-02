@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Tasks — Landing vs application separation
 
 Plan: `tasks/plan.md`. Constraints: `CONSTRAINTS.md`.
@@ -69,7 +68,9 @@ Plan: `tasks/plan.md`. Constraints: `CONSTRAINTS.md`.
 ## Checkpoint: Core (after Tasks 3–6)
 - [x] typecheck / lint / build pass
 - [x] `/`, `/preview/product`, `/home`, `/detail/product`, `/auth/login` checked (HTTP 200; shell markers verified via HTML + JS-chunk literals — browser/DevTools pass not run: no chrome-devtools MCP configured)
-=======
+
+---
+
 # Tasks
 
 - [x] Task 1: Rewrite HowItWorks.tsx as GSAP sticky horizontal slider
@@ -78,4 +79,3 @@ Plan: `tasks/plan.md`. Constraints: `CONSTRAINTS.md`.
 - [x] Checkpoint: typecheck, build pass; manual scroll check recommended
 - [x] Restore original howitworkss look: two-row timeline, growing journey-line, ReBites content, Lenis sync
 - [x] Reduce to 3 steps (1 top-left, 2 bottom, 4 top-right), 3 scroll positions, kill stale dev server
->>>>>>> d0731afe550acef6d24336e1b9d005e38887e53a

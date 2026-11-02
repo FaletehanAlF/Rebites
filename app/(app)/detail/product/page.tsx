@@ -1,8 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { DetailProductContent } from '@/app/components/detail-product/detail-product-content';
-import { ProfileNavbar } from '@/app/components/shared/navbar';
-import { MobileNavbar } from '@/app/components/shared/MobileNavbar';
 
 export const metadata: Metadata = {
   title: 'Detail Produk - ReBites',
@@ -23,21 +21,12 @@ export default function DetailProductPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-secondary" />}>
       <DetailProductContent
-        shell={{
-          header: (
-            <>
-              <div className="lg:hidden">
-                <MobileNavbar />
-              </div>
-              <div className="hidden lg:block">
-                <ProfileNavbar />
-              </div>
-            </>
-          ),
-          productPath: '/detail/product',
-          seeAllHref: '/home',
-        }}
-      />
+              shell={{
+                buyerShell: true,
+                productPath: '/detail/product',
+                seeAllHref: '/home',
+              }}
+            />
     </Suspense>
   );
 }

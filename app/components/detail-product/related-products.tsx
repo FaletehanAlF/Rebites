@@ -31,12 +31,8 @@ export function RelatedProducts({
           </p>
         </div>
         <Link
-<<<<<<< HEAD
-          href={seeAllHref}
-=======
-          href="/home"
->>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
-          className="hidden items-center gap-1.5 font-secondary text-sm font-semibold text-primary transition-colors hover:text-primary sm:inline-flex"
+                  href={seeAllHref}
+                  className="hidden items-center gap-1.5 font-secondary text-sm font-semibold text-primary transition-colors hover:text-primary sm:inline-flex"
         >
           Lihat Semua
           <ArrowRight className="h-4 w-4" />

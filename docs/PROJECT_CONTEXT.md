@@ -77,34 +77,24 @@ supabase/migrations/       # SQL schema + RLS
 public/                    # images (makanan*.jpg, *.avif, …)
 ```
 
-<<<<<<< HEAD
 Route groups `(landing)` / `(app)` do **not** affect URLs. There is
 deliberately no `(app)/layout.tsx` and no `(landing)/layout.tsx`: app chrome
-(MobileNavbar/ProfileNavbar) is rendered per page today, so layouts would be
-dead structure.
+(`BuyerShell` / `MobileNavbar`) is rendered per page today, so layouts would
+be dead structure.
 
-## 4. Routes (from `npm run build`, 48 pages)
-
-Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
-`/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`,
-`/langganan/pembayaran`, **`/preview/product`** (public product detail).
-SSG (●): `/makanan/[category]` (8 paths).
-Dynamic (ƒ): `/langganan/sukses`, `/api/checkout/xendit(+verify)`,
-`/api/orders/[code]`, `/api/profile(+addresses|avatar)`,
-`/api/subscriptions/xendit(+verify)`, `/api/webhooks/xendit`.
-Note: bare `/langganan` has never existed (404 by design — only
-`pembayaran`/`sukses` do).
-=======
 ## 4. Routes (from `npm run build`)
 
 Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
 `/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`,
-`/langganan/pembayaran`, **`/dashboard/admin/*`** (see §5.1).
+`/dashboard/admin/*`, `/langganan/pembayaran`, **`/preview/product`**
+(public product detail).
 SSG (●): `/makanan/[category]` (8 paths).
 Dynamic (ƒ): `/langganan/sukses`, `/api/checkout/xendit(+verify)`,
 `/api/orders/[code]`, `/api/profile(+addresses|avatar)`,
 `/api/subscriptions/xendit(+verify)`, `/api/webhooks/xendit`,
 `/api/admin/**` (role-guarded helper routes).
+Note: bare `/langganan` has never existed (404 by design — only
+`pembayaran`/`sukses` do).
 
 ## 5.1 Admin panel (merged from `feature/admin-full-update`)
 
@@ -121,7 +111,6 @@ Admin UX conventions (unittest-checked in `tests/`): localStorage-backed
 preferences (`lib/admin-preferences.ts`, `ADMIN_LOCAL_STORAGE_KEYS`), audit
 trail writes attempt best-effort inserts into `admin_audit_logs`, and shared
 fetch helpers in `lib/` get 401-retry with one refresh.
->>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
 
 ## 5. Landing page architecture (`/`)
 
@@ -265,44 +254,32 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   fabricated testimonials), `landing/partner-marquee.tsx`,
   `landing/catalog-sections.tsx`, `components/hero-food-carousel.tsx`,
   `components/flash-sale-grid.tsx`, and `RevealWords` in `shared/reveal.tsx`.
-<<<<<<< HEAD
-- No automated tests; visual verification is manual (browser at 320/375/768/
-  1024/1440/1920 — no horizontal overflow observed on `/`).
-- Stale `/homePage` links: fixed inside `detail-product/` (breadcrumb,
-  related-products); one remains in
-  `app/(app)/makanan/[category]/not-found.tsx` (`/homePage` → should be
-  `/home`) — pre-existing, out of scope for the separation refactor.
+- `node --test` suites live in `tests/` (wired as npm `test:<name>` scripts)
+  covering checkout pricing/idempotency/failure, Xendit fail-closed paths,
+  admin RBAC and UI regressions, stock release, shipping, order state and
+  seller dashboard attention; run them before touching those areas. Visual
+  verification for new UI stays manual (browser at 320/375/768/1024/1440/1920
+  — no horizontal overflow observed on `/`).
 - `npm run typecheck` reads generated `.next/types`; after moving routes, run
   `npm run build` first or stale types cause false TS2307 errors.
-=======
-- 20 automated `node --test` suites exist (`tests/*`, wired as npm
-  `test:<name>` scripts) covering checkout pricing/idempotency/failure,
-  Xendit fail-closed paths, admin RBAC and UI regressions, stock release and
-  shipping; run them before touching those areas. Visual verification for new
-  UI stays manual (browser at 320/375/768/1024/1440/1920 — no horizontal
-  overflow observed).
 - **EOL caveat (Windows, `core.autocrlf=true`)**: `tests/admin-ui-regressions`
   has one EOL-sensitive regex (`ADMIN_ROLE_DECISIONS_SEEN_KEY,\n] as const`);
   if a fresh checkout smudges `lib/admin-preferences.ts` to CRLF the suite can
   fail spuriously — restore the file to LF (`git cat-file blob
   :0:lib/admin-preferences.ts` → workdir) or add a `.gitattributes`
   `text=auto eol=lf` rule for `tests/` fixtures later.
->>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
 
 ## 11. Conventions for future work
 
 - Keep pages as Server Components; add `"use client"` only for genuine
   interactivity.
-<<<<<<< HEAD
 - Respect the landing/app boundary (§5a): public pages under `app/(landing)/`
   must never render account UI; route-supplied shells, not pathname checks.
-=======
 - Buyer pages that require a session wrap the whole view in
   `<RequireAuth>` (see `notifikasi/pembeli/page.tsx`): the guard lives OUTSIDE
   the shell so navbar/title/skeleton are hidden before redirect.
 - Home navigation links point to `/home` — never `/homePage` (the
   `/homePage` path does not exist; it was a transient develop bug).
->>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
 - Reuse the design tokens; do not introduce new fonts, palettes or gradients.
 - Preserve landing section ids and navbar/footer anchor behavior.
 - Do not fabricate stats, testimonials, partners or logos anywhere in the UI.

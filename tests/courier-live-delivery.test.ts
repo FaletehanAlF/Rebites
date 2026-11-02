@@ -80,7 +80,7 @@ const POSITION_PANEL = normalize(
   readProjectFile('app/components/order-history/courier-position-panel.tsx')
 );
 const LOCATION_HOOK = normalize(readProjectFile('hooks/use-courier-location.ts'));
-const SELLER_PAGE = normalize(readProjectFile('app/dashboard/penjual/pesanan/page.tsx'));
+const SELLER_PAGE = normalize(readProjectFile('app/(app)/dashboard/penjual/pesanan/page.tsx'));
 const BUYER_PAGE = normalize(readProjectFile('app/riwayatPesanan/[orderCode]/page.tsx'));
 const SIDEBAR = normalize(readProjectFile('app/components/shared/account-sidebar.tsx'));
 
