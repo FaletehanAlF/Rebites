@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAdminMe } from '@/hooks/use-admin-me';
+import { useIsAdminAccount } from '@/hooks/use-is-admin-account';
 import { DotPattern } from './decor';
 
 interface SidebarProps {
@@ -109,9 +109,10 @@ function NavItemLink({ item, onClose }: { item: NavItem; onClose?: () => void })
 }
 
 function SidebarContent({ onClose }: { onClose: () => void }) {
-  // Tautan "Panel Admin" hanya untuk akun dengan status admin terverifikasi
-  // server (GET /api/admin/me). Penjual biasa mendapat `me = null`.
-  const { me } = useAdminMe();
+  // Tautan "Panel Admin" hanya untuk akun ber-role admin. Membaca role sendiri
+  // (bukan GET /api/admin/me) menghindari 403 yang wajar di log untuk setiap
+  // penjual non-admin. Route admin tetap memverifikasi ulang di server.
+  const isAdmin = useIsAdminAccount();
 
   return (
     <motion.div
@@ -154,7 +155,7 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
         ))}
       </nav>
 
-      {me && (
+      {isAdmin && (
         <div className="relative border-t border-sage-100 px-4 py-3">
           <Link
             href="/dashboard/admin"
