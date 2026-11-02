@@ -22,6 +22,7 @@ import {
   isDefaultPackageWeight,
 } from '@/lib/package-weight';
 import { resolveOriginPoint } from '@/lib/store-origin-point';
+import { isMenuScheduleVisible } from '@/lib/menu-schedule';
 
 export const runtime = 'nodejs';
 
@@ -78,6 +79,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Produk tidak tersedia.', code: 'product_unavailable' }, { status: 404 });
     }
     const productRow = product as Record<string, unknown>;
+    if (
+      !isMenuScheduleVisible({
+        scheduledStart: (productRow.scheduled_start as string | null) ?? null,
+        scheduledEnd: (productRow.scheduled_end as string | null) ?? null,
+      })
+    ) {
+      return NextResponse.json(
+        { error: 'Menu ini belum tayang atau jadwalnya sudah berakhir.', code: 'product_not_scheduled' },
+        { status: 400 }
+      );
+    }
     if (productRow.is_delivery !== true) {
       return NextResponse.json({ error: 'Produk ini tidak tersedia untuk diantar.', code: 'product_no_delivery' }, { status: 400 });
     }

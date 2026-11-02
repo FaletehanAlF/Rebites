@@ -3,6 +3,7 @@
 import { supabase } from './supabase';
 import { readSellerPlan, type SellerEntitlements } from './seller-plan';
 import { resolveImageSrc } from './image-path';
+import { isMenuScheduleVisible } from './menu-schedule';
 import {
   SELLER_VENDOR_NAME,
   SELLER_VENDOR_SLUG,
@@ -248,6 +249,8 @@ export async function getActiveFlashSaleProducts(
         endTime: ((r.sell_window_end as string) ?? '21:00').slice(0, 5),
         allDay: (r.all_day as boolean) ?? false,
         isSurplusToday: (r.is_surplus_today as boolean) ?? true,
+        scheduledStart: (r.scheduled_start as string | null) ?? null,
+        scheduledEnd: (r.scheduled_end as string | null) ?? null,
         featured: (r.featured as boolean) ?? false,
         // kapabilitas fulfillment (DB NOT NULL DEFAULT true).
         isDelivery: (r.is_delivery as boolean) ?? true,
@@ -281,6 +284,9 @@ export async function getActiveFlashSaleProducts(
 
   return products
     .filter((product) => (product as SellerProduct).flashSale != null)
+    // Flash sale untuk menu yang belum tayang / sudah berakhir tidak boleh
+    // muncul di beranda pembeli; penjadwalan menu menang atas promo.
+    .filter((product) => isMenuScheduleVisible(product))
     .filter(
       (product) =>
         resolveFlashSaleStatus(product as SellerProduct, now) === 'active' ||

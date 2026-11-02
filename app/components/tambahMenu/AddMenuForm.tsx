@@ -20,6 +20,11 @@ import { NumberField } from './NumberField';
 import { ShippingInfoSection } from './ShippingInfoSection';
 import { DEFAULT_MENU_FORM, MENU_CATEGORIES, parseShippingNumber } from './types';
 import type { MenuFormState } from './types';
+import {
+  isScheduleRangeValid,
+  scheduleEndToIso,
+  scheduleStartToIso,
+} from '@/lib/menu-schedule';
 
 const inputCls =
   'w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
@@ -108,13 +113,11 @@ export function AddMenuForm() {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       return;
     }
-    // Berat wajib bila Diantar aktif: tanpa weight_gram server menolak
-    // /api/shipping/rates (product_no_weight) dan checkout, sehingga toggle
-    // Diantar hanya menjadi janji yang tidak bisa dipenuhi.
-    if (form.isDelivery && weightParsed.value === null) {
-      setSaveError(
-        'Isi berat makanan (gram) agar pembeli bisa memilih Diantar. Atau matikan toggle Diantar.'
-      );
+    // Berat opsional: bila kosong, ongkir memakai berat bawaan kategori
+    // (lib/package-weight.ts). Memaksanya di sini membuat penjual tidak bisa
+    // menambahkan menu yang beratnya belum diketahui.
+    if (!isScheduleRangeValid(form.scheduledStart, form.scheduledEnd)) {
+      setSaveError('Tanggal selesai tidak boleh mendahului tanggal mulai.');
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       return;
     }
@@ -152,6 +155,8 @@ export function AddMenuForm() {
         startTime: form.startTime,
         endTime: form.endTime,
         isSurplusToday: form.isSurplusToday,
+        scheduledStart: scheduleStartToIso(form.scheduledStart),
+        scheduledEnd: scheduleEndToIso(form.scheduledEnd),
         featured: false,
         // kapabilitas fulfillment pilihan seller.
         isDelivery: form.isDelivery,
@@ -408,6 +413,10 @@ export function AddMenuForm() {
 
             <section>
               <SectionTitle number="4" title="Ketersediaan" />
+              <p className="text-[11px] text-muted-foreground mb-3">
+                Atur kapan menu ini tersedia untuk pembeli. Pilih “Sekarang” untuk surplus hari ini, atau “Jadwalkan” untuk tanggal tertentu.
+              </p>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="menu-start-time" className={labelCls}>
@@ -435,31 +444,68 @@ export function AddMenuForm() {
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl bg-secondary px-4 py-3.5">
-                <div>
-                  <p className="text-xs font-semibold text-foreground">
-                    Tampilkan sebagai surplus hari ini
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    Pembeli bisa langsung memesan menu ini hari ini
-                  </p>
+              {/* Scheduling option — clearly separated from Flash Sale */}
+              <div className="mt-4 space-y-3">
+                <div className="rounded-2xl bg-secondary p-4">
+                  <p className="text-xs font-semibold text-foreground">Jadwal Ketersediaan</p>
+                  <p className="text-[11px] text-muted-foreground">Pilih kapan pembeli bisa memesan menu ini.</p>
+
+                  <div className="mt-3 space-y-2">
+                    <label className="flex items-start gap-3 rounded-xl border border-border bg-white px-3 py-3 transition-colors hover:border-primary hover:bg-primary-dark/5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="schedule-mode"
+                        checked={!form.scheduledStart}
+                        onChange={() => {
+                          set('scheduledStart', null);
+                          set('scheduledEnd', null);
+                          set('isSurplusToday', true);
+                        }}
+                        className="mt-0.5 h-4 w-4 accent-primary"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-foreground">Sekarang / Surplus Hari Ini</p>
+                        <p className="text-[10px] text-muted-foreground">Menu langsung tersedia hari ini sesuai jam jual.</p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-3 rounded-xl border border-border bg-white px-3 py-3 transition-colors hover:border-primary hover:bg-primary-dark/5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="schedule-mode"
+                        checked={!!form.scheduledStart}
+                        onChange={() => {
+                          set('scheduledStart', new Date().toISOString().slice(0, 10));
+                          set('scheduledEnd', null);
+                          set('isSurplusToday', false);
+                        }}
+                        className="mt-0.5 h-4 w-4 accent-primary"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-foreground">Jadwalkan untuk Tanggal Tertentu</p>
+                        <p className="text-[10px] text-muted-foreground">Menu akan muncul mulai tanggal yang dipilih.</p>
+
+                        {!!form.scheduledStart && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <input
+                              type="date"
+                              value={form.scheduledStart ? form.scheduledStart.slice(0, 10) : ''}
+                              onChange={(e) => set('scheduledStart', e.target.value || null)}
+                              className="h-7 rounded-md border border-border bg-white px-2 text-[11px] text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            />
+                            <input
+                              type="date"
+                              value={form.scheduledEnd ? form.scheduledEnd.slice(0, 10) : ''}
+                              onChange={(e) => set('scheduledEnd', e.target.value || null)}
+                              placeholder="Sampai (opsional)"
+                              className="h-7 rounded-md border border-border bg-white px-2 text-[11px] text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </label>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={form.isSurplusToday}
-                  onClick={() => set('isSurplusToday', !form.isSurplusToday)}
-                  className={cn(
-                    'relative h-6 w-11 shrink-0 rounded-full transition-colors',
-                    form.isSurplusToday ? 'bg-primary' : 'bg-muted'
-                  )}
-                >
-                  <motion.span
-                    animate={{ x: form.isSurplusToday ? 20 : 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm"
-                  />
-                </button>
               </div>
             </section>
 

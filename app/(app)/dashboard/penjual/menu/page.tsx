@@ -27,6 +27,10 @@ import {
   deleteSellerProduct,
 } from '@/lib/product-storage';
 import { isProductAvailable } from '@/lib/product-storage';
+import {
+  formatScheduleDate,
+  resolveMenuScheduleStatus,
+} from '@/lib/menu-schedule';
 import { useSellerPlan, type SellerEntitlements } from '@/lib/seller-plan';
 import { useStoreProducts } from '@/hooks/use-store-products';
 import { useSellerStatus } from '@/hooks/use-seller-status';
@@ -182,6 +186,7 @@ function TimeEditor({ product }: { product: SellerProduct }) {
   };
 
   const available = isProductAvailable(product);
+  const scheduleStatus = resolveMenuScheduleStatus(product);
 
   return (
     <div className="space-y-2">
@@ -233,16 +238,26 @@ function TimeEditor({ product }: { product: SellerProduct }) {
           'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
           available
             ? 'bg-primary/10 text-primary'
+            : scheduleStatus === 'scheduled' || scheduleStatus === 'ended'
+            ? 'bg-caramel/20 text-caramel-dark'
             : 'bg-destructive/15 text-destructive'
         )}
       >
         <span
           className={cn(
             'h-1.5 w-1.5 rounded-full',
-            available ? 'bg-primary/100' : 'bg-destructive'
+            available
+              ? 'bg-primary/100'
+              : scheduleStatus === 'scheduled' || scheduleStatus === 'ended'
+              ? 'bg-caramel-dark'
+              : 'bg-destructive'
           )}
         />
-        {available
+        {scheduleStatus === 'scheduled'
+          ? `Dijadwalkan ${formatScheduleDate(product.scheduledStart)}`
+          : scheduleStatus === 'ended'
+          ? 'Jadwal Berakhir'
+          : available
           ? allDay
             ? 'Tersedia Sepanjang Hari'
             : 'Sedia Sekarang'
@@ -728,6 +743,7 @@ function MenuCard({
   };
 
   const available = isProductAvailable(product);
+  const scheduleStatus = resolveMenuScheduleStatus(product);
 
   return (
     <Card className="flex flex-col p-4 sm:p-5">
@@ -776,15 +792,48 @@ function MenuCard({
             ) : (
               <Badge variant="warning">Menunggu Verifikasi</Badge>
             )}
+            {scheduleStatus === 'scheduled' && (
+              <Badge variant="warning">
+                <CalendarDays className="h-3 w-3" aria-hidden />
+                Dijadwalkan
+              </Badge>
+            )}
+            {scheduleStatus === 'ended' && (
+              <Badge variant="secondary">Jadwal berakhir</Badge>
+            )}
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]',
                 available ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
               )}
             >
-              {available ? `Stok ${product.stock}` : product.stock <= 0 ? 'Habis' : 'Tutup'}
+              {scheduleStatus === 'scheduled'
+                ? 'Belum tayang'
+                : scheduleStatus === 'ended'
+                ? 'Tidak tayang'
+                : available
+                ? `Stok ${product.stock}`
+                : product.stock <= 0
+                ? 'Habis'
+                : 'Tutup'}
             </span>
           </div>
+          {scheduleStatus !== 'none' && (
+            <p className="mt-1 text-[11px] text-charcoal-500">
+              <CalendarDays className="mr-1 inline h-3 w-3 align-[-1px]" aria-hidden />
+              {scheduleStatus === 'scheduled'
+                ? `Tayang mulai ${formatScheduleDate(product.scheduledStart)}`
+                : scheduleStatus === 'ended'
+                ? `Jadwal berakhir ${formatScheduleDate(product.scheduledEnd)}`
+                : product.scheduledStart
+                ? `Tayang ${formatScheduleDate(product.scheduledStart)}${
+                    product.scheduledEnd
+                      ? ` – ${formatScheduleDate(product.scheduledEnd)}`
+                      : ''
+                  }`
+                : `Tayang sampai ${formatScheduleDate(product.scheduledEnd)}`}
+            </p>
+          )}
 
           <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
             <span className="text-sm font-bold text-primary">
@@ -810,14 +859,14 @@ function MenuCard({
           <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" aria-hidden />
           <div className="min-w-0">
             <p className="text-[11px] font-bold leading-snug text-charcoal-900">
-              Belum siap dikirim kurir
+              Berat belum diisi — ongkir masih perkiraan
             </p>
             <button
               type="button"
               onClick={onFixWeight}
               className="mt-0.5 text-[11px] font-semibold text-caramel-dark underline-offset-2 hover:underline"
             >
-              Isi berat sekarang
+              Isi berat agar ongkir lebih akurat
             </button>
           </div>
         </div>

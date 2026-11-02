@@ -29,6 +29,7 @@ import { estimateOrderMinutes } from '@/lib/delivery-estimate';
 import { parseDistanceKm, sanitizeAddressSnapshot, buildAddressSnapshot } from '@/lib/location-validation';
 import { resolvePackageWeightGram } from '@/lib/package-weight';
 import { resolveOriginPoint } from '@/lib/store-origin-point';
+import { isMenuScheduleVisible } from '@/lib/menu-schedule';
 
 export const runtime = 'nodejs';
 
@@ -231,6 +232,22 @@ export async function POST(req: NextRequest) {
     if ((product as Record<string, unknown>).verification_status !== 'approved') {
       return NextResponse.json(
         { error: 'Produk sedang tidak tersedia untuk dipesan.' },
+        { status: 400 }
+      );
+    }
+    // Jadwal menu ditegakkan di server, bukan hanya filter katalog: tautan
+    // langsung ke produk yang belum tayang / sudah berakhir tidak boleh
+    // menghasilkan pesanan.
+    if (
+      !isMenuScheduleVisible({
+        scheduledStart:
+          ((product as Record<string, unknown>).scheduled_start as string | null) ?? null,
+        scheduledEnd:
+          ((product as Record<string, unknown>).scheduled_end as string | null) ?? null,
+      })
+    ) {
+      return NextResponse.json(
+        { error: 'Menu ini belum tayang atau jadwalnya sudah berakhir.' },
         { status: 400 }
       );
     }

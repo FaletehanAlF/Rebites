@@ -8,6 +8,9 @@
   startTime: string;
   endTime: string;
   isSurplusToday: boolean;
+  // Jadwal ketersediaan menu (bukan flash sale). NULL = tidak dijadwalkan khusus.
+  scheduledStart?: string | null; // YYYY-MM-DD
+  scheduledEnd?: string | null; // YYYY-MM-DD
   photo: string;
   // kapabilitas fulfillment. Minimal satu harus true.
   isDelivery: boolean;
@@ -83,6 +86,8 @@ export const DEFAULT_MENU_FORM: MenuFormState = {
   startTime: '16:00',
   endTime: '19:00',
   isSurplusToday: true,
+  scheduledStart: null,
+  scheduledEnd: null,
   photo: '',
   // default keduanya tersedia (selaras DB DEFAULT true).
   isDelivery: true,
