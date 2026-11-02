@@ -56,7 +56,8 @@
     "test:delivery-tariff-estimate": "node --test tests/delivery-tariff-estimate.test.ts",
     "test:route-geometry": "node --test tests/route-geometry.test.ts",
     "test:buyer-order-actions": "node --test tests/buyer-order-actions.test.ts",
-    "test:seller-orders-attention": "node --test tests/seller-orders-attention.test.ts"
+    "test:seller-orders-attention": "node --test tests/seller-orders-attention.test.ts",
+    "test:package-weight-origin": "node --test tests/package-weight-origin.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

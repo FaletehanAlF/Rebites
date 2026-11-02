@@ -160,11 +160,9 @@ export function CheckoutProvider({
   const { user } = useCurrentUser();
 
   const [quantity, setQuantity] = useState(initialQuantity);
-  // fulfillment awal mengikuti kapabilitas produk.
-  // Berat NULL juga menutup delivery (ongkir pasti gagal), jadi buyer langsung
-  // diarahkan ke pickup alih-alih melihat error kurir.
-  const deliveryUsable =
-    draft.isDelivery && draft.deliveryUnavailableReason !== 'weight_missing';
+  // fulfillment awal mengikuti kapabilitas produk. Berat yang belum diisi
+  // TIDAK menutup delivery: server memakai berat perkiraan kategori.
+  const deliveryUsable = draft.isDelivery;
   // delivery-only -> 'delivery'; selain itu 'pickup' (invalid diblokir missingRequirement).
   const [fulfillment, setFulfillment] = useState<FulfillmentMode>(() =>
     deliveryUsable && !draft.isPickup ? 'delivery' : 'pickup'
@@ -410,11 +408,6 @@ export function CheckoutProvider({
     }
     if (fulfillment === 'delivery' && !draft.isDelivery) {
       return 'Produk ini tidak tersedia untuk diantar.';
-    }
-    // Berat belum diisi penjual: pilihan Diantar disembunyikan, tetapi state
-    // bisa sudah 'delivery' dari cache/alamat lama — blokir dengan arahan.
-    if (fulfillment === 'delivery' && draft.deliveryUnavailableReason === 'weight_missing') {
-      return 'Produk ini belum bisa dikirim kurir karena beratnya belum diisi penjual. Pilih Ambil Sendiri.';
     }
     if (fulfillment === 'pickup' && !draft.isPickup) {
       return 'Produk ini tidak tersedia untuk diambil sendiri.';

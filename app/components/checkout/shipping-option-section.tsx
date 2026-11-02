@@ -334,6 +334,22 @@ export function ShippingOptionSection() {
                         titik alamatmu. Bukan tarif kurir resmi; jumlah akhir tetap
                         dihitung ulang server saat checkout.
                       </p>
+                      {/*
+                        Ongkir tetap dihitung saat penjual belum menandai titik
+                        toko atau mengisi berat produk, tetapi angkanya perkiraan.
+                        Pembeli diberi tahu agar tidak kaget bila kurir menagih
+                        selisih, dan penjual punya alasan memperbaikinya.
+                      */}
+                      {(selectedOption.originEstimated || selectedOption.weightEstimated) && (
+                        <p className="mt-1.5 flex items-start gap-1 text-[11px] leading-relaxed text-caramel-dark">
+                          <TriangleAlert className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+                          {selectedOption.originEstimated && selectedOption.weightEstimated
+                            ? 'Toko belum menandai titik lokasi dan berat produk belum diisi — ongkir ini perkiraan.'
+                            : selectedOption.originEstimated
+                              ? 'Toko belum menandai titik lokasi — jarak dihitung dari pusat kotanya.'
+                              : 'Berat produk belum diisi penjual — ongkir memakai berat perkiraan.'}
+                        </p>
+                      )}
                     </div>
                   )}
                 </>

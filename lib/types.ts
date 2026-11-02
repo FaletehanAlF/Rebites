@@ -129,6 +129,11 @@ export interface ShippingOriginSnapshot {
   latitude: number | null;
   longitude: number | null;
   slug: string;
+  /**
+   * true = koordinat berasal dari pusat kota (penjual belum menandai titik
+   * toko). Disimpan agar ongkir yang tercatat bisa diaudit sebagai perkiraan.
+   */
+  estimated?: boolean;
 }
 
 /**
@@ -143,6 +148,11 @@ export interface ShippingPackageSnapshot {
   lengthCm: number | null;
   widthCm: number | null;
   heightCm: number | null;
+  /**
+   * true = weightGram adalah berat perkiraan kategori, bukan isian penjual.
+   * Order lama tidak punya field ini (undefined = berat eksplisit/legacy).
+   */
+  weightEstimated?: boolean;
 }
 
 /**
@@ -175,6 +185,14 @@ export interface ShippingRateOption {
   /** Label WAKTU, mis. `±22 menit`. Kosong bila tidak dapat dihitung. */
   etaLabel: string;
   serviceType: string;
+  /**
+   * true = titik asal diambil dari pusat kota toko, bukan dari titik lokasi
+   * yang ditandai penjual. Ongkirnya tetap sah, tetapi berupa perkiraan, dan
+   * pembeli diberi tahu bahwa penjual belum menandai lokasi tokonya.
+   */
+  originEstimated?: boolean;
+  /** true = berat paket memakai berat bawaan kategori, bukan isian penjual. */
+  weightEstimated?: boolean;
 }
 
 export type OrderLifecycleStatus = "ongoing" | "completed";
@@ -309,12 +327,11 @@ export interface OrderDraft {
   /** kapabilitas fulfillment produk (sumber untuk gating UI checkout). */
   isPickup: boolean;
   /**
-   * true = produk bisa dikirim kurir, tetapi beratnya belum diisi (weight_gram
-   * NULL). Server menolak ongkir dengan product_no_weight, jadi UI harus
-   * menyembunyikan/menolak Diantar, bukan menampilkan error kurir mentah.
+   * Berat per kemasan dari products.weight_gram. NULL = penjual belum mengisi;
+   * server memakai berat perkiraan kategori (lib/package-weight.ts), jadi
+   * Diantar tetap bisa dipilih dan pembeli diberi tahu bahwa ongkirnya
+   * perkiraan.
    */
-  deliveryUnavailableReason?: "weight_missing" | null;
-  /** berat per kemasan dari products.weight_gram. NULL = belum diketahui. */
   weightGram?: number | null;
   /** panjang kemasan dari products.length_cm. NULL = belum diketahui. */
   lengthCm?: number | null;

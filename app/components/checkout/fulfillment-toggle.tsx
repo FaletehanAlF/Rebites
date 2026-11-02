@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, Info, MapPin, Truck } from 'lucide-react';
+import { Check, MapPin, Truck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatRupiah } from '@/lib/data';
@@ -42,15 +42,10 @@ export function FulfillmentToggle() {
 
   // hanya tampilkan metode yang didukung kapabilitas produk.
   // Security boundary tetap di server (checkout menolak fulfillment invalid).
-  // Berat belum diisi = Diantar pasti gagal di ongkir, jadi Diantar tidak
-  // ditampilkan sebagai pilihan yang bisa diklik.
-  const deliveryBlockedByWeight =
-    draft.isDelivery && draft.deliveryUnavailableReason === 'weight_missing';
+  // Berat yang belum diisi tidak lagi menutup Diantar: server memakai berat
+  // perkiraan kategori dan pembeli melihat catatan bahwa ongkirnya perkiraan.
   const visibleOptions = OPTIONS.filter((option) =>
     option.value === 'pickup' ? draft.isPickup : draft.isDelivery
-  );
-  const selectableOptions = visibleOptions.filter(
-    (option) => !(option.value === 'delivery' && deliveryBlockedByWeight)
   );
 
   // Ongkir hanya dianggap diketahui bila opsi pengiriman benar-benar terpilih.
@@ -92,21 +87,8 @@ export function FulfillmentToggle() {
         Pilih cara kamu menerima pesanan
       </p>
 
-      {deliveryBlockedByWeight && (
-        <p
-          role="status"
-          className="mt-3 flex items-start gap-2 rounded-xl bg-caramel/15 px-3 py-2.5 text-xs leading-relaxed text-charcoal-900"
-        >
-          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" />
-          <span>
-            Menu ini sementara hanya bisa diambil sendiri — penjual belum
-            mengisi berat makanan, jadi ongkir belum bisa dihitung.
-          </span>
-        </p>
-      )}
-
       <div role="radiogroup" className="mt-4 grid gap-3 sm:grid-cols-2">
-        {selectableOptions.map((option) => {
+        {visibleOptions.map((option) => {
           const selected = fulfillment === option.value;
           const Icon = option.icon;
           return (
