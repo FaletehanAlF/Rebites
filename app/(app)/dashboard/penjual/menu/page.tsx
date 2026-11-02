@@ -527,7 +527,7 @@ function FlashSalePanel({
         </p>
       ) : editing ? (
         <Dialog open onOpenChange={(open) => !open && setEditing(false)}>
-          <DialogContent className="max-w-md rounded-2xl border-sage-100 bg-white p-5">
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border-sage-100 bg-white p-5">
             <DialogHeader>
               <DialogTitle className="font-display text-base font-semibold text-charcoal-900">
                 Atur Flash Sale
@@ -632,8 +632,8 @@ function FlashSalePanel({
             <label className="block text-[10px] font-semibold uppercase tracking-wider text-foreground">
               Slot Waktu
             </label>
-            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-              Pilih jam tayang promo di beranda. Slot yang sudah lewat pada tanggal ini tidak bisa dipilih.
+            <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+              Pilih jam tayang promo di beranda. Slot sudah lewat pada tanggal ini dinonaktifkan.
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {FLASH_SLOTS.map((slot) => {
@@ -680,10 +680,10 @@ function FlashSalePanel({
             </div>
           </div>
 
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-2.5">
-            <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+          <div className="rounded-xl border border-primary/10 bg-primary/[0.03] p-2.5">
+            <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-primary">
               <Clock className="h-3 w-3" aria-hidden />
-              Jadwal tayang promo
+              Jadwal promo
             </p>
             {previewRange ? (
               <dl className="mt-1.5 space-y-0.5 text-[11px]">
