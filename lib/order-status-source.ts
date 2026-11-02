@@ -110,6 +110,22 @@ export function resolveOrderPhase(order: OrderPhaseInput): OrderPhase {
 }
 
 /**
+ * Pesanan menunggu tindakan penjual, bukan menunggu pembeli atau sistem.
+ *
+ * Dipakai untuk badge jumlah dan penanda merah di kartu pesanan, jadi
+ * definisinya harus sama dengan fase yang benar-benar punya aksi:
+ * - `paid`      -> pesanan sudah dibayar tapi belum mulai disiapkan
+ * - `processing`-> makanan sedang disiapkan
+ *
+ * `pending` sengaja TIDAK dihitung: pembeli belum membayar, tidak ada yang
+ * bisa dikerjakan penjual, dan menghitungnya membuat badge tidak pernah
+ * kosong.
+ */
+export function needsSellerAction(phase: OrderPhase): boolean {
+  return phase === 'paid' || phase === 'processing';
+}
+
+/**
  * Aksi yang boleh diambil penjual pada fase tertentu.
  *
  * Setiap pasangan (asal -> tujuan) di sini sudah diizinkan trigger
@@ -140,7 +156,15 @@ export interface SellerAction {
  */
 export function getSellerAction(
   phase: OrderPhase,
-  fulfillment: string
+  fulfillment: string,
+  /**
+   * Fase setelah aksi ini dijalankan, bila sistem boleh memajukannya sendiri.
+   *
+   * `autoAdvanceTo` terisi hanya ketika penugasan kurir otomatis tersedia
+   * (penjual sudah punya titik lokasi toko). Dengan begitu label tombol tetap
+   * jujur: "Makanan Sudah Siap" hanya bila kurir memang akan berangkat sendiri.
+   */
+  options?: { autoAdvanceTo?: 'out_for_delivery' | null }
 ): SellerAction | null {
   switch (phase) {
     case 'paid':
@@ -150,20 +174,43 @@ export function getSellerAction(
         description: 'Pesanan akan masuk status sedang disiapkan',
         tone: 'primary',
       };
-    case 'processing':
-      return fulfillment === 'pickup'
-        ? {
-            targetStatus: 'ready_for_pickup',
-            label: 'Makanan Sudah Siap',
-            description: 'Pembeli akan diberi tahu bahwa pesanan siap diambil',
-            tone: 'emerald',
-          }
-        : {
-            targetStatus: 'out_for_delivery',
-            label: 'Antarkan Pesanan',
-            description: 'Pesanan akan masuk status sedang diantar',
-            tone: 'purple',
-          };
+    case 'processing': {
+      if (fulfillment === 'pickup') {
+        return {
+          targetStatus: 'ready_for_pickup',
+          label: 'Makanan Sudah Siap',
+          description: 'Pembeli akan diberi tahu bahwa pesanan siap diambil',
+          tone: 'emerald',
+        };
+      }
+      /**
+       * Pengiriman: penjual TIDAK lagi menekan tombol "antar" terpisah.
+       *
+       * Dua ketukan ("Siapkan" lalu "Antarkan") membuat pesanan tertahan di
+       * tahap siapkan meski makanannya sudah jadi — pembeli melihat
+       * "Sudah menunggu N menit" padahal tidak ada yang dikerjakan lagi.
+       * Satu ketukan sekarang: menyelesaikan penyiapan SEKALIGUS memulai
+       * pengantaran, dan trigger database menugaskan kurir otomatis begitu
+       * status berpindah ke 'out_for_delivery'.
+       *
+       * Tombol "antar" terpisah tetap disediakan sebagai langkah paksa bila
+       * penjual perlu mengantar tanpa kurir (lihat `forceDeliveryAction`).
+       */
+      if (options?.autoAdvanceTo === 'out_for_delivery') {
+        return {
+          targetStatus: 'out_for_delivery',
+          label: 'Antarkan Pesanan',
+          description: 'Kurir ditugaskan otomatis dan pesanan mulai diantar',
+          tone: 'purple',
+        };
+      }
+      return {
+        targetStatus: 'out_for_delivery',
+        label: 'Antarkan Pesanan',
+        description: 'Pesanan akan masuk status sedang diantar',
+        tone: 'purple',
+      };
+    }
     case 'out_for_delivery':
     case 'ready_for_pickup':
       return {

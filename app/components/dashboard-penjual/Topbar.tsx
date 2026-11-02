@@ -9,6 +9,7 @@ import {
 } from '@/lib/store-settings-storage';
 import { useCurrentUser } from '@/lib/current-user';
 import { useNotifications } from '@/hooks/use-notifications';
+import { ORDERS_UPDATED_EVENT } from '@/lib/order-storage';
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -19,8 +20,25 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const [storeImage, setStoreImage] = useState('');
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
   const { userId } = useCurrentUser();
-  
-  const { unreadCount } = useNotifications(userId, 'seller');
+
+  const { unreadCount, refresh: refreshNotifications } = useNotifications(userId, 'seller');
+
+  /**
+   * Badge lonceng ikut disegarkan saat ada pesanan baru masuk.
+   *
+   * Sebelumnya angka ini hanya berubah setelah Realtime `notifications`
+   * memanggil refresh untuk dirinya sendiri; pesanan yang baru dibayar bisa
+   * membuat penjual menunggu tanpa angka yang berubah di layar.
+   */
+  useEffect(() => {
+    const onOrdersUpdated = () => {
+      void refreshNotifications();
+    };
+    window.addEventListener(ORDERS_UPDATED_EVENT, onOrdersUpdated);
+    return () => {
+      window.removeEventListener(ORDERS_UPDATED_EVENT, onOrdersUpdated);
+    };
+  }, [refreshNotifications]);
 
   useEffect(() => {
     const refresh = () => {

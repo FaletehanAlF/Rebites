@@ -181,6 +181,22 @@ export function ShippingOptionSection() {
     ? [selectedAddress.label, selectedAddress.district].filter(Boolean).join(' · ')
     : null;
 
+  /**
+   * Alamat tujuan sudah punya titik lokasi yang sah.
+   *
+   * Saat belum, kartu "Dikirim ke" menampilkan peringatan yang sama dengan
+   * bagian Alamat Pengiriman, supaya pembeli tidak menelusuri dua kotak untuk
+   * mencari tahu mengapa ongkir kosong.
+   */
+  const destinationHasPoint = (() => {
+    const lat = selectedAddress?.latitude;
+    const lng = selectedAddress?.longitude;
+    if (typeof lat !== 'number' || typeof lng !== 'number') return false;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+    if (lat === 0 && lng === 0) return false;
+    return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+  })();
+
   return (
     <AnimatePresence initial={false}>
       {fulfillment === 'delivery' && (
@@ -216,6 +232,12 @@ export function ShippingOptionSection() {
                   <p className="truncate text-[13px] font-medium text-charcoal-900">
                     {destinationLabel ?? 'Belum ada alamat terpilih'}
                   </p>
+                  {selectedAddress && !destinationHasPoint && (
+                    <p className="mt-1 flex items-start gap-1 text-[11px] leading-relaxed text-caramel-dark">
+                      <TriangleAlert className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+                      Belum ada titik lokasi di alamat ini — tandai dulu di bagian Alamat Pengiriman.
+                    </p>
+                  )}
                 </div>
               </div>
 

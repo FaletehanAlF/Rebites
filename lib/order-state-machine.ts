@@ -166,12 +166,28 @@ export async function transitionOrderStatus(
     }
     // Pembeli hanya boleh mengonfirmasi penerimaan, dan hanya dari status
     // pengantaran/penyiapan yang memang mengizinkan.
+    //
+    // Satu pengecualian: membatalkan pesanan yang BELUM dibayar. Tanpa itu,
+    // pesanan yang pembayarannya ditinggalkan akan mengunci stok produk
+    // sampai kedaluwarsa, padahal pembeli sudah tahu tidak akan membayar.
+    // Trigger `guard_orders_update` mengizinkan `pending -> cancelled` dari
+    // sesi pembeli; setelah `paid` pembatalan menjadi urusan penjual/admin
+    // karena menyangkut uang.
     if (isBuyer && !isSeller) {
-      if (newStatus !== 'completed') {
-        return { success: false, error: 'Pembeli hanya dapat mengonfirmasi penerimaan pesanan' };
-      }
-      if (currentStatus !== 'ready_for_pickup' && currentStatus !== 'out_for_delivery') {
-        return { success: false, error: 'Pesanan belum siap dikonfirmasi diterima' };
+      if (newStatus === 'cancelled') {
+        if (currentStatus !== 'pending') {
+          return {
+            success: false,
+            error: 'Pesanan yang sudah dibayar tidak dapat dibatalkan sendiri — hubungi penjual',
+          };
+        }
+      } else {
+        if (newStatus !== 'completed') {
+          return { success: false, error: 'Pembeli hanya dapat mengonfirmasi penerimaan pesanan' };
+        }
+        if (currentStatus !== 'ready_for_pickup' && currentStatus !== 'out_for_delivery') {
+          return { success: false, error: 'Pesanan belum siap dikonfirmasi diterima' };
+        }
       }
     }
 

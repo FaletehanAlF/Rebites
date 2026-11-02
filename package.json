@@ -54,7 +54,9 @@
     "test:demo-courier": "node --test tests/demo-courier.test.ts",
     "test:demo-courier-migration": "node --test tests/demo-courier-migration.test.ts",
     "test:delivery-tariff-estimate": "node --test tests/delivery-tariff-estimate.test.ts",
-    "test:route-geometry": "node --test tests/route-geometry.test.ts"
+    "test:route-geometry": "node --test tests/route-geometry.test.ts",
+    "test:buyer-order-actions": "node --test tests/buyer-order-actions.test.ts",
+    "test:seller-orders-attention": "node --test tests/seller-orders-attention.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

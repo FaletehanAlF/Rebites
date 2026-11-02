@@ -20,6 +20,15 @@ import {
 
 export const runtime = 'nodejs';
 
+/** Bilangan bulat positif, atau null bila NULL/0/negatif/bukan angka. */
+function toPositiveInt(value: unknown): number | null {
+  if (value == null) return null;
+  const num = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  const int = Math.floor(num);
+  return int >= 1 ? int : null;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const user = await getUserFromBearer(req.headers.get('authorization'));
@@ -59,7 +68,7 @@ export async function POST(req: NextRequest) {
     const anon = createAnonServerClient();
     const { data: product, error: prodErr } = await anon
       .from('products')
-      .select('id, umkm_id, slug, name, is_delivery')
+      .select('id, umkm_id, slug, name, is_delivery, weight_gram')
       .eq('slug', productSlug)
       .maybeSingle();
 
@@ -73,6 +82,24 @@ export async function POST(req: NextRequest) {
     const productRow = product as Record<string, unknown>;
     if (productRow.is_delivery !== true) {
       return NextResponse.json({ error: 'Produk ini tidak tersedia untuk diantar.', code: 'product_no_delivery' }, { status: 400 });
+    }
+    /**
+     * Berat paket dari DB, bukan dari klien.
+     *
+     * Checkout sudah menolak pesanan tanpa berat (`product_no_weight`), tetapi
+     * endpoint ini dulu tidak memeriksanya — akibatnya pembeli melihat ongkir
+     * terhitung rapi lalu ditolak saat membayar. Kegagalan yang sama dilaporkan
+     * di tempat yang sama supaya pesannya konsisten.
+     */
+    const weightGram = toPositiveInt(productRow.weight_gram);
+    if (weightGram == null) {
+      return NextResponse.json(
+        {
+          error: 'Penjual belum mengisi berat produk ini, jadi ongkir belum dapat dihitung.',
+          code: 'product_no_weight',
+        },
+        { status: 400 }
+      );
     }
     if (!productRow.umkm_id) {
       return NextResponse.json({ error: 'Data toko produk tidak lengkap.', code: 'vendor_incomplete' }, { status: 500 });

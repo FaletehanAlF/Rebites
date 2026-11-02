@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Check,
+  LocateFixed,
   MapPin,
   MessageSquare,
   Pencil,
   Phone,
   Plus,
+  TriangleAlert,
 } from 'lucide-react';
 import {
   Dialog,
@@ -25,6 +27,22 @@ import { AddressFormView } from './address-form-view';
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 type PopupView = 'list' | 'form';
+
+/**
+ * Alamat punya titik lokasi yang SAH untuk perhitungan ongkir.
+ *
+ * Memakai aturan yang sama dengan server (`isValidCoordinatePair`): null dan
+ * (0,0) tidak dihitung sah. Tanpa ini, alamat berkoordinat kosong tampil
+ * "lengkap" padahal checkout-nya akan ditolak.
+ */
+function hasLocationPoint(address: DeliveryAddress): boolean {
+  const lat = address.latitude;
+  const lng = address.longitude;
+  if (typeof lat !== 'number' || typeof lng !== 'number') return false;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+  if (lat === 0 && lng === 0) return false;
+  return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
 
 function formatFullAddress(address: DeliveryAddress) {
   return [
@@ -155,6 +173,29 @@ export function DeliveryAddressSection() {
                       <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                       “{selectedAddress.note}”
                     </p>
+                  )}
+
+                  {/*
+                    Tanpa titik lokasi, server menolak ongkir (dest_coordinates_missing)
+                    dan pembeli hanya melihat kotak kuning "Ongkir belum bisa dihitung"
+                    tanpa tahu harus apa. Peringatan ini menyebut langkahnya, dan
+                    tombol di bawahnya membukanya langsung di peta.
+                  */}
+                  {!hasLocationPoint(selectedAddress) && (
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-caramel/40 bg-caramel/[0.08] px-3 py-2.5">
+                      <p className="flex items-start gap-1.5 text-xs leading-relaxed text-charcoal-900">
+                        <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel" aria-hidden />
+                        Alamat ini belum punya titik lokasi, jadi ongkir belum bisa dihitung.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => openPopup('form', selectedAddress, false)}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
+                      >
+                        <LocateFixed className="h-3.5 w-3.5" aria-hidden />
+                        Tandai Titik Lokasi
+                      </button>
+                    </div>
                   )}
 
                   <button
