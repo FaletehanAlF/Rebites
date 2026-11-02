@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import DetailPage from "@/app/components/detail-product/detail-page";
+import DetailPage, {
+  type DetailProductShell,
+} from "@/app/components/detail-product/detail-page";
 import type {
   ProductDetail,
   RelatedProduct,
@@ -11,7 +13,17 @@ import type {
 import { fetchProductDetail, fetchRelatedProducts } from "./detail-data";
 import { getProductReviews } from "@/lib/review-storage";
 
-export function DetailProductContent() {
+/**
+ * Fetches one product (plus its reviews and related products) and renders it
+ * inside the shell the calling route provides. The shell is the only thing
+ * that differs between the application route (`/detail/product`) and the
+ * public showcase route (`/preview/product`).
+ */
+export function DetailProductContent({
+  shell,
+}: {
+  shell: DetailProductShell;
+}) {
   const searchParams = useSearchParams();
   const productId = searchParams.get("id") ?? searchParams.get("slug");
 
@@ -89,6 +101,7 @@ export function DetailProductContent() {
       product={product}
       reviews={reviews}
       relatedProducts={relatedProducts}
+      shell={shell}
     />
   );
 }

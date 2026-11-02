@@ -22,10 +22,14 @@ const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 /**
- * Sticky landing navbar. Deliberately always light (the hero, like most of the
- * page, sits on a white surface) so it never needs to flip contrast depending
- * on the section behind it — the previous navbar probed `[data-nav]` on every
- * scroll frame to solve exactly that.
+ * Public navigation bar for the ReBites showcase: the landing page and the
+ * public product preview (`/preview/product`), which renders it above the
+ * product content.
+ *
+ * Deliberately always light (the hero, like most of the page, sits on a white
+ * surface) so it never needs to flip contrast depending on the section behind
+ * it — the previous navbar probed `[data-nav]` on every scroll frame to solve
+ * exactly that.
  */
 export function LandingNavbar() {
   const [open, setOpen] = useState(false);
@@ -89,8 +93,15 @@ export function LandingNavbar() {
     event: React.MouseEvent<HTMLAnchorElement>,
     id: string,
   ) => {
-    event.preventDefault();
     setOpen(false);
+
+    // On the landing page the section exists, so scroll in place (Lenis-aware).
+    // On the other public page that renders this navbar — `/preview/product` —
+    // it does not: skipping preventDefault lets the Link navigate to `/#id`,
+    // which scrolls to the section after the route change.
+    if (!document.getElementById(id)) return;
+
+    event.preventDefault();
     setActive(id);
     scrollToSection(id);
   };

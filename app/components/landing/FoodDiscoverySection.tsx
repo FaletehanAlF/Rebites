@@ -145,7 +145,7 @@ export function FoodDiscoverySection() {
                   return (
                     <li key={item.id}>
                       <Link
-                        href={`/detail/product?id=${encodeURIComponent(item.id)}`}
+                        href={`/preview/product?id=${encodeURIComponent(item.id)}`}
                         className={`group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white transition-all duration-300 hover:border-primary/40 hover:shadow-[0_24px_48px_-34px_rgba(27,77,50,0.7)] ${FOCUS_RING}`}
                       >
                         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">

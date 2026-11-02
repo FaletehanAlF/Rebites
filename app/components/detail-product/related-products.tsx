@@ -7,7 +7,17 @@ import type { RelatedProduct } from "@/app/components/detail-product/data";
 import { formatIDR } from "@/app/components/detail-product/data";
 import { StaggerGroup, StaggerItem } from "./anim";
 
-export function RelatedProducts({ products }: { products: RelatedProduct[] }) {
+export function RelatedProducts({
+  products,
+  productPath,
+  seeAllHref,
+}: {
+  products: RelatedProduct[];
+  /** Route of the product detail page in the current context. */
+  productPath: string;
+  /** Where "Lihat Semua" leads: the application home or the landing catalog. */
+  seeAllHref: string;
+}) {
   return (
     <section className="pt-20">
       <div className="flex items-end justify-between gap-4">
@@ -21,7 +31,11 @@ export function RelatedProducts({ products }: { products: RelatedProduct[] }) {
           </p>
         </div>
         <Link
+<<<<<<< HEAD
+          href={seeAllHref}
+=======
           href="/home"
+>>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
           className="hidden items-center gap-1.5 font-secondary text-sm font-semibold text-primary transition-colors hover:text-primary sm:inline-flex"
         >
           Lihat Semua
@@ -40,7 +54,7 @@ export function RelatedProducts({ products }: { products: RelatedProduct[] }) {
             className="min-w-[220px] snap-start sm:min-w-[240px] lg:min-w-0"
           >
             <Link
-              href={`/detail/product?id=${encodeURIComponent(product.slug)}`}
+              href={`${productPath}?id=${encodeURIComponent(product.slug)}`}
               className="group block h-full overflow-hidden rounded-2xl border border-border bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_50px_-30px_rgba(47,66,53,0.45)]"
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-muted">

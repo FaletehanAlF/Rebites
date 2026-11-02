@@ -28,7 +28,7 @@ Two-sided product:
 | --- | --- | --- |
 | Framework | Next.js `^14.2.35` (App Router, Turbopack dev) | `app/` routes, `next.config.js` |
 | Language | TypeScript `5.2.2` | strict project (`tsconfig.json`), `npm run typecheck` |
-| UI | React `18.2.0`, Server Components by default, `"use client"` only where needed | e.g. `app/page.tsx` is a Server Component |
+| UI | React `18.2.0`, Server Components by default, `"use client"` only where needed | e.g. `app/(landing)/page.tsx` is a Server Component |
 | Styling | Tailwind CSS `3.3.3` + tokens in `app/globals.css` | `tailwind.config.ts` maps every color to an `hsl(var(--…))` token |
 | Components | shadcn-style UI primitives (`components.json`), Radix UI primitives | `app/components/ui/*` |
 | Animation | framer-motion `^13` (wrapped in `MotionConfig reducedMotion="user"`), Lenis smooth scroll | `app/components/landing/landing-shell.tsx`, `app/components/smooth-scroll.tsx`, `app/components/shared/reveal.tsx` |
@@ -49,22 +49,27 @@ Installed but not obviously used on the landing page: `gsap`, `recharts`
 
 ```
 app/
-  page.tsx                 # landing page (Server Component) + landing sections
-  layout.tsx               # fonts, metadata, lang="id"
-  home/                    # buyer app home
-  makanan/[category]/      # SSG category pages (8 categories)
-  detail/                  # product, pesanan, pesanan/sukses, toko
-  dashboard/penjual/       # seller dashboard (menu, pesanan, ulasan, performa,
+  layout.tsx               # fonts, metadata, lang="id" (no providers)
+  globals.css              # design tokens + utilities
+  (landing)/               # PUBLIC showcase — no account UI allowed (see §5a)
+    page.tsx               # landing page → `/` (Server Component)
+    preview/product/       # public product detail → `/preview/product`
+  (app)/                   # application routes (URLs unchanged by the group)
+    home/                  # buyer app home
+    makanan/[category]/    # SSG category pages (8 categories)
+    detail/                # product, pesanan, pesanan/sukses, toko
+    dashboard/penjual/     # seller dashboard (menu, pesanan, ulasan, performa,
                            #   pengaturan, notifikasi, langganan)
+    riwayatPesanan/ notifikasi/ profile/ toko/ langganan/pembayaran
+                           #   langganan/sukses
   auth/                    # login, register, seller login/register,
                            #   forgotPassword, buat-sandi-baru, callback
-  riwayatPesanan/ notifikasi/ profile/ toko/ langganan/
   api/                     # xendit checkout+verify, orders/[code], profile,
                            #   subscriptions, webhooks/xendit
-  components/
+  components/              # shared components (not routes)
     landing/               # landing sections (see §5)
+    detail-product/        # shell-injected product detail (see §5a)
     dashboard-penjual/ home/ shared/ ui/
-  globals.css              # design tokens + utilities
 hooks/                     # data hooks (orders, products, reviews, …)
 lib/                       # categories, catalog, data, types, supabase, pricing,
                            #   subscription plans, store settings/hours, xendit
@@ -72,6 +77,24 @@ supabase/migrations/       # SQL schema + RLS
 public/                    # images (makanan*.jpg, *.avif, …)
 ```
 
+<<<<<<< HEAD
+Route groups `(landing)` / `(app)` do **not** affect URLs. There is
+deliberately no `(app)/layout.tsx` and no `(landing)/layout.tsx`: app chrome
+(MobileNavbar/ProfileNavbar) is rendered per page today, so layouts would be
+dead structure.
+
+## 4. Routes (from `npm run build`, 48 pages)
+
+Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
+`/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`,
+`/langganan/pembayaran`, **`/preview/product`** (public product detail).
+SSG (●): `/makanan/[category]` (8 paths).
+Dynamic (ƒ): `/langganan/sukses`, `/api/checkout/xendit(+verify)`,
+`/api/orders/[code]`, `/api/profile(+addresses|avatar)`,
+`/api/subscriptions/xendit(+verify)`, `/api/webhooks/xendit`.
+Note: bare `/langganan` has never existed (404 by design — only
+`pembayaran`/`sukses` do).
+=======
 ## 4. Routes (from `npm run build`)
 
 Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
@@ -98,10 +121,11 @@ Admin UX conventions (unittest-checked in `tests/`): localStorage-backed
 preferences (`lib/admin-preferences.ts`, `ADMIN_LOCAL_STORAGE_KEYS`), audit
 trail writes attempt best-effort inserts into `admin_audit_logs`, and shared
 fetch helpers in `lib/` get 401-retry with one refresh.
+>>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
 
 ## 5. Landing page architecture (`/`)
 
-`app/page.tsx` stays a **Server Component**; `LandingShell` (client) wraps
+`app/(landing)/page.tsx` stays a **Server Component**; `LandingShell` (client) wraps
 `MotionConfig` + Lenis + `Preloader`. Section order:
 
 | Component | Section id (navigation contract) | Client? |
@@ -125,6 +149,31 @@ fetch helpers in `lib/` get 401-retry with one refresh.
 
 Live catalog row in `FoodDiscoverySection` lazy-imports `@/lib/catalog` on
 mount and renders nothing when empty (no placeholder products).
+
+## 5a. Landing vs application boundary (important)
+
+The public showcase and the application are separated **architecturally**, not
+with pathname checks:
+
+- **Public side** (`app/(landing)/`): `/` and `/preview/product`. No auth
+  context, no account navbar, no app chrome. Landing product cards
+  (`FoodDiscoverySection`) link to `/preview/product?id=…`.
+- **Application side** (`app/(app)/`): everything else, URLs unchanged.
+  `/detail/product?id=…` is the in-app product detail.
+- **Shell injection**: `DetailProductContent` takes a required `shell` prop
+  (`DetailProductShell` in `app/components/detail-product/detail-page.tsx`:
+  `header`, `productPath`, `seeAllHref`). Each route picks its own chrome —
+  `app/(app)/detail/product/page.tsx` passes MobileNavbar/ProfileNavbar,
+  `app/(landing)/preview/product/page.tsx` passes `LandingNavbar`.
+  `detail-page.tsx` therefore imports **no** navbar components, which is what
+  keeps supabase/account code out of the public route's bundle.
+- **Rule**: never infer chrome from the pathname and never re-add
+  `hideNavbar()`-style conditionals; pass the shell from the route.
+- Intentional cross-links that remain: landing category tiles →
+  `/makanan/[category]` and labeled landing-footer links into app routes
+  (plain links, not chrome; no auth state involved). Checkout
+  (`/detail/pesanan`) redirects unauthenticated users to
+  `/auth/login?redirect=…` only after an explicit "Pesan Sekarang" click.
 
 ## 6. Design system
 
@@ -216,6 +265,16 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   fabricated testimonials), `landing/partner-marquee.tsx`,
   `landing/catalog-sections.tsx`, `components/hero-food-carousel.tsx`,
   `components/flash-sale-grid.tsx`, and `RevealWords` in `shared/reveal.tsx`.
+<<<<<<< HEAD
+- No automated tests; visual verification is manual (browser at 320/375/768/
+  1024/1440/1920 — no horizontal overflow observed on `/`).
+- Stale `/homePage` links: fixed inside `detail-product/` (breadcrumb,
+  related-products); one remains in
+  `app/(app)/makanan/[category]/not-found.tsx` (`/homePage` → should be
+  `/home`) — pre-existing, out of scope for the separation refactor.
+- `npm run typecheck` reads generated `.next/types`; after moving routes, run
+  `npm run build` first or stale types cause false TS2307 errors.
+=======
 - 20 automated `node --test` suites exist (`tests/*`, wired as npm
   `test:<name>` scripts) covering checkout pricing/idempotency/failure,
   Xendit fail-closed paths, admin RBAC and UI regressions, stock release and
@@ -228,16 +287,22 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   fail spuriously — restore the file to LF (`git cat-file blob
   :0:lib/admin-preferences.ts` → workdir) or add a `.gitattributes`
   `text=auto eol=lf` rule for `tests/` fixtures later.
+>>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
 
 ## 11. Conventions for future work
 
 - Keep pages as Server Components; add `"use client"` only for genuine
   interactivity.
+<<<<<<< HEAD
+- Respect the landing/app boundary (§5a): public pages under `app/(landing)/`
+  must never render account UI; route-supplied shells, not pathname checks.
+=======
 - Buyer pages that require a session wrap the whole view in
   `<RequireAuth>` (see `notifikasi/pembeli/page.tsx`): the guard lives OUTSIDE
   the shell so navbar/title/skeleton are hidden before redirect.
 - Home navigation links point to `/home` — never `/homePage` (the
   `/homePage` path does not exist; it was a transient develop bug).
+>>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
 - Reuse the design tokens; do not introduce new fonts, palettes or gradients.
 - Preserve landing section ids and navbar/footer anchor behavior.
 - Do not fabricate stats, testimonials, partners or logos anywhere in the UI.
