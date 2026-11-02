@@ -89,11 +89,14 @@ export default function DeliveryMap({
    * dipakai, dan label UI menjelaskan bahwa itu ilustrasi.
    */
   courierPosition = null,
+  /** true = pesanan sudah selesai; kendaraan ditempatkan di tujuan. */
+  completed = false,
 }: {
   plan: MapPlan;
   className?: string;
   animateRoute?: boolean;
   courierPosition?: { latitude: number; longitude: number } | null;
+  completed?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   // `unknown` dipakai agar tipe MapLibre tidak bocor ke props pemanggil yang
@@ -345,13 +348,17 @@ export default function DeliveryMap({
           '<path d="M12 11 10.5 7.5h3"></path>' +
           '</svg></div>';
 
+        const startPoint: [number, number] = (completed && plan.destination)
+          ? [plan.destination.longitude, plan.destination.latitude]
+          : route[0] as [number, number];
+
         const marker = new maplibregl.Marker({
           element: vehicleEl,
           // Titik jangkar di tengah lingkaran, bukan di ujungnya.
           anchor: 'center',
           rotationAlignment: 'map',
         })
-          .setLngLat(route[0])
+          .setLngLat(startPoint)
           .addTo(map as never);
 
         vehicleRef.current = marker as unknown as {
@@ -359,14 +366,17 @@ export default function DeliveryMap({
           getElement: () => HTMLElement;
         };
       } else {
-        vehicleRef.current.setLngLat(route[0]);
+        const targetPoint: [number, number] = (completed && plan.destination)
+          ? [plan.destination.longitude, plan.destination.latitude]
+          : route[0] as [number, number];
+        vehicleRef.current.setLngLat(targetPoint);
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [route, routeSource, status]);
+  }, [route, routeSource, status, completed, plan]);
 
   /**
    * Marker kendaraan mengikuti POSISI KURIR NYATA bila tersedia.
@@ -383,6 +393,14 @@ export default function DeliveryMap({
     const map = mapRef.current;
     const vehicle = vehicleRef.current;
     if (!map || !vehicle || status !== 'ready' || !route || route.length < 2) return;
+
+    if (completed) {
+      if (plan.destination) {
+        vehicle.setLngLat([plan.destination.longitude, plan.destination.latitude]);
+      }
+      return;
+    }
+
     if (!courierPosition) return;
 
     const projection = projectOntoRoute(route, courierPosition);
@@ -394,7 +412,7 @@ export default function DeliveryMap({
     if (inner instanceof HTMLElement) {
       inner.style.transform = `rotate(${heading}deg)`;
     }
-  }, [courierPosition, route, status]);
+  }, [courierPosition, route, status, completed, plan]);
 
   /**
    * Animasi kendaraan dipisah dari efek inisialisasi peta.
@@ -417,6 +435,7 @@ export default function DeliveryMap({
     // Posisi kurir nyata menang: animasi ilustratif harus mati supaya
     // marker tidak bergerak bolak-balik mengabaikan posisi GPS.
     if (
+      completed ||
       !animateRoute ||
       courierPosition != null ||
       status !== 'ready' ||
@@ -466,7 +485,7 @@ export default function DeliveryMap({
         frameRef.current = null;
       }
     };
-  }, [animateRoute, courierPosition, status, route]);
+  }, [animateRoute, courierPosition, status, route, completed]);
 
   if (plan.availability !== 'ready' || lat == null || lng == null) {
     return (
@@ -540,7 +559,7 @@ export default function DeliveryMap({
             className="inline-block h-2 w-2 rounded-full"
             style={{ backgroundColor: ROUTE_COLOR }}
           />
-          {courierPosition ? 'Posisi kurir (live)' : 'Motor ilustratif'}
+          {completed ? 'Motor di tujuan (selesai)' : courierPosition ? 'Posisi kurir (live)' : 'Motor ilustratif'}
         </p>
       )}
 

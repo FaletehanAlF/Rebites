@@ -320,7 +320,15 @@ test('halaman Aktivitas: lima filter muat satu baris, tanggal tetap berdampingan
   // Pencarian dipatok lebarnya di layar besar. Dengan basis 18rem + flex-grow
   // (perilaku lama) total lima kontrol melebihi baris sehingga dua filter
   // tanggal terdorong ke bawah — persis yang dikeluhkan.
-  assert.match(view, /lg:w-52 lg:flex-none/);
+  //
+  // `lg:shrink` (bukan `lg:flex-none`): pencarian adalah satu-satunya kontrol
+  // yang boleh menyusut saat sidebar admin terbuka memakan 264px. Dengan
+  // `flex-none`, kelebihan lebar dialihkan ke pasangan tanggal sehingga ia
+  // pindah baris. `min-w` menjaga kotak pencarian tetap bisa diketik.
+  assert.match(view, /lg:w-52/);
+  assert.match(view, /lg:shrink/);
+  assert.match(view, /lg:min-w-\[7rem\]/);
+  assert.doesNotMatch(view, /lg:flex-none/);
   assert.match(view, /AdminDateRange/);
   // Dua input tanggal terpisah adalah pola yang menyebabkan pemisahan baris.
   assert.doesNotMatch(view, /<AdminDateInput[\s\S]{0,200}<AdminDateInput/);

@@ -7,6 +7,19 @@ import { fetchWithAuth } from '@/lib/auth-token';
 import { cn } from '@/lib/utils';
 
 /**
+ * Penomoran langganan kanal.
+ *
+ * `supabase.channel(topic)` mengembalikan kanal yang topiknya sama bila masih
+ * terdaftar, dan `.on()` pada kanal yang sudah `subscribe()` melempar
+ * "cannot add `postgres_changes` callbacks ... after `subscribe()`". Chat ini
+ * dipasang di halaman detail pesanan yang juga memasang hook posisi kurir;
+ * topik berbasis order id saja membuat pemasangan kedua (dan pemasangan ulang
+ * StrictMode sebelum `removeChannel` selesai) bertabrakan. Nomor unik per
+ * langganan memisahkannya.
+ */
+let channelCounter = 0;
+
+/**
  * Percakapan pembeli <-> kurir untuk satu pesanan.
  *
  * YANG BOLEH BERBICARA
@@ -77,8 +90,9 @@ export function CourierChat({
     setLoading(true);
     void refresh();
 
+    channelCounter += 1;
     const channel = supabase
-      .channel(`rebites-courier-messages-${orderDbId}`)
+      .channel(`rebites-courier-messages-${orderDbId}-${channelCounter}`)
       .on(
         'postgres_changes',
         {

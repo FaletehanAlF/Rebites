@@ -296,6 +296,36 @@ test('realtime memakai postgres_changes, bukan broadcast publik', () => {
   );
 });
 
+test('kanal posisi unik per langganan, bukan satu topik per pesanan', () => {
+  // `supabase.channel(topic)` mengembalikan kanal yang topiknya sama bila
+  // masih terdaftar. Halaman detail pesanan memasang hook ini DUA kali
+  // (halaman + DeliveryStatusPanel), dan StrictMode menjalankan effect dua
+  // kali sebelum removeChannel async selesai. Dengan topik tetap, `.on()`
+  // kedua berjalan pada kanal yang sudah subscribe dan melempar
+  // "cannot add postgres_changes callbacks ... after subscribe()" sehingga
+  // halaman Pesanan jatuh dengan Unhandled Runtime Error.
+  assert.ok(LOCATION_HOOK.includes('channelcounter'), 'topik harus diberi penomoran');
+  assert.ok(
+    LOCATION_HOOK.includes('rebites-courier-location-${orderdbid}-${channelcounter}'),
+    'topik kanal harus memuat nomor langganan yang unik'
+  );
+  assert.ok(
+    !LOCATION_HOOK.includes('rebites-courier-location-${orderdbid}`'),
+    'topik tanpa nomor langganan akan bertabrakan antar pemasangan hook'
+  );
+
+  // Chat kurir dipasang di halaman detail pesanan yang sama, jadi kanalnya
+  // menghadapi tabrakan topik yang persis sama.
+  assert.ok(
+    CHAT.includes('rebites-courier-messages-${orderdbid}-${channelcounter}'),
+    'kanal chat harus memakai topik unik per langganan'
+  );
+  assert.ok(
+    !CHAT.includes('rebites-courier-messages-${orderdbid}`'),
+    'kanal chat dengan topik tetap akan melempar error setelah subscribe'
+  );
+});
+
 test('pintu masuk dashboard kurir ada di sidebar', () => {
   assert.ok(SIDEBAR.includes('/dashboard/kurir'), 'sidebar harus punya tautan dashboard kurir');
   assert.ok(SIDEBAR.includes('useiscourier'), 'sidebar harus memeriksa status kurir');

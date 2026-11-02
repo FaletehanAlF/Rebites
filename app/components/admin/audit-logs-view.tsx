@@ -208,7 +208,7 @@ export function AuditLogsView() {
           label="Cari log audit"
           placeholder="Cari admin, tindakan, target, alasan…"
           labelVisible
-          className="sm:max-w-sm lg:w-56 lg:flex-none"
+          className="sm:max-w-sm lg:w-56 lg:min-w-[7rem] lg:shrink"
         />
         <AdminSelect
           value={actionFilter}

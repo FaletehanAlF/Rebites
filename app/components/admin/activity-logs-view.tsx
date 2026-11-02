@@ -273,7 +273,11 @@ export function ActivityLogsView() {
           // Lebar pencarian dipatok lebih kecil di layar besar. Sebelumnya ia
           // memakai basis 18rem + flex-grow sehingga total lebar lima kontrol
           // melebihi baris dan dua filter tanggal terdorong ke bawah.
-          className="sm:max-w-sm lg:w-52 lg:flex-none"
+          //
+          // `lg:shrink` + `lg:min-w-[7rem]`: bila sidebar admin sedang terbuka
+          // dan ruang tinggal sedikit, yang mengalah adalah kotak pencarian —
+          // bukan pasangan tanggal yang lalu pindah baris.
+          className="sm:max-w-sm lg:w-52 lg:min-w-[7rem] lg:shrink"
         />
         <AdminSelect
           value={activityType}

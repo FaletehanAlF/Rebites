@@ -120,7 +120,11 @@ function OrderDetailContent() {
    * langganan Realtime-nya sendiri, jadi tidak ada biaya langganan untuk
    * pesanan yang tidak diantar.
    */
-  const isDelivering = orderStatus === 'out_for_delivery';
+  const isDone = order
+    ? order.status === 'completed' || order.orderStatus === 'completed'
+    : false;
+
+  const isDelivering = !isDone && orderStatus === 'out_for_delivery';
   const { location: courierLocation, freshness: courierFreshness } = useCourierLocation(
     order?.dbId,
     isDelivering
@@ -176,9 +180,6 @@ function OrderDetailContent() {
   };
 
   const subStatus = order ? getOrderSubStatus(order) : 'diproses';
-  const isDone = order
-    ? order.status === 'completed' || order.orderStatus === 'completed'
-    : false;
 
   const metrics = useMemo(() => {
     if (!order) return null;
@@ -453,6 +454,7 @@ function OrderDetailContent() {
                 </h2>
                 <DeliveryMap
                   plan={mapPlan}
+                  completed={isDone}
                   // Animasi kendaraan hanya saat pengantaran benar-benar
                   // berjalan. Pada fase lain marker tetap di titik awal,
                   // sehingga peta tidak pernah berpura-pura ada pergerakan.

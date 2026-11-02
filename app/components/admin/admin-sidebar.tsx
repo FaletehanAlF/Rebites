@@ -537,7 +537,7 @@ export function AdminSidebar({
           type="button"
           onClick={onToggleCollapsed}
           aria-expanded={!collapsed}
-          aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+          aria-label={collapsed ? 'Perbesar navigasi' : 'Perkecilkan navigasi'}
           aria-controls="admin-sidebar-desktop"
           className={cn(
             'mt-1 hidden w-full items-center rounded-[var(--radius)] text-xs font-semibold text-sage-500 transition-colors hover:bg-sage-100/60 hover:text-charcoal-900',
@@ -551,7 +551,7 @@ export function AdminSidebar({
             <ChevronLeft aria-hidden className="h-4 w-4 shrink-0" />
           )}
           <span className={cn('truncate', compact && 'sr-only')}>
-            {collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+            {collapsed ? 'Perbesar navigasi' : 'Perkecilkan navigasi'}
           </span>
         </button>
       </div>
