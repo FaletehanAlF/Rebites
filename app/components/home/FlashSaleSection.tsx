@@ -230,7 +230,7 @@ function UrgentCard({
           <Heart
             className={cn(
               "h-4 w-4",
-              liked && isActive && "fill-sale text-sale",
+              liked && isActive && "text-sale",
             )}
           />
         </button>

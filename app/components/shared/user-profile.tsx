@@ -37,7 +37,6 @@ import { useAddresses } from "@/hooks/use-addresses";
 import { useRebitesCoins } from "@/hooks/use-rebites-coins";
 import { useFollowedStores } from "@/hooks/use-followed-stores";
 import { useLikedFoods } from "@/hooks/use-liked-foods";
-import { useCatalog } from "@/lib/catalog";
 import { formatOrderDateTime } from "@/lib/order-utils";
 import { formatRupiah } from "@/lib/data";
 import type { StoredOrder } from "@/lib/types";
@@ -784,131 +783,10 @@ function FollowedStoresSection() {
   );
 }
 
-function LikedFoodsSection() {
-  const { foods, hydrated } = useLikedFoods();
-  const { foodItems } = useCatalog();
-  // catalog id bisa slug atau uuid -> index semua kunci agar foto tidak hilang (bug slug vs uuid)
-  const catalogMap = new Map<string, any>();
-  for (const f of (foodItems || []) as any[]) {
-    if (f.id) catalogMap.set(String(f.id), f);
-    if (f.slug) catalogMap.set(String(f.slug), f);
-    if (f.rawId) catalogMap.set(String(f.rawId), f);
-  }
-
-  return (
-    <motion.section
-      id="sukai-makanan"
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.12 }}
-      className="relative scroll-mt-28 rounded-3xl border border-border/70 bg-white p-6 shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-semibold text-primary">
-            Makanan Disukai
-          </h3>
-          <p className="mt-0.5 font-secondary text-xs text-muted-foreground">
-            Makanan yang kamu sukai lewat tombol ❤️ di card produk.
-          </p>
-        </div>
-        <span className="shrink-0 rounded-full bg-muted px-3 py-1 font-secondary text-xs font-semibold text-muted-foreground">
-          {hydrated ? foods.length : "…"} makanan
-        </span>
-      </div>
-
-      {!hydrated ? (
-        <div className="mt-4 grid gap-2 sm:grid-cols-1">
-          {[0, 1, 2].map((i) => (
-            <div key={i} aria-hidden className="h-16 rounded-xl bg-muted" />
-          ))}
-        </div>
-      ) : foods.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-secondary/70 px-4 py-6 text-center">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <Heart className="h-4 w-4" />
-          </span>
-          <div>
-            <p className="text-xs font-bold text-foreground">
-              Belum ada makanan disukai
-            </p>
-            <p className="mt-1 max-w-sm text-[10px] leading-relaxed text-muted-foreground">
-              Tekan ikon ❤️ pada card produk di Beranda, Flash Sale, atau
-              halaman detail untuk menambah ke sini.
-            </p>
-          </div>
-          <Link
-            href="/home"
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white"
-          >
-            Jelajahi Makanan
-            <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-      ) : (
-        <ul className="mt-4 grid gap-2 sm:grid-cols-1">
-          {foods.map((fav) => {
-            const detail: any =
-              catalogMap.get(fav.productId) || catalogMap.get(fav.id) || null;
-            const name = fav.name || detail?.name || "Makanan";
-            const image = fav.image || detail?.image || null;
-            const vendor = detail?.vendorName || "";
-            const price = detail
-              ? (detail.discountedPrice ?? detail.originalPrice)
-              : fav.price;
-            const href = detail
-              ? `/detail/product?id=${detail.id}`
-              : fav.productId
-                ? `/detail/product?id=${fav.productId}`
-                : "/home";
-            return (
-              <li key={fav.id || fav.productId}>
-                <Link
-                  href={href}
-                  className="group flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-white p-2 transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted ring-1 ring-border">
-                    {image ? (
-                      <SmartImage src={image} alt={name} sizes="40px" />
-                    ) : (
-                      <span className="font-display text-lg font-semibold text-primary">
-                        {(name || "?").charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-secondary text-xs font-medium text-foreground">
-                      {name}
-                    </span>
-                    {vendor && (
-                      <span className="mt-0.5 block truncate font-secondary text-[10px] text-muted-foreground">
-                        {vendor}
-                      </span>
-                    )}
-                    {price != null && (
-                      <span className="mt-1 block font-secondary text-[9px] font-medium text-primary">
-                        Rp{Number(price).toLocaleString("id-ID")}
-                      </span>
-                    )}
-                  </span>
-                  <Heart className="h-3 w-3 shrink-0 fill-sale text-sale" />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </motion.section>
-  );
-}
-
 export function UserProfile() {
   const { userId } = useCurrentUser();
   const router = useRouter();
   const [orders, setOrders] = useState<StoredOrder[] | null>(null);
-  const [isSukaiMakananDialogOpen, setIsSukaiMakananDialogOpen] =
-    useState(false);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -977,7 +855,7 @@ export function UserProfile() {
     const syncHash = () => {
       const hash = window.location.hash.replace(/^#/, "");
       if (hash === "sukai-makanan") {
-        setIsSukaiMakananDialogOpen(true);
+        router.push("/sukai");
       } else if (hash === "toko-diikuti") {
         // Daftar toko yang diikuti kini punya halaman khusus: deep-link
         // hash lama dialihkan ke sana tanpa duplikasi dialog.
@@ -1142,9 +1020,8 @@ export function UserProfile() {
                 </span>
               </Link>
 
-              <button
-                type="button"
-                onClick={() => setIsSukaiMakananDialogOpen(true)}
+              <Link
+                href="/sukai"
                 className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sale shadow-sm ring-1 ring-zinc-100 group-hover:bg-sale group-hover:text-white">
@@ -1159,7 +1036,7 @@ export function UserProfile() {
                 <span className="mt-1 inline-flex items-center gap-1 font-secondary text-xs font-semibold text-primary">
                   Lihat <ArrowRight className="h-3 w-3" />
                 </span>
-              </button>
+              </Link>
 
               <div
                 id="rebites-coin"
@@ -1289,32 +1166,6 @@ export function UserProfile() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-
-            <Dialog
-            open={isSukaiMakananDialogOpen}
-            onOpenChange={setIsSukaiMakananDialogOpen}
-          >
-            <DialogContent className="bg-white p-6 sm:p-7">
-              <DialogHeader>
-                <DialogTitle className="font-display text-lg font-semibold text-primary">
-                  Makanan Disukai
-                </DialogTitle>
-                <DialogDescription className="font-secondary text-sm text-muted-foreground">
-                  Makanan yang kamu sukai lewat tombol ❤️ di card produk.
-                </DialogDescription>
-              </DialogHeader>
-              <LikedFoodsSection />
-              <DialogFooter>
-                <button
-                  type="button"
-                  onClick={() => setIsSukaiMakananDialogOpen(false)}
-                  className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-zinc-50"
-                >
-                  Tutup
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
 
           {}
           <motion.section
