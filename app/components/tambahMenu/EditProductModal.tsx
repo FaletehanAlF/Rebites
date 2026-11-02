@@ -15,6 +15,7 @@ import {
   scheduleEndToIso,
   scheduleStartToIso,
   toScheduleDateInput,
+  todayScheduleDateInput,
 } from '@/lib/menu-schedule';
 import { NumberField } from './NumberField';
 import { ShippingInfoSection } from './ShippingInfoSection';
@@ -481,7 +482,7 @@ export function EditProductModal({
                         name="edit-schedule"
                         checked={!!scheduledStart}
                         onChange={() => {
-                          setScheduledStart(new Date().toISOString().slice(0, 10));
+                          setScheduledStart(todayScheduleDateInput());
                           setScheduledEnd(null);
                           setIsSurplusToday(false);
                         }}

@@ -24,6 +24,7 @@ import {
   isScheduleRangeValid,
   scheduleEndToIso,
   scheduleStartToIso,
+  todayScheduleDateInput,
 } from '@/lib/menu-schedule';
 
 const inputCls =
@@ -475,7 +476,7 @@ export function AddMenuForm() {
                         name="schedule-mode"
                         checked={!!form.scheduledStart}
                         onChange={() => {
-                          set('scheduledStart', new Date().toISOString().slice(0, 10));
+                          set('scheduledStart', todayScheduleDateInput());
                           set('scheduledEnd', null);
                           set('isSurplusToday', false);
                         }}

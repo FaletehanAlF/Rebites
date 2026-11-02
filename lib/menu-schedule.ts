@@ -117,6 +117,16 @@ export function toScheduleDateInput(value: string | null | undefined): string {
   return year && month && day ? `${year}-${month}-${day}` : '';
 }
 
+/**
+ * Tanggal hari ini pada zona WIB, untuk nilai awal `<input type="date">`.
+ * Jangan memakai `new Date().toISOString().slice(0, 10)`: antara pukul 00:00
+ * dan 06:59 WIB tanggal UTC masih kemarin, sehingga menu baru terjadwal mundur
+ * sehari.
+ */
+export function todayScheduleDateInput(now: number = Date.now()): string {
+  return toScheduleDateInput(new Date(now).toISOString());
+}
+
 /** Label tanggal ramah baca, mis. "2 November 2026". */
 export function formatScheduleDate(value: string | null | undefined): string {
   const input = toScheduleDateInput(value);

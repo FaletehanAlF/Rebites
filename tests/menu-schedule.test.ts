@@ -21,6 +21,7 @@ import {
   scheduleEndToIso,
   scheduleStartToIso,
   toScheduleDateInput,
+  todayScheduleDateInput,
 } from '../lib/menu-schedule.ts';
 
 // 2 November 2026 12:00 WIB = 05:00 UTC.
@@ -72,6 +73,14 @@ test('tanggal selesai inklusif sampai 23:59 WIB', () => {
     'ended',
     'setelah 00:00 WIB hari berikutnya sudah berakhir'
   );
+});
+
+test('tanggal awal form memakai hari WIB, bukan tanggal UTC', () => {
+  // 2 Nov 2026 00:30 WIB = 1 Nov 2026 17:30 UTC. `toISOString().slice(0,10)`
+  // akan memberi "2026-11-01" (kemarin) dan menjadwalkan menu mundur.
+  assert.equal(todayScheduleDateInput(Date.UTC(2026, 10, 1, 17, 30, 0)), '2026-11-02');
+  // 2 Nov 2026 23:30 WIB = 2 Nov 2026 16:30 UTC, tanggalnya tetap sama.
+  assert.equal(todayScheduleDateInput(Date.UTC(2026, 10, 2, 16, 30, 0)), '2026-11-02');
 });
 
 test('ISO dari database dikembalikan ke tanggal WIB, bukan UTC', () => {
