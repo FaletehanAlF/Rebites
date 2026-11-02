@@ -770,6 +770,9 @@ function FlashSalePanel({
               <CalendarDays className="h-3 w-3 shrink-0" aria-hidden />
               {formatFlashScheduleLabel(cfg.startIso)}
             </span>
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-extrabold text-primary">
+              {resolveFlashSaleStatus(product) === 'active' ? 'Aktif' : 'Akan Datang'}
+            </span>
           </div>
 
           <div className="mt-1.5 flex items-center gap-1.5">

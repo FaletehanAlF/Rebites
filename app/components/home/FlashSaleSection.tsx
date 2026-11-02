@@ -203,15 +203,10 @@ function UrgentCard({
         />
 
         {!isActive && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 bg-foreground/30">
-            <span className="rounded-full bg-white px-4 py-1.5 font-sans text-xs font-bold uppercase tracking-[0.14em] text-foreground shadow">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-t from-foreground/50 via-foreground/20 to-foreground/10">
+            <span className="rounded-full bg-white/95 px-4 py-1.5 font-sans text-[11px] font-extrabold uppercase tracking-[0.18em] text-foreground shadow-lg shadow-black/10">
               Akan Datang
             </span>
-            {item.startsAt && (
-              <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground shadow">
-                {formatFlashScheduleLabel(item.startsAt)}
-              </span>
-            )}
           </div>
         )}
 
@@ -274,10 +269,10 @@ function UrgentCard({
           ) : (
             <div className="mt-2.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-destructive">
+                <span className="font-extrabold text-red-600 drop-shadow-sm">
                   Sisa {stockCount}
                 </span>
-                <span className="text-destructive">Buru!</span>
+                <span className="font-extrabold text-red-600 drop-shadow-sm">Buru!</span>
               </div>
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 {/* Lebar statis dari data stok: cukup dirender, tidak dianimasikan. */}
@@ -290,7 +285,7 @@ function UrgentCard({
           ))}
 
         {!isActive && item.startsAt && (
-          <div className="mt-2 mb-2 rounded-lg bg-secondary px-2.5 py-1 text-[10px] font-bold text-charcoal-900 shadow-sm">
+          <div className="mt-1.5 rounded-md bg-secondary/80 px-2 py-0.5 text-[10px] font-extrabold text-foreground shadow-sm">
             {formatFlashScheduleLabel(item.startsAt)}
           </div>
         )}
