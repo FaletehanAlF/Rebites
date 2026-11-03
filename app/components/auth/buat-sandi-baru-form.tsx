@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,6 +15,35 @@ import {
 } from "lucide-react";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+function checkPasswordStrength(password: string) {
+  const requirements = [
+    { label: "Minimal 8 karakter", test: (p: string) => p.length >= 8 },
+    { label: "Minimal 1 huruf kapital (A-Z)", test: (p: string) => /[A-Z]/.test(p) },
+    { label: "Minimal 1 huruf kecil (a-z)", test: (p: string) => /[a-z]/.test(p) },
+    { label: "Minimal 1 angka (0-9)", test: (p: string) => /\d/.test(p) },
+    { label: "Minimal 1 karakter spesial (!@#$%^&*)", test: (p: string) => /[!@#$%^&*]/.test(p) },
+  ];
+  const fulfilled = requirements.map((r) => r.test(password));
+  const count = fulfilled.filter(Boolean).length;
+  let strength: "low" | "medium" | "strong" | "very-strong" = "low";
+  if (count >= 5) strength = "very-strong";
+  else if (count === 4) strength = "strong";
+  else if (count >= 3) strength = "medium";
+  return { fulfilled, requirements, strength, count };
+}
+
+const PASSWORD_STRENGTH_META = {
+  low: { label: "Rendah", text: "text-red-600", bar: "bg-red-500", width: "w-1/4" },
+  medium: { label: "Sedang", text: "text-amber-600", bar: "bg-amber-500", width: "w-1/2" },
+  strong: { label: "Kuat", text: "text-emerald-600", bar: "bg-emerald-500", width: "w-3/4" },
+  "very-strong": {
+    label: "Sangat Kuat",
+    text: "text-emerald-700",
+    bar: "bg-emerald-600",
+    width: "w-full",
+  },
+} as const;
 
 const containerVariants: Variants = {
   hidden: {},
@@ -52,7 +81,7 @@ function FieldBox({
       >
         {label}
       </label>
-      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
         <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]" />
         {children}
         {trailing}
@@ -71,6 +100,9 @@ export default function BuatSandiBaruForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const strengthMeta =
+    PASSWORD_STRENGTH_META[checkPasswordStrength(password).strength];
 
   useEffect(() => {
     let cancelled = false;
@@ -129,18 +161,33 @@ export default function BuatSandiBaruForm() {
 
   if (checkingSession) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <p className="font-sans text-[13px] text-muted-foreground">
-          Memverifikasi tautan reset…
-        </p>
+      <div className="flex h-full flex-col items-center justify-center gap-4 py-10 text-center">
+        <div className="relative flex h-14 w-14 items-center justify-center">
+          <span className="absolute inset-0 rounded-full border-4 border-primary/15" />
+          <span className="h-14 w-14 animate-spin rounded-full border-4 border-transparent border-t-primary motion-reduce:animate-none" />
+          <Image
+            src="/logo.avif"
+            alt="ReBites"
+            width={28}
+            height={28}
+            className="absolute h-7 w-7 rounded-full object-cover shadow-sm ring-1 ring-primary/20"
+          />
+        </div>
+        <div className="space-y-1">
+          <p className="font-display text-[15px] font-semibold text-[#0A1E18]">
+            Memverifikasi tautan reset
+          </p>
+          <p className="font-sans text-[13px] text-muted-foreground">
+            Mohon tunggu sebentar…
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex h-full min-h-0 flex-col overflow-hidden">
-      <motion.div variants={itemVariants} className="mb-3 flex-shrink-0">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex min-h-0 flex-col">
+      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
         <Link
           href="/auth/login"
           className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-[hsl(var(--primary))]"
@@ -152,7 +199,7 @@ export default function BuatSandiBaruForm() {
 
       <motion.div
         variants={itemVariants}
-        className="mb-5 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
+        className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
       >
         <Image
           src="/logo.avif"
@@ -175,11 +222,11 @@ export default function BuatSandiBaruForm() {
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2, ease: EASE }}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-white"
           >
             <CheckCircle2 className="h-6 w-6" />
           </motion.span>
-          <h1 className="mt-4 font-display text-[22px] font-bold tracking-[-0.02em] text-foreground">
+          <h1 className="mt-4 font-display text-[24px] font-bold tracking-[-0.02em] text-foreground">
             Kata Sandi Diperbarui
           </h1>
           <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground">
@@ -198,15 +245,13 @@ export default function BuatSandiBaruForm() {
         <>
           <motion.h1
             variants={itemVariants}
-            className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-foreground flex-shrink-0"
+            className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-foreground flex-shrink-0"
           >
-            Buat Kata
-            <br />
-            Sandi Baru
+            Buat Kata Sandi Baru
           </motion.h1>
           <motion.p
             variants={itemVariants}
-            className="mt-1.5 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
+            className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
           >
             Tautanmu terverifikasi. Tentukan kata sandi baru untuk akun
             ReBites-mu.
@@ -214,11 +259,11 @@ export default function BuatSandiBaruForm() {
 
           <motion.form
             variants={itemVariants}
-            className="mt-6 flex flex-1 flex-col gap-4 overflow-hidden min-h-0"
+            className="mt-5 flex flex-col gap-4"
             onSubmit={handleSubmit}
             noValidate
           >
-            <div className="grid gap-4 overflow-y-auto overscroll-contain pr-1.5 -mr-1.5 pb-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent min-h-0">
+            <div className="grid gap-4">
               <FieldBox
                 id="new-password"
                 label="Kata Sandi Baru"
@@ -245,6 +290,35 @@ export default function BuatSandiBaruForm() {
                   className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </FieldBox>
+
+              <AnimatePresence initial={false}>
+                {password.length > 0 && (
+                  <motion.div
+                    key="password-strength"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.28, ease: EASE }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between pb-1.5">
+                      <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        Kekuatan Kata Sandi
+                      </span>
+                      <span
+                        className={`font-sans text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors duration-300 ${strengthMeta.text}`}
+                      >
+                        {strengthMeta.label}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-border/70">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ease-out ${strengthMeta.bar} ${strengthMeta.width}`}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <FieldBox
                 id="confirm-new-password"
@@ -274,7 +348,7 @@ export default function BuatSandiBaruForm() {
               </FieldBox>
 
               {error && (
-                <p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive">
+                <p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
                   {error}
                 </p>
               )}
@@ -283,7 +357,7 @@ export default function BuatSandiBaruForm() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-auto flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0"
             >
               {loading ? "Menyimpan..." : "Simpan Kata Sandi Baru"}
               <ArrowRight className="h-4 w-4" />

@@ -10,7 +10,7 @@ import {
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, type Variants } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,12 +31,10 @@ import {
   DialogTitle,
 } from "@/app/components/ui/dialog";
 import {
-  CurrentUserRoleError,
-  fetchCurrentUserRole,
-  getHomePathForRole,
-  isSafeRedirectPath,
-  type UserRole,
-} from "@/lib/current-user";
+  getExplicitNextPath,
+  getOAuthCallbackUrl,
+  mapOAuthError,
+} from "@/lib/auth-oauth";
 import {
   EMAIL_COOLDOWN_SECONDS,
   EMAIL_DELIVERY_ERROR_MESSAGE,
@@ -76,6 +74,35 @@ const itemVariants: Variants = {
 const MIN_OTP_DIGITS = 6;
 const MAX_OTP_DIGITS = 10;
 
+function checkPasswordStrength(password: string) {
+  const requirements = [
+    { label: "Minimal 8 karakter", test: (p: string) => p.length >= 8 },
+    { label: "Minimal 1 huruf kapital (A-Z)", test: (p: string) => /[A-Z]/.test(p) },
+    { label: "Minimal 1 huruf kecil (a-z)", test: (p: string) => /[a-z]/.test(p) },
+    { label: "Minimal 1 angka (0-9)", test: (p: string) => /\d/.test(p) },
+    { label: "Minimal 1 karakter spesial (!@#$%^&*)", test: (p: string) => /[!@#$%^&*]/.test(p) },
+  ];
+  const fulfilled = requirements.map((r) => r.test(password));
+  const count = fulfilled.filter(Boolean).length;
+  let strength: "low" | "medium" | "strong" | "very-strong" = "low";
+  if (count >= 5) strength = "very-strong";
+  else if (count === 4) strength = "strong";
+  else if (count >= 3) strength = "medium";
+  return { fulfilled, requirements, strength, count };
+}
+
+const PASSWORD_STRENGTH_META = {
+  low: { label: "Rendah", text: "text-red-600", bar: "bg-red-500", width: "w-1/4" },
+  medium: { label: "Sedang", text: "text-amber-600", bar: "bg-amber-500", width: "w-1/2" },
+  strong: { label: "Kuat", text: "text-emerald-600", bar: "bg-emerald-500", width: "w-3/4" },
+  "very-strong": {
+    label: "Sangat Kuat",
+    text: "text-emerald-700",
+    bar: "bg-emerald-600",
+    width: "w-full",
+  },
+} as const;
+
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   id: string;
   label: string;
@@ -106,7 +133,7 @@ function Field({
         </label>
         {hint}
       </div>
-      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/15">
+      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/15">
         <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-primary" />
         <input
           id={id}
@@ -168,6 +195,9 @@ export default function AuthForm({
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Redirect OAuth berlangsung penuh di browser (halaman ditinggalkan menuju
+  // Google), jadi state ini hanya menahan klik ganda selama request dibuat.
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [confirmEmailOpen, setConfirmEmailOpen] = useState(false);
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -252,63 +282,66 @@ export default function AuthForm({
    */
   async function finishAuth(authUserId: string | null) {
     const params = new URLSearchParams(window.location.search);
-    const planParam = params.get("plan");
-    const billingParam = params.get("billing");
-    const penjualRegisterTarget =
-      planParam === "basic" || planParam === "standar" || planParam === "premium"
-        ? `/auth/register/penjual?plan=${planParam}&billing=${
-            billingParam === "yearly" ? "yearly" : "monthly"
-          }`
-        : null;
-    const rawRedirect = params.get("redirect");
-    const safeRedirect = isSafeRedirectPath(rawRedirect)
-      ? rawRedirect
-      : null;
-    // Jangan fallback ke pembeli bila role gagal dibaca. Jika query/sesi
-    // gagal, fetchCurrentUserRole melempar CurrentUserRoleError; tangani
-    // secara eksplisit dan hentikan redirect.
-    let role: UserRole | null = null;
-    try {
-      role = await fetchCurrentUserRole(authUserId);
-    } catch (roleErr) {
-      if (roleErr instanceof CurrentUserRoleError) {
-        setError(roleErr.message);
-      } else {
-        setError("Gagal membaca peran akun. Silakan coba lagi.");
-      }
+    const lastUid =
+      authUserId ??
+      (window as Window & { __lastSignInUserId?: string }).__lastSignInUserId ??
+      null;
+
+    // Satu jalur untuk login email, OTP, dan callback OAuth: baca role dari
+    // profiles, catat activity log, lalu hitung tujuan akhir.
+    const { completeAuthSession } = await import("@/lib/auth-post-login");
+    const result = await completeAuthSession(lastUid, {
+      redirectParam: params.get("redirect"),
+      plan: params.get("plan"),
+      billing: params.get("billing"),
+      // Pada signup (akun baru) baris profil belum dijamin ada; pada login
+      // role kosong tetap menjadi error jelas, bukan diam-diam pembeli.
+      allowMissingProfile: isSignup,
+      fallback: redirectTo,
+    });
+
+    if (!result.ok) {
+      setError(result.message);
       return;
     }
 
-    // Akun yang benar-benar ter-autentikasi tetapi tanpa role profil:
-    // pada signin jangan dianggap pembeli. Pada signup (akun baru) belum
-    // dijamin ada baris profil, gunakan target default.
-    if (!isSignup && role === null) {
-      setError(
-        "Peran akun tidak ditemukan. Hubungi administrator ReBites."
-      );
-      return;
-    }
+    window.location.href = result.destination;
+  }
 
+  /**
+   * Mulai login/daftar dengan Google. Hanya memakai Supabase OAuth yang sudah
+   * ada (tanpa dependency baru). Setelah izin diberikan, Supabase mengarahkan
+   * kembali ke `/auth/callback?oauth=google` yang menangani penukaran sesi,
+   * pembacaan role, dan activity log.
+   */
+  async function handleGoogleAuth() {
+    if (oauthLoading || loading) return;
+    setError("");
+    setOauthLoading(true);
     try {
       const { supabase } = await import("@/lib/supabase");
-      const lastUid =
-        authUserId ??
-        (window as Window & { __lastSignInUserId?: string }).__lastSignInUserId;
-      if (lastUid) {
-        await supabase.from("activity_logs").insert({
-          user_id: lastUid,
-          activity_type: "login",
-          description: "Masuk ke ReBites.",
-          metadata: { role: role ?? null },
-        });
+      const nextPath =
+        typeof window !== "undefined"
+          ? getExplicitNextPath(window.location.search)
+          : null;
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: getOAuthCallbackUrl(nextPath),
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      // Sukses: browser sudah dialihkan ke Google, biarkan tombol terkunci.
+      if (oauthError) {
+        setError(mapOAuthError(oauthError.message));
+        setOauthLoading(false);
       }
-    } catch {
-      // Logging aktivitas bersifat non-blokir agar login tetap berjalan.
+    } catch (err) {
+      setError(
+        mapOAuthError(err instanceof Error ? err.message : "")
+      );
+      setOauthLoading(false);
     }
-    const roleHome =
-      role ? getHomePathForRole(role) : redirectTo;
-    window.location.href =
-      safeRedirect || penjualRegisterTarget || roleHome || redirectTo;
   }
 
   /**
@@ -399,8 +432,24 @@ export default function AuthForm({
       setError("Email dan kata sandi wajib diisi.");
       return;
     }
-    if (isSignup && password.length < 6) {
-      setError("Kata sandi minimal 6 karakter.");
+    if (isSignup && password.length < 8) {
+      setError("Kata sandi minimal 8 karakter.");
+      return;
+    }
+    if (isSignup && !/[A-Z]/.test(password)) {
+      setError("Kata sandi harus memiliki minimal 1 huruf kapital.");
+      return;
+    }
+    if (isSignup && !/[a-z]/.test(password)) {
+      setError("Kata sandi harus memiliki minimal 1 huruf kecil.");
+      return;
+    }
+    if (isSignup && !/\d/.test(password)) {
+      setError("Kata sandi harus memiliki minimal 1 angka.");
+      return;
+    }
+    if (isSignup && !/[!@#$%^&*]/.test(password)) {
+      setError("Kata sandi harus memiliki minimal 1 karakter spesial (!@#$%^&*).");
       return;
     }      setLoading(true);
     try {
@@ -508,9 +557,12 @@ export default function AuthForm({
     }
   }
 
+  const strengthMeta =
+    PASSWORD_STRENGTH_META[checkPasswordStrength(password).strength];
+
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex h-full min-h-0 flex-col overflow-hidden">
-      <motion.div variants={itemVariants} className="mb-3 flex-shrink-0">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex min-h-0 flex-col">
+      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
         <Link
           href="/"
           className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-primary"
@@ -522,7 +574,7 @@ export default function AuthForm({
 
       <motion.div
         variants={itemVariants}
-        className="mb-5 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
+        className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
       >
         <Image
           src="/logo.avif"
@@ -538,24 +590,74 @@ export default function AuthForm({
 
       <motion.h1
         variants={itemVariants}
-        className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-primary flex-shrink-0"
+        className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-primary flex-shrink-0"
       >
         {title}
       </motion.h1>
       <motion.p
         variants={itemVariants}
-        className="mt-1.5 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
+        className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
       >
         {subtitle}
       </motion.p>
 
+      <motion.div
+        variants={itemVariants}
+        className="mt-5 flex flex-col gap-4 flex-shrink-0"
+      >
+        <button
+          type="button"
+          onClick={handleGoogleAuth}
+          disabled={oauthLoading || loading}
+          aria-busy={oauthLoading}
+          className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-border bg-white px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-primary shadow-sm transition-colors duration-200 hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {oauthLoading ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          ) : (
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              viewBox="0 0 48 48"
+              className="h-[18px] w-[18px] shrink-0"
+            >
+              <path
+                fill="#EA4335"
+                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+              />
+              <path
+                fill="#4285F4"
+                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+              />
+              <path
+                fill="#34A853"
+                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+              />
+            </svg>
+          )}
+          Lanjutkan dengan Google
+        </button>
+
+        <div className="flex items-center gap-3" aria-hidden="true">
+          <span className="h-px flex-1 bg-border" />
+          <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            atau
+          </span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+      </motion.div>
+
       <motion.form
         variants={itemVariants}
-        className="mt-4 flex flex-1 flex-col gap-4 overflow-hidden min-h-0"
+        className="mt-5 flex flex-col gap-4"
         onSubmit={handleSubmit}
         noValidate
       >
-        <div className="grid gap-4 overflow-y-auto overscroll-contain pr-1.5 -mr-1.5 pb-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent min-h-0">
+        <div className="grid gap-4">
         {isSignup && (
           <Field
             id="fullName"
@@ -594,6 +696,35 @@ export default function AuthForm({
           onChange={(e) => setPassword(e.target.value)}
         />
 
+        <AnimatePresence initial={false}>
+          {isSignup && password.length > 0 && (
+            <motion.div
+              key="password-strength"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.28, ease: EASE }}
+              className="overflow-hidden"
+            >
+              <div className="flex items-center justify-between pb-1.5">
+                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Kekuatan Kata Sandi
+                </span>
+                <span
+                  className={`font-sans text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors duration-300 ${strengthMeta.text}`}
+                >
+                  {strengthMeta.label}
+                </span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-border/70">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ease-out ${strengthMeta.bar} ${strengthMeta.width}`}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {!isSignup && (
           <>
             <div className="flex items-center justify-between -mt-1">
@@ -617,7 +748,7 @@ export default function AuthForm({
         )}
 
         {error && (
-          <p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive">
+          <p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
             {error}
           </p>
         )}
@@ -658,7 +789,7 @@ export default function AuthForm({
         <button
           type="submit"
           disabled={loading || confirmEmailOpen}
-          className="mt-auto flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0"
         >
           {loading ? (isSignup ? "Mendaftar" : "Masuk") : submitLabel}
           <ArrowRight className="h-4 w-4" />
@@ -667,7 +798,7 @@ export default function AuthForm({
 
       <motion.p
         variants={itemVariants}
-        className="mt-5 text-center font-sans text-[13px] text-muted-foreground flex-shrink-0"
+        className="mt-6 text-center font-sans text-[13px] text-muted-foreground flex-shrink-0"
       >
         {bottomHint.text}{" "}
         <Link

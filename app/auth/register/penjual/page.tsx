@@ -1,28 +1,26 @@
 import type { Metadata } from "next";
-import AuthCenteredShell from "@/app/components/auth/auth-centered-shell";
+import AuthSplitShell from "@/app/components/auth/auth-split-shell";
 import PenjualRegisterForm from "@/app/components/auth/penjual-register-form";
 
 export const metadata: Metadata = {
-  title: "Daftar Penjual - ReBites",
+  title: "Daftar Penjual — ReBites",
   description:
-    "Buat akun penjual untuk bergabung dengan marketplace kuliner surplus ReBites.",
+    "Daftar sebagai penjual ReBites untuk bergabung dengan marketplace kuliner surplus.",
 };
 
 export default function RegisterPenjualPage() {
   return (
-    <AuthCenteredShell
-      imageSrc="/penjual-login.avif"
-      variant="seller"
-      title={
-        <>
-          Rasa enak,
-          <br />
-          dampak baik.
-        </>
-      }
-      description="Bergabunglah dengan marketplace kami yang menghubungkan pencinta kuliner dengan makanan surplus berkualitas. Kurangi limbah makanan dengan indah."
+    <AuthSplitShell
+      imageSrc="/hero-makanan.avif"
+      imageAlt="ReBites — Makanan surplus"
+      variant="buyer"
+      overlayText={{
+        headline: "Daftar sebagai Penjual",
+        description:
+          "Buat akun penjual dan mulai berjualan makanan surplus di ReBites.",
+      }}
     >
       <PenjualRegisterForm />
-    </AuthCenteredShell>
+    </AuthSplitShell>
   );
 }

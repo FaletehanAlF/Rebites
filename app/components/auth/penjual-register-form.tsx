@@ -148,7 +148,7 @@ function FieldBox({
       >
         {label}
       </label>
-      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
         <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]" />
         {children}
         {trailing}
@@ -510,15 +510,15 @@ export default function PenjualRegisterForm() {
 
   if (!sessionReady) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center py-16">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex h-full flex-col">
-      <motion.div variants={itemVariants} className="mb-3 flex-shrink-0">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex min-h-0 flex-col">
+      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
         <Link
           href="/home"
           className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-[hsl(var(--primary))]"
@@ -530,7 +530,7 @@ export default function PenjualRegisterForm() {
 
       <motion.div
         variants={itemVariants}
-        className="mb-5 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
+        className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
       >
         <Image
           src="/logo.avif"
@@ -580,13 +580,13 @@ export default function PenjualRegisterForm() {
 
       <motion.h1
         variants={itemVariants}
-        className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-foreground flex-shrink-0"
+        className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-foreground flex-shrink-0"
       >
         {step === 1 ? "Buat Akun Penjual" : step === 2 ? "Data Usaha" : "Pilih Paket Langganan"}
       </motion.h1>
       <motion.p
         variants={itemVariants}
-        className="mt-1.5 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
+        className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
       >
         {step === 1
           ? "Verifikasi akun Anda untuk melanjutkan. Email & nama sudah sesuai sesi login."
@@ -595,7 +595,7 @@ export default function PenjualRegisterForm() {
             : "Pilih paket untuk memulai berjualan, Basic 24.999/bulan wajib bayar via Xendit."}
       </motion.p>
 
-      <div className="mt-4 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1.5 -mr-1.5 pb-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
+      <div className="mt-5 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1.5 -mr-1.5 pb-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
         <AnimatePresence mode="wait" custom={direction}>
           {step === 1 && (
             <motion.div
@@ -723,7 +723,7 @@ export default function PenjualRegisterForm() {
                   {error && (
                     <p
                       role="alert"
-                      className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive"
+                      className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive"
                     >
                       {error}
                     </p>
@@ -751,7 +751,7 @@ export default function PenjualRegisterForm() {
             >
               <Form {...step2Form}>
                 <form
-                  className="grid grid-cols-1 gap-3"
+                  className="grid grid-cols-1 gap-4"
                   onSubmit={(e) => {
                     e.preventDefault();
                     step2Form.handleSubmit(onSubmit)();
@@ -802,7 +802,7 @@ export default function PenjualRegisterForm() {
                                 Bisa lebih dari satu
                               </span>
                             </div>
-                            <div className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+                            <div className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
                               <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55" />
                               <Popover>
                                 <PopoverTrigger asChild>
@@ -869,7 +869,7 @@ export default function PenjualRegisterForm() {
                           <label className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                             Kecamatan (Depok)
                           </label>
-                          <div className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-1.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+                          <div className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
                             <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55" />
                             <Select
                               onValueChange={field.onChange}
@@ -932,7 +932,7 @@ export default function PenjualRegisterForm() {
                               Opsional
                             </span>
                           </div>
-                          <div className="group flex items-start gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+                          <div className="group flex items-start gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
                             <Store className="mt-2 h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]" />
                             <Textarea
                               id="description"
@@ -996,7 +996,7 @@ export default function PenjualRegisterForm() {
                   {error && (
                     <p
                       role="alert"
-                      className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive"
+                      className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive"
                     >
                       {error}
                     </p>
@@ -1062,7 +1062,7 @@ export default function PenjualRegisterForm() {
               </div>
 
               {}
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-4">
                 {SUBSCRIPTION_PLANS.map((plan) => {
                   const isSelected = selectedPlan===plan.slug;
                   const price = getPlanPrice(plan as any, billing);
