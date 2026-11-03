@@ -1,28 +1,26 @@
 import type { Metadata } from "next";
-import AuthCenteredShell from "@/app/components/auth/auth-centered-shell";
+import AuthSplitShell from "@/app/components/auth/auth-split-shell";
 import BuatSandiBaruForm from "@/app/components/auth/buat-sandi-baru-form";
 
 export const metadata: Metadata = {
-  title: "Buat Kata Sandi Baru - ReBites",
+  title: "Buat Kata Sandi Baru — ReBites",
   description:
     "Tentukan kata sandi baru untuk akun ReBites Anda dan lanjutkan misi menyelamatkan makanan surplus.",
 };
 
 export default function BuatSandiBaruPage() {
   return (
-    <AuthCenteredShell
+    <AuthSplitShell
       imageSrc="/hero-makanan.avif"
+      imageAlt="Makanan surplus ReBites"
       variant="buyer"
-      title={
-        <>
-          Buat Kata
-          <br />
-          Sandi Baru
-        </>
-      }
-      description="Tautan reset kamu sudah terverifikasi. Buat kata sandi baru agar akun ReBites-mu kembali aman dan siap dipakai."
+      overlayText={{
+        headline: "Buat Kata Sandi Baru",
+        description:
+          "Tautanmu terverifikasi. Tentukan kata sandi baru untuk akun ReBites-mu.",
+      }}
     >
       <BuatSandiBaruForm />
-    </AuthCenteredShell>
+    </AuthSplitShell>
   );
 }
