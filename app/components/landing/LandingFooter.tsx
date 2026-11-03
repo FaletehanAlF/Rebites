@@ -214,7 +214,27 @@ export function LandingFooter() {
             Bhakti.
           </p>
 
-          <BackToTop />
+          <div className="flex items-center gap-5">
+            {/* Halaman publik ini juga menjadi tautan Privacy Policy dan Terms
+                of Service yang disyaratkan Google untuk aplikasi OAuth pada
+                status produksi; keduanya harus dapat dibuka tanpa login. */}
+            <nav aria-label="Legal" className="flex items-center gap-5">
+              <Link
+                href="/privacy"
+                className="inline-flex min-h-[28px] items-center text-xs text-white/55 transition-colors duration-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+              >
+                Kebijakan Privasi
+              </Link>
+              <Link
+                href="/terms"
+                className="inline-flex min-h-[28px] items-center text-xs text-white/55 transition-colors duration-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+              >
+                Syarat Penggunaan
+              </Link>
+            </nav>
+
+            <BackToTop />
+          </div>
         </div>
       </div>
     </footer>
