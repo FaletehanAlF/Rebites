@@ -1,10 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Send, TriangleAlert } from 'lucide-react';
+import { Send, TriangleAlert, Info, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { fetchWithAuth } from '@/lib/auth-token';
 import { cn } from '@/lib/utils';
+import {
+  courierSenderLabel,
+  normalizeCourierSenderKind,
+} from '@/lib/courier-sender-kind';
 
 /**
  * Penomoran langganan kanal.
@@ -40,8 +44,8 @@ let channelCounter = 0;
 export interface CourierMessage {
   id: string;
   senderUserId: string | null;
-  /** `demo_courier` = balasan otomatis simulasi, BUKAN orang sungguhan. */
-  senderKind?: 'user' | 'demo_courier';
+  /** `demo_courier` = Kurir Demo; `ai_courier` = Kurir AI (Gemini); keduanya balasan otomatis. */
+  senderKind?: 'user' | 'demo_courier' | 'ai_courier';
   body: string;
   createdAt: string | null;
   isMine: boolean;
@@ -63,6 +67,7 @@ export function CourierChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [aiNotice, setAiNotice] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   const refresh = useCallback(async () => {
@@ -76,7 +81,12 @@ export function CourierChat({
         return;
       }
       const json = (await res.json()) as { messages?: CourierMessage[] };
-      setMessages(json.messages ?? []);
+      setMessages(
+        (json.messages ?? []).map((message) => ({
+          ...message,
+          senderKind: normalizeCourierSenderKind(message.senderKind),
+        }))
+      );
       setError(null);
     } catch {
       setError('Gagal memuat pesan.');
@@ -138,6 +148,17 @@ export function CourierChat({
         setError(json?.error ?? 'Gagal mengirim pesan.');
         return;
       }
+      const okJson = (await res
+        .json()
+        .catch(() => null)) as { aiReply?: { status?: string; message?: string } } | null;
+      if (okJson?.aiReply?.status === 'failed') {
+        setAiNotice(
+          okJson.aiReply.message ??
+            'Pesanmu terkirim, tapi Kurir AI belum bisa menjawab. Coba lagi sebentar.'
+        );
+      } else {
+        setAiNotice(null);
+      }
       setDraft('');
       setError(null);
       await refresh();
@@ -178,7 +199,13 @@ export function CourierChat({
           </p>
         ) : (
           messages.map((message) => {
-            const isDemo = message.senderKind === 'demo_courier';
+            const kind = normalizeCourierSenderKind(message.senderKind);
+            const automatedBubble =
+              kind === 'ai_courier'
+                ? 'bg-cream-100 text-charcoal-900 ring-1 ring-dashed ring-primary/50'
+                : kind === 'demo_courier'
+                  ? 'bg-cream-100 text-charcoal-900 ring-1 ring-dashed ring-sage-500/40'
+                  : 'bg-cream-100 text-charcoal-900';
             return (
               <div
                 key={message.id}
@@ -186,17 +213,13 @@ export function CourierChat({
               >
                 {!message.isMine && (
                   <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-sage-500">
-                    {isDemo ? 'Kurir Demo' : 'Kurir'}
+                    {courierSenderLabel(kind)}
                   </p>
                 )}
                 <div
                   className={cn(
                     'max-w-[80%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed',
-                    message.isMine
-                      ? 'bg-primary text-white'
-                      : isDemo
-                        ? 'bg-cream-100 text-charcoal-900 ring-1 ring-dashed ring-sage-500/40'
-                        : 'bg-cream-100 text-charcoal-900'
+                    message.isMine ? 'bg-primary text-white' : automatedBubble
                   )}
                 >
                   {message.body}
@@ -225,6 +248,33 @@ export function CourierChat({
           <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" aria-hidden />
           <p className="text-[11px] leading-relaxed text-charcoal-600">{error}</p>
         </div>
+      )}
+
+      {aiNotice && (
+        <div
+          role="status"
+          className="flex items-start gap-2 border-t border-hairline bg-cream-50 px-4 py-2"
+        >
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-charcoal-500" aria-hidden />
+          <p className="flex-1 text-[11px] leading-relaxed text-charcoal-600">{aiNotice}</p>
+          <button
+            type="button"
+            onClick={() => setAiNotice(null)}
+            aria-label="Tutup pemberitahuan"
+            className="text-charcoal-500 transition-colors hover:text-charcoal-900"
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
+      )}
+
+      {sending && (
+        <p
+          role="status"
+          className="border-t border-hairline bg-cream-50 px-4 py-1.5 text-[11px] text-charcoal-500"
+        >
+          Mengirim… bila pesanan ini demo, Kurir AI sedang menjawab.
+        </p>
       )}
 
       {canSend ? (

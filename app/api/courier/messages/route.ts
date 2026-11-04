@@ -7,6 +7,8 @@ import {
   upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 import { buildDemoCourierReply } from '@/lib/demo-courier';
+import { generateDemoCourierAiReply } from '@/lib/server/courier-ai';
+import { normalizeCourierSenderKind } from '@/lib/courier-sender-kind';
 
 export const runtime = 'nodejs';
 
@@ -87,8 +89,9 @@ export async function GET(req: NextRequest) {
         senderUserId: row.sender_user_id ? String(row.sender_user_id) : null,
         // `demo_courier` = balasan otomatis simulasi. UI WAJIB melabelinya,
         // supaya pembeli tidak mengira sedang mengobrol dengan orang.
-        senderKind:
-          usedDemoColumns && row.sender_kind === 'demo_courier' ? 'demo_courier' : 'user',
+        senderKind: usedDemoColumns
+          ? normalizeCourierSenderKind(row.sender_kind)
+          : 'user',
         body: String(row.body ?? ''),
         createdAt: row.created_at ? String(row.created_at) : null,
         isMine: row.sender_user_id === user.id,
@@ -186,15 +189,20 @@ export async function POST(req: NextRequest) {
     }
 
     /**
-     * Balasan kurir DEMO.
+     * Balasan OTOMATIS HANYA untuk pesanan DEMO (`delivery_assignments.is_demo`).
      *
-     * Hanya berlaku bila pesanan ini memakai kurir demo — pesanan dengan
-     * kurir sungguhan tidak pernah dibalas otomatis. Balasan ditandai
-     * `sender_kind = 'demo_courier'`, jadi UI bisa melabelinya.
+     * Urutan:
+     * 1. Bila `GEMINI_API_KEY` diisi, pakai Gemini (Kurir AI) — baris
+     *    disimpan dengan `sender_kind = 'ai_courier'`.
+     * 2. Bila Gemini tidak dikonfigurasi, pakai balasan Kurir Demo
+     *    deterministik seperti sebelumnya (`sender_kind = 'demo_courier'`).
+     * 3. Bila Gemini gagal / kena rate limit, jangan gagalkan pengiriman
+     *    pesan pembeli; respons membawa `aiReply.status = 'failed'` beserta
+     *    pesan ramah yang aman (tanpa detail internal).
      *
-     * Kegagalan balasan TIDAK menggagalkan pengiriman pesan pembeli: pesan
-     * yang sudah terkirim tetap terkirim.
+     * Pesanan kurir sungguhan tidak pernah dibalas otomatis di jalur ini.
      */
+    let aiReply: { status: string; message?: string } | undefined;
     if (isBuyer) {
       try {
         const service = createServiceClient();
@@ -211,20 +219,48 @@ export async function POST(req: NextRequest) {
             .eq('id', orderId)
             .maybeSingle();
 
-          const reply = buildDemoCourierReply({
+          const orderCode = String(orderRow?.order_code ?? '');
+          const orderStatus = String(orderRow?.order_status ?? 'processing');
+
+          const outcome = await generateDemoCourierAiReply({
+            userId: user.id,
+            orderCode,
+            orderStatus,
             message,
-            stage: String(orderRow?.order_status ?? 'processing'),
-            orderCode: String(orderRow?.order_code ?? ''),
           });
-          await service.from('courier_messages').insert({
-            order_id: orderId,
-            sender_user_id: null,
-            sender_kind: 'demo_courier',
-            body: reply,
-          });
+
+          if (outcome.ok) {
+            await service.from('courier_messages').insert({
+              order_id: orderId,
+              sender_user_id: null,
+              sender_kind: 'ai_courier',
+              body: outcome.reply,
+            });
+            aiReply = { status: 'sent' };
+          } else if (outcome.reason === 'not_configured') {
+            const reply = buildDemoCourierReply({
+              message,
+              stage: orderStatus,
+              orderCode,
+            });
+            await service.from('courier_messages').insert({
+              order_id: orderId,
+              sender_user_id: null,
+              sender_kind: 'demo_courier',
+              body: reply,
+            });
+            aiReply = { status: 'fallback' };
+          } else {
+            aiReply = { status: 'failed', message: outcome.message };
+          }
         }
       } catch (replyErr) {
-        console.error('[courier/messages] gagal membalas sebagai kurir demo:', replyErr);
+        const safe = replyErr instanceof Error ? replyErr.message : String(replyErr);
+        console.error('[courier/messages] gagal membalas sebagai Kurir AI:', safe);
+        aiReply = {
+          status: 'failed',
+          message: 'Kurir AI sedang tidak dapat menjawab. Coba lagi sebentar.',
+        };
       }
     }
 
@@ -238,6 +274,8 @@ export async function POST(req: NextRequest) {
         createdAt: row?.created_at ? String(row.created_at) : new Date().toISOString(),
         isMine: true,
       },
+      /** Status upaya balasan AI (hanya untuk pesanan demo + pengirim pembeli). */
+      aiReply,
     });
   } catch (err) {
     if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
