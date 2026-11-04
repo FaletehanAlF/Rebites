@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 
 const STORAGE_KEY = 'rebits:landing-seen';
 
+// Curved ease-out (melengkung) untuk transisi slide ke atas.
+const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+
 type Phase = 'loading' | 'leaving' | 'done';
 
 export function Preloader({ onDone }: { onDone?: () => void }) {
@@ -63,7 +66,7 @@ export function Preloader({ onDone }: { onDone?: () => void }) {
       className="fixed inset-0 z-[200] flex items-center justify-center bg-primary"
       initial={false}
       animate={phase === 'leaving' ? { y: '-100%' } : { y: 0 }}
-      transition={{ duration: 0.9, ease: 'easeInOut' }}
+      transition={{ duration: 0.9, ease: easeOutCubic }}
       onAnimationComplete={handleAnimationComplete}
     >
       <div className="flex flex-col items-center gap-8">
