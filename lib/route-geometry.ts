@@ -110,6 +110,23 @@ export function pointAtProgress(coords: RouteCoordinate[], t: number): RouteCoor
 }
 
 /**
+ * Progres perjalanan ilustratif pada waktu `elapsedMs` (0..1).
+ *
+ * Satu arah dan MONOTON: nilainya hanya bertambah sampai 1, lalu tetap 1.
+ * Kendaraan pengantaran tidak boleh pernah bergerak MUNDUR — pola
+ * pulang-pergi (0→1→0) membuat motor terlihat berbalik arah di tengah
+ * jalan, dan pengguna membacanya sebagai kurir yang membatalkan perjalanan.
+ *
+ * Masukan yang tidak masuk akal (durasi <= 0, NaN) menghasilkan 0, bukan
+ * NaN: hasil fungsi ini langsung dipakai sebagai posisi di peta.
+ */
+export function tripProgressAt(elapsedMs: number, durationMs: number): number {
+  if (!Number.isFinite(durationMs) || durationMs <= 0) return 0;
+  if (!Number.isFinite(elapsedMs) || elapsedMs <= 0) return 0;
+  return Math.min(1, elapsedMs / durationMs);
+}
+
+/**
  * Arah hadap (derajat, 0 = utara) pada progres `t`, untuk memutar ikon
  * kendaraan. Memakai dua titik berdekatan agar arahnya stabil walau jalannya
  * berkelok.

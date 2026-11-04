@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Recycle, Store, Tag } from "lucide-react";
+import { ArrowRight, Store, Tag, Truck } from "lucide-react";
 import { Button } from "@/app/components/shared/Button";
 import { SmartImage } from "@/app/components/shared/SmartImage";
 import { scrollToId } from "@/lib/scroll";
@@ -138,9 +138,15 @@ export function Hero() {
               </div>
             </div>
 
+            {/*
+              Kalimat ini menyebut LANGKAH BERIKUTNYA, bukan angka. Sebelumnya
+              tertulis "1000+ porsi makanan berhasil diselamatkan" — angka yang
+              tidak bisa ditelusuri dari data mana pun, sementara halaman lain
+              di proyek ini sengaja menolak klaim angka tanpa sumber.
+            */}
             <p className="flex items-center gap-2 font-secondary text-[11px] text-white/75 sm:text-xs">
-              <Recycle className="h-4 w-4 text-white/80" aria-hidden />
-              1000+ porsi makanan berhasil diselamatkan
+              <Truck className="h-4 w-4 text-white/80" aria-hidden />
+              Setelah dipesan, status pengantaran bisa kamu ikuti sampai tiba
             </p>
           </div>
         </div>

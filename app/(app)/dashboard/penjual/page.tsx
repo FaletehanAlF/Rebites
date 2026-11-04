@@ -95,7 +95,9 @@ export default function VendorDashboardPage() {
                 </Reveal>
 
                 <Reveal delay={0.1}>
-                  <DetailedReportCard period={period} />
+                  {/* Rentang laporan dipilih di dalam kartu (termasuk 'Semua'),
+                      terpisah dari rentang grafik di kartu statistik. */}
+                  <DetailedReportCard />
                 </Reveal>
 
                 <Reveal delay={0.15}>

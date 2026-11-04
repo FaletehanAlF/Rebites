@@ -72,38 +72,29 @@ function ProductLimitMeter({ products }: { products: SellerProduct[] }) {
   const count = products.length;
   const max = plan.maxProducts;
   const isUnlimited = max === null;
-  const percent = isUnlimited ? 0 : Math.min(100, (count / max) * 100);
-  const isFull = !isUnlimited && count >= max;
+  const percent = isUnlimited ? 100 : Math.min(100, (count / max) * 100);
 
+  // Satu garis tipis, bukan kotak abu di dalam kartu: kuota adalah keterangan
+  // tambahan, bukan bagian yang bisa diklik, jadi tidak perlu bingkainya
+  // sendiri.
   return (
-    <div className="mt-5 rounded-2xl bg-secondary p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-semibold text-foreground">
-          Kuota produk{' '}
-          <span className="text-muted-foreground">· paket {plan.label}</span>
-        </p>
-        <p
-          className={cn(
-            'text-xs font-bold',
-            isFull ? 'text-primary' : 'text-primary'
-          )}
-        >
+    <div>
+      <div className="flex items-baseline justify-between gap-2 text-[11px]">
+        <span className="font-semibold text-charcoal-500">
+          Kuota paket {plan.label}
+        </span>
+        <span className="tabular-nums font-bold text-charcoal-900">
           {isUnlimited ? `${count} produk · tanpa batas` : `${count}/${max} produk`}
-        </p>
+        </span>
       </div>
-      {!isUnlimited && (
-        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white">
-          <div
-            className={cn(
-              'h-full rounded-full transition-all duration-500',
-              isFull ? 'bg-primary' : 'bg-primary'
-            )}
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      )}
+      <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out motion-reduce:transition-none"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
       {plan.tier === 'basic' && (
-        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+        <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
           Paket Basic menyimpan maksimal {max} produk dan riwayat penjualan 30 hari.
         </p>
       )}
@@ -476,7 +467,7 @@ function FlashSalePanel({
     : 'Tanggal atau slot Flash Sale tidak valid.';
 
   return (
-    <div className="mt-3 rounded-2xl bg-secondary p-3">
+    <div className="mt-3 border-t border-border/70 pt-3">
       <div className="flex items-center gap-2">
         <Zap
           className={cn(
@@ -755,7 +746,7 @@ function FlashSalePanel({
           </DialogContent>
         </Dialog>
       ) : cfg ? (
-        <div className="mt-2 rounded-xl bg-white p-2.5">
+        <div className="mt-2">
           {/* Ringkasan padat: satu baris harga + slot, sisanya dilipat. */}
           <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
             <span className="flex items-baseline gap-1.5">
@@ -769,9 +760,6 @@ function FlashSalePanel({
             <span className="inline-flex items-center gap-1 text-[10px] font-medium text-sage-500">
               <CalendarDays className="h-3 w-3 shrink-0" aria-hidden />
               {formatFlashScheduleLabel(cfg.startIso)}
-            </span>
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-extrabold text-primary">
-              {resolveFlashSaleStatus(product) === 'active' ? 'Aktif' : 'Akan Datang'}
             </span>
           </div>
 
@@ -997,8 +985,8 @@ function MenuCard({
         </div>
       ) : null}
 
-      {/* Kontrol: stok & jam. Ditumpuk agar tidak saling menghimpit di kartu sempit. */}
-      <div className="mt-3 space-y-2">
+      {/* Kontrol: stok & jam. Dipisah garis, bukan kotak bersarang. */}
+      <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
         <StockEditor product={product} />
         <TimeEditor product={product} />
       </div>
@@ -1055,7 +1043,8 @@ function MenuCard({
   );
 }
 
-function FlashSaleSectionHeader({
+/** Ringkasan Flash Sale: satu baris di dalam kartu daftar menu. */
+function FlashSaleSummaryRow({
   plan,
   quota,
   used,
@@ -1066,61 +1055,33 @@ function FlashSaleSectionHeader({
 }) {
   const isBasic = quota === 0;
 
-  const pillText = isBasic
-    ? 'Paket Basic · Flash Sale tidak tersedia'
+  const statusText = isBasic
+    ? 'Tidak tersedia di paket Basic'
     : quota === Infinity
       ? used > 0
-        ? `Paket Max · Tanpa batas produk · Flash Sale aktif untuk ${used} produk`
-        : 'Paket Max · Tanpa batas produk'
-      : `Paket Standar · ${used}/${quota} produk digunakan`;
+        ? `Aktif untuk ${used} produk`
+        : 'Tanpa batas produk'
+      : `${used}/${quota} produk digunakan`;
 
   return (
-    <Card className="mt-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-            <Zap className="h-4 w-4 text-primary" />
-            Flash Sale
-          </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Pilih menu yang ingin kamu tampilkan dalam Flash Sale.
-          </p>
-        </div>
-
-        <span
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold',
-            isBasic ? 'bg-primary/15 text-foreground' : 'bg-muted text-foreground'
-          )}
-        >
-          {isBasic && <Lock className="h-3 w-3" />}
-          {pillText}
-        </span>
-      </div>
-
+    <div className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-2 border-t border-border/70 pt-3.5">
+      <Zap className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+      <span className="text-xs font-bold text-foreground">Flash Sale</span>
+      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-charcoal-500">
+        {isBasic && <Lock className="h-3 w-3" aria-hidden />}
+        {statusText}
+      </span>
+      <span className="text-[11px] text-muted-foreground">paket {plan.label}</span>
       {isBasic && (
-        <div className="mt-4 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-secondary p-4 sm:flex-row sm:items-center">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <Lock className="h-4 w-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
-              Fitur Premium
-            </p>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-              Upgrade paket untuk menambahkan produk ke Flash Sale.
-            </p>
-          </div>
-          <Link
-            href="/dashboard/penjual/langganan"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
-          >
-            <Crown className="h-3.5 w-3.5" />
-            Lihat Paket
-          </Link>
-        </div>
+        <Link
+          href="/dashboard/penjual/langganan"
+          className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10"
+        >
+          <Crown className="h-3 w-3" aria-hidden />
+          Lihat Paket
+        </Link>
       )}
-    </Card>
+    </div>
   );
 }
 
@@ -1179,10 +1140,17 @@ export default function MenuSayaPage() {
         </h1>
       </motion.div>
 
-      <Card className="mt-6">
+      {/* Satu kartu untuk daftar menu + kuota + status Flash Sale: sebelumnya
+          tiga kotak bertumpuk (kartu daftar, kotak kuota di dalamnya, lalu
+          kartu Flash Sale terpisah) yang memakan hampir setengah layar
+          sebelum menu pertama terlihat. */}
+      <Card className="mt-6 p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm font-bold text-foreground">
-            Daftar menu toko ({products.length})
+            Menu toko
+            <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold tabular-nums text-charcoal-500">
+              {products.length}
+            </span>
           </p>
           {isLimitReached ? (
             plan.upgradeSlug && (
@@ -1205,18 +1173,19 @@ export default function MenuSayaPage() {
           )}
         </div>
 
-        <ProductLimitMeter products={products} />
+        <div className="mt-4">
+          <ProductLimitMeter products={products} />
+        </div>
+
+        <FlashSaleSummaryRow plan={plan} quota={flashQuota} used={flashUsed} />
 
         {isLimitReached && (
-          <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1.5 text-[11px] font-medium text-charcoal-900">
             <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-primary" />
-            Batas produk tercapai ({products.length}/{plan.maxProducts}). Hapus salah satu
-            menu atau upgrade paket untuk menambah lagi.
+            Batas produk tercapai. Hapus salah satu menu atau upgrade paket.
           </p>
         )}
       </Card>
-
-      <FlashSaleSectionHeader plan={plan} quota={flashQuota} used={flashUsed} />
 
       {quotaBlocked && (
         <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">

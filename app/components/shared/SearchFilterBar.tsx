@@ -1,20 +1,18 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Filter, MapPin, Search, SearchX, X } from "lucide-react";
+import { ChevronDown, MapPin, Search, SearchX, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { LOCATIONS, formatRupiah } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { SmartImage } from "@/app/components/shared/SmartImage";
-import type { FilterKey, FoodItem } from "@/lib/types";
+import type { FoodItem } from "@/lib/types";
 
 interface SearchFilterBarProps {
   query: string;
   onQueryChange: (value: string) => void;
   onSearchSubmit: () => void;
-  activeFilter?: FilterKey;
-  onFilterChange?: (key: FilterKey) => void;
   showLocation?: boolean;
   showInlineResults?: boolean;
   onSelectResult?: (id: string) => void;
@@ -30,39 +28,18 @@ const FOCUS_RING =
 const GLASS_FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent";
 
-const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
-  { key: "terdekat", label: "Terdekat" },
-  { key: "diskon-terbesar", label: "Diskon Terbesar" },
-  { key: "segera-habis", label: "Segera Habis" },
-  { key: "umkm", label: "UMKM" },
-  { key: "bakery", label: "Bakery" },
-  { key: "restoran", label: "Restoran" },
-  { key: "minuman", label: "Minuman" },
-];
-
-function applySort(key: FilterKey) {
-  return (a: FoodItem, b: FoodItem) => {
-    switch (key) {
-      case "terdekat":
-        return (
-          (a.distanceKm ?? Number.MAX_SAFE_INTEGER) -
-          (b.distanceKm ?? Number.MAX_SAFE_INTEGER)
-        );
-      case "diskon-terbesar":
-        return b.discountPercent - a.discountPercent;
-      case "segera-habis":
-        return (
-          (a.expiresAt
-            ? new Date(a.expiresAt).getTime()
-            : Number.MAX_SAFE_INTEGER) -
-          (b.expiresAt
-            ? new Date(b.expiresAt).getTime()
-            : Number.MAX_SAFE_INTEGER)
-        );
-      default:
-        return 0;
-    }
-  };
+/**
+ * Urutan saran pencarian: yang paling dekat lebih dulu.
+ *
+ * Jarak null berarti tidak diketahui (kolom `distance_km` kosong) dan
+ * diletakkan paling belakang — bukan dianggap 0, yang akan menaruhnya di
+ * urutan teratas secara keliru.
+ */
+function byNearest(a: FoodItem, b: FoodItem): number {
+  return (
+    (a.distanceKm ?? Number.MAX_SAFE_INTEGER) -
+    (b.distanceKm ?? Number.MAX_SAFE_INTEGER)
+  );
 }
 
 function HighlightedText({ text, query }: { text: string; query: string }) {
@@ -87,8 +64,6 @@ export function SearchFilterBar({
   query,
   onQueryChange,
   onSearchSubmit,
-  activeFilter = "terdekat",
-  onFilterChange,
   showLocation = true,
   showInlineResults = false,
   onSelectResult,
@@ -111,27 +86,15 @@ export function SearchFilterBar({
     if (!showInlineResults || !trimmedQuery) return [];
 
     const q = trimmedQuery.toLowerCase();
-    let matches = searchPool.filter(
+    const matches = searchPool.filter(
       (item) =>
         item.name.toLowerCase().includes(q) ||
         item.vendorName.toLowerCase().includes(q) ||
         item.category.toLowerCase().includes(q),
     );
 
-    const categoryFilters: FilterKey[] = [
-      "umkm",
-      "bakery",
-      "restoran",
-      "minuman",
-    ];
-    if (categoryFilters.includes(activeFilter)) {
-      matches = matches.filter((item) => item.category === activeFilter);
-    } else if (activeFilter === "segera-habis") {
-      matches = matches.filter((item) => item.expiresAt);
-    }
-
-    return [...matches].sort(applySort(activeFilter));
-  }, [showInlineResults, trimmedQuery, activeFilter, searchPool]);
+    return [...matches].sort(byNearest);
+  }, [showInlineResults, trimmedQuery, searchPool]);
 
   const dropdownVisible =
     showInlineResults && isDropdownOpen && trimmedQuery.length > 0;
@@ -174,14 +137,6 @@ export function SearchFilterBar({
     onSelectResult?.(id);
   };
 
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
-  const [draftFilter, setDraftFilter] = useState<FilterKey>(activeFilter);
-
-  const handleApplyFilter = () => {
-    onFilterChange?.(draftFilter);
-    setFilterSheetOpen(false);
-  };
-
   return (
     <div
       className={cn(
@@ -201,10 +156,9 @@ export function SearchFilterBar({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (showInlineResults && trimmedQuery) setIsDropdownOpen(true);
             onSearchSubmit();
           }}
-          className="flex flex-col gap-2.5 sm:flex-row sm:items-center"
+          className="flex items-center gap-2 sm:gap-2.5"
         >
           <div className="relative flex-1">
             <div
@@ -276,7 +230,7 @@ export function SearchFilterBar({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[min(340px,60vh)] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-white p-1.5 shadow-[0_28px_60px_-36px_rgba(27,77,50,0.55)] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-track]:bg-transparent"
+                    className="absolute left-0 right-0 top-full z-[60] mt-2 max-h-[min(340px,60vh)] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-white p-1.5 shadow-[0_28px_60px_-36px_rgba(27,77,50,0.55)] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-track]:bg-transparent"
                   >
                     {results.length > 0 ? (
                       results.map((item) => (
@@ -346,7 +300,7 @@ export function SearchFilterBar({
           </div>
 
           {showLocation && (
-            <div className="relative hidden sm:block">
+            <div className="relative z-50 hidden sm:block">
             <button
               type="button"
               aria-label="Pilih lokasi"
@@ -415,24 +369,19 @@ export function SearchFilterBar({
           )}
 
           {!isGlass && !isLight && (
-            <div className="flex items-center gap-2">
-              {/* Mobile filter button */}
-              <button
-                type="button"
-                onClick={() => {
-                  setDraftFilter(activeFilter);
-                  setFilterSheetOpen(true);
-                }}
-                aria-label="Buka filter"
-                className={cn(
-                  "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-border bg-white px-3 font-sans text-[13px] font-semibold text-foreground transition-colors duration-200 hover:border-primary/40 hover:bg-secondary active:scale-[0.98] lg:hidden",
-                  FOCUS_RING,
-                )}
-              >
-                <Filter className="h-4 w-4" />
-                <span className="hidden sm:inline">Filter</span>
-              </button>
+            /*
+              Tombol Cari diberi `relative z-50` supaya berada DI ATAS lapisan
+              penangkap klik-di-luar milik daftar saran (z-40). Tanpa ini, saat
+              saran sedang terbuka, ketukan pada "Cari" hanya menutup daftar —
+              tombolnya terlihat tetapi tidak bekerja.
 
+              Kolom pencarian dan tombol juga sengaja tetap SATU BARIS di semua
+              ukuran layar. Ketika tombolnya diletakkan bertumpuk di bawah
+              kolom (tata letak ponsel sebelumnya), daftar saran yang terbuka
+              menutupi tombol itu, dan ketukan pengguna mendarat di saran
+              pertama alih-alih menekan "Cari" yang ia incar.
+            */
+            <div className="relative z-50 flex items-center gap-2">
               <button
                 type="submit"
                 className={cn(
@@ -449,83 +398,6 @@ export function SearchFilterBar({
         </form>
       </div>
 
-      {/* Mobile filter bottom sheet */}
-      <AnimatePresence>
-        {filterSheetOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[55] bg-primary/40 backdrop-blur-sm"
-              onClick={() => setFilterSheetOpen(false)}
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed inset-x-0 bottom-0 z-[60] max-h-[80vh] overflow-y-auto rounded-t-[1.75rem] bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-24px_60px_-32px_rgba(27,77,50,0.45)]"
-            >
-              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
-              <div className="flex items-center justify-between">
-                <h3 className="font-sans text-lg font-bold text-foreground">Filter</h3>
-                <button
-                  type="button"
-                  onClick={() => setFilterSheetOpen(false)}
-                  aria-label="Tutup filter"
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="mt-4">
-                <p className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Urutkan</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {FILTER_OPTIONS.map((opt) => {
-                    const active = draftFilter === opt.key;
-                    return (
-                      <button
-                        key={opt.key}
-                        type="button"
-                        onClick={() => setDraftFilter(opt.key)}
-                        className={cn(
-                          "rounded-full border px-4 py-2 text-xs font-semibold transition-colors",
-                          active
-                            ? "border-primary bg-primary text-white"
-                            : "border-border bg-white text-foreground hover:border-primary/40 hover:bg-secondary",
-                        )}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="mt-6 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDraftFilter("terdekat");
-                  }}
-                  className="flex-1 rounded-full border border-border bg-white px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-                >
-                  Reset
-                </button>
-                <button
-                  type="button"
-                  onClick={handleApplyFilter}
-                  className="flex-1 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
-                >
-                  Terapkan
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

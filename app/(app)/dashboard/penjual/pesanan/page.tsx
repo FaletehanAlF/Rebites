@@ -253,7 +253,19 @@ function OrderRow({
   // garis merah supaya pesanan yang butuh diketuk tidak hilang di antara
   // pesanan lain di tab "Semua".
   const waitingForSeller = isOngoing && needsSellerAction(phase);
-  const canChatWithCourier = order.fulfillment === 'delivery' && Boolean(order.dbId);
+
+  /**
+   * Alat kurir hanya muncul saat pesanan BENAR-BENAR sedang diantar.
+   *
+   * Selama penyiapan (paid/processing) belum ada kurir yang ditugaskan —
+   * trigger penugasan berjalan saat status berpindah ke out_for_delivery —
+   * sehingga panel "Kurir belum mengirim posisi" dan tombol Chat Kurir pada
+   * tahap itu hanya membingungkan penjual: tampak seperti ada urusan kurir
+   * yang harus dia konfirmasi padahal dia hanya sedang memasak.
+   */
+  const courierToolsActive =
+    order.fulfillment === 'delivery' && phase === 'out_for_delivery';
+  const canChatWithCourier = courierToolsActive && Boolean(order.dbId);
 
   return (
     <li
@@ -412,7 +424,7 @@ function OrderRow({
         Yang ditampilkan ke penjual hanyalah POSISI yang dibaca dari tabel
         ber-RLS (bukan koordinat perangkat penjual), lewat panel di bawah.
       */}
-      {order.fulfillment === 'delivery' && (
+      {courierToolsActive && (
         <CourierPositionPanel
           orderDbId={order.dbId}
           className="w-full border-t border-dashed border-border/70 sm:mt-1"

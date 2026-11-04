@@ -421,8 +421,12 @@ export function FlashSaleSection({
           <div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-sale" aria-hidden />
+              {/* "Diskon Kilat" — sama dengan label di sidebar, drawer, dan
+                  kartu pintasan hero. Sebelumnya bagian ini menulis
+                  "Flash sale", sehingga pengguna mengira keduanya fitur
+                  berbeda. */}
               <span className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-white sm:text-[11px]">
-                Flash sale
+                Diskon Kilat
               </span>
             </div>
 

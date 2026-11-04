@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useCatalog } from "@/lib/catalog";
 import { FoodCard } from "@/app/components/shared/FoodCard";
 import { SearchFilterBar } from "@/app/components/shared/SearchFilterBar";
 import { cn } from "@/lib/utils";
-import type { FilterKey } from "@/lib/types";
 
 const MAX_ITEMS = 8;
 
@@ -47,8 +47,21 @@ export function UrgentDealsSection({
   from?: "landing" | "home";
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchFilter, setSearchFilter] = useState<FilterKey>("terdekat");
   const { foodItems, loading } = useCatalog();
+  const router = useRouter();
+
+  /**
+   * Beranda hanya menampilkan sebagian menu, jadi pencarian TIDAK diselesaikan
+   * di sini. Menekan "Cari" membuka katalog `/makanan` dengan kata kuncinya
+   * sudah terisi — di sana hasilnya lengkap dan bisa disaring lebih lanjut.
+   *
+   * Sebelumnya tombol ini memanggil handler kosong, sehingga menekan "Cari"
+   * tidak mengubah apa pun: pengguna mengira pencariannya rusak.
+   */
+  const goToCatalog = () => {
+    const q = searchQuery.trim();
+    router.push(q ? `/makanan?q=${encodeURIComponent(q)}` : "/makanan");
+  };
 
   const items = useMemo(() => {
     const sorted = [...foodItems].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
@@ -82,9 +95,7 @@ export function UrgentDealsSection({
           <SearchFilterBar
             query={searchQuery}
             onQueryChange={setSearchQuery}
-            onSearchSubmit={() => undefined}
-            activeFilter={searchFilter}
-            onFilterChange={setSearchFilter}
+            onSearchSubmit={goToCatalog}
             showLocation={false}
             showInlineResults
             onSelectResult={onViewDetail}
