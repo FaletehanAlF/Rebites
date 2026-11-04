@@ -88,7 +88,7 @@ export function Preloader({ onDone }: { onDone?: () => void }) {
       className="fixed inset-0 z-[200] flex items-center justify-center bg-primary"
       initial={false}
       animate={phase === 'leaving' ? { y: '-100%' } : { y: 0 }}
-      transition={{ duration: 0.9, ease: 'easeInOut' }}
+      transition={{ duration: 2, ease: 'easeInOut' }}
       onAnimationComplete={handleAnimationComplete}
     >
       <div className="flex flex-col items-center gap-8">
