@@ -8,10 +8,12 @@ import {
   headingAtProgress,
   pointAtProgress,
   straightRoute,
+  tripProgressAt,
   type RouteCoordinate,
 } from '@/lib/route-geometry';
 import { projectOntoRoute } from '@/lib/courier-location';
 import { fetchWithAuth } from '@/lib/auth-token';
+import { buildVehicleMarkerHtml, vehicleMotionStyles } from '@/lib/map-vehicle-marker';
 // CSS MapLibre diimpor statis: Next menanganinya saat build (bukan saat runtime
 // `await import(...)`, yang gagal resolve sebagai module).
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -27,12 +29,12 @@ import 'maplibre-gl/dist/maplibre-gl.css';
  *   `/api/delivery/route`). Bila layanan itu gagal, peta turun ke garis lurus
  *   dan LABELNYA BERUBAH — pembeli tidak boleh mengira garis lurus sebagai
  *   rute jalan.
- * - Marker kendaraan tetap ILUSTRASI PERJALANAN, bukan posisi kurir: tidak
- *   ada kolom koordinat kurir di database. Animasi hanya menyala ketika
- *   pemanggil menyatakan pengantaran sedang berlangsung, dan keterangan di UI
- *   menyebutnya sebagai estimasi.
+ * - Marker kendaraan punya DUA sumber yang tidak pernah jalan bersamaan:
+ *   posisi kurir NYATA (`courierPosition`, dari tabel `delivery_locations`),
+ *   atau — selama kurir belum mengirim posisi — animasi ILUSTRATIF sepanjang
+ *   rute. Keterangan di UI menyebut yang mana yang sedang dipakai.
  * - Animasi hanya mengubah posisi & rotasi marker DOM (`setLngLat` + satu
- *   `transform`), tanpa re-render React, tanpa layer 3D.
+ *   `transform`), tanpa re-render React, tanpa layer 3D/WebGL tambahan.
  * - `prefers-reduced-motion` mematikan animasi; kendaraan diletakkan di titik
  *   awal rute.
  */
@@ -47,11 +49,30 @@ const ROUTE_HALO_LAYER_ID = 'rebites-route-halo';
 const ROUTE_LAYER_ID = 'rebites-route-line';
 
 /**
- * Satu putaran animasi. 24 detik cukup lambat untuk terbaca, tidak membeku.
- * Kecepatan kendaraan TIDAK diklaim sebagai kecepatan nyata — ini hanya
- * tempo agar perjalanan terlihat, bukan estimasi waktu tempuh.
+ * Durasi SATU KALI jalan dari titik awal ke tujuan, dalam milidetik.
+ *
+ * 40 detik dipilih supaya perjalanannya pelan: kendaraan tidak melesat
+ * melewati peta, dan posisinya sempat terbaca di sepanjang jalan. Kecepatan
+ * ini TIDAK diklaim sebagai waktu tempuh nyata — itu tetap milik estimasi
+ * pesanan.
  */
-const ANIMATION_DURATION_MS = 24_000;
+const TRIP_DURATION_MS = 40_000;
+
+/**
+ * Apa yang sedang ditunjukkan ikon motor. Dipakai untuk keterangan di peta —
+ * pemakai harus selalu bisa membedakan posisi NYATA dari ilustrasi.
+ */
+type VehicleMode = 'completed' | 'live' | 'illustration-done' | 'illustration';
+
+const VEHICLE_LEGEND: Record<VehicleMode, string> = {
+  completed: 'Motor di tujuan (selesai)',
+  live: 'Posisi kurir (live)',
+  // Ilustrasi sudah sampai ujung rute sementara pesanan masih berjalan.
+  // Tidak ada putaran kedua (itu akan berarti kendaraan berjalan mundur),
+  // jadi keadaannya dikatakan apa adanya.
+  'illustration-done': 'Ilustrasi sampai di tujuan',
+  illustration: 'Motor ilustratif',
+};
 
 interface RouteApiPayload {
   source?: unknown;
@@ -71,6 +92,40 @@ interface MapLibreInstance {
   addLayer: (layer: unknown) => void;
   fitBounds: (bounds: [[number, number], [number, number]], opts?: Record<string, unknown>) => void;
   remove: () => void;
+}
+
+/**
+ * Apakah pengguna meminta gerak dikurangi?
+ *
+ * Dipakai di dua tempat (pembuatan marker dan loop animasi) supaya keduanya
+ * tidak bisa berbeda pendapat soal kapan animasi boleh jalan.
+ */
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
+/**
+ * Keadaan visual kendaraan: sedang berjalan atau berhenti di tujuan.
+ *
+ * Saat berjalan, badan kendaraan sedikit terangkat dari bayangannya; saat
+ * berhenti ia turun kembali. Ini penanda keadaan, bukan hiasan: tanpa
+ * perbedaan itu, motor yang sedang melaju dan motor yang sudah sampai
+ * terlihat sama. Hanya `transform` dan `opacity` yang disentuh — tidak ada
+ * properti layout yang berubah.
+ */
+function applyVehicleMotionState(vehicleEl: HTMLElement, moving: boolean) {
+  const root = vehicleEl.querySelector<HTMLElement>('[data-vehicle-root]');
+  const shadow = vehicleEl.querySelector<HTMLElement>('[data-vehicle-shadow]');
+  const styles = vehicleMotionStyles(moving);
+  if (root) root.style.transform = styles.root;
+  if (shadow) {
+    shadow.style.transform = styles.shadow;
+    shadow.style.opacity = styles.shadowOpacity;
+  }
 }
 
 export default function DeliveryMap({
@@ -107,6 +162,18 @@ export default function DeliveryMap({
     getElement: () => HTMLElement;
   } | null>(null);
   const frameRef = useRef<number | null>(null);
+  /**
+   * Waktu mulai perjalanan ilustratif (`performance.now()`).
+   *
+   * Disimpan di ref, bukan variabel lokal effect, supaya effect yang terpasang
+   * ulang (rute jalan baru datang, status berubah, posisi GPS sempat hilang)
+   * MELANJUTKAN perjalanan yang sedang berjalan. Kalau waktunya ikut direset,
+   * kendaraan melompat kembali ke titik awal lalu melaju dari sana lagi —
+   * gerakan mundur yang justru harus dihindari.
+   */
+  const tripStartRef = useRef<number | null>(null);
+  /** Ilustrasi sudah sampai ujung rute (pesanan mungkin masih berjalan). */
+  const [tripFinished, setTripFinished] = useState(false);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
@@ -178,6 +245,21 @@ export default function DeliveryMap({
     return () => {
       cancelled = true;
     };
+  }, [originLat, originLng, destinationLat, destinationLng]);
+
+  // --- Perjalanan ilustratif milik satu pesanan ------------------------------
+  /**
+   * Mulai ulang catatan perjalanan ketika titik toko/tujuan berubah.
+   *
+   * Ref dan status di bawah hidup selama komponen terpasang, sedangkan halaman
+   * ini bisa berpindah ke pesanan lain tanpa melepas komponen. Tanpa
+   * pengaturan ulang, perjalanan pesanan sebelumnya ikut terbawa: motor
+   * langsung muncul di ujung rute ("Ilustrasi sampai di tujuan") padahal
+   * pengantaran baru dimulai.
+   */
+  useEffect(() => {
+    tripStartRef.current = null;
+    setTripFinished(false);
   }, [originLat, originLng, destinationLat, destinationLng]);
 
   // --- Inisialisasi peta -----------------------------------------------------
@@ -329,24 +411,19 @@ export default function DeliveryMap({
         },
       });
 
-      // Marker kendaraan: motor hijau datar di dalam DOM. Bukan 3D, bukan
-      // model, jadi biaya per frame hanya satu transform.
+      // Marker kendaraan: ikon motor dari `lib/map-vehicle-marker.ts`.
+      // Ikonnya digambar (bukan model 3D/WebGL), jadi biaya per frame animasi
+      // tetap satu `transform`.
+      //
+      // POSISI TIDAK DIUBAH DI SINI. Setelah marker ada, yang memiliki
+      // posisinya hanya loop animasi dan pembacaan posisi GPS. Sebelumnya
+      // cabang `else` di bawah memindahkan marker kembali ke titik awal setiap
+      // kali rute/peta dimuat ulang — itu salah satu sebab kendaraan terlihat
+      // melompat mundur.
       if (!vehicleRef.current) {
         const vehicleEl = document.createElement('div');
         vehicleEl.style.cssText = 'pointer-events:none;will-change:transform;';
-        vehicleEl.innerHTML =
-          '<div data-vehicle-inner style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;' +
-          'border-radius:9999px;background:#fff;border:2px solid ' +
-          ROUTE_COLOR +
-          ';box-shadow:0 2px 6px rgba(27,43,32,.22);transition:transform 120ms linear">' +
-          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="' +
-          ROUTE_COLOR +
-          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-          '<circle cx="5.5" cy="17" r="3.2"></circle>' +
-          '<circle cx="18.5" cy="17" r="3.2"></circle>' +
-          '<path d="M5.5 17h3.5l3-6h3l3.5 6"></path>' +
-          '<path d="M12 11 10.5 7.5h3"></path>' +
-          '</svg></div>';
+        vehicleEl.innerHTML = buildVehicleMarkerHtml();
 
         const startPoint: [number, number] = (completed && plan.destination)
           ? [plan.destination.longitude, plan.destination.latitude]
@@ -354,7 +431,7 @@ export default function DeliveryMap({
 
         const marker = new maplibregl.Marker({
           element: vehicleEl,
-          // Titik jangkar di tengah lingkaran, bukan di ujungnya.
+          // Titik jangkar di tengah sprite.
           anchor: 'center',
           rotationAlignment: 'map',
         })
@@ -365,11 +442,11 @@ export default function DeliveryMap({
           setLngLat: (lngLat: [number, number]) => void;
           getElement: () => HTMLElement;
         };
-      } else {
-        const targetPoint: [number, number] = (completed && plan.destination)
-          ? [plan.destination.longitude, plan.destination.latitude]
-          : route[0] as [number, number];
-        vehicleRef.current.setLngLat(targetPoint);
+        // Pesanan selesai -> kendaraan berhenti di tujuan sejak awal. Selain
+        // itu keadaan awal "berhenti": yang menyalakan mode berjalan hanya
+        // loop animasi atau pembacaan posisi GPS, sehingga motor tidak
+        // terlihat melaju saat pesanan masih disiapkan.
+        applyVehicleMotionState(vehicleEl, false);
       }
     })();
 
@@ -398,6 +475,7 @@ export default function DeliveryMap({
       if (plan.destination) {
         vehicle.setLngLat([plan.destination.longitude, plan.destination.latitude]);
       }
+      applyVehicleMotionState(vehicle.getElement(), false);
       return;
     }
 
@@ -407,6 +485,11 @@ export default function DeliveryMap({
     if (!projection) return;
 
     vehicle.setLngLat(projection.position);
+    applyVehicleMotionState(vehicle.getElement(), true);
+    // Kalau posisi GPS nanti hilang (mis. kurir menutup aplikasi), animasi
+    // ilustratif MELANJUTKAN dari titik terakhir kurir — bukan melompat
+    // kembali ke titik awal rute.
+    tripStartRef.current = performance.now() - projection.progress * TRIP_DURATION_MS;
     const heading = headingAtProgress(route, projection.progress);
     const inner = vehicle.getElement().querySelector('[data-vehicle-inner]');
     if (inner instanceof HTMLElement) {
@@ -425,58 +508,68 @@ export default function DeliveryMap({
    * Gerakan memakai PANJANG SEGMEN (`pointAtProgress`), bukan indeks titik,
    * sehingga kendaraan tidak melaju cepat di segmen panjang lalu merayap di
    * segmen pendek.
+   *
+   * ARAH: satu kali jalan dari titik awal ke tujuan, lalu BERHENTI di sana.
+   * Versi sebelumnya memakai pola pulang-pergi (0→1→0) supaya tidak ada
+   * lompatan saat putaran berulang; akibatnya motor terlihat MUNDUR di
+   * tengah jalan — persis yang tidak boleh terjadi pada pelacakan
+   * pengantaran. Sekali jalan tidak punya gerakan mundur sama sekali.
    */
   useEffect(() => {
-    const reduceMotion =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     // Posisi kurir nyata menang: animasi ilustratif harus mati supaya
-    // marker tidak bergerak bolak-balik mengabaikan posisi GPS.
+    // marker tidak bergerak mengabaikan posisi GPS.
     if (
       completed ||
       !animateRoute ||
       courierPosition != null ||
       status !== 'ready' ||
-      reduceMotion ||
+      prefersReducedMotion() ||
       !route ||
       route.length < 2
     ) {
       return;
     }
 
-    let startedAt: number | null = null;
+    // Waktu mulai disimpan di ref supaya effect yang terpasang ulang
+    // MELANJUTKAN perjalanan, bukan mengulangnya dari titik awal.
+    if (tripStartRef.current === null) tripStartRef.current = performance.now();
 
     const step = (now: number) => {
       const vehicle = vehicleRef.current;
       if (!vehicle) {
-        // Marker belum terpasang (peta sedang memuat ulang); berhenti saja —
-        // efek akan jalan lagi begitu status kembali 'ready'.
-        frameRef.current = null;
+        // Marker belum terpasang: pembuatannya berjalan asinkron (impor
+        // MapLibre), jadi frame pertama bisa datang lebih dulu. Tunggu di
+        // frame berikutnya — kalau loop berhenti di sini, motor tidak akan
+        // pernah jalan sampai ada dependency effect yang kebetulan berubah.
+        frameRef.current = requestAnimationFrame(step);
         return;
       }
-      if (startedAt === null) startedAt = now;
-      const elapsed = (now - startedAt) % ANIMATION_DURATION_MS;
-      const raw = elapsed / ANIMATION_DURATION_MS;
-      // Bolak-balik (0->1->0) supaya kendaraan tidak "melompat" ke titik awal
-      // tiap putaran. Halus tanpa easing tambahan per frame.
-      const forward = raw <= 0.5;
-      const t = forward ? raw * 2 : (1 - raw) * 2;
 
+      const startedAt = tripStartRef.current ?? now;
+      const t = tripProgressAt(now - startedAt, TRIP_DURATION_MS);
       const point = pointAtProgress(route, t);
       if (point) {
         vehicle.setLngLat(point);
-        // Arah ikon mengikuti arah jalan; saat kembali, hadapnya dibalik.
-        const heading = headingAtProgress(route, t) + (forward ? 0 : 180);
+        const heading = headingAtProgress(route, t);
         const inner = vehicle.getElement().querySelector('[data-vehicle-inner]');
         if (inner instanceof HTMLElement) {
           inner.style.transform = `rotate(${heading}deg)`;
         }
       }
+
+      if (t >= 1) {
+        // Sampai di tujuan: berhenti di sana. Tidak ada putaran kedua.
+        applyVehicleMotionState(vehicle.getElement(), false);
+        setTripFinished(true);
+        frameRef.current = null;
+        return;
+      }
+
       frameRef.current = requestAnimationFrame(step);
     };
 
+    const markerEl = vehicleRef.current?.getElement();
+    if (markerEl) applyVehicleMotionState(markerEl, true);
     frameRef.current = requestAnimationFrame(step);
 
     return () => {
@@ -559,7 +652,15 @@ export default function DeliveryMap({
             className="inline-block h-2 w-2 rounded-full"
             style={{ backgroundColor: ROUTE_COLOR }}
           />
-          {completed ? 'Motor di tujuan (selesai)' : courierPosition ? 'Posisi kurir (live)' : 'Motor ilustratif'}
+          {VEHICLE_LEGEND[
+            completed
+              ? 'completed'
+              : courierPosition
+                ? 'live'
+                : tripFinished
+                  ? 'illustration-done'
+                  : 'illustration'
+          ]}
         </p>
       )}
 

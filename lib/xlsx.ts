@@ -167,25 +167,39 @@ export interface XlsxSheet {
   rows: readonly (readonly (string | number | null | undefined)[])[];
 }
 
-const CONTENT_TYPES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+function contentTypesXml(sheetCount: number): string {
+  const sheets = Array.from(
+    { length: sheetCount },
+    (_, index) =>
+      `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`
+  ).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
 <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
 <Default Extension="xml" ContentType="application/xml"/>
 <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+${sheets}
 <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
 </Types>`;
+}
 
 const ROOT_RELS = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
 </Relationships>`;
 
-const WORKBOOK_RELS = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+function workbookRelsXml(sheetCount: number): string {
+  const sheets = Array.from(
+    { length: sheetCount },
+    (_, index) =>
+      `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`
+  ).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
-<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+${sheets}
+<Relationship Id="rId${sheetCount + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
 </Relationships>`;
+}
 
 /**
  * Gaya sel:
@@ -275,19 +289,67 @@ function buildSheetXml(sheet: XlsxSheet): string {
 </worksheet>`;
 }
 
-/** Bangun berkas .xlsx lengkap sebagai Buffer. */
-export function buildXlsx(sheet: XlsxSheet): Buffer {
-  const workbook = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+export interface XlsxWorkbook {
+  /**
+   * Satu atau lebih sheet, urut sesuai tab di Excel.
+   *
+   * Nama wajib unik (Excel menolak duplikat) dan maksimum 31 karakter.
+   * Setiap sheet adalah satu tabel yang dimulai di A1.
+   */
+  sheets: readonly XlsxSheet[];
+}
+
+/**
+ * Bangun berkas .xlsx berisi beberapa sheet sebagai Buffer.
+ *
+ * Setiap sheet menjadi `xl/worksheets/sheetN.xml`, dan workbook
+ * merujuknya berurutan lewat rId1..rIdN (styles mendapat rId berikutnya).
+ * Urutan rId ini yang menentukan urutan tab, jadi tidak boleh diacak.
+ */
+export function buildXlsxWorkbook(workbook: XlsxWorkbook): Buffer {
+  const sheets = workbook.sheets;
+  if (sheets.length === 0) {
+    throw new Error('Workbook perlu minimal satu sheet.');
+  }
+  const names = new Set<string>();
+  for (const sheet of sheets) {
+    const key = sheet.name.toLowerCase();
+    if (names.has(key)) {
+      throw new Error(`Nama sheet "${sheet.name}" dipakai lebih dari sekali.`);
+    }
+    names.add(key);
+  }
+
+  const workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<sheets><sheet name="${escapeXml(sheet.name)}" sheetId="1" r:id="rId1"/></sheets>
+<sheets>${sheets
+    .map(
+      (sheet, index) =>
+        `<sheet name="${escapeXml(sheet.name)}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`
+    )
+    .join('')}</sheets>
 </workbook>`;
 
   return buildZip([
-    { name: '[Content_Types].xml', data: Buffer.from(CONTENT_TYPES, 'utf8') },
+    {
+      name: '[Content_Types].xml',
+      data: Buffer.from(contentTypesXml(sheets.length), 'utf8'),
+    },
     { name: '_rels/.rels', data: Buffer.from(ROOT_RELS, 'utf8') },
-    { name: 'xl/workbook.xml', data: Buffer.from(workbook, 'utf8') },
-    { name: 'xl/_rels/workbook.xml.rels', data: Buffer.from(WORKBOOK_RELS, 'utf8') },
+    { name: 'xl/workbook.xml', data: Buffer.from(workbookXml, 'utf8') },
+    {
+      name: 'xl/_rels/workbook.xml.rels',
+      data: Buffer.from(workbookRelsXml(sheets.length), 'utf8'),
+    },
     { name: 'xl/styles.xml', data: Buffer.from(STYLES, 'utf8') },
-    { name: 'xl/worksheets/sheet1.xml', data: Buffer.from(buildSheetXml(sheet), 'utf8') },
+    ...sheets.map((sheet, index) => ({
+      name: `xl/worksheets/sheet${index + 1}.xml`,
+      data: Buffer.from(buildSheetXml(sheet), 'utf8'),
+    })),
   ]);
+}
+
+/** Bangun berkas .xlsx satu sheet. Pembungkus tipis dari buildXlsxWorkbook. */
+export function buildXlsx(sheet: XlsxSheet): Buffer {
+  return buildXlsxWorkbook({ sheets: [sheet] });
 }

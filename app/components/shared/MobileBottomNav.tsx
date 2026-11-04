@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Home, ReceiptText, User } from "lucide-react";
+import { Bell, Home, ReceiptText, User, UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/lib/current-user";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -12,6 +12,10 @@ const FOCUS_RING =
 
 const ITEMS = [
   { href: "/home", label: "Beranda", icon: Home },
+  // Katalog ada di nav bawah karena menjelajah makanan adalah tugas utama
+  // halaman ini: sebelumnya satu-satunya jalan adalah menggulir sampai ujung
+  // beranda atau membuka drawer, sehingga dari ponsel katalog terasa tidak ada.
+  { href: "/makanan", label: "Makanan", icon: UtensilsCrossed },
   { href: "/riwayatPesanan", label: "Pesanan", icon: ReceiptText },
   { href: "/notifikasi/pembeli", label: "Notifikasi", icon: Bell },
   { href: "/profile", label: "Profil", icon: User },
