@@ -5,16 +5,6 @@ import { motion } from 'framer-motion';
 
 const STORAGE_KEY = 'rebits:landing-seen';
 
-/**
- * Loading screen khusus first-time masuk landing page.
- *
- * - Hanya muncul sekali per browser (flag di localStorage `rebits:landing-seen`).
- * - Isi: teks besar "Rebites" + loading bar animasi.
- * - Setelah loading selesai (font ready / safety timer): overlay slide ke atas
- *   dari bawah ke atas (`y: -100%`) selama 0.9s, lalu unmount → landing page
- *   langsung muncul di bawahnya.
- */
-
 type Phase = 'loading' | 'leaving' | 'done';
 
 export function Preloader({ onDone }: { onDone?: () => void }) {
@@ -59,22 +49,7 @@ export function Preloader({ onDone }: { onDone?: () => void }) {
       const t = window.setTimeout(complete, 0);
       return () => window.clearTimeout(t);
     }
-
-    // Batas atas: tanpa ini, font yang gagal dimuat akan mengunci halaman.
-    const safety = window.setTimeout(finish, 900);
-    let cancelled = false;
-    if (typeof document !== 'undefined' && document.fonts) {
-      document.fonts.ready.then(() => {
-        if (!cancelled) finish();
-      }).catch(() => finish());
-    } else {
-      finish();
-    }
-    return () => {
-      cancelled = true;
-      window.clearTimeout(safety);
-    };
-  }, [phase, firstVisit, finish, complete]);
+  }, [phase, firstVisit, complete]);
 
   const handleAnimationComplete = useCallback(() => {
     if (phase === 'leaving') complete();
@@ -97,9 +72,12 @@ export function Preloader({ onDone }: { onDone?: () => void }) {
         </span>
         <div className="relative h-1.5 w-64 max-w-[80vw] overflow-hidden rounded-full bg-cream/20">
           <motion.div
-            className="absolute left-0 top-0 h-full rounded-full bg-cream"
-            animate={{ width: ['0%', '100%', '0%'] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-0 left-0 h-full w-full rounded-full bg-cream"
+            style={{ transformOrigin: 'left bottom' }}
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 2, ease: 'easeInOut' }}
+            onAnimationComplete={() => finish()}
           />
         </div>
       </div>
