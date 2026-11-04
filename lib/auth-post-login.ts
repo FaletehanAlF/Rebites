@@ -8,7 +8,8 @@
  *   1. baca role dari `public.profiles` (bukan user metadata),
  *   2. catat `activity_logs` bertipe `login` (non-blokir),
  *   3. tentukan tujuan: redirect eksplisit → onboarding penjual (?plan=) →
- *      beranda per role → fallback.
+ *      beranda per role (dengan koreksi "punya toko", lihat di bawah) →
+ *      fallback.
  *
  * Tidak ada query tulis ke `profiles`, tidak ada pembuatan profil, dan tidak
  * ada merge akun: profil tetap dibuat trigger `handle_new_user`.
@@ -22,6 +23,14 @@ import {
   type UserRole,
 } from './current-user';
 import { isSafeInternalPath } from './safe-path';
+import { resolvePostLoginRoute } from './post-login-route';
+
+/**
+ * Tujuan dari peran, bukan dari nilai literal: satu sumber kebenaran tetap
+ * `ROLE_HOME_PATH` di `lib/current-user.ts`.
+ */
+const BUYER_HOME = getHomePathForRole('buyer');
+const SELLER_HOME = getHomePathForRole('umkm');
 
 const SELLER_PLANS = ['basic', 'standar', 'premium'] as const;
 
@@ -106,8 +115,43 @@ export async function completeAuthSession(
   }
 
   const roleHome = role ? getHomePathForRole(role) : context.fallback;
-  const destination =
-    safeRedirect || penjualRegisterTarget || roleHome || context.fallback;
+
+  /**
+   * Koreksi "punya toko".
+   *
+   * `profiles.role` ditulis trigger `handle_new_user` saat pendaftaran dan
+   * TIDAK ikut berubah ketika akun membuka toko: alur pendaftaran penjual
+   * menambah baris `umkm_profiles`, bukan mengubah peran. Tanpa pemeriksaan
+   * ini, penjual yang sudah punya toko tetap login sebagai 'buyer' dan
+   * mendarat di beranda pembeli.
+   *
+   * Hanya dijalankan saat jawabannya bisa mengubah tujuan — peran mengarah
+   * ke beranda pembeli dan tidak ada redirect/onboarding yang lebih
+   * diutamakan. Login admin, akun berperan umkm, dan alur
+   * `?redirect=` / `?plan=` karena itu tidak menambah satu query pun.
+   */
+  let hasStore = false;
+  if (!safeRedirect && !penjualRegisterTarget && roleHome === BUYER_HOME) {
+    try {
+      const { getSellerUmkmResult } = await import('./product-storage');
+      const result = await getSellerUmkmResult();
+      // Hanya 'ok' yang berarti punya toko. 'error' (jaringan/DB) TIDAK
+      // boleh dibaca sebagai punya toko — itu akan mengirim pembeli ke
+      // dashboard penjual hanya karena satu query gagal.
+      hasStore = result.kind === 'ok';
+    } catch {
+      hasStore = false;
+    }
+  }
+
+  const destination = resolvePostLoginRoute({
+    safeRedirect,
+    sellerOnboardingTarget: penjualRegisterTarget,
+    roleHome,
+    buyerHome: BUYER_HOME,
+    sellerHome: SELLER_HOME,
+    hasStore,
+  });
 
   return { ok: true, destination, role };
 }

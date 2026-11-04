@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { MessageSquare, Star, Store } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { SellerShell } from "@/app/components/dashboard-penjual/SellerShell";
 import { Card } from "@/app/components/dashboard-penjual/Card";
+import { RatingFilterChips } from "@/app/components/dashboard-penjual/RatingFilterChips";
+import { RatingStars } from "@/app/components/dashboard-penjual/RatingStars";
 import { StoreRatingCard } from "@/app/components/dashboard-penjual/StoreRatingCard";
 import { getSellerUmkm } from "@/lib/product-storage";
 import {
@@ -12,7 +14,6 @@ import {
   REVIEWS_UPDATED_EVENT,
   type SellerReview,
 } from "@/lib/review-storage";
-import { cn } from "@/lib/utils";
 
 const POLL_INTERVAL_MS = 20_000; // 20 detik
 
@@ -26,24 +27,6 @@ function formatReviewDate(iso: string): string {
   } catch {
     return iso;
   }
-}
-
-function Stars({ rating }: { rating: number }) {
-  return (
-    <span className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star
-          key={n}
-          className={cn(
-            "h-3.5 w-3.5",
-            n <= rating
-              ? "fill-primary text-primary"
-              : "fill-border-100 text-primary-foreground",
-          )}
-        />
-      ))}
-    </span>
-  );
 }
 
 function ReviewItem({ review }: { review: SellerReview }) {
@@ -65,7 +48,7 @@ function ReviewItem({ review }: { review: SellerReview }) {
           <p className="text-sm font-semibold text-foreground">
             {review.authorName}
           </p>
-          <Stars rating={review.rating} />
+          <RatingStars rating={review.rating} />
           <span className="text-xs text-muted-foreground">
             · {formatReviewDate(review.createdAt)}
           </span>
@@ -147,29 +130,11 @@ export default function UlasanPage() {
             <h3 className="text-sm font-bold text-foreground">
               Filter Rating
             </h3>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(["all", 5, 4, 3, 2, 1] as const).map((f) => (
-                <button
-                  key={String(f)}
-                  type="button"
-                  onClick={() => setFilter(f)}
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-4 py-2 text-xs font-semibold transition-colors",
-                    filter === f
-                      ? "bg-primary text-white"
-                      : "border border-border bg-white text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {f === "all" ? (
-                    "Semua"
-                  ) : (
-                    <>
-                      {f} <Star className="h-3 w-3 fill-primary text-primary" />
-                    </>
-                  )}
-                </button>
-              ))}
-            </div>
+            <RatingFilterChips
+              value={filter}
+              onChange={setFilter}
+              className="mt-3"
+            />
             <p className="mt-3 text-xs text-muted-foreground">
               Menampilkan {filtered.length} dari {reviews.length} ulasan
             </p>

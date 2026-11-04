@@ -59,7 +59,15 @@
     "test:seller-orders-attention": "node --test tests/seller-orders-attention.test.ts",
     "test:package-weight-origin": "node --test tests/package-weight-origin.test.ts",
     "test:menu-schedule": "node --test tests/menu-schedule.test.ts",
-    "test:flash-sale-schedule": "node --test tests/flash-sale-schedule.test.ts"
+    "test:flash-sale-schedule": "node --test tests/flash-sale-schedule.test.ts",
+    "test:gemini-connection": "node scripts/check-gemini-connection.ts",
+    "test:courier-ai-reply-integrity": "node --test tests/courier-ai-reply-integrity.test.ts",
+    "test:map-vehicle-marker": "node --test tests/map-vehicle-marker.test.ts",
+    "test:post-login-route": "node --test tests/post-login-route.test.ts",
+    "test:seller-report": "node --test tests/seller-report.test.ts",
+    "test:seller-rating-ui": "node --test tests/seller-rating-ui.test.ts",
+    "test:seller-menu-layout": "node --test tests/seller-menu-layout.test.ts",
+    "test:seller-view-as-buyer": "node --test tests/seller-view-as-buyer.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

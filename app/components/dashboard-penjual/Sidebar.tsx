@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  Eye,
   LayoutGrid,
   Settings,
   ShieldCheck,
@@ -154,6 +155,40 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
           <NavItemLink key={item.id} item={item} onClose={onClose} />
         ))}
       </nav>
+
+      {/*
+        Jalan masuk ke sisi pembeli.
+
+        Penjual dan pembeli memakai beranda yang berbeda, dan dashboard penjual
+        tidak menyediakan pratinjau dari sudut pandang pembeli: tanpa tautan ini
+        satu-satunya cara memeriksanya adalah mengetik /home di address bar.
+
+        Diletakkan di luar daftar NAV_ITEMS karena ini bukan halaman lain di
+        dashboard, melainkan berpindah sisi — sama seperti "Panel Admin" di
+        bawahnya. Sengaja satu baris tanpa subjudul: baris dua tingkat membuat
+        tingginya berbeda dari menu di atasnya sehingga terbaca sebagai kartu
+        tersendiri, padahal ia sekadar satu menu lagi.
+
+        Jalan kembali tersedia di sisi pembeli dan tidak diduplikasi di sini:
+        sidebar pembeli menampilkan "Toko Saya" dan drawer ponsel pembeli
+        menampilkan "Dashboard Penjual" untuk akun yang punya toko.
+      */}
+      <div className="relative border-t border-sage-100 px-4 py-3">
+        <Link
+          href="/home"
+          onClick={onClose}
+          className={cn(
+            'group flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-medium transition-colors',
+            'text-charcoal-500 hover:bg-sage-100/60 hover:text-charcoal-900'
+          )}
+        >
+          <Eye
+            aria-hidden
+            className="h-[18px] w-[18px] shrink-0 text-sage-500 group-hover:text-caramel"
+          />
+          <span className="truncate">Lihat sebagai Pembeli</span>
+        </Link>
+      </div>
 
       {isAdmin && (
         <div className="relative border-t border-sage-100 px-4 py-3">

@@ -85,9 +85,18 @@ test('chat kurir tersedia di kartu pesanan, mode pantau saja', () => {
   assert.doesNotMatch(PAGE_CODE, /<CourierChat orderDbId=\{order\.dbId\} canSend=\{true\}/);
 });
 
-test('tombol chat hanya muncul untuk pesanan pengiriman yang punya id database', () => {
+test('alat kurir hanya muncul saat pesanan benar-benar sedang diantar', () => {
+  // Waktu penyiapan belum ada kurir yang ditugaskan (trigger penugasan
+  // berjalan saat status berpindah ke out_for_delivery). Panel posisi dan
+  // Chat Kurir pada tahap itu terbaca seolah penjual punya urusan kurir yang
+  // harus dia konfirmasi — jadi keduanya digantung pada fase pengantaran.
   assert.match(
     PAGE_CODE,
-    /const canChatWithCourier =\s*order\.fulfillment === 'delivery' && Boolean\(order\.dbId\)/
+    /const courierToolsActive =\s*order\.fulfillment === 'delivery' && phase === 'out_for_delivery'/
   );
+  assert.match(
+    PAGE_CODE,
+    /const canChatWithCourier = courierToolsActive && Boolean\(order\.dbId\)/
+  );
+  assert.match(PAGE_CODE, /\{courierToolsActive && \(\s*<CourierPositionPanel/);
 });

@@ -21,6 +21,7 @@ import {
   routePolylineKm,
   simplifyRoute,
   straightRoute,
+  tripProgressAt,
   ROUTE_MAX_POINTS,
   type RouteCoordinate,
 } from '../lib/route-geometry.ts';
@@ -127,6 +128,33 @@ test('geometri: simplify mempertahankan ujung-ujung rute', () => {
 
   // Sudah cukup pendek: tidak ada yang dibuang.
   assert.equal(simplifyRoute(EASTWARD, ROUTE_MAX_POINTS).length, EASTWARD.length);
+});
+
+test('geometri: perjalanan ilustratif hanya MAJU, tidak pernah mundur', () => {
+  const DUR = 40_000;
+
+  assert.equal(tripProgressAt(0, DUR), 0);
+  assert.equal(tripProgressAt(DUR / 2, DUR), 0.5);
+  assert.equal(tripProgressAt(DUR, DUR), 1);
+  // Lewat ujung: tetap 1. Pola pulang-pergi (0→1→0) yang lama akan
+  // mengembalikan nilai yang menurun di sini — itu gerakan mundur.
+  assert.equal(tripProgressAt(DUR * 3, DUR), 1);
+
+  // Monoton di sepanjang waktu: satu-satunya jaminan bahwa kendaraan tidak
+  // pernah terlihat berbalik arah.
+  let prev = -1;
+  for (let ms = 0; ms <= DUR * 2; ms += 250) {
+    const t = tripProgressAt(ms, DUR);
+    assert.ok(t >= prev, `progres menurun di ${ms} ms: ${t} < ${prev}`);
+    assert.ok(t >= 0 && t <= 1, `progres di luar 0..1: ${t}`);
+    prev = t;
+  }
+
+  // Masukan rusak -> 0, bukan NaN (nilai ini langsung jadi posisi di peta).
+  assert.equal(tripProgressAt(Number.NaN, DUR), 0);
+  assert.equal(tripProgressAt(-100, DUR), 0);
+  assert.equal(tripProgressAt(1000, 0), 0);
+  assert.equal(tripProgressAt(1000, Number.NaN), 0);
 });
 
 test('geometri: cache key stabil & membedakan arah', () => {

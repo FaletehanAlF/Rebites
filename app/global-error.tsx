@@ -4,22 +4,6 @@ import { useEffect } from "react";
 import { CloudOff, Home, RotateCcw } from "lucide-react";
 import "./globals.css";
 
-/**
- * Error boundary global (Next.js 14 App Router).
- *
- * Persyaratan framework yang dipenuhi:
- * - WAJIB `"use client"`.
- * - WAJIB me-render `<html>` + `<body>` sendiri karena boundary ini
- *   menggantikan root layout saat aktif (root layout tidak boleh diimpor
- *   di sini).
- * - Menerima `{ error, reset }`: `reset()` mencoba me-render ulang segmen
- *   yang gagal tanpa reload penuh.
- * - CSS global diimpor langsung (`./globals.css`) agar token warna ReBites
- *   tetap tersedia walau root layout tidak dipakai.
- *
- * Pesan sengaja umum: detail teknis (`error.message`/stack) TIDAK
- * ditampilkan ke pengguna, hanya dicatat ke console untuk diagnostik.
- */
 export default function GlobalError({
   error,
   reset,

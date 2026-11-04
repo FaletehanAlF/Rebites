@@ -1,40 +1,107 @@
 'use client';
 
-import { useMemo } from 'react';
-import { FileText } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { AlertCircle, Download, FileText, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Card } from './Card';
+import { FilterDropdown } from './FilterDropdown';
 import { LockedFeatureCard } from './LockedFeatureCard';
 import { SalesEmptyState, CardLinesSkeleton } from './SalesEmptyState';
+import { SellerReportTable } from './SellerReportTable';
 import { useSellerPlan } from '@/lib/seller-plan';
 import { useSellerOrders } from '@/hooks/use-seller-orders';
-import { useSellerAnalytics } from '@/hooks/use-seller-analytics';
-import { formatRupiah } from '@/lib/data';
+import {
+  SELLER_REPORT_PERIODS,
+  buildSellerReport,
+  formatReportRangeLabel,
+  sellerReportPeriodDays,
+  type SellerReportPeriod,
+} from '@/lib/seller-report';
+import {
+  SellerReportExportError,
+  downloadSellerReportExcel,
+} from '@/lib/seller-report-export';
 
+/** Rentang grafik penjualan (batang/garis) — 'semua' tidak masuk akal di grafik. */
 export type StatsPeriod = '7-hari' | '14-hari' | '30-hari';
 
-interface ReportRow {
-  day: string;
-  terjual: number;
-  tersisa: number;
-  revenue: number;
-}
+const PERIOD_HINT: Record<SellerReportPeriod, string> = {
+  '7-hari': '7 hari terakhir',
+  '14-hari': '14 hari terakhir',
+  '30-hari': '30 hari terakhir',
+  semua: 'sejak pesanan pertama masuk',
+};
 
-export function DetailedReportCard({ period }: { period: StatsPeriod }) {
+export function DetailedReportCard() {
   const { plan, hydrated } = useSellerPlan();
-  const { hasOrders } = useSellerOrders();
-  const { days30 } = useSellerAnalytics();
+  const { orders, hasOrders } = useSellerOrders();
+  const [period, setPeriod] = useState<SellerReportPeriod>('7-hari');
+  const [exporting, setExporting] = useState(false);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
-  const rows = useMemo<ReportRow[]>(() => {
-    const count = period === '7-hari' ? 7 : period === '14-hari' ? 14 : 30;
-    return [...days30.slice(-count)]
-      .map((point) => ({
-        day: point.day,
-        terjual: point.terjual,
-        tersisa: point.tersisa,
-        revenue: point.revenue,
-      }))
-      .reverse();
-  }, [period, days30]);
+  // Satu agregasi untuk layar dan berkas: laporan dibangun dari SELURUH
+  // pesanan toko, lalu rentangnya dipilih di sini. Tidak ada potongan 30 hari
+  // yang diam-diam memendekkan riwayat.
+  const report = useMemo(
+    () =>
+      buildSellerReport(
+        orders.map((order) => ({
+          orderCode: order.orderId,
+          createdAt: order.createdAt,
+          productName: order.productName,
+          quantity: order.quantity ?? 0,
+          total: order.total ?? 0,
+          orderStatus: order.orderStatus ?? null,
+          status: order.status ?? null,
+        })),
+        { period }
+      ),
+    [orders, period]
+  );
+
+  // Baris terbaru di atas supaya hari ini langsung terlihat tanpa menggulir —
+  // urutan itu diurus SellerReportTable.
+
+  const rangeLabel = useMemo(
+    () =>
+      formatReportRangeLabel(
+        report.summary.firstDayKey,
+        report.summary.lastDayKey
+      ),
+    [report.summary]
+  );
+
+  // Pesan lama tidak boleh menempel saat penjual berganti rentang.
+  useEffect(() => {
+    setExportMessage(null);
+    setExportError(null);
+  }, [period]);
+
+  async function handleExport() {
+    if (exporting) return;
+    setExporting(true);
+    setExportMessage(null);
+    setExportError(null);
+    try {
+      const result = await downloadSellerReportExcel(period);
+      if (result.downloaded) {
+        setExportMessage(
+          `Berkas Excel diunduh (${result.rows} pesanan, ${PERIOD_HINT[period]}).`
+        );
+      } else {
+        setExportMessage('Belum ada pesanan pada rentang ini, jadi tidak ada berkas.');
+      }
+    } catch (err) {
+      setExportError(
+        err instanceof SellerReportExportError
+          ? err.message
+          : 'Gagal membuat ekspor laporan. Coba lagi.'
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
 
   if (!hydrated) {
     return (
@@ -57,23 +124,35 @@ export function DetailedReportCard({ period }: { period: StatsPeriod }) {
     );
   }
 
+  const header = (
+    <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          Laporan Rinci · {PERIOD_HINT[period]}
+        </p>
+        <h3 className="mt-1 flex items-center gap-1.5 font-display text-lg font-medium tracking-tight text-primary">
+          <FileText className="h-4 w-4" />
+          Penjualan Harian
+        </h3>
+      </div>
+      <div className="flex items-center gap-2">
+        <FilterDropdown
+          value={period}
+          onChange={(next) => setPeriod(next as SellerReportPeriod)}
+          options={SELLER_REPORT_PERIODS}
+          ariaLabel="Pilih rentang laporan penjualan"
+        />
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
+          Paket {plan.label}
+        </span>
+      </div>
+    </div>
+  );
+
   if (!hasOrders) {
     return (
       <Card>
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Laporan Rinci · {period.replace('-', ' ')}
-            </p>
-            <h3 className="mt-1 flex items-center gap-1.5 font-display text-lg font-medium tracking-tight text-primary">
-              <FileText className="h-4 w-4" />
-              Penjualan Harian
-            </h3>
-          </div>
-          <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
-            Paket {plan.label}
-          </span>
-        </div>
+        {header}
         <div className="mt-4">
           <SalesEmptyState
             title="Laporan belum tersedia"
@@ -86,45 +165,52 @@ export function DetailedReportCard({ period }: { period: StatsPeriod }) {
 
   return (
     <Card>
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Laporan Rinci · {period.replace('-', ' ')}
-          </p>
-          <h3 className="mt-1 flex items-center gap-1.5 font-display text-lg font-medium tracking-tight text-primary">
-            <FileText className="h-4 w-4" />
-            Penjualan Harian
-          </h3>
-        </div>
-        <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
-          Paket {plan.label}
-        </span>
+      {header}
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          {report.summary.orders} pesanan
+          {rangeLabel ? ` · ${rangeLabel}` : ''}
+          {report.summary.cancelled > 0
+            ? ` · ${report.summary.cancelled} dibatalkan (tidak dihitung)`
+            : ''}
+        </p>
+        <button
+          type="button"
+          onClick={handleExport}
+          disabled={exporting}
+          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3.5 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {exporting ? (
+            <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" />
+          ) : (
+            <Download aria-hidden className="h-3.5 w-3.5" />
+          )}
+          {exporting ? 'Menyiapkan…' : 'Ekspor Excel'}
+        </button>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-border">
-        <table className="w-full min-w-[420px] text-left text-xs">
-          <thead className="bg-secondary text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-            <tr>
-              <th scope="col" className="px-4 py-2.5">Hari</th>
-              <th scope="col" className="px-4 py-2.5 text-right">Terjual</th>
-              <th scope="col" className="px-4 py-2.5 text-right">Tersisa</th>
-              <th scope="col" className="px-4 py-2.5 text-right">Pendapatan</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border-100">
-            {rows.map((row) => (
-              <tr key={`${period}-${row.day}`} className="text-foreground">
-                <th scope="row" className="px-4 py-2.5 font-semibold">{row.day}</th>
-                <td className="px-4 py-2.5 text-right tabular-nums">{row.terjual}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">{row.tersisa}</td>
-                <td className="px-4 py-2.5 text-right font-semibold tabular-nums">
-                  {formatRupiah(row.revenue)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {(exportMessage || exportError) && (
+        <p
+          role="status"
+          className={cn(
+            'mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed',
+            exportError ? 'text-destructive' : 'text-muted-foreground'
+          )}
+        >
+          {exportError && <AlertCircle aria-hidden className="mt-0.5 h-3 w-3 shrink-0" />}
+          {exportError ?? exportMessage}
+        </p>
+      )}
+
+      <SellerReportTable report={report} className="mt-3" />
+
+      <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+        Rentang &ldquo;Semua&rdquo; memuat seluruh riwayat tokomu sejak pesanan
+        pertama. Ekspor Excel memuat rekap per bulan dan rincian harian pada
+        rentang yang sedang dipilih
+        {sellerReportPeriodDays(period) === null ? '.' : ` (${PERIOD_HINT[period]}).`}
+      </p>
     </Card>
   );
 }
