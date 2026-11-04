@@ -46,11 +46,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-<<<<<<< HEAD
 #skills
 .agents
 skills-lock.json
-=======
+
 # local verification & debug artifacts (Tahap 4B: jangan commit log/skrip verifikasi lokal)
 p1b-verify.mjs
 remote_schema_verify.sql
@@ -60,4 +59,3 @@ AGENTS.md
 
 # temporary files
 .vibecode-tmp/
->>>>>>> a28d65e5b695278282bfcc5f909e0b9dc334ba02
