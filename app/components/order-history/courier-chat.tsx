@@ -150,13 +150,22 @@ export function CourierChat({
       }
       const okJson = (await res
         .json()
-        .catch(() => null)) as { aiReply?: { status?: string; message?: string } } | null;
-      if (okJson?.aiReply?.status === 'failed') {
+        .catch(() => null)) as {
+          aiReply?: { status?: string; message?: string };
+        } | null;
+      const aiStatus = okJson?.aiReply?.status;
+      if (aiStatus === 'fallback') {
         setAiNotice(
-          okJson.aiReply.message ??
+          okJson?.aiReply?.message ??
+            'Kurir AI tidak tersedia; pesanmu dijawab Kurir Demo.'
+        );
+      } else if (aiStatus === 'failed') {
+        setAiNotice(
+          okJson?.aiReply?.message ??
             'Pesanmu terkirim, tapi Kurir AI belum bisa menjawab. Coba lagi sebentar.'
         );
       } else {
+        // sent / already_answered: tidak ada pemberitahuan.
         setAiNotice(null);
       }
       setDraft('');

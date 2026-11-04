@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   createAuthedServerClient,
   createServiceClient,
@@ -9,10 +10,95 @@ import {
 import { buildDemoCourierReply } from '@/lib/demo-courier';
 import { generateDemoCourierAiReply } from '@/lib/server/courier-ai';
 import { normalizeCourierSenderKind } from '@/lib/courier-sender-kind';
+import { buildHistoryContents, hasBuyerMessage } from '@/lib/server/courier-history';
+import { decideAutoReplyMode } from '@/lib/courier-auto-reply';
+import { isGeminiConfigured } from '@/lib/server/gemini';
+import type { CourierAiContent } from '@/lib/server/gemini';
 
 export const runtime = 'nodejs';
 
 const MAX_BODY_LENGTH = 1000;
+/** Riwayat maks 12 pesan terakhir yang dimuat untuk konteks Kurir AI. */
+const HISTORY_LIMIT = 12;
+
+/**
+ * Muat riwayat percakapan pesanan ini saja dari database, lalu bentuk
+ * contents untuk Gemini. Dipanggil server-side; bila gagal, kirim tanpa
+ * riwayat (pesan pembeli tetap terkirim, AI menjawab sebisanya).
+ */
+async function loadCourierHistory(
+  service: SupabaseClient,
+  orderId: string
+): Promise<CourierAiContent[]> {
+  try {
+    const res = await service
+      .from('courier_messages')
+      .select('sender_kind, body')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: false })
+      .limit(HISTORY_LIMIT);
+    const rows = (res.data ?? []).slice().reverse() as Array<Record<string, unknown>>;
+    return buildHistoryContents(
+      rows.map((r) => ({
+        senderKind: normalizeCourierSenderKind(r.sender_kind),
+        body: String(r.body ?? ''),
+      }))
+    );
+  } catch (err) {
+    console.error(
+      '[courier/messages] gagal memuat riwayat:',
+      err instanceof Error ? err.message : String(err)
+    );
+    return [];
+  }
+}
+
+interface AutomatedInsertResult {
+  /** true = balasan untuk pesan pemicu ini sudah ada (retry/POST ganda). */
+  alreadyAnswered: boolean;
+  error: { message?: string; code?: string } | null;
+}
+
+/**
+ * Sisipkan balasan otomatis. `reply_to_message_id` + unique partial index
+ * mencegah dua balasan otomatis untuk SATU pesan pemicu yang sama; bila
+ * kolom belum ada (migrasi 20261105 belum diterapkan), insert dilanjutkan
+ * tanpa dedup dan peringatan dicatat — chat tetap berjalan.
+ */
+async function insertAutomatedReply(
+  service: SupabaseClient,
+  params: {
+    orderId: string;
+    kind: 'ai_courier' | 'demo_courier';
+    body: string;
+    replyToMessageId: string;
+  }
+): Promise<AutomatedInsertResult> {
+  const base = {
+    order_id: params.orderId,
+    sender_user_id: null,
+    sender_kind: params.kind,
+    body: params.body,
+  };
+  const first = await service
+    .from('courier_messages')
+    .insert({ ...base, reply_to_message_id: params.replyToMessageId || null });
+  if (!first.error) return { alreadyAnswered: false, error: null };
+
+  const message = String(first.error.message ?? '').toLowerCase();
+  const code = (first.error as { code?: string }).code ?? '';
+  if (message.includes('reply_to_message_id') || code === 'PGRST204' || code === '42703') {
+    console.warn('[courier/messages] reply_to_message_id belum ada; lanjut tanpa dedup.');
+    const retry = await service.from('courier_messages').insert(base);
+    return retry.error
+      ? { alreadyAnswered: false, error: retry.error }
+      : { alreadyAnswered: false, error: null };
+  }
+  if (/unique|duplicate/.test(message) || code === '23505') {
+    return { alreadyAnswered: true, error: first.error };
+  }
+  return { alreadyAnswered: false, error: first.error };
+}
 
 /**
  * GET  /api/courier/messages?orderId=... — daftar pesan percakapan.
@@ -188,21 +274,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Gagal mengirim pesan.' }, { status: 500 });
     }
 
-    /**
-     * Balasan OTOMATIS HANYA untuk pesanan DEMO (`delivery_assignments.is_demo`).
-     *
-     * Urutan:
-     * 1. Bila `GEMINI_API_KEY` diisi, pakai Gemini (Kurir AI) — baris
-     *    disimpan dengan `sender_kind = 'ai_courier'`.
-     * 2. Bila Gemini tidak dikonfigurasi, pakai balasan Kurir Demo
-     *    deterministik seperti sebelumnya (`sender_kind = 'demo_courier'`).
-     * 3. Bila Gemini gagal / kena rate limit, jangan gagalkan pengiriman
-     *    pesan pembeli; respons membawa `aiReply.status = 'failed'` beserta
-     *    pesan ramah yang aman (tanpa detail internal).
-     *
-     * Pesanan kurir sungguhan tidak pernah dibalas otomatis di jalur ini.
-     */
-    let aiReply: { status: string; message?: string } | undefined;
+    const row = data as Record<string, unknown> | null;
+    const userMessageId = row?.id ? String(row.id) : '';
+
+    let aiReply:
+      | { status: 'sent' | 'fallback' | 'already_answered' | 'failed'; reason?: string; message?: string }
+      | undefined;
     if (isBuyer) {
       try {
         const service = createServiceClient();
@@ -212,7 +289,9 @@ export async function POST(req: NextRequest) {
           .eq('order_id', orderId)
           .maybeSingle();
 
-        if (demoAssignment?.is_demo) {
+        const isDemoOrder = Boolean(demoAssignment?.is_demo);
+
+        if (isDemoOrder) {
           const { data: orderRow } = await service
             .from('orders')
             .select('order_code, order_status')
@@ -222,49 +301,78 @@ export async function POST(req: NextRequest) {
           const orderCode = String(orderRow?.order_code ?? '');
           const orderStatus = String(orderRow?.order_status ?? 'processing');
 
-          const outcome = await generateDemoCourierAiReply({
-            userId: user.id,
-            orderCode,
-            orderStatus,
-            message,
+          const geminiConfigured = isGeminiConfigured();
+          const history = geminiConfigured
+            ? await loadCourierHistory(service, orderId)
+            : [];
+          // Tanpa minimal satu giliran 'user' di konteks (riwayat gagal
+          // dimuat / kosong), Gemini tidak punya pesan untuk dijawab —
+          // jalur AI tidak dipilih, fallback Kurir Demo yang dipakai.
+          const mode = decideAutoReplyMode({
+            role: 'buyer',
+            isDemoOrder,
+            geminiConfigured: geminiConfigured && hasBuyerMessage(history),
           });
 
-          if (outcome.ok) {
-            await service.from('courier_messages').insert({
-              order_id: orderId,
-              sender_user_id: null,
-              sender_kind: 'ai_courier',
-              body: outcome.reply,
-            });
-            aiReply = { status: 'sent' };
-          } else if (outcome.reason === 'not_configured') {
-            const reply = buildDemoCourierReply({
-              message,
-              stage: orderStatus,
+          let automatedKind: 'ai_courier' | 'demo_courier' | null = null;
+          let automatedBody = '';
+          let fallbackReason: string | undefined;
+          let fallbackMessage: string | undefined;
+
+          if (mode === 'ai') {
+            const outcome = await generateDemoCourierAiReply({
+              userId: user.id,
               orderCode,
+              orderStatus,
+              contents: history,
             });
-            await service.from('courier_messages').insert({
-              order_id: orderId,
-              sender_user_id: null,
-              sender_kind: 'demo_courier',
-              body: reply,
-            });
-            aiReply = { status: 'fallback' };
+            if (outcome.ok) {
+              automatedKind = 'ai_courier';
+              automatedBody = outcome.reply;
+            } else {
+              automatedKind = 'demo_courier';
+              automatedBody = buildDemoCourierReply({ message, stage: orderStatus, orderCode });
+              fallbackReason = outcome.providerReason ?? outcome.reason;
+              fallbackMessage = outcome.message;
+            }
           } else {
-            aiReply = { status: 'failed', message: outcome.message };
+            // Gemini tidak aktif (belum dikonfigurasi, atau riwayat tidak
+            // memuat pesan user) → Kurir Demo deterministik (perilaku lama).
+            automatedKind = 'demo_courier';
+            automatedBody = buildDemoCourierReply({ message, stage: orderStatus, orderCode });
+            fallbackReason = 'not_configured';
+          }
+
+          const inserted = await insertAutomatedReply(service, {
+            orderId,
+            kind: automatedKind,
+            body: automatedBody,
+            replyToMessageId: userMessageId,
+          });
+
+          if (inserted.alreadyAnswered) {
+            // Retry/POST ganda: tidak ada balasan kedua yang disisipkan.
+            aiReply = { status: 'already_answered' };
+          } else if (inserted.error) {
+            aiReply = {
+              status: 'failed',
+              message: 'Kurir AI sedang tidak dapat menjawab. Coba lagi sebentar.',
+            };
+          } else if (automatedKind === 'ai_courier') {
+            aiReply = { status: 'sent' };
+          } else {
+            aiReply = { status: 'fallback', reason: fallbackReason, message: fallbackMessage };
           }
         }
       } catch (replyErr) {
         const safe = replyErr instanceof Error ? replyErr.message : String(replyErr);
-        console.error('[courier/messages] gagal membalas sebagai Kurir AI:', safe);
+        console.error('[courier/messages] gagal membalas otomatis:', safe);
         aiReply = {
           status: 'failed',
           message: 'Kurir AI sedang tidak dapat menjawab. Coba lagi sebentar.',
         };
       }
     }
-
-    const row = data as Record<string, unknown> | null;
     return NextResponse.json({
       message: {
         id: String(row?.id ?? ''),

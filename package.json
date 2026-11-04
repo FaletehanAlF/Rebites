@@ -59,7 +59,8 @@
     "test:seller-orders-attention": "node --test tests/seller-orders-attention.test.ts",
     "test:package-weight-origin": "node --test tests/package-weight-origin.test.ts",
     "test:menu-schedule": "node --test tests/menu-schedule.test.ts",
-    "test:flash-sale-schedule": "node --test tests/flash-sale-schedule.test.ts"
+    "test:flash-sale-schedule": "node --test tests/flash-sale-schedule.test.ts",
+    "test:gemini-connection": "node scripts/check-gemini-connection.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
