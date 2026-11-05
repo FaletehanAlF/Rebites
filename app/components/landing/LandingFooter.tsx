@@ -191,6 +191,12 @@ export function LandingFooter() {
                       onClick={
                         link.sectionId
                           ? (event) => {
+                              // On the landing page the section exists, so scroll
+                              // in place (Lenis-aware). Elsewhere - the public
+                              // pages that render this footer - it does not:
+                              // skipping preventDefault lets the Link navigate to
+                              // `/#id`, which scrolls after the route change.
+                              if (!document.getElementById(link.sectionId as string)) return;
                               event.preventDefault();
                               scrollToSection(link.sectionId as string);
                             }

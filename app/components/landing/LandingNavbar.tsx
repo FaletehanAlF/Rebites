@@ -1,72 +1,174 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Menu, User, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { scrollToSection } from '@/app/components/landing/scroll-to-section';
+import { ArrowRight, ChevronDown, Menu, User, X } from 'lucide-react';
+import { cn } from '@/lib/utils'
 
-type NavItem = { id: string; label: string };
+type NavItem = { href: string; label: string };
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'rekomendasi', label: 'Jelajahi' },
-  { id: 'cara-kerja', label: 'Cara Kerja' },
-  { id: 'umkm', label: 'Untuk Penjual' },
-  { id: 'pembeli', label: 'Untuk Pembeli' },
-  { id: 'faq', label: 'FAQ' },
+  { href: '/', label: 'Beranda' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/hubungi-kami', label: 'Hubungi Kami' },
 ];
+
+/**
+ * Item-item dropdown "Tentang Kami" — mengarah ke halaman `/tentang-kami`;
+ * item pertama ke halaman utuh, sisanya langsung ke section (anchor).
+ */
+const ABOUT_ITEMS = [
+  { href: '/tentang-kami', label: 'Tentang Kami' },
+  { href: '/tentang-kami#visi-misi', label: 'Visi & Misi' },
+  { href: '/tentang-kami#tim-leadership', label: 'Tim & Leadership' },
+] as const;
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
+const NAV_LINK =
+  'inline-flex px-3 py-2 font-secondary text-sm transition-colors duration-200';
+
+function NavLink({ href, label, active }: { href: string; label: string; active: boolean }) {
+  return (
+    <li>
+      <Link
+        href={href}
+        aria-current={active ? 'page' : undefined}
+        className={cn(NAV_LINK, 'text-muted-foreground hover:text-primary', FOCUS_RING)}
+      >
+        {label}
+      </Link>
+    </li>
+  );
+}
+
 /**
- * Public navigation bar for the ReBites showcase: the landing page and the
- * public product preview (`/preview/product`), which renders it above the
- * product content.
+ * Dropdown "Tentang Kami" di navbar desktop — pemicunya tombol yang membuka
+ * panel putih membulat; item panel memuat link ke `/tentang-kami` (item
+ * pertama) dan anchor section halaman Tentang Kami.
+ */
+function AboutDropdown() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLLIElement>(null);
+
+  // Tutup dropdown saat berpindah route.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  // Klik di luar atau Escape menutup dropdown.
+  useEffect(() => {
+    if (!open) return;
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <li
+      ref={containerRef}
+      className="relative"
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls="tentang-kami-menu"
+        aria-label={open ? 'Tutup menu Tentang Kami' : 'Buka menu Tentang Kami'}
+        onClick={() => setOpen((value) => !value)}
+        onMouseEnter={() => setOpen(true)}
+        onFocus={() => setOpen(true)}
+        className={cn(NAV_LINK, 'items-center gap-1.5 text-muted-foreground', FOCUS_RING)}
+      >
+        Tentang Kami
+        <ChevronDown
+          aria-hidden
+          className={cn(
+            'h-4 w-4 text-current transition-transform duration-200',
+            open && 'rotate-180',
+          )}
+        />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          // Pembungkus transparan: pt-3 menggantikan margin panel, supaya area
+          // hover tetap tersambung dari tombol ke panel (dropdown tidak
+          // tertutup saat mouse melintasi jarak).
+          <div key="tentang-kami-panel" className="absolute left-0 top-full z-10 pt-3">
+            <motion.div
+              id="tentang-kami-menu"
+              initial={{ opacity: 0, y: 6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.98 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className="w-[280px] rounded-2xl border border-border/80 bg-white p-2 shadow-[0_28px_56px_-30px_rgba(27,77,50,0.45)]"
+            >
+              <ul className="flex flex-col">
+                {ABOUT_ITEMS.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        'block rounded-xl px-4 py-3.5 font-secondary text-[15px] leading-none text-neutral-600 transition-colors duration-150',
+                        FOCUS_RING,
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </li>
+  );
+}
+
+/**
+ * Public navigation bar for the ReBites showcase: the landing page, the
+ * public pages that render it (`/tentang-kami`, `/blog`, `/hubungi-kami`) and
+ * the public product preview (`/preview/product`).
  *
  * Deliberately always light (the hero, like most of the page, sits on a white
  * surface) so it never needs to flip contrast depending on the section behind
- * it — the previous navbar probed `[data-nav]` on every scroll frame to solve
- * exactly that.
+ * it. Menu items are plain route links; "Tentang Kami" is a dropdown of
+ * section anchors within `/tentang-kami`. `usePathname()` only feeds
+ * `aria-current` for screen readers — all items render in the same style.
  */
 export function LandingNavbar() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState('');
 
-  // One rAF-coalesced pass per scroll frame: reads at most `NAV_ITEMS.length`
-  // rects instead of forcing layout work on every scroll event.
   useEffect(() => {
-    let rafId: number | null = null;
+    const onScroll = () => setScrolled(window.scrollY > 12);
 
-    const update = () => {
-      rafId = null;
-      setScrolled(window.scrollY > 12);
-
-      let current = '';
-      for (const item of NAV_ITEMS) {
-        const el = document.getElementById(item.id);
-        if (!el) continue;
-        if (el.getBoundingClientRect().top <= 160) current = item.id;
-      }
-      setActive(current);
-    };
-
-    const schedule = () => {
-      if (rafId == null) rafId = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
-
-    return () => {
-      if (rafId != null) cancelAnimationFrame(rafId);
-      window.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
-    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Escape closes the mobile sheet; resizing to desktop closes it too so the
@@ -89,22 +191,16 @@ export function LandingNavbar() {
     };
   }, [open]);
 
-  const handleJump = (
-    event: React.MouseEvent<HTMLAnchorElement>,
-    id: string,
-  ) => {
-    setOpen(false);
+  // Tutup accordion "Tentang Kami" saat berpindah route.
+  useEffect(() => {
+    setAboutOpen(false);
+  }, [pathname]);
 
-    // On the landing page the section exists, so scroll in place (Lenis-aware).
-    // On the other public page that renders this navbar — `/preview/product` —
-    // it does not: skipping preventDefault lets the Link navigate to `/#id`,
-    // which scrolls to the section after the route change.
-    if (!document.getElementById(id)) return;
+  const isActive = (href: string) => pathname === href;
 
-    event.preventDefault();
-    setActive(id);
-    scrollToSection(id);
-  };
+  // Beranda selalu pertama, "Tentang Kami" menyusul, sisanya di belakangnya.
+  const leadingItems = NAV_ITEMS.filter((item) => item.href === '/');
+  const trailingItems = NAV_ITEMS.filter((item) => item.href !== '/');
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
@@ -131,40 +227,29 @@ export function LandingNavbar() {
               className="h-9 w-9 rounded-full object-cover"
             />
             <span className="font-display text-xl font-semibold tracking-tight text-primary">
-              Re<span className="font-light italic">Bites</span>
+              ReBites
             </span>
           </Link>
 
           <nav aria-label="Navigasi utama" className="hidden lg:block">
             <ul className="flex items-center gap-1">
-              {NAV_ITEMS.map((item) => {
-                const isActive = active === item.id;
-                return (
-                  <li key={item.id}>
-                    <Link
-                      href={`/#${item.id}`}
-                      onClick={(event) => handleJump(event, item.id)}
-                      aria-current={isActive ? 'true' : undefined}
-                      className={cn(
-                        'relative inline-flex px-3 py-2 font-secondary text-sm transition-colors duration-200',
-                        isActive
-                          ? 'font-semibold text-primary'
-                          : 'text-muted-foreground hover:text-primary',
-                        FOCUS_RING,
-                      )}
-                    >
-                      {item.label}
-                      <span
-                        aria-hidden
-                        className={cn(
-                          'absolute inset-x-3 bottom-1 h-0.5 origin-left rounded-full bg-primary transition-transform duration-300',
-                          isActive ? 'scale-x-100' : 'scale-x-0',
-                        )}
-                      />
-                    </Link>
-                  </li>
-                );
-              })}
+              {leadingItems.map((item) => (
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  active={isActive(item.href)}
+                />
+              ))}
+              <AboutDropdown />
+              {trailingItems.map((item) => (
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  active={isActive(item.href)}
+                />
+              ))}
             </ul>
           </nav>
 
@@ -227,19 +312,84 @@ export function LandingNavbar() {
               className="mt-2 overflow-hidden rounded-2xl border border-border bg-white p-2 shadow-[0_24px_48px_-28px_rgba(27,77,50,0.5)]"
             >
               <ul className="flex flex-col">
-                {NAV_ITEMS.map((item) => {
-                  const isActive = active === item.id;
+                {leadingItems.map((item) => {
+                  const active = isActive(item.href);
                   return (
-                    <li key={item.id}>
+                    <li key={item.href}>
                       <Link
-                        href={`/#${item.id}`}
-                        onClick={(event) => handleJump(event, item.id)}
-                        aria-current={isActive ? 'true' : undefined}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        aria-current={active ? 'page' : undefined}
                         className={cn(
                           'flex min-h-[44px] items-center rounded-xl px-4 font-secondary text-sm transition-colors duration-200',
-                          isActive
-                            ? 'bg-secondary font-semibold text-primary'
-                            : 'text-foreground hover:bg-secondary',
+                          'text-foreground hover:bg-secondary',
+                        )}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setAboutOpen((value) => !value)}
+                    aria-expanded={aboutOpen}
+                    aria-controls="mobile-tentang-kami"
+                    aria-label={aboutOpen ? 'Tutup menu Tentang Kami' : 'Buka menu Tentang Kami'}
+                    className={cn(
+                      'flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl px-4 text-left font-secondary text-sm text-foreground transition-colors duration-200',
+                      FOCUS_RING,
+                    )}
+                  >
+                    <span>Tentang Kami</span>
+                    <ChevronDown
+                      aria-hidden
+                      className={cn(
+                        'h-4 w-4 text-current transition-transform duration-200',
+                        aboutOpen && 'rotate-180',
+                      )}
+                    />
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {aboutOpen && (
+                      <motion.ul
+                        id="mobile-tentang-kami"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden pl-9"
+                      >
+                        {ABOUT_ITEMS.map((item) => (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              onClick={() => setOpen(false)}
+                              className="flex min-h-[44px] items-center rounded-xl px-4 font-secondary text-sm text-neutral-600 transition-colors duration-200"
+                            >
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
+                </li>
+
+                {trailingItems.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        aria-current={active ? 'page' : undefined}
+                        className={cn(
+                          'flex min-h-[44px] items-center rounded-xl px-4 font-secondary text-sm transition-colors duration-200',
+                          'text-foreground hover:bg-secondary',
                         )}
                       >
                         {item.label}
