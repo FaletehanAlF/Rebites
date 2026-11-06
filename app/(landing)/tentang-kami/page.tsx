@@ -46,7 +46,7 @@ export default function TentangKamiPage() {
                 <span className="font-light italic">bersama-sama</span>.
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-[1.8] text-muted-foreground">
-                ReBites adalah marketplace makanan surplus dari UMKM — lahir dari
+                ReBites adalah marketplace makanan surplus dari UMKM - lahir dari
                 satu keyakinan sederhana: makanan yang masih baik layak sampai ke
                 meja makan, bukan ke tempat sampah.
               </p>
@@ -67,7 +67,7 @@ export default function TentangKamiPage() {
                       Visi
                     </h2>
                     <p className="mt-4 text-balance font-display text-[clamp(1.35rem,2vw,1.75rem)] font-medium leading-[1.3] tracking-[-0.02em] text-white">
-                      Menjadi platform penyelamat makanan terdepan di Indonesia —
+                      Menjadi platform penyelamat makanan terdepan di Indonesia -
                       di mana setiap makanan surplus menemukan rumah barunya,
                       dan food loss serta food waste ditekan sekecil mungkin.
                     </p>
