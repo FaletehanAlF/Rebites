@@ -1,28 +1,26 @@
 import type { Metadata } from "next";
-import AuthCenteredShell from "@/app/components/auth/auth-centered-shell";
+import AuthSplitShell from "@/app/components/auth/auth-split-shell";
 import PenjualLoginForm from "@/app/components/auth/penjual-login-form";
 
 export const metadata: Metadata = {
-  title: "Masuk Penjual - ReBites",
+  title: "Masuk Penjual — ReBites",
   description:
-    "Masuk sebagai penjual ReBites dengan email, nama toko, dan password untuk mengelola dashboard toko.",
+    "Masuk sebagai penjual ReBites untuk mengelola toko dan berjualan makanan surplus.",
 };
 
-export default function PenjualLoginPage() {
+export default function LoginPenjualPage() {
   return (
-    <AuthCenteredShell
-      imageSrc="/penjual-login.jpg"
-      variant="seller"
-      title={
-        <>
-          Rasa enak,
-          <br />
-          dampak baik.
-        </>
-      }
-      description="Kelola toko surplus Anda. Masuk untuk memantau pesanan, stok, dan laporan penjualan."
+    <AuthSplitShell
+      imageSrc="/hero-makanan.avif"
+      imageAlt="ReBites — Makanan surplus"
+      variant="buyer"
+      overlayText={{
+        headline: "Masuk sebagai Penjual",
+        description:
+          "Masuk untuk mengelola toko, mengatur menu, dan mulai berjualan makanan surplus.",
+      }}
     >
       <PenjualLoginForm />
-    </AuthCenteredShell>
+    </AuthSplitShell>
   );
 }

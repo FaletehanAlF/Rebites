@@ -10,15 +10,23 @@ import { NotificationCard } from './notification-card';
 import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
 import { cn } from '@/lib/utils';
 
-type NotificationFilter = 'all' | 'order' | 'subscription';
+type NotificationFilter = 'all' | 'order' | 'subscription' | 'moderation';
 
 const FILTER_TABS: { value: NotificationFilter; label: string }[] = [
   { value: 'all', label: 'Semua' },
   { value: 'order', label: 'Pesanan Masuk' },
   { value: 'subscription', label: 'Langganan' },
+  { value: 'moderation', label: 'Moderasi' },
 ];
 
 const ORDER_TYPES: NotificationType[] = ['incoming_order', 'new_review', 'order_completed'];
+const MODERATION_TYPES: NotificationType[] = [
+  'product_approved',
+  'product_rejected',
+  'product_warning',
+  // NOTIF-1: laporan baru untuk toko termasuk kategori moderasi.
+  'report_received',
+];
 const SUBSCRIPTION_TYPES: NotificationType[] = [
   'subscription_active',
   'subscription_renewed',
@@ -38,7 +46,11 @@ export function SellerNotificationView() {
   const filtered = useMemo(() => {
     if (filter === 'all') return notifications;
     const types =
-      filter === 'order' ? ORDER_TYPES : SUBSCRIPTION_TYPES;
+      filter === 'order'
+        ? ORDER_TYPES
+        : filter === 'moderation'
+          ? MODERATION_TYPES
+          : SUBSCRIPTION_TYPES;
     return notifications.filter((n) => types.includes(n.type));
   }, [notifications, filter]);
 
@@ -56,7 +68,7 @@ export function SellerNotificationView() {
           <button
             type="button"
             onClick={markAllRead}
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition-colors hover:bg-caramel hover:text-white"
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white"
           >
             <CheckCheck className="h-3.5 w-3.5" />
             Tandai semua dibaca
@@ -77,7 +89,7 @@ export function SellerNotificationView() {
               'rounded-full px-4 py-2 text-xs font-semibold transition-colors',
               filter === tab.value
                 ? 'bg-primary text-white shadow-sm shadow-primary/25'
-                : 'border border-sage-100 bg-white text-charcoal-500 hover:text-charcoal-900'
+                : 'border border-border bg-white text-muted-foreground hover:text-foreground'
             )}
           >
             {tab.label}
@@ -88,17 +100,19 @@ export function SellerNotificationView() {
       { }
       <div className="mt-5 space-y-2.5">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-hairline bg-cream-50 px-6 py-14 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cream-100 text-charcoal-500">
+          <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-secondary px-6 py-14 text-center">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <Bell className="h-6 w-6" />
             </span>
-            <h3 className="mt-4 font-display text-lg font-medium text-charcoal-900">
+            <h3 className="mt-4 font-display text-lg font-medium text-foreground">
               Belum ada notifikasi
             </h3>
-            <p className="mt-1 max-w-xs text-sm text-charcoal-500">
+            <p className="mt-1 max-w-xs text-sm text-muted-foreground">
               {filter === 'all'
-                ? 'Notifikasi pesanan masuk dan langganan akan muncul di sini.'
-                : 'Tidak ada notifikasi untuk filter ini.'}
+                ? 'Notifikasi pesanan masuk, langganan, dan moderasi produk akan muncul di sini.'
+                : filter === 'moderation'
+                  ? 'Notifikasi hasil moderasi produk (disetujui/ditolak) akan muncul di sini.'
+                  : 'Tidak ada notifikasi untuk filter ini.'}
             </p>
           </div>
         ) : (

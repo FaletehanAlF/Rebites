@@ -76,13 +76,15 @@ let inflight: Promise<AnalyticsPayload> | null = null;
 function invalidateCache() {
   cache = null;
   cacheTimestamp = 0;
+  // Lepas inflight agar invalidasi benar-benar memulai fetch baru.
+  inflight = null;
 }
 
 async function loadAnalytics(): Promise<AnalyticsPayload> {
   const now = Date.now();
   if (cache && now - cacheTimestamp < CACHE_TTL_MS) return cache;
   if (!inflight) {
-    inflight = (async () => {
+    const current: Promise<AnalyticsPayload> = (async () => {
       const [orders, products, reviewCount] = await Promise.all([
         getSellerOrders(),
         getSellerProducts(),
@@ -318,15 +320,28 @@ async function loadAnalytics(): Promise<AnalyticsPayload> {
         achievements,
         avgPricePerPorsi,
       };
-      cache = payload;
-      cacheTimestamp = Date.now();
       return payload;
     })();
+    inflight = current;
+    // Set cache + lepas inflight setelah selesai: awaiter yang sedang berjalan
+    // tetap mendapat payload yang sama, pemanggil berikutnya memulai fetch baru.
+    // Lewati bila sudah ada invalidasi/fetch baru di tengah jalan, supaya
+    // hasil basi tidak menimpa hasil segar.
+    current.then(
+      (payload) => {
+        if (inflight !== current) return;
+        cache = payload;
+        cacheTimestamp = Date.now();
+        inflight = null;
+      },
+      () => {
+        if (inflight === current) inflight = null;
+      }
+    );
   }
   try {
     return await inflight;
   } catch {
-    inflight = null;
     return { ...EMPTY, hydrated: true };
   }
 }

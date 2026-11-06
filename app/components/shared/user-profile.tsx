@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
@@ -15,7 +16,6 @@ import {
   Loader2,
   Mail,
   MapPin,
-  Menu,
   Package,
   Phone,
   Receipt,
@@ -37,14 +37,11 @@ import { useAddresses } from "@/hooks/use-addresses";
 import { useRebitesCoins } from "@/hooks/use-rebites-coins";
 import { useFollowedStores } from "@/hooks/use-followed-stores";
 import { useLikedFoods } from "@/hooks/use-liked-foods";
-import { useCatalog } from "@/lib/catalog";
 import { formatOrderDateTime } from "@/lib/order-utils";
 import { formatRupiah } from "@/lib/data";
 import type { StoredOrder } from "@/lib/types";
 import { SmartImage } from "./SmartImage";
-import { ProfileSidebarNav } from "./profile-sidebar-nav";
-import { MobileNavbar } from "./MobileNavbar";
-import { MobileBottomNav } from "./MobileBottomNav";
+import { BuyerShell } from "./buyer-shell";
 import {
   Dialog,
   DialogContent,
@@ -71,7 +68,7 @@ const STATUS_STYLE: Record<
   { icon: LucideIcon; className: string }
 > = {
   Selesai: { icon: Check, className: "bg-primary/10 text-primary" },
-  Diproses: { icon: Clock, className: "bg-caramel/15 text-caramel-dark" },
+  Diproses: { icon: Clock, className: "bg-primary/15 text-primary" },
 };
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -99,7 +96,7 @@ function StatusBadge({ order }: { order: StoredOrder }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-inter text-xs font-semibold",
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-secondary text-xs font-semibold",
         className,
       )}
     >
@@ -115,7 +112,7 @@ function SectionSkeletonRows({ rows = 3 }: { rows?: number }) {
       {Array.from({ length: rows }).map((_, i) => (
         <div
           key={i}
-          className="h-4 w-full animate-pulse rounded-full bg-cream-100"
+          className="h-4 w-full animate-pulse rounded-full bg-muted"
         />
       ))}
     </div>
@@ -141,10 +138,10 @@ function InfoRow({ icon: Icon, label, value, chip }: InfoRowProps) {
         <Icon className="h-[18px] w-[18px]" />
       </span>
       <div className="min-w-0">
-        <p className="font-inter text-[11px] font-medium uppercase tracking-wider text-stone">
+        <p className="font-secondary text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           {label}
         </p>
-        <p className="truncate font-inter text-sm font-medium text-primary">
+        <p className="truncate font-secondary text-sm font-medium text-primary">
           {value}
         </p>
       </div>
@@ -201,15 +198,15 @@ function ProfileSidebar() {
 
   return (
     <aside className="space-y-5 lg:sticky lg:top-28 lg:h-fit">
-      <section className="relative overflow-hidden rounded-3xl border border-hairline/70 bg-white p-6 text-center shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]">
+      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-white p-6 text-center shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]">
         <FloatingLeaf
-          className="right-5 top-5 hidden h-4 w-4 text-sage-500/50 lg:block"
+          className="right-5 top-5 hidden h-4 w-4 text-muted-foreground/50 lg:block"
           delay={0.8}
         />
         <div className="relative mx-auto h-24 w-24">
-          <span className="absolute -inset-1.5 rounded-full border border-sage-500/40" />
-          <span className="absolute -inset-3 rounded-full border border-dashed border-sage-500/30" />
-          <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-primary-deep font-display text-2xl font-semibold text-white ring-4 ring-cream-100">
+          <span className="absolute -inset-1.5 rounded-full border border-primary/30" />
+          <span className="absolute -inset-3 rounded-full border border-dashed border-primary/30" />
+          <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-primary-deep font-display text-2xl font-semibold text-white ring-4 ring-primary-foreground">
             {sidebarAvatarUrl ? (
               <Image src={sidebarAvatarUrl} alt={displayName} fill className="object-cover" unoptimized />
             ) : initials ? (
@@ -223,8 +220,8 @@ function ProfileSidebar() {
         <h2 className="mt-4 font-display text-xl font-semibold text-primary">
           {displayName}
         </h2>
-        <p className="mt-1 flex items-center justify-center gap-1.5 font-inter text-sm text-stone">
-          <MapPin className="h-3.5 w-3.5 text-sage-600" />
+        <p className="mt-1 flex items-center justify-center gap-1.5 font-secondary text-sm text-muted-foreground">
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
           {addressLoading
             ? "Memuat…"
             : selectedAddress?.city
@@ -232,7 +229,7 @@ function ProfileSidebar() {
               : "Depok, Jawa Barat"}
         </p>
 
-        <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-sage-100 px-3.5 py-1 font-inter text-xs font-semibold text-sage-600">
+        <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3.5 py-1 font-secondary text-xs font-semibold text-muted-foreground">
           {isSeller ? (
             <>
               <Store className="h-3.5 w-3.5" />
@@ -247,8 +244,8 @@ function ProfileSidebar() {
         </span>
       </section>
 
-      <section className="relative overflow-hidden rounded-3xl border border-hairline/70 bg-white p-6 shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]">
-        <SoftBlob className="-right-10 -top-12 h-32 w-32 bg-sage-100/70" />
+      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-white p-6 shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]">
+        <SoftBlob className="-right-10 -top-12 h-32 w-32 bg-muted/70" />
         <h3 className="relative font-display text-base font-semibold text-primary">
           Data Akun
         </h3>
@@ -263,13 +260,13 @@ function ProfileSidebar() {
             icon={Phone}
             label="No. HP"
             value={addressLoading ? "Memuat…" : selectedAddress?.phone || "-"}
-            chip="bg-sage-100 text-sage-600"
+            chip="bg-muted text-muted-foreground"
           />
           <InfoRow
             icon={Package}
             label="Tanggal Bergabung"
             value={joinedAt || "-"}
-            chip="bg-caramel/15 text-caramel-dark"
+            chip="bg-primary/15 text-primary"
           />
         </ul>
       </section>
@@ -284,7 +281,7 @@ function EcoImpactBanner({ savedPorsi }: { savedPorsi: number }) {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
-      className="relative overflow-hidden rounded-3xl border border-hairline/70 shadow-[0_32px_64px_-40px_rgba(42,55,49,0.6)]"
+      className="relative overflow-hidden rounded-3xl border border-border/70 shadow-[0_32px_64px_-40px_rgba(42,55,49,0.6)]"
     >
       <Image
         src={BANNER_IMAGE}
@@ -296,9 +293,9 @@ function EcoImpactBanner({ savedPorsi }: { savedPorsi: number }) {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-primary-deep/95 via-primary to-primary-deep/25" />
 
-      <Sparkles className="pointer-events-none absolute right-10 top-8 h-5 w-5 text-caramel/60" />
+      <Sparkles className="pointer-events-none absolute right-10 top-8 h-5 w-5 text-primary/60" />
       <FloatingLeaf
-        className="bottom-10 right-16 hidden h-5 w-5 text-caramel/50 lg:block"
+        className="bottom-10 right-16 hidden h-5 w-5 text-primary/50 lg:block"
         delay={1.4}
       />
       <Leaf
@@ -307,15 +304,15 @@ function EcoImpactBanner({ savedPorsi }: { savedPorsi: number }) {
       />
 
       <div className="relative px-7 py-12 sm:px-10 sm:py-16 lg:px-14">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 font-inter text-xs font-semibold tracking-wide text-cream-100 backdrop-blur-sm">
-          <Leaf className="h-3.5 w-3.5 text-caramel" />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 font-secondary text-xs font-semibold tracking-wide text-primary-foreground backdrop-blur-sm">
+          <Leaf className="h-3.5 w-3.5 text-primary" />
           Dampak Pribadimu
         </span>
-        <h2 className="mt-5 max-w-2xl font-display text-[clamp(1.6rem,3vw,2.4rem)] font-semibold leading-[1.15] tracking-[-0.02em] text-cream-50 [text-shadow:0_2px_24px_rgba(15,26,20,0.5)]">
+        <h2 className="mt-5 max-w-2xl font-display text-[clamp(1.6rem,3vw,2.4rem)] font-semibold leading-[1.15] tracking-[-0.02em] text-primary-foreground [text-shadow:0_2px_24px_rgba(15,26,20,0.5)]">
           &ldquo;Setiap porsi yang kamu selamatkan adalah napas baru bagi
           bumi.&rdquo;
         </h2>
-        <p className="mt-4 max-w-xl font-inter text-sm leading-relaxed text-cream-100/80 sm:text-[0.95rem]">
+        <p className="mt-4 max-w-xl font-secondary text-sm leading-relaxed text-primary-foreground/80 sm:text-[0.95rem]">
           {savedPorsi > 0
             ? `Sejauh ini kamu sudah menyelamatkan ${savedPorsi.toLocaleString("id-ID")} porsi makanan, berhemat sambil menjaga planet.`
             : "Belum ada porsi terselamatkan. Pesanan pertamamu adalah langkah kecil yang berarti bagi bumi."}
@@ -350,14 +347,14 @@ function ImpactStats({
       value: loading ? "…" : porsi.toLocaleString("id-ID"),
       unit: "porsi",
       label: "Porsi Diselamatkan",
-      chip: "bg-caramel/15 text-caramel",
+      chip: "bg-primary/15 text-primary",
     },
     {
       icon: Receipt,
       value: loading ? "…" : totalPesanan.toLocaleString("id-ID"),
       unit: "x",
       label: "Total Pesanan",
-      chip: "bg-sage-500/20 text-sage-500",
+      chip: "bg-primary/20 text-muted-foreground",
     },
     {
       icon: Leaf,
@@ -382,16 +379,16 @@ function ImpactStats({
       <SoftBlob className="-left-20 -top-20 h-64 w-64 bg-white/5" />
       <SoftBlob className="-bottom-24 -right-20 h-72 w-72 bg-primary/25" />
       <DotPattern className="right-8 top-8 hidden h-20 w-20 text-white/10 lg:block" />
-      <FloatingLeaf className="left-6 top-6 hidden h-5 w-5 text-caramel/60 lg:block" />
+      <FloatingLeaf className="left-6 top-6 hidden h-5 w-5 text-primary/60 lg:block" />
 
       <motion.div variants={fadeUp} className="relative">
-        <p className="font-inter text-xs font-semibold uppercase tracking-widest text-caramel">
+        <p className="font-secondary text-xs font-semibold uppercase tracking-widest text-primary">
           Dampak Lingkungan
         </p>
-        <h3 className="mt-2 font-display text-xl font-semibold text-cream-50 sm:text-2xl">
+        <h3 className="mt-2 font-display text-xl font-semibold text-primary-foreground sm:text-2xl">
           Dampakmu untuk Bumi
         </h3>
-        <p className="mt-1 max-w-xl font-inter text-sm leading-relaxed text-cream-100/70">
+        <p className="mt-1 max-w-xl font-secondary text-sm leading-relaxed text-primary-foreground/70">
           Setiap pesanan mengurangi sisa pangan yang berakhir di tempat
           pembuangan akhir.
         </p>
@@ -435,14 +432,14 @@ function ImpactStats({
                     </span>
                   )}
                 </p>
-                <p className="mt-1 font-inter text-sm text-cream-100/70">
+                <p className="mt-1 font-secondary text-sm text-primary-foreground/70">
                   {stat.label}
                 </p>
               </motion.div>
             ))}
           </motion.div>
           {totalPesanan === 0 && (
-            <p className="relative mt-4 font-inter text-xs text-cream-100/60">
+            <p className="relative mt-4 font-secondary text-xs text-primary-foreground/60">
               Belum ada pesanan, statistik akan terisi otomatis begitu kamu
               memesan.
             </p>
@@ -459,7 +456,7 @@ function CoinsAndAddress() {
 
   return (
     <div className="relative">
-      <SoftBlob className="-bottom-16 -left-16 hidden h-56 w-56 bg-caramel/15/50 lg:block" />
+      <SoftBlob className="-bottom-16 -left-16 hidden h-56 w-56 bg-primary/15/50 lg:block" />
       <motion.section
         variants={stagger}
         initial="hidden"
@@ -469,32 +466,32 @@ function CoinsAndAddress() {
       >
         <motion.div
           variants={fadeUp}
-          className="grain-overlay relative overflow-hidden rounded-2xl bg-primary p-6 text-cream-50 shadow-[0_20px_40px_-32px_rgba(42,55,49,0.7)]"
+          className="grain-overlay relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground shadow-[0_20px_40px_-32px_rgba(42,55,49,0.7)]"
         >
           <Sparkles className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 text-white/10" />
           <FloatingLeaf
-            className="right-8 bottom-8 hidden h-5 w-5 text-caramel/50 lg:block"
+            className="right-8 bottom-8 hidden h-5 w-5 text-primary/50 lg:block"
             delay={1.1}
           />
           <div className="flex items-start justify-between gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-caramel/15/20 text-caramel">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15/20 text-primary">
               <Coins className="h-5 w-5" />
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-inter text-xs font-semibold text-caramel">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-secondary text-xs font-semibold text-primary">
               <Sparkles className="h-3 w-3" />
               ReBites Coins
             </span>
           </div>
-          <p className="mt-4 font-display text-3xl font-semibold tabular-nums text-cream-50">
+          <p className="mt-4 font-display text-3xl font-semibold tabular-nums text-primary-foreground">
             {balance.toLocaleString("id-ID")}
           </p>
-          <p className="mt-1 font-inter text-sm text-cream-100/80">
+          <p className="mt-1 font-secondary text-sm text-primary-foreground/80">
             Total didapat:{" "}
-            <span className="font-semibold text-cream-50">
+            <span className="font-semibold text-primary-foreground">
               {totalEarned.toLocaleString("id-ID")} Coin
             </span>
           </p>
-          <p className="mt-3 font-inter text-xs leading-relaxed text-cream-100/60">
+          <p className="mt-3 font-secondary text-xs leading-relaxed text-primary-foreground/60">
             Koin didapat dari tiap pesanan selesai dan bisa dipakai untuk
             memotong harga checkout berikutnya.
           </p>
@@ -502,14 +499,14 @@ function CoinsAndAddress() {
 
         <motion.div
           variants={fadeUp}
-          className="rounded-2xl border border-hairline/70 bg-white p-6 shadow-[0_20px_40px_-32px_rgba(42,55,49,0.35)]"
+          className="rounded-2xl border border-border/70 bg-white p-6 shadow-[0_20px_40px_-32px_rgba(42,55,49,0.35)]"
         >
           <div className="flex items-start justify-between gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
               <MapPin className="h-5 w-5" />
             </span>
             {selectedAddress && (
-              <span className="rounded-full bg-sage-100 px-3 py-1 font-inter text-xs font-semibold text-sage-600 capitalize">
+              <span className="rounded-full bg-muted px-3 py-1 font-secondary text-xs font-semibold text-muted-foreground capitalize">
                 {selectedAddress.label}
               </span>
             )}
@@ -523,25 +520,25 @@ function CoinsAndAddress() {
             </div>
           ) : selectedAddress ? (
             <>
-              <p className="mt-1.5 font-inter text-sm font-medium text-charcoal-900">
+              <p className="mt-1.5 font-secondary text-sm font-medium text-foreground">
                 {selectedAddress.receiverName}
                 {selectedAddress.phone ? (
-                  <span className="ml-2 font-normal text-stone">
+                  <span className="ml-2 font-normal text-muted-foreground">
                     · {selectedAddress.phone}
                   </span>
                 ) : null}
               </p>
-              <p className="mt-1 font-inter text-sm leading-relaxed text-stone">
+              <p className="mt-1 font-secondary text-sm leading-relaxed text-muted-foreground">
                 {selectedAddress.fullAddress}
               </p>
               {addresses.length > 1 && (
-                <p className="mt-2 font-inter text-xs text-sage-500">
+                <p className="mt-2 font-secondary text-xs text-muted-foreground">
                   +{addresses.length - 1} alamat lainnya tersimpan
                 </p>
               )}
             </>
           ) : (
-            <p className="mt-1.5 font-inter text-sm leading-relaxed text-stone">
+            <p className="mt-1.5 font-secondary text-sm leading-relaxed text-muted-foreground">
               Belum ada alamat tersimpan. Alamat ditambahkan otomatis saat kamu
               melakukan checkout pengiriman pertama.
             </p>
@@ -561,14 +558,14 @@ function OrderHistory({
 }) {
   return (
     <div className="relative">
-      <LeafSprig className="-right-6 -top-8 hidden h-36 w-36 rotate-12 text-sage-500/25 lg:block" />
+      <LeafSprig className="-right-6 -top-8 hidden h-36 w-36 rotate-12 text-muted-foreground/25 lg:block" />
       <motion.section
         id="riwayat"
         variants={fadeUp}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.12 }}
-        className="relative scroll-mt-28 rounded-3xl border border-hairline/70 bg-white shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]"
+        className="relative scroll-mt-28 rounded-3xl border border-border/70 bg-white shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]"
       >
         <div className="flex items-center justify-between px-6 pt-6">
           <h3 className="font-display text-lg font-semibold text-primary">
@@ -577,7 +574,7 @@ function OrderHistory({
           {!loading && orders && orders.length > 0 && (
             <Link
               href="/riwayatPesanan"
-              className="inline-flex items-center gap-1.5 font-inter text-sm font-semibold text-primary hover:text-caramel"
+              className="inline-flex items-center gap-1.5 font-secondary text-sm font-semibold text-primary hover:text-primary"
             >
               Lihat Semua
               <ArrowRight className="h-4 w-4" />
@@ -590,21 +587,21 @@ function OrderHistory({
             <SectionSkeletonRows rows={4} />
           </div>
         ) : !orders || orders.length === 0 ? (
-          <div className="mx-6 mb-6 mt-4 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-sage-100 bg-cream-50/70 px-6 py-10 text-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-sage-100 text-sage-500">
+          <div className="mx-6 mb-6 mt-4 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-secondary/70 px-6 py-10 text-center">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <Receipt className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm font-bold text-charcoal-900">
+              <p className="text-sm font-bold text-foreground">
                 Belum ada pesanan
               </p>
-              <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-sage-500">
+              <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
                 Riwayat pesananmu akan tampil di sini setelah checkout pertama.
               </p>
             </div>
             <Link
               href="/home#umkm"
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
             >
               Jelajahi Toko
               <ArrowRight className="h-3.5 w-3.5" />
@@ -615,7 +612,7 @@ function OrderHistory({
             <div className="hidden overflow-x-auto px-6 pb-6 md:block">
               <table className="mt-3 w-full text-left">
                 <thead>
-                  <tr className="border-b border-hairline font-inter text-xs font-semibold uppercase tracking-wider text-stone">
+                  <tr className="border-b border-border font-secondary text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     <th className="pb-3 pr-4">No. Pesanan</th>
                     <th className="pb-3 pr-4">Toko &amp; Paket</th>
                     <th className="pb-3 pr-4">Tanggal</th>
@@ -627,23 +624,23 @@ function OrderHistory({
                   {orders.map((order) => (
                     <tr
                       key={order.orderId}
-                      className="border-b border-hairline/60 transition-colors duration-200 last:border-b-0 hover:bg-cream-100/60"
+                      className="border-b border-border/60 transition-colors duration-200 last:border-b-0 hover:bg-muted/60"
                     >
-                      <td className="py-4 pr-4 font-inter text-sm font-semibold text-primary">
+                      <td className="py-4 pr-4 font-secondary text-sm font-semibold text-primary">
                         {order.orderId}
                       </td>
                       <td className="py-4 pr-4">
-                        <p className="font-inter text-sm font-medium text-primary">
+                        <p className="font-secondary text-sm font-medium text-primary">
                           {order.vendorName}
                         </p>
-                        <p className="font-inter text-xs text-stone">
+                        <p className="font-secondary text-xs text-muted-foreground">
                           {order.productName}
                         </p>
                       </td>
-                      <td className="py-4 pr-4 font-inter text-sm text-stone">
+                      <td className="py-4 pr-4 font-secondary text-sm text-muted-foreground">
                         {formatOrderDateTime(order.createdAt)}
                       </td>
-                      <td className="py-4 pr-4 font-inter text-sm font-semibold text-primary">
+                      <td className="py-4 pr-4 font-secondary text-sm font-semibold text-primary">
                         {formatRupiah(order.total)}
                       </td>
                       <td className="py-4 text-right">
@@ -655,24 +652,24 @@ function OrderHistory({
               </table>
             </div>
 
-            <ul className="divide-y divide-hairline/60 px-6 pb-6 md:hidden">
+            <ul className="divide-y divide-border/60 px-6 pb-6 md:hidden">
               {orders.map((order) => (
                 <li
                   key={order.orderId}
                   className="flex items-center justify-between gap-4 py-4"
                 >
                   <div className="min-w-0">
-                    <p className="font-inter text-sm font-semibold text-primary">
+                    <p className="font-secondary text-sm font-semibold text-primary">
                       {order.orderId}
                     </p>
-                    <p className="truncate font-inter text-sm text-primary">
+                    <p className="truncate font-secondary text-sm text-primary">
                       {order.vendorName}
                     </p>
-                    <p className="font-inter text-xs text-stone">
+                    <p className="font-secondary text-xs text-muted-foreground">
                       {order.productName} ·{" "}
                       {formatOrderDateTime(order.createdAt)}
                     </p>
-                    <p className="mt-1 font-inter text-sm font-semibold text-primary">
+                    <p className="mt-1 font-secondary text-sm font-semibold text-primary">
                       {formatRupiah(order.total)}
                     </p>
                   </div>
@@ -697,19 +694,19 @@ function FollowedStoresSection() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.12 }}
-      className="relative scroll-mt-28 rounded-3xl border border-hairline/70 bg-white p-6 shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]"
+      className="relative scroll-mt-28 rounded-3xl border border-border/70 bg-white p-6 shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]"
     >
       <div className="flex items-center justify-between gap-3">
         <div>
           <h3 className="font-display text-lg font-semibold text-primary">
             Toko Diikuti
           </h3>
-          <p className="mt-0.5 font-inter text-xs text-stone">
-            Toko yang kamu ikuti lewat tombol "Ikuti Toko" di halaman detail
+          <p className="mt-0.5 font-secondary text-xs text-muted-foreground">
+            Toko yang kamu ikuti lewat tombol &quot;Ikuti Toko&quot; di halaman detail
             toko.
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-sage-100 px-3 py-1 font-inter text-xs font-semibold text-sage-600">
+        <span className="shrink-0 rounded-full bg-muted px-3 py-1 font-secondary text-xs font-semibold text-muted-foreground">
           {hydrated ? stores.length : "…"} toko
         </span>
       </div>
@@ -717,26 +714,26 @@ function FollowedStoresSection() {
       {!hydrated ? (
         <div className="mt-4 grid gap-2 sm:grid-cols-1">
           {[0, 1, 2].map((i) => (
-            <div key={i} aria-hidden className="h-16 rounded-xl bg-cream-100" />
+            <div key={i} aria-hidden className="h-16 rounded-xl bg-muted" />
           ))}
         </div>
       ) : stores.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center justify-center gap-3 rounded-xl border border-sage-100 bg-cream-50/70 px-4 py-6 text-center">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sage-100 text-sage-500">
+        <div className="mt-4 flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-secondary/70 px-4 py-6 text-center">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <Store className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-xs font-medium text-charcoal-900">
+            <p className="text-xs font-medium text-foreground">
               Belum ada toko yang diikuti
             </p>
-            <p className="mt-1 max-w-sm text-[10px] leading-relaxed text-sage-500">
-              Tekan tombol "Ikuti Toko" pada halaman detail toko favoritmu agar
+            <p className="mt-1 max-w-sm text-[10px] leading-relaxed text-muted-foreground">
+              Tekan tombol &quot;Ikuti Toko&quot; pada halaman detail toko favoritmu agar
               tampil di sini.
             </p>
           </div>
           <Link
             href="/home#umkm"
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-caramel hover:text-white"
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white"
           >
             Jelajahi Toko
             <ArrowRight className="h-3 w-3" />
@@ -748,13 +745,14 @@ function FollowedStoresSection() {
             <li key={store.umkmId || store.slug || store.name}>
               <Link
                 href={`/detail/toko?id=${store.slug ?? store.umkmId}`}
-                className="group flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-white p-2 transition-all duration-150 hover:-translate-y-0.5 hover:border-caramel/40 hover:shadow-sm hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="group flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-white p-2 transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-sage-100 ring-1 ring-sage-100">
+                <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted ring-1 ring-border">
                   {store.logoUrl ? (
                     <SmartImage
                       src={store.logoUrl}
                       alt={`Logo ${store.name}`}
+                      sizes="40px"
                     />
                   ) : (
                     <span className="font-display text-lg font-semibold text-primary">
@@ -763,16 +761,16 @@ function FollowedStoresSection() {
                   )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-inter text-xs font-medium text-charcoal-900">
+                  <span className="block truncate font-secondary text-xs font-medium text-foreground">
                     {store.name}
                   </span>
                   {store.category && (
-                    <span className="mt-0.5 block truncate font-inter text-[10px] text-stone">
+                    <span className="mt-0.5 block truncate font-secondary text-[10px] text-muted-foreground">
                       {store.category}
                     </span>
                   )}
-                  <span className="mt-1 flex items-center gap-1 font-inter text-[9px] font-semibold text-charcoal-900">
-                    <Star className="h-2 w-2 fill-caramel text-caramel" />
+                  <span className="mt-1 flex items-center gap-1 font-secondary text-[9px] font-semibold text-foreground">
+                    <Star className="h-2 w-2 fill-primary text-primary" />
                     {store.rating.toFixed(1)}
                   </span>
                 </span>
@@ -785,132 +783,10 @@ function FollowedStoresSection() {
   );
 }
 
-function LikedFoodsSection() {
-  const { foods, hydrated } = useLikedFoods();
-  const { foodItems } = useCatalog();
-  // catalog id bisa slug atau uuid -> index semua kunci agar foto tidak hilang (bug slug vs uuid)
-  const catalogMap = new Map<string, any>();
-  for (const f of (foodItems || []) as any[]) {
-    if (f.id) catalogMap.set(String(f.id), f);
-    if (f.slug) catalogMap.set(String(f.slug), f);
-    if (f.rawId) catalogMap.set(String(f.rawId), f);
-  }
-
-  return (
-    <motion.section
-      id="sukai-makanan"
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.12 }}
-      className="relative scroll-mt-28 rounded-3xl border border-hairline/70 bg-white p-6 shadow-[0_24px_48px_-32px_rgba(42,55,49,0.35)]"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-semibold text-primary">
-            Makanan Disukai
-          </h3>
-          <p className="mt-0.5 font-inter text-xs text-stone">
-            Makanan yang kamu sukai lewat tombol ❤️ di card produk.
-          </p>
-        </div>
-        <span className="shrink-0 rounded-full bg-sage-100 px-3 py-1 font-inter text-xs font-semibold text-sage-600">
-          {hydrated ? foods.length : "…"} makanan
-        </span>
-      </div>
-
-      {!hydrated ? (
-        <div className="mt-4 grid gap-2 sm:grid-cols-1">
-          {[0, 1, 2].map((i) => (
-            <div key={i} aria-hidden className="h-16 rounded-xl bg-cream-100" />
-          ))}
-        </div>
-      ) : foods.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center justify-center gap-3 rounded-xl border border-sage-100 bg-cream-50/70 px-4 py-6 text-center">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sage-100 text-sage-500">
-            <Heart className="h-4 w-4" />
-          </span>
-          <div>
-            <p className="text-xs font-bold text-charcoal-900">
-              Belum ada makanan disukai
-            </p>
-            <p className="mt-1 max-w-sm text-[10px] leading-relaxed text-sage-500">
-              Tekan ikon ❤️ pada card produk di Beranda, Flash Sale, atau
-              halaman detail untuk menambah ke sini.
-            </p>
-          </div>
-          <Link
-            href="/home"
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-caramel hover:text-white"
-          >
-            Jelajahi Makanan
-            <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-      ) : (
-        <ul className="mt-4 grid gap-2 sm:grid-cols-1">
-          {foods.map((fav) => {
-            const detail: any =
-              catalogMap.get(fav.productId) || catalogMap.get(fav.id) || null;
-            const name = fav.name || detail?.name || "Makanan";
-            const image = fav.image || detail?.image || null;
-            const vendor = detail?.vendorName || "";
-            const price = detail
-              ? (detail.discountedPrice ?? detail.originalPrice)
-              : fav.price;
-            const href = detail
-              ? `/detail/product?id=${detail.id}`
-              : fav.productId
-                ? `/detail/product?id=${fav.productId}`
-                : "/home";
-            return (
-              <li key={fav.id || fav.productId}>
-                <Link
-                  href={href}
-                  className="group flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-white p-2 transition-all duration-150 hover:-translate-y-0.5 hover:border-caramel/40 hover:shadow-sm hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-sage-100 ring-1 ring-sage-100">
-                    {image ? (
-                      <SmartImage src={image} alt={name} />
-                    ) : (
-                      <span className="font-display text-lg font-semibold text-primary">
-                        {(name || "?").charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-inter text-xs font-medium text-charcoal-900">
-                      {name}
-                    </span>
-                    {vendor && (
-                      <span className="mt-0.5 block truncate font-inter text-[10px] text-stone">
-                        {vendor}
-                      </span>
-                    )}
-                    {price != null && (
-                      <span className="mt-1 block font-inter text-[9px] font-medium text-primary">
-                        Rp{Number(price).toLocaleString("id-ID")}
-                      </span>
-                    )}
-                  </span>
-                  <Heart className="h-3 w-3 shrink-0 fill-sale text-sale" />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </motion.section>
-  );
-}
-
 export function UserProfile() {
   const { userId } = useCurrentUser();
+  const router = useRouter();
   const [orders, setOrders] = useState<StoredOrder[] | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isIkutiTokoDialogOpen, setIsIkutiTokoDialogOpen] = useState(false);
-  const [isSukaiMakananDialogOpen, setIsSukaiMakananDialogOpen] =
-    useState(false);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -973,6 +849,34 @@ export function UserProfile() {
     };
   }, [userId]);
 
+  // Tautan akun memakai hash (mis. #sukai-makanan) karena section terkait
+  // berupa dialog. Buka dialog yang sesuai saat halaman dimuat / hash berubah.
+  useEffect(() => {
+    const syncHash = () => {
+      const hash = window.location.hash.replace(/^#/, "");
+      if (hash === "sukai-makanan") {
+        router.push("/sukai");
+      } else if (hash === "toko-diikuti") {
+        // Daftar toko yang diikuti kini punya halaman khusus: deep-link
+        // hash lama dialihkan ke sana tanpa duplikasi dialog.
+        router.replace("/toko-diikuti");
+      } else if (hash) {
+        // Section biasa (#rebites-coin, #alamat) digulir manual supaya
+        // deep-link dari sidebar tetap bekerja setelah halaman ter-render.
+        document.getElementById(hash)?.scrollIntoView({ block: "start" });
+      }
+    };
+
+    const timer = window.setTimeout(syncHash, 0);
+    window.addEventListener("hashchange", syncHash);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("hashchange", syncHash);
+    };
+    // router stabil di App Router, efek cukup berjalan sekali saat mount.
+  }, [router]);
+
   const { savedPorsi, totalPesanan, co2eKg } = useMemo(() => {
     if (!orders) return { savedPorsi: 0, totalPesanan: 0, co2eKg: 0 };
     return {
@@ -999,40 +903,14 @@ export function UserProfile() {
   const phoneLabel = addressLoading ? "Memuat…" : selectedAddress?.phone || "-";
 
   return (
-    <div className="relative min-h-screen bg-secondary lg:bg-cream-50">
-      {}
-      <div className="lg:hidden"><MobileNavbar /></div>
-      <div className="hidden lg:block">
-        <ProfileSidebarNav
-          open={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
-      </div>
-
-      <div className="lg:pl-[280px]">
-        <MobileBottomNav />
-        {}
-        <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-sage-100 bg-white px-4 py-3 lg:hidden">
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Buka navigasi"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-cream-100 text-charcoal-900"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <span className="font-display text-base font-semibold text-primary">
-            My Profile
-          </span>
-        </div>
-
-        <main className="relative mx-auto max-w-[1100px] px-4 pb-24 pt-[120px] sm:pb-20 sm:pt-6 lg:px-8 lg:pt-8">
+    <BuyerShell>
+        <main className="relative mx-auto w-full max-w-7xl px-4 pb-28 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pb-12 lg:pt-8">
           {}
           <div className="hidden lg:block">
             <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-primary">
               Profil
             </h1>
-            <p className="mt-1 text-sm text-stone">
+            <p className="mt-1 text-sm text-muted-foreground">
               Kelola akun dan lihat aktivitasmu di ReBites
             </p>
           </div>
@@ -1046,8 +924,8 @@ export function UserProfile() {
           >
             <div className="flex items-center gap-5">
               <div className="relative h-20 w-20 shrink-0 sm:h-24 sm:w-24 group/avatar">
-                <span className="absolute -inset-1 rounded-full border border-sage-200/70" />
-                <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-primary-deep text-xl font-semibold text-white ring-4 ring-cream-100 sm:h-24 sm:w-24 sm:text-2xl">
+                <span className="absolute -inset-1 rounded-full border border-border/70" />
+                <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-primary-deep text-xl font-semibold text-white ring-4 ring-primary-foreground sm:h-24 sm:w-24 sm:text-2xl">
                   {globalAvatarUrl ? (
                     <Image
                       src={globalAvatarUrl}
@@ -1104,14 +982,14 @@ export function UserProfile() {
                 <h2 className="font-display text-lg font-semibold leading-tight text-primary sm:text-xl">
                   {displayName}
                 </h2>
-                <p className="mt-0.5 font-inter text-sm text-stone">
+                <p className="mt-0.5 font-secondary text-sm text-muted-foreground">
                   {email || "-"}
                 </p>
-                <p className="mt-1 flex items-center gap-1.5 font-inter text-xs text-stone">
-                  <MapPin className="h-3.5 w-3.5 text-sage-500" />
+                <p className="mt-1 flex items-center gap-1.5 font-secondary text-xs text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                   {cityLabel}
                 </p>
-                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-sage-100 px-3 py-1 font-inter text-xs font-semibold text-sage-700">
+                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 font-secondary text-xs font-semibold text-muted-foreground">
                   {isSeller ? (
                     <Store className="h-3.5 w-3.5" />
                   ) : (
@@ -1124,55 +1002,56 @@ export function UserProfile() {
 
             {}
             <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:w-auto lg:min-w-[520px] lg:max-w-[600px]">
-              <button
-                type="button"
-                onClick={() => setIsIkutiTokoDialogOpen(true)}
-                className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-sage-200 hover:bg-white"
+              <Link
+                href="/toko-diikuti"
+                className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-zinc-100 group-hover:bg-caramel group-hover:text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-zinc-100 group-hover:bg-primary-dark group-hover:text-white">
                   <Store className="h-4 w-4" />
                 </span>
-                <span className="font-inter text-sm font-semibold text-primary">
+                <span className="font-secondary text-sm font-semibold text-primary">
                   Ikuti Toko
                 </span>
-                <span className="font-inter text-xs text-stone">
+                <span className="font-secondary text-xs text-muted-foreground">
                   {storesHydrated ? `${stores.length} toko` : "… toko"}
                 </span>
-                <span className="mt-1 inline-flex items-center gap-1 font-inter text-xs font-semibold text-primary">
+                <span className="mt-1 inline-flex items-center gap-1 font-secondary text-xs font-semibold text-primary">
                   Lihat <ArrowRight className="h-3 w-3" />
                 </span>
-              </button>
+              </Link>
 
-              <button
-                type="button"
-                onClick={() => setIsSukaiMakananDialogOpen(true)}
-                className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-sage-200 hover:bg-white"
+              <Link
+                href="/sukai"
+                className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sale shadow-sm ring-1 ring-zinc-100 group-hover:bg-sale group-hover:text-white">
                   <Heart className="h-4 w-4" />
                 </span>
-                <span className="font-inter text-sm font-semibold text-primary">
+                <span className="font-secondary text-sm font-semibold text-primary">
                   Sukai Makanan
                 </span>
-                <span className="font-inter text-xs text-stone">
+                <span className="font-secondary text-xs text-muted-foreground">
                   {likedHydrated ? `${likedCount} makanan` : "… makanan"}
                 </span>
-                <span className="mt-1 inline-flex items-center gap-1 font-inter text-xs font-semibold text-primary">
+                <span className="mt-1 inline-flex items-center gap-1 font-secondary text-xs font-semibold text-primary">
                   Lihat <ArrowRight className="h-3 w-3" />
                 </span>
-              </button>
+              </Link>
 
-              <div className="col-span-2 flex flex-col items-start gap-2 rounded-2xl border border-amber-200 bg-caramel-50 p-4 sm:col-span-1">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-caramel-dark shadow-sm ring-1 ring-amber-100">
+              <div
+                id="rebites-coin"
+                className="col-span-2 flex scroll-mt-24 flex-col items-start gap-2 rounded-2xl border border-warning/50 bg-primary/15 p-4 sm:col-span-1"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-warning/50">
                   <Coins className="h-4 w-4" />
                 </span>
-                <span className="font-inter text-sm font-semibold text-primary">
+                <span className="font-secondary text-sm font-semibold text-primary">
                   ReBites Coins
                 </span>
-                <span className="font-inter text-xs font-bold text-caramel-700">
+                <span className="font-secondary text-xs font-bold text-primary">
                   {balance.toLocaleString("id-ID")} Coin
                 </span>
-                <span className="font-inter text-[11px] text-stone">
+                <span className="font-secondary text-[11px] text-muted-foreground">
                   Tersedia
                 </span>
               </div>
@@ -1197,13 +1076,13 @@ export function UserProfile() {
                   <DialogTitle className="font-display text-lg font-semibold text-primary">
                     Ubah Foto Profil
                   </DialogTitle>
-                  <DialogDescription className="font-inter text-sm text-stone">
+                  <DialogDescription className="font-secondary text-sm text-muted-foreground">
                     Pilih foto JPG, JPEG, PNG, atau WebP maksimal 2MB. Preview akan tampil di bawah sebelum disimpan.
                   </DialogDescription>
                 </DialogHeader>
 
                 <div className="mt-4 flex flex-col items-center gap-4">
-                  <div className="relative h-28 w-28 overflow-hidden rounded-full bg-gradient-to-br from-primary to-primary-deep ring-4 ring-cream-100 sm:h-32 sm:w-32">
+                  <div className="relative h-28 w-28 overflow-hidden rounded-full bg-gradient-to-br from-primary to-primary-deep ring-4 ring-primary-foreground sm:h-32 sm:w-32">
                     {avatarPreview ? (
                       <Image src={avatarPreview} alt="Preview foto profil" fill className="object-cover" unoptimized />
                     ) : globalAvatarUrl ? (
@@ -1220,16 +1099,16 @@ export function UserProfile() {
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={uploadingAvatar}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-charcoal-900 transition-colors hover:bg-zinc-50 disabled:opacity-50"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-zinc-50 disabled:opacity-50"
                     >
                       <Camera className="h-4 w-4" />
                       {avatarFile ? "Ganti Foto" : "Pilih Foto"}
                     </button>
-                    <p className="text-center font-inter text-[11px] text-stone">JPG, JPEG, PNG, WebP · Maks 2MB</p>
+                    <p className="text-center font-secondary text-[11px] text-muted-foreground">JPG, JPEG, PNG, WebP · Maks 2MB</p>
                   </div>
 
                   {avatarError && (
-                    <p role="alert" className="w-full rounded-xl bg-red-50 px-3 py-2 text-center font-inter text-xs font-medium text-red-600">
+                    <p role="alert" className="w-full rounded-xl bg-destructive/10 px-3 py-2 text-center font-secondary text-xs font-medium text-destructive">
                       {avatarError}
                     </p>
                   )}
@@ -1245,7 +1124,7 @@ export function UserProfile() {
                       setAvatarError(null);
                     }}
                     disabled={uploadingAvatar}
-                    className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal-900 hover:bg-zinc-50 disabled:opacity-50"
+                    className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-zinc-50 disabled:opacity-50"
                   >
                     Batal
                   </button>
@@ -1273,7 +1152,7 @@ export function UserProfile() {
                         setUploadingAvatar(false);
                       }
                     }}
-                    className="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-caramel disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {uploadingAvatar ? (
                       <>
@@ -1288,68 +1167,14 @@ export function UserProfile() {
               </DialogContent>
             </Dialog>
 
-            {}
-          <Dialog
-            open={isIkutiTokoDialogOpen}
-            onOpenChange={setIsIkutiTokoDialogOpen}
-          >
-            <DialogContent className="bg-white p-6 sm:p-7">
-              <DialogHeader>
-                <DialogTitle className="font-display text-lg font-semibold text-primary">
-                  Toko Diikuti
-                </DialogTitle>
-                <DialogDescription className="font-inter text-sm text-stone">
-                  Toko yang kamu ikuti lewat tombol "Ikuti Toko" di halaman
-                  detail toko.
-                </DialogDescription>
-              </DialogHeader>
-              <FollowedStoresSection />
-              <DialogFooter>
-                <button
-                  type="button"
-                  onClick={() => setIsIkutiTokoDialogOpen(false)}
-                  className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-charcoal-900 hover:bg-zinc-50"
-                >
-                  Tutup
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {}
-          <Dialog
-            open={isSukaiMakananDialogOpen}
-            onOpenChange={setIsSukaiMakananDialogOpen}
-          >
-            <DialogContent className="bg-white p-6 sm:p-7">
-              <DialogHeader>
-                <DialogTitle className="font-display text-lg font-semibold text-primary">
-                  Makanan Disukai
-                </DialogTitle>
-                <DialogDescription className="font-inter text-sm text-stone">
-                  Makanan yang kamu sukai lewat tombol ❤️ di card produk.
-                </DialogDescription>
-              </DialogHeader>
-              <LikedFoodsSection />
-              <DialogFooter>
-                <button
-                  type="button"
-                  onClick={() => setIsSukaiMakananDialogOpen(false)}
-                  className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-charcoal-900 hover:bg-zinc-50"
-                >
-                  Tutup
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
           {}
           <motion.section
+            id="alamat"
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
             viewport={VIEWPORT}
-            className="mt-6 rounded-[20px] border border-zinc-100 bg-white p-6 shadow-sm sm:p-7"
+            className="mt-6 scroll-mt-24 rounded-[20px] border border-zinc-100 bg-white p-6 shadow-sm sm:p-7"
           >
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-display text-base font-semibold text-primary">
@@ -1364,7 +1189,7 @@ export function UserProfile() {
                   setEditFullAddress(selectedAddress?.fullAddress || "");
                   setIsEditDialogOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-caramel"
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-primary-dark"
               >
                 Edit <Edit3 className="h-3 w-3" />
               </button>
@@ -1372,40 +1197,40 @@ export function UserProfile() {
 
             <div className="mt-6 grid gap-6 sm:grid-cols-3">
               <div>
-                <p className="font-inter text-xs text-stone">Nama Lengkap</p>
-                <p className="mt-1 font-inter text-sm font-semibold text-charcoal-900">
+                <p className="font-secondary text-xs text-muted-foreground">Nama Lengkap</p>
+                <p className="mt-1 font-secondary text-sm font-semibold text-foreground">
                   {displayName}
                 </p>
               </div>
               <div>
-                <p className="font-inter text-xs text-stone">Email Address</p>
-                <p className="mt-1 break-all font-inter text-sm font-semibold text-charcoal-900">
+                <p className="font-secondary text-xs text-muted-foreground">Email Address</p>
+                <p className="mt-1 break-all font-secondary text-sm font-semibold text-foreground">
                   {email || "-"}
                 </p>
               </div>
               <div>
-                <p className="font-inter text-xs text-stone">
+                <p className="font-secondary text-xs text-muted-foreground">
                   Tanggal Bergabung
                 </p>
-                <p className="mt-1 font-inter text-sm font-semibold text-charcoal-900">
+                <p className="mt-1 font-secondary text-sm font-semibold text-foreground">
                   {joinedAt || "-"}
                 </p>
               </div>
               <div>
-                <p className="font-inter text-xs text-stone">Phone Number</p>
-                <p className="mt-1 font-inter text-sm font-semibold text-charcoal-900">
+                <p className="font-secondary text-xs text-muted-foreground">Phone Number</p>
+                <p className="mt-1 font-secondary text-sm font-semibold text-foreground">
                   {phoneLabel}
                 </p>
               </div>
               <div className="sm:col-span-2">
-                <p className="font-inter text-xs text-stone">Alamat Lengkap</p>
-                <p className="mt-1 font-inter text-sm font-semibold leading-relaxed text-charcoal-900">
+                <p className="font-secondary text-xs text-muted-foreground">Alamat Lengkap</p>
+                <p className="mt-1 font-secondary text-sm font-semibold leading-relaxed text-foreground">
                   {addressLoading
                     ? "Memuat…"
                     : selectedAddress?.fullAddress || "-"}
                 </p>
                 {!addressLoading && selectedAddress?.city && (
-                  <p className="mt-1 font-inter text-xs text-stone">
+                  <p className="mt-1 font-secondary text-xs text-muted-foreground">
                     {selectedAddress.city}
                     {selectedAddress.province ? `, ${selectedAddress.province}` : ""} · Indonesia
                   </p>
@@ -1420,7 +1245,7 @@ export function UserProfile() {
                 <DialogTitle className="font-display text-lg font-semibold text-primary">
                   Edit Personal Information
                 </DialogTitle>
-                <DialogDescription className="font-inter text-sm text-stone">
+                <DialogDescription className="font-secondary text-sm text-muted-foreground">
                   Perbarui informasi yang dapat diubah. Email, tanggal
                   bergabung, dan role tidak dapat diubah.
                 </DialogDescription>
@@ -1428,18 +1253,18 @@ export function UserProfile() {
 
               <div className="mt-4 space-y-4">
                 <div>
-                  <label className="font-inter text-xs font-medium text-stone">
+                  <label className="font-secondary text-xs font-medium text-muted-foreground">
                     Nama Lengkap
                   </label>
                   <input
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder="Nama lengkap"
-                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 font-inter text-sm text-charcoal-900 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 font-secondary text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="font-inter text-xs font-medium text-stone">
+                  <label className="font-secondary text-xs font-medium text-muted-foreground">
                     Phone Number
                   </label>
                   <input
@@ -1447,11 +1272,11 @@ export function UserProfile() {
                     onChange={(e) => setEditPhone(e.target.value)}
                     placeholder="08xxxxxxxxxx"
                     inputMode="numeric"
-                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 font-inter text-sm text-charcoal-900 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 font-secondary text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="font-inter text-xs font-medium text-stone">
+                  <label className="font-secondary text-xs font-medium text-muted-foreground">
                     Alamat Lengkap
                   </label>
                   <textarea
@@ -1459,7 +1284,7 @@ export function UserProfile() {
                     onChange={(e) => setEditFullAddress(e.target.value)}
                     placeholder="Jl. Contoh No. 123, RT/RW, Kelurahan..."
                     rows={3}
-                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 font-inter text-sm text-charcoal-900 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 font-secondary text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
               </div>
@@ -1469,7 +1294,7 @@ export function UserProfile() {
                   type="button"
                   onClick={() => setIsEditDialogOpen(false)}
                   disabled={savingPersonal}
-                  className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal-900 hover:bg-zinc-50 disabled:opacity-50"
+                  className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-zinc-50 disabled:opacity-50"
                 >
                   Batal
                 </button>
@@ -1526,7 +1351,7 @@ export function UserProfile() {
                       setSavingPersonal(false);
                     }
                   }}
-                  className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-caramel disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
                 >
                   {savingPersonal ? "Menyimpan…" : "Simpan Perubahan"}
                 </button>
@@ -1536,7 +1361,6 @@ export function UserProfile() {
 
           <div className="mt-6 space-y-6"></div>
         </main>
-      </div>
-    </div>
+    </BuyerShell>
   );
 }

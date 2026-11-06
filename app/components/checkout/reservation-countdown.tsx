@@ -36,16 +36,16 @@ export function ReservationCountdown({
 
   if (remaining <= 0) {
     return (
-      <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-sage-100 bg-sage-100/60 px-4 py-3">
+      <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-border bg-muted/60 px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <Timer className="h-4 w-4 shrink-0 text-sage-500" />
-          <span className="text-sm font-medium text-charcoal-500">
+          <Timer className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="text-sm font-medium text-muted-foreground">
             Waktu reservasi habis
           </span>
         </div>
         <Link
           href="/"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-caramel"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
         >
           <Search className="h-3.5 w-3.5" />
           Cari lagi
@@ -68,7 +68,7 @@ export function ReservationCountdown({
         'mt-4 flex items-center justify-between gap-3 rounded-2xl border px-4 py-3',
         urgent
           ? 'border-primary/40 bg-primary/5'
-          : 'border-sage-100 bg-sage-100/50'
+          : 'border-border bg-muted/50'
       )}
     >
       <div className="flex items-center gap-2.5">
@@ -85,16 +85,16 @@ export function ReservationCountdown({
           <Timer
             className={cn(
               'h-4 w-4 shrink-0',
-              urgent ? 'text-primary' : 'text-sage-500'
+              urgent ? 'text-primary' : 'text-muted-foreground'
             )}
           />
         </motion.span>
-        <span className="text-sm text-charcoal-500">{label}</span>
+        <span className="text-sm text-muted-foreground">{label}</span>
       </div>
       <span
         className={cn(
           'font-display text-base font-semibold tabular-nums',
-          urgent ? 'text-primary' : 'text-charcoal-900'
+          urgent ? 'text-primary' : 'text-foreground'
         )}
       >
         {formatClock(remaining)}

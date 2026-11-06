@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   Apple,
   Beef,
@@ -19,7 +18,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { fetchCategoryCounts } from "@/lib/catalog";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "makanan-berat": Beef,
@@ -33,7 +32,6 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>
 };
 
 export function CategorySection() {
-  
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
 
   useEffect(() => {
@@ -57,62 +55,50 @@ export function CategorySection() {
   return (
     <section
       id="kategori"
-      data-nav="cream"
-      className="relative scroll-mt-20 bg-cream-50 py-10 lg:py-20"
+      data-nav="neutral"
+      className="relative scroll-mt-20 bg-secondary py-10 sm:py-12 lg:py-14"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div>
-          <h2 className="font-sans text-lg font-bold tracking-tight text-charcoal-900 sm:text-[22px] lg:text-[28px]">
-            Jelajahi Kategori
+          <p className="font-secondary text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
+            Kategori
+          </p>
+          <h2 className="mt-2 font-sans text-lg font-bold tracking-tight text-foreground sm:text-[22px] lg:text-[26px]">
+            Jelajahi kategori
           </h2>
-          <p className="mt-1 max-w-md font-sans text-xs text-charcoal-500 sm:text-sm">
-            Temukan berbagai makanan sesuai seleramu yang masih layak dinikmati
+          <p className="mt-1 max-w-md font-sans text-xs text-muted-foreground sm:text-sm">
+            Temukan berbagai makanan sesuai seleramu yang masih layak dinikmati.
           </p>
         </div>
 
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.04 } },
-          }}
-          className="mt-5 flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-3 lg:mt-8 lg:grid lg:grid-cols-8 lg:gap-4 lg:overflow-visible [&::-webkit-scrollbar]:hidden"
-        >
+        {/*
+          Dua kolom di ponsel supaya tetap terbaca tanpa geser mendatar, empat
+          kolom di tablet, delapan kolom hanya di layar lebar (lg masih sempit
+          karena sidebar pembeli memakan 260px).
+        */}
+        <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3 lg:mt-6 xl:grid-cols-8">
           {visibleCategories.map((category) => {
             const Icon = CATEGORY_ICONS[category.id] ?? UtensilsCrossed;
             return (
-              <motion.div
+              <Link
                 key={category.id}
-                variants={{
-                  hidden: { opacity: 0, y: 16 },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-                  },
-                }}
-                className="min-w-[100px] snap-start sm:min-w-[148px] lg:min-w-0"
+                href={`/makanan/${category.id}`}
+                aria-label={`Lihat makanan kategori ${category.name}`}
+                className={cn(
+                  "group flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl border border-border bg-white px-3 py-3 text-center transition-colors duration-150 hover:border-primary/40 sm:min-h-[104px]",
+                  FOCUS_RING,
+                )}
               >
-                <Link
-                  href={`/makanan/${category.id}`}
-                  aria-label={`Lihat makanan kategori ${category.name}`}
-                  className={cn(
-                    "group flex h-[90px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md sm:h-[110px] sm:gap-3 sm:rounded-2xl sm:px-4 sm:py-6 lg:h-[132px]",
-                    FOCUS_RING,
-                  )}
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cream-100 text-primary transition-colors group-hover:bg-primary group-hover:text-white sm:h-10 sm:w-10">
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </span>
-                  <span className="font-sans text-[11px] font-semibold leading-tight text-charcoal-900 sm:text-[13px]">
-                    {category.name}
-                  </span>
-                </Link>
-              </motion.div>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-primary transition-colors duration-150 group-hover:bg-primary group-hover:text-white sm:h-9 sm:w-9">
+                  <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+                </span>
+                <span className="line-clamp-2 font-sans text-[11.5px] font-semibold leading-tight text-foreground">
+                  {category.name}
+                </span>
+              </Link>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

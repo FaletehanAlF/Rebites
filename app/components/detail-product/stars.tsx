@@ -29,7 +29,7 @@ export function Stars({
                 ? 'fill-primary text-primary'
                 : fill >= 0.25
                   ? 'fill-primary/50 text-primary/50'
-                  : 'fill-sage-100 text-sage-100'
+                  : 'fill-border-100 text-primary-foreground'
             )}
           />
         );

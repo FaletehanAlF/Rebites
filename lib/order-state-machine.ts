@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { supabase } from './supabase';
 import { getSellerUmkm } from './product-storage';
@@ -99,16 +99,16 @@ export function getStatusLabel(status: string): string {
 export function getStatusColor(status: string): { bg: string; text: string; dot: string } {
   const colors: Record<string, { bg: string; text: string; dot: string }> = {
     pending: { bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-500' },
-    paid: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
-    processing: { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500' },
+    paid: { bg: 'bg-primary/10', text: 'text-primary', dot: 'bg-primary' },
+    processing: { bg: 'bg-warning/10', text: 'text-warning', dot: 'bg-warning' },
     ready_for_pickup: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
     out_for_delivery: { bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-500' },
-    completed: { bg: 'bg-sage-100', text: 'text-charcoal-500', dot: 'bg-charcoal-500' },
-    cancelled: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
+    completed: { bg: 'bg-muted', text: 'text-muted-foreground', dot: 'bg-muted-foreground' },
+    cancelled: { bg: 'bg-destructive/10', text: 'text-destructive', dot: 'bg-destructive' },
     refunded: { bg: 'bg-gray-50', text: 'text-gray-700', dot: 'bg-gray-500' },
-    preparing: { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500' },
+    preparing: { bg: 'bg-warning/10', text: 'text-warning', dot: 'bg-warning' },
     ready: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-    failed: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
+    failed: { bg: 'bg-destructive/10', text: 'text-destructive', dot: 'bg-destructive' },
   };
   return colors[status] ?? { bg: 'bg-gray-50', text: 'text-gray-700', dot: 'bg-gray-500' };
 }
@@ -122,7 +122,7 @@ export async function transitionOrderStatus(
     
     const { data: order, error: fetchError } = await supabase
       .from('orders')
-      .select('order_status, order_code, buyer_id, umkm_id, product_name, vendor_name, vendor_slug, delivery_option')
+      .select('id, order_status, order_code, buyer_id, umkm_id, product_name, vendor_name, vendor_slug, delivery_option, distance_km')
       .eq('order_code', orderId)
       .maybeSingle();
 
@@ -130,7 +130,66 @@ export async function transitionOrderStatus(
       return { success: false, error: 'Pesanan tidak ditemukan' };
     }
 
-    const currentStatus = (order as Record<string, any>).order_status;
+    const orderRow = order as Record<string, any>;
+    const currentStatus = orderRow.order_status;
+
+    // Otorisasi berbasis kepemilikan (bukan hanya RLS). Dipanggil dari klien,
+    // sehingga sesi Supabase harus valid. Jalur tepercaya (webhook/settlement)
+    // tidak memakai fungsi ini (memakai service client langsung).
+    const { data: sessionData } = await supabase.auth.getUser();
+    const actorId = sessionData?.user?.id ?? null;
+    if (!actorId) {
+      return { success: false, error: 'Sesi login tidak ditemukan' };
+    }
+
+    const isBuyer = orderRow.buyer_id === actorId;
+    let isSeller = false;
+    if (orderRow.umkm_id) {
+      const { data: umkm } = await supabase
+        .from('umkm_profiles')
+        .select('user_id')
+        .eq('id', orderRow.umkm_id)
+        .maybeSingle();
+      isSeller = (umkm as Record<string, any> | null)?.user_id === actorId;
+    }
+    if (!isSeller && orderRow.vendor_slug) {
+      const { data: store } = await supabase
+        .from('umkm_profiles')
+        .select('user_id')
+        .eq('slug', orderRow.vendor_slug)
+        .maybeSingle();
+      isSeller = (store as Record<string, any> | null)?.user_id === actorId;
+    }
+
+    if (!isBuyer && !isSeller) {
+      return { success: false, error: 'Tidak berhak mengubah status pesanan ini' };
+    }
+    // Pembeli hanya boleh mengonfirmasi penerimaan, dan hanya dari status
+    // pengantaran/penyiapan yang memang mengizinkan.
+    //
+    // Satu pengecualian: membatalkan pesanan yang BELUM dibayar. Tanpa itu,
+    // pesanan yang pembayarannya ditinggalkan akan mengunci stok produk
+    // sampai kedaluwarsa, padahal pembeli sudah tahu tidak akan membayar.
+    // Trigger `guard_orders_update` mengizinkan `pending -> cancelled` dari
+    // sesi pembeli; setelah `paid` pembatalan menjadi urusan penjual/admin
+    // karena menyangkut uang.
+    if (isBuyer && !isSeller) {
+      if (newStatus === 'cancelled') {
+        if (currentStatus !== 'pending') {
+          return {
+            success: false,
+            error: 'Pesanan yang sudah dibayar tidak dapat dibatalkan sendiri — hubungi penjual',
+          };
+        }
+      } else {
+        if (newStatus !== 'completed') {
+          return { success: false, error: 'Pembeli hanya dapat mengonfirmasi penerimaan pesanan' };
+        }
+        if (currentStatus !== 'ready_for_pickup' && currentStatus !== 'out_for_delivery') {
+          return { success: false, error: 'Pesanan belum siap dikonfirmasi diterima' };
+        }
+      }
+    }
 
     if (!isValidTransition(currentStatus, newStatus)) {
       return { success: false, error: `Transisi dari ${currentStatus} ke ${newStatus} tidak valid` };
@@ -144,32 +203,58 @@ export async function transitionOrderStatus(
     }
 
     if (newStatus === 'out_for_delivery') {
-      const distanceKm = Number((order as Record<string, any>).distance_km ?? 1);
-      const travelMinutes = calculateTravelMinutes(distanceKm);
+      // gunakan orders.distance_km jika tersedia; NULL = unknown.
+      // Jangan karang 1 km / angka dummy dan jangan hitung ETA dari jarak
+      // yang tidak diketahui. Pickup tidak memakai delivery ETA.
       const deliveryStartedAt = new Date();
-      const estimatedArrivalAt = new Date(deliveryStartedAt.getTime() + travelMinutes * 60_000);
       updatePayload.delivery_started_at = deliveryStartedAt.toISOString();
-      updatePayload.estimated_arrival_at = estimatedArrivalAt.toISOString();
-      updatePayload.delivery_distance_km = distanceKm;
-      updatePayload.estimated_delivery_minutes = travelMinutes;
+      const deliveryOption = (order as Record<string, any>).delivery_option;
+      const rawDistance = (order as Record<string, any>).distance_km;
+      const parsedDistance = rawDistance == null ? NaN : Number(rawDistance);
+      const distanceKm =
+        Number.isFinite(parsedDistance) && parsedDistance > 0 ? parsedDistance : null;
+      const travelMinutes = distanceKm == null ? 0 : calculateTravelMinutes(distanceKm);
+      // ETA hanya ditulis bila benar-benar bisa dihitung. Jarak 0/unknown
+      // menghasilkan travel 0 menit, dan menulis ETA = "sekarang" untuk
+      // pengantaran nyata adalah janji palsu — lebih baik tidak ada ETA.
+      if (deliveryOption !== 'pickup' && distanceKm != null && travelMinutes > 0) {
+        const estimatedArrivalAt = new Date(deliveryStartedAt.getTime() + travelMinutes * 60_000);
+        updatePayload.estimated_arrival_at = estimatedArrivalAt.toISOString();
+        updatePayload.delivery_distance_km = distanceKm;
+        updatePayload.estimated_delivery_minutes = travelMinutes;
+      }
     }
 
-    const { error: updateError } = await supabase
+    const { data: updatedRows, error: updateError } = await supabase
       .from('orders')
       .update(updatePayload)
-      .eq('order_code', orderId);
+      .eq('order_code', orderId)
+      .eq('order_status', currentStatus)
+      .select('order_code');
 
     if (updateError) {
       return { success: false, error: `Gagal update status: ${updateError.message}` };
     }
+    if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
+      return {
+        success: false,
+        error: 'Status pesanan telah berubah. Muat ulang lalu coba lagi.',
+      };
+    }
 
-    await supabase.from('order_status_history').insert({
+    const { error: historyError } = await supabase.from('order_status_history').insert({
       order_id: (order as Record<string, any>).id,
       status: newStatus,
       note: note ?? null,
     });
-
-    await fireNotificationsForTransition(orderId, currentStatus, newStatus, order as Record<string, any>);
+    if (historyError) {
+      // Histori hanya audit trail: kegagalan dicatat, namun transisi status
+      // yang sudah tersimpan tidak dibatalkan (perilaku lama dipertahankan).
+      console.error(
+        '[order-state-machine] gagal mencatat order_status_history',
+        historyError.message
+      );
+    }
 
     return { success: true };
   } catch (err) {
@@ -178,118 +263,6 @@ export async function transitionOrderStatus(
   }
 }
 
-async function fireNotificationsForTransition(
-  orderCode: string,
-  fromStatus: string,
-  toStatus: string,
-  order: Record<string, any>
-): Promise<void> {
-  const buyerId = order.buyer_id as string;
-  const productName = (order.product_name as string) ?? 'Pesanan';
-  const vendorName = (order.vendor_name as string) ?? 'Toko';
-  const deepHref = `/riwayatPesanan?orderId=${encodeURIComponent(orderCode)}`;
-
-  let sellerUserId: string | null = null;
-  if (order.vendor_slug) {
-    const { data: umkm } = await supabase
-      .from('umkm_profiles')
-      .select('user_id')
-      .eq('slug', order.vendor_slug)
-      .maybeSingle();
-    sellerUserId = (umkm as Record<string, any>)?.user_id ?? null;
-  }
-
-  switch (toStatus) {
-    case 'processing':
-      
-      if (buyerId) {
-        await supabase.from('notifications').insert({
-          user_id: buyerId,
-          role: 'buyer',
-          type: 'order_created',
-          title: 'Pesanan Sedang Disiapkan',
-          message: `Pesanan #${orderCode} (${productName}) dari ${vendorName} sedang disiapkan.`,
-          reference_id: orderCode,
-          href: deepHref,
-        });
-      }
-      break;
-
-    case 'ready_for_pickup':
-      
-      if (buyerId) {
-        await supabase.from('notifications').insert({
-          user_id: buyerId,
-          role: 'buyer',
-          type: 'order_delivering',
-          title: 'Pesanan Siap Diambil!',
-          message: `Pesanan #${orderCode} (${productName}) dari ${vendorName} sudah siap diambil di toko.`,
-          reference_id: orderCode,
-          href: deepHref,
-        });
-      }
-      break;
-
-    case 'out_for_delivery':
-      
-      if (buyerId) {
-        await supabase.from('notifications').insert({
-          user_id: buyerId,
-          role: 'buyer',
-          type: 'order_delivering',
-          title: 'Pesanan Sedang Diantar!',
-          message: `Pesanan #${orderCode} (${productName}) dari ${vendorName} sedang menuju alamatmu.`,
-          reference_id: orderCode,
-          href: deepHref,
-        });
-      }
-      break;
-
-    case 'completed':
-      
-      if (buyerId) {
-        await supabase.from('notifications').insert({
-          user_id: buyerId,
-          role: 'buyer',
-          type: 'order_completed',
-          title: 'Pesanan Selesai!',
-          message: `Pesanan #${orderCode} (${productName}) dari ${vendorName} telah selesai. Selamat menikmati!`,
-          reference_id: orderCode,
-          href: deepHref,
-        });
-      }
-      
-      if (sellerUserId) {
-        await supabase.from('notifications').insert({
-          user_id: sellerUserId,
-          role: 'seller',
-          type: 'order_completed',
-          title: 'Pesanan Selesai!',
-          message: `Pesanan #${orderCode} (${productName}) telah selesai. Dana akan dilepas ke saldo.`,
-          reference_id: orderCode,
-          href: '/dashboard/penjual/pesanan',
-        });
-      }
-      
-      await releaseSellerFunds(orderCode);
-      break;
-
-    case 'cancelled':
-      
-      if (buyerId) {
-        await supabase.from('notifications').insert({
-          user_id: buyerId,
-          role: 'buyer',
-          type: 'order_completed',
-          title: 'Pesanan Dibatalkan',
-          message: `Pesanan #${orderCode} (${productName}) telah dibatalkan.`,
-          reference_id: orderCode,
-          href: deepHref,
-        });
-      }
-      break;
-  }
-}
 
 async function releaseSellerFunds(orderCode: string): Promise<void> {
   try {

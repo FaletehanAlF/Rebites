@@ -4,6 +4,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import type { FoodItem, PromoCode, UrgentItem, UrgentSlot, Vendor } from './types';
 import { STORE_SETTINGS_UPDATED_EVENT } from './store-settings-storage';
+import { displayBusinessName } from './business-name';
+import { resolveImageSrc } from './image-path';
+import { isMenuScheduleVisible } from './menu-schedule';
+
+function isScheduledVisible(row: ProductRow): boolean {
+  return isMenuScheduleVisible({
+    scheduledStart: row.scheduled_start ?? null,
+    scheduledEnd: row.scheduled_end ?? null,
+  });
+}
 
 export interface CatalogData {
   foodItems: FoodItem[];
@@ -29,39 +39,45 @@ function parseStockFromLabel(label: string | null | undefined, fallback: number)
 }
 
 function productToFoodItem(row: ProductRow): FoodItem {
+  // Sumber kebenaran stok adalah kolom numerik; label hanya output presentasional.
+  const stock = Number(row.stock ?? 0);
   return {
     id: row.slug ?? row.id,
     name: row.name ?? '',
     vendorName: row.umkm?.business_name ?? '',
-    image: row.image_url ?? '/foods/ikansayur.jpg',
+    image: resolveImageSrc(row.image_url) || '/foods/ikansayur.avif',
     category: row.category ?? 'Lainnya',
-    rating: Number(row.rating ?? 5),
-    distanceKm: Number(row.distance_km ?? 1),
+    rating: row.rating != null ? Number(row.rating) : null,
+    distanceKm: row.distance_km != null ? Number(row.distance_km) : null,
     availableFrom: (row.sell_window_start ?? '09:00').slice(0, 5),
     availableTo: (row.sell_window_end ?? '21:00').slice(0, 5),
     stockLabel:
-      row.stock_label ?? `${row.stock ?? 0} porsi tersisa`,
+      row.stock_label ?? (stock <= 0 ? 'Habis' : `${stock} porsi tersisa`),
     originalPrice: row.original_price ?? 0,
     discountedPrice: row.surplus_price ?? 0,
     discountPercent: row.discount_percent ?? 0,
     expiresAt: row.expires_at ?? undefined,
     // tambahan untuk lookup robust foto makanan disukai (id slug vs uuid)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...({ slug: row.slug ?? row.id, rawId: row.id } as any),
+    // + stok numerik agar kartu memakai angka, bukan teks label.
+    ...({ slug: row.slug ?? row.id, rawId: row.id, stock } as {
+      slug: string;
+      rawId: string;
+      stock: number;
+    }),
   } as FoodItem;
 }
 
 function umkmToVendor(row: UmkmRow, itemCount: number): Vendor {
   return {
     id: row.slug ?? row.id,
-    name: row.business_name ?? '',
+    name: displayBusinessName(row.business_name),
     image:
       row.logo_url ??
       'https://images.pexels.com/photos/37193132/pexels-photo-37193132.jpeg?auto=compress&cs=tinysrgb&w=800',
     isRescuePartner: row.is_rescue_partner ?? false,
     isVerified: row.is_verified ?? false,
     rating: Number(row.rating ?? 5),
-    distanceKm: Number(row.distance_km ?? 1),
+    distanceKm: row.distance_km != null ? Number(row.distance_km) : null,
     category: row.category ?? 'Makanan Berat',
     itemCount,
     address: row.address ?? '',
@@ -96,18 +112,35 @@ export async function fetchFoodItems(): Promise<FoodItem[]> {
   return (await queryFoodItems()).items;
 }
 
+/**
+ * Produk dari toko yang dinonaktifkan admin tidak boleh muncul di katalog.
+ *
+ * RLS menahan baris umkm_profiles, tetapi baris products-nya sendiri tetap
+ * approved dan bisa saja dikembalikan; karena itu hasil query disaring dengan
+ * ada-tidaknya relasi `umkm`. Ini penjaga kedua setelah RLS, bukan pengganti.
+ */
+function hasActiveStore(row: ProductRow): boolean {
+  return Boolean(row.umkm) && typeof row.umkm === 'object';
+}
+
 async function queryFoodItems(): Promise<FetchResult<FoodItem>> {
   const { data, error } = await supabase
     .from('products')
     .select('*, umkm:umkm_profiles(business_name)')
     .is('slot', null)
     .eq('status', 'available')
+    .eq('verification_status', 'approved')
     .order('created_at', { ascending: true });
   if (error) {
     console.error('[catalog] gagal memuat produk:', error.message);
     return { items: [], error: error.message };
   }
-  return { items: (data ?? []).map(productToFoodItem), error: null };
+  return {
+    items: (data ?? [])
+      .filter((row) => hasActiveStore(row) && isScheduledVisible(row))
+      .map(productToFoodItem),
+    error: null,
+  };
 }
 
 export async function fetchUrgentItems(): Promise<UrgentItem[]> {
@@ -120,18 +153,21 @@ async function queryUrgentItems(): Promise<FetchResult<UrgentItem>> {
     .select('*, umkm:umkm_profiles(business_name)')
     .not('slot', 'is', null)
     .eq('status', 'available')
+    .eq('verification_status', 'approved')
     .order('expires_at', { ascending: true });
   if (error) {
     console.error('[catalog] gagal memuat urgent deals:', error.message);
     return { items: [], error: error.message };
   }
   return {
-    items: (data ?? []).map((row) => ({
-      ...productToFoodItem(row),
-      expiresAt:
-        row.expires_at ?? new Date(Date.now() + 2 * 3600 * 1000).toISOString(),
-      slot: (row.slot ?? '09-12') as UrgentSlot,
-    })),
+    items: (data ?? [])
+      .filter((row) => hasActiveStore(row) && isScheduledVisible(row))
+      .map((row) => ({
+        ...productToFoodItem(row),
+        expiresAt:
+          row.expires_at ?? new Date(Date.now() + 2 * 3600 * 1000).toISOString(),
+        slot: (row.slot ?? '09-12') as UrgentSlot,
+      })),
     error: null,
   };
 }
@@ -143,14 +179,16 @@ export async function fetchVendors(): Promise<Vendor[]> {
 export async function fetchCategoryCounts(): Promise<Record<string, number>> {
   const { data, error } = await supabase
     .from('products')
-    .select('category')
-    .eq('status', 'available');
+    .select('category, scheduled_start, scheduled_end')
+    .eq('status', 'available')
+    .eq('verification_status', 'approved');
   if (error) {
     console.error('[catalog] gagal memuat kategori:', error.message);
     return {};
   }
   const counts: Record<string, number> = {};
   for (const row of data ?? []) {
+    if (!isScheduledVisible(row as ProductRow)) continue;
     const key = (row as Record<string, any>).category;
     if (!key) continue;
     counts[key] = (counts[key] ?? 0) + 1;
@@ -160,8 +198,13 @@ export async function fetchCategoryCounts(): Promise<Record<string, number>> {
 
 async function queryVendors(): Promise<FetchResult<Vendor>> {
   const [umkmResult, productResult] = await Promise.all([
+    // RLS umkm_select_public hanya mengembalikan toko aktif, sehingga toko
+    // yang dinonaktifkan admin hilang dari beranda dan halaman /toko.
     supabase.from('umkm_profiles').select('*').order('rating', { ascending: false }),
-    supabase.from('products').select('umkm_id'),
+    supabase
+      .from('products')
+      .select('umkm_id, scheduled_start, scheduled_end')
+      .eq('verification_status', 'approved'),
   ]);
   if (umkmResult.error) {
     console.error('[catalog] gagal memuat vendor:', umkmResult.error.message);
@@ -170,6 +213,7 @@ async function queryVendors(): Promise<FetchResult<Vendor>> {
 
   const counts = new Map<string, number>();
   for (const p of productResult.data ?? []) {
+    if (!isScheduledVisible(p as ProductRow)) continue;
     counts.set(p.umkm_id, (counts.get(p.umkm_id) ?? 0) + 1);
   }
   return {
@@ -198,28 +242,68 @@ export async function fetchCatalog(): Promise<CatalogData> {
   };
 }
 
+const CATALOG_CACHE_TTL_MS = 15_000; // 15 detik
+let catalogCache: Promise<CatalogData> | null = null;
+let catalogCacheTimestamp = 0;
+
+function invalidateCatalogCache() {
+  catalogCache = null;
+  catalogCacheTimestamp = 0;
+}
+
+// Invalidasi di level modul (terdaftar saat import, lebih dulu daripada
+// listener instance mana pun) sehingga semua instance useCatalog berbagi
+// SATU fetch baru saat pengaturan toko berubah.
+if (typeof window !== 'undefined') {
+  window.addEventListener(STORE_SETTINGS_UPDATED_EVENT, invalidateCatalogCache);
+}
+
+// Cache promise fetchCatalog: mount bersamaan / dalam TTL berbagi satu hasil.
+function fetchCatalogCached(): Promise<CatalogData> {
+  if (catalogCache && Date.now() - catalogCacheTimestamp < CATALOG_CACHE_TTL_MS) {
+    return catalogCache;
+  }
+  const run = fetchCatalog();
+  catalogCache = run;
+  catalogCacheTimestamp = Date.now();
+  // Hasil gagal jangan di-cache agar percobaan berikutnya fetch ulang.
+  run.catch(() => {
+    if (catalogCache === run) catalogCache = null;
+  });
+  return run;
+}
+
 export function useCatalog() {
   const [data, setData] = useState<CatalogData>(EMPTY_CATALOG);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  const load = useCallback(async (isCancelled?: () => boolean) => {
     setLoading(true);
-    const result = await fetchCatalog();
+    const result = await fetchCatalogCached();
+    if (isCancelled?.()) return;
     setData(result);
     setLoading(false);
   }, []);
 
+  // API publik: selalu fetch baru seperti sebelumnya.
+  const refresh = useCallback(() => {
+    invalidateCatalogCache();
+    return load();
+  }, [load]);
+
   useEffect(() => {
-    refresh();
+    let cancelled = false;
+    void load(() => cancelled);
     // Instant: saat pengaturan toko disimpan (logo/nama/openHours), refresh vendor di home tanpa reload
     const onStoreUpdated = () => {
-      void refresh();
+      void load(() => cancelled);
     };
     window.addEventListener(STORE_SETTINGS_UPDATED_EVENT, onStoreUpdated);
     return () => {
+      cancelled = true;
       window.removeEventListener(STORE_SETTINGS_UPDATED_EVENT, onStoreUpdated);
     };
-  }, [refresh]);
+  }, [load]);
 
   return { ...data, loading, refresh };
 }

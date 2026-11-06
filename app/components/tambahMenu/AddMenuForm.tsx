@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, Info, Lock, Save } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Info, Lock, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/app/components/dashboard-penjual/Card';
 import { Reveal } from '@/app/components/shared/reveal';
@@ -17,13 +17,20 @@ import { useSellerPlan } from '@/lib/seller-plan';
 import { PhotoPicker } from './PhotoPicker';
 import { MenuPreviewCard } from './MenuPreviewCard';
 import { NumberField } from './NumberField';
-import { DEFAULT_MENU_FORM, MENU_CATEGORIES } from './types';
+import { ShippingInfoSection } from './ShippingInfoSection';
+import { DEFAULT_MENU_FORM, MENU_CATEGORIES, parseShippingNumber } from './types';
 import type { MenuFormState } from './types';
+import {
+  isScheduleRangeValid,
+  scheduleEndToIso,
+  scheduleStartToIso,
+  todayScheduleDateInput,
+} from '@/lib/menu-schedule';
 
 const inputCls =
-  'w-full rounded-xl border border-sage-100 bg-white px-4 py-3 text-sm text-charcoal-900 placeholder:text-sage-500 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
+  'w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 const labelCls =
-  'mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-charcoal-900';
+  'mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground';
 
 async function uploadDataUrl(dataUrl: string): Promise<string | null> {
   try {
@@ -38,18 +45,18 @@ async function uploadDataUrl(dataUrl: string): Promise<string | null> {
 function SectionTitle({ number, title }: { number: string; title: string }) {
   return (
     <div className="mb-4 flex items-center gap-2.5">
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage-100 text-[11px] font-bold text-charcoal-900">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-foreground">
         {number}
       </span>
-      <h2 className="text-sm font-bold text-charcoal-900">{title}</h2>
+      <h2 className="text-sm font-bold text-foreground">{title}</h2>
     </div>
   );
 }
 
 function FieldError() {
   return (
-    <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-caramel/15 px-2.5 py-1.5 text-[11px] font-medium text-charcoal-900">
-      <Info className="h-3.5 w-3.5 shrink-0 text-caramel" />
+    <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 px-2.5 py-1.5 text-[11px] font-medium text-foreground">
+      <Info className="h-3.5 w-3.5 shrink-0 text-primary" />
       Nama menu wajib diisi sebelum disimpan
     </p>
   );
@@ -64,6 +71,11 @@ export function AddMenuForm() {
   const [limitReached, setLimitReached] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
   const [productCount, setProductCount] = useState(0);
+  // input package opsional sebagai teks mentah ('' = kosong = NULL).
+  const [weightRaw, setWeightRaw] = useState('');
+  const [lengthRaw, setLengthRaw] = useState('');
+  const [widthRaw, setWidthRaw] = useState('');
+  const [heightRaw, setHeightRaw] = useState('');
   const { plan } = useSellerPlan();
 
   const refreshCount = useCallback(() => {
@@ -87,6 +99,29 @@ export function AddMenuForm() {
   const handleSave = () => {
     setTouched(true);
     if (!form.name.trim() || savingProduct) return;
+    // minimal satu metode pengambilan harus aktif.
+    if (!form.isDelivery && !form.isPickup) {
+      setSaveError('Pilih minimal satu metode pengambilan: Diantar atau Ambil Sendiri.');
+      return;
+    }
+    // dimensi boleh kosong (NULL); jika diisi harus angka positif.
+    const weightParsed = parseShippingNumber(weightRaw);
+    const lengthParsed = parseShippingNumber(lengthRaw);
+    const widthParsed = parseShippingNumber(widthRaw);
+    const heightParsed = parseShippingNumber(heightRaw);
+    if (!weightParsed.ok || !lengthParsed.ok || !widthParsed.ok || !heightParsed.ok) {
+      setSaveError('Berat dan dimensi harus berupa angka positif. Kosongkan jika belum tahu.');
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      return;
+    }
+    // Berat opsional: bila kosong, ongkir memakai berat bawaan kategori
+    // (lib/package-weight.ts). Memaksanya di sini membuat penjual tidak bisa
+    // menambahkan menu yang beratnya belum diketahui.
+    if (!isScheduleRangeValid(form.scheduledStart, form.scheduledEnd)) {
+      setSaveError('Tanggal selesai tidak boleh mendahului tanggal mulai.');
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      return;
+    }
 
     setSaveError('');
 
@@ -99,7 +134,7 @@ export function AddMenuForm() {
     setSavingProduct(true);
 
     (async () => {
-      let imageUrl = form.photo || '/foods/ikansayur.jpg';
+      let imageUrl = form.photo || '/foods/ikansayur.avif';
 
       if (typeof form.photo === 'string' && form.photo.startsWith('data:image')) {
         const uploaded = await uploadDataUrl(form.photo);
@@ -121,7 +156,17 @@ export function AddMenuForm() {
         startTime: form.startTime,
         endTime: form.endTime,
         isSurplusToday: form.isSurplusToday,
+        scheduledStart: scheduleStartToIso(form.scheduledStart),
+        scheduledEnd: scheduleEndToIso(form.scheduledEnd),
         featured: false,
+        // kapabilitas fulfillment pilihan seller.
+        isDelivery: form.isDelivery,
+        isPickup: form.isPickup,
+        // package opsional (NULL jika kosong, tanpa angka palsu).
+        weightGram: weightParsed.value,
+        lengthCm: lengthParsed.value,
+        widthCm: widthParsed.value,
+        heightCm: heightParsed.value,
       });
 
       setSavingProduct(false);
@@ -142,6 +187,10 @@ export function AddMenuForm() {
 
   const handleReset = () => {
     setForm(DEFAULT_MENU_FORM);
+    setWeightRaw('');
+    setLengthRaw('');
+    setWidthRaw('');
+    setHeightRaw('');
     setTouched(false);
     setSaved(false);
     setSaveError('');
@@ -157,15 +206,15 @@ export function AddMenuForm() {
         className="mx-auto mt-10 max-w-md"
       >
         <Card className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-caramel/15 text-caramel-dark">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-primary">
             <Lock className="h-8 w-8" />
           </div>
           <h2 className="mt-5 font-display text-2xl font-medium tracking-tight text-primary">
             Kuota Produk Penuh
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-sage-500">
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             Paket {plan.label} membatasi{' '}
-            <span className="font-bold text-charcoal-900">
+            <span className="font-bold text-foreground">
               {productCount}/{plan.maxProducts} produk
             </span>
             . Hapus salah satu menu di Menu Saya, atau upgrade ke{' '}
@@ -176,14 +225,14 @@ export function AddMenuForm() {
             {plan.upgradeSlug && (
               <Link
                 href={`/langganan/pembayaran?plan=${plan.upgradeSlug}&billing=monthly`}
-                className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+                className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
               >
                 Lihat Paket Upgrade
               </Link>
             )}
             <Link
               href="/dashboard/penjual/menu"
-              className="inline-flex w-full items-center justify-center rounded-full border border-sage-100 bg-white px-4 py-3 text-sm font-semibold text-charcoal-900 transition-colors hover:bg-cream-50"
+              className="inline-flex w-full items-center justify-center rounded-full border border-border bg-white px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
             >
               Kelola Menu Saya
             </Link>
@@ -206,33 +255,34 @@ export function AddMenuForm() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.1 }}
-            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-cream-50 shadow-lg shadow-primary/30"
+            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30"
           >
             <CheckCircle2 className="h-8 w-8" />
           </motion.div>
           <h2 className="mt-5 font-display text-2xl font-medium tracking-tight text-primary">
             Menu Berhasil Ditambahkan
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-sage-500">
-            {savedName} telah masuk ke daftar menu tokomu dan siap dipesan pembeli.
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {savedName} telah masuk ke daftar menu tokomu dan sudah aktif di
+            marketplace.
           </p>
           <div className="mt-6 grid gap-3">
             <Link
               href="/dashboard/penjual/menu"
-              className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+              className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
             >
               Lihat Menu Saya
             </Link>
             <button
               type="button"
               onClick={handleReset}
-              className="inline-flex w-full items-center justify-center rounded-full border border-sage-100 bg-white px-4 py-3 text-sm font-semibold text-charcoal-900 transition-colors hover:bg-cream-50"
+              className="inline-flex w-full items-center justify-center rounded-full border border-border bg-white px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
             >
               Tambah Menu Lagi
             </button>
             <Link
               href="/dashboard/penjual"
-              className="text-center text-xs font-medium text-sage-500 underline underline-offset-4 transition-colors hover:text-charcoal-900"
+              className="text-center text-xs font-medium text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
             >
               Kembali ke Dashboard
             </Link>
@@ -309,8 +359,8 @@ export function AddMenuForm() {
                         </option>
                       ))}
                     </select>
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-sage-500">
-                      –¼
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      <ChevronDown className="h-3.5 w-3.5" aria-hidden />
                     </span>
                   </div>
                 </div>
@@ -349,7 +399,7 @@ export function AddMenuForm() {
                   step={1000}
                 />
               </div>
-              <p className="mt-1.5 text-[11px] text-sage-500">
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
                 Harga diskon untuk porsi surplus hari ini.
               </p>
 
@@ -364,6 +414,10 @@ export function AddMenuForm() {
 
             <section>
               <SectionTitle number="4" title="Ketersediaan" />
+              <p className="text-[11px] text-muted-foreground mb-3">
+                Atur kapan menu ini tersedia untuk pembeli. Pilih “Sekarang” untuk surplus hari ini, atau “Jadwalkan” untuk tanggal tertentu.
+              </p>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="menu-start-time" className={labelCls}>
@@ -391,59 +445,177 @@ export function AddMenuForm() {
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl bg-cream-50 px-4 py-3.5">
-                <div>
-                  <p className="text-xs font-semibold text-charcoal-900">
-                    Tampilkan sebagai surplus hari ini
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-sage-500">
-                    Pembeli bisa langsung memesan menu ini hari ini
-                  </p>
+              {/* Scheduling option — clearly separated from Flash Sale */}
+              <div className="mt-4 space-y-3">
+                <div className="rounded-2xl bg-secondary p-4">
+                  <p className="text-xs font-semibold text-foreground">Jadwal Ketersediaan</p>
+                  <p className="text-[11px] text-muted-foreground">Pilih kapan pembeli bisa memesan menu ini.</p>
+
+                  <div className="mt-3 space-y-2">
+                    <label className="flex items-start gap-3 rounded-xl border border-border bg-white px-3 py-3 transition-colors hover:border-primary hover:bg-primary-dark/5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="schedule-mode"
+                        checked={!form.scheduledStart}
+                        onChange={() => {
+                          set('scheduledStart', null);
+                          set('scheduledEnd', null);
+                          set('isSurplusToday', true);
+                        }}
+                        className="mt-0.5 h-4 w-4 accent-primary"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-foreground">Sekarang / Surplus Hari Ini</p>
+                        <p className="text-[10px] text-muted-foreground">Menu langsung tersedia hari ini sesuai jam jual.</p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-3 rounded-xl border border-border bg-white px-3 py-3 transition-colors hover:border-primary hover:bg-primary-dark/5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="schedule-mode"
+                        checked={!!form.scheduledStart}
+                        onChange={() => {
+                          set('scheduledStart', todayScheduleDateInput());
+                          set('scheduledEnd', null);
+                          set('isSurplusToday', false);
+                        }}
+                        className="mt-0.5 h-4 w-4 accent-primary"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-foreground">Jadwalkan untuk Tanggal Tertentu</p>
+                        <p className="text-[10px] text-muted-foreground">Menu akan muncul mulai tanggal yang dipilih.</p>
+
+                        {!!form.scheduledStart && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <input
+                              type="date"
+                              value={form.scheduledStart ? form.scheduledStart.slice(0, 10) : ''}
+                              onChange={(e) => set('scheduledStart', e.target.value || null)}
+                              className="h-7 rounded-md border border-border bg-white px-2 text-[11px] text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            />
+                            <input
+                              type="date"
+                              value={form.scheduledEnd ? form.scheduledEnd.slice(0, 10) : ''}
+                              onChange={(e) => set('scheduledEnd', e.target.value || null)}
+                              placeholder="Sampai (opsional)"
+                              className="h-7 rounded-md border border-border bg-white px-2 text-[11px] text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </label>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={form.isSurplusToday}
-                  onClick={() => set('isSurplusToday', !form.isSurplusToday)}
-                  className={cn(
-                    'relative h-6 w-11 shrink-0 rounded-full transition-colors',
-                    form.isSurplusToday ? 'bg-primary' : 'bg-sage-100'
-                  )}
-                >
-                  <motion.span
-                    animate={{ x: form.isSurplusToday ? 20 : 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm"
-                  />
-                </button>
               </div>
+            </section>
+
+            <section>
+              <SectionTitle number="5" title="Metode Pengambilan" />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-secondary px-4 py-3.5">
+                  <div>
+                    <p className="text-xs font-semibold text-charcoal-900">
+                      Diantar
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-sage-500">
+                      Pembeli bisa memilih pengiriman ke alamat
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form.isDelivery}
+                    aria-label="Aktifkan pengiriman diantar"
+                    onClick={() => set('isDelivery', !form.isDelivery)}
+                    className={cn(
+                      'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+                      form.isDelivery ? 'bg-primary' : 'bg-sage-100'
+                    )}
+                  >
+                    <motion.span
+                      animate={{ x: form.isDelivery ? 20 : 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm"
+                    />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-secondary px-4 py-3.5">
+                  <div>
+                    <p className="text-xs font-semibold text-charcoal-900">
+                      Ambil Sendiri
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-sage-500">
+                      Pembeli mengambil langsung di toko
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form.isPickup}
+                    aria-label="Aktifkan ambil sendiri"
+                    onClick={() => set('isPickup', !form.isPickup)}
+                    className={cn(
+                      'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+                      form.isPickup ? 'bg-primary' : 'bg-sage-100'
+                    )}
+                  >
+                    <motion.span
+                      animate={{ x: form.isPickup ? 20 : 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm"
+                    />
+                  </button>
+                </div>
+                <p className="text-[11px] text-sage-500">
+                  Minimal satu metode harus aktif.
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <SectionTitle number="6" title="Informasi Pengiriman" />
+              <ShippingInfoSection
+                idPrefix="menu"
+                weightRaw={weightRaw}
+                lengthRaw={lengthRaw}
+                widthRaw={widthRaw}
+                heightRaw={heightRaw}
+                onWeightChange={setWeightRaw}
+                onLengthChange={setLengthRaw}
+                onWidthChange={setWidthRaw}
+                onHeightChange={setHeightRaw}
+                isDelivery={form.isDelivery}
+                variant="add"
+              />
             </section>
 
               {saveError && (
                 <p
                   role="alert"
-                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-600"
+                  className="rounded-xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-[13px] font-medium text-destructive"
                 >
                   {saveError}
                 </p>
               )}
 
-              <div className="flex flex-col-reverse gap-3 border-t border-sage-100 pt-6 sm:flex-row sm:items-center">
+              <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:items-center">
               <Link
                 href="/dashboard/penjual"
-                className="inline-flex items-center justify-center rounded-full border border-sage-100 bg-white px-5 py-3 text-sm font-semibold text-charcoal-900 transition-colors hover:bg-cream-50"
+                className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
               >
                 Batalkan
               </Link>
               <div className="flex flex-1 flex-col gap-2">
                 <button
                   type="submit"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark"
                 >
                   <Save className="h-4 w-4" />
                   Simpan Menu
                 </button>
-                <p className="text-center text-[11px] text-sage-500">
+                <p className="text-center text-[11px] text-muted-foreground">
                   {plan.maxProducts !== null
                     ? `Kuota terpakai ${productCount}/${plan.maxProducts} produk · paket ${plan.label}`
                     : `Kuota produk tanpa batas · paket ${plan.label}`}
@@ -451,7 +623,7 @@ export function AddMenuForm() {
               </div>
             </div>
 
-            <p className="flex items-center gap-1.5 text-[11px] text-sage-500">
+            <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <Info className="h-3.5 w-3.5 shrink-0" />
               Setelah disimpan, menu langsung tampil pada halaman menu tokomu dan berpotensi
               dipesan hari ini.

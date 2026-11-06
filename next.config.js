@@ -5,6 +5,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: [
       "framer-motion",
+      "gsap",
       "lucide-react",
       "recharts",
       "embla-carousel-react",
@@ -25,6 +26,12 @@ const nextConfig = {
     ],
   },
   images: {
+    // Hanya WebP. Sebelumnya AVIF dicoba lebih dulu, dan encoder AVIF jauh
+    // lebih lambat daripada WebP pada permintaan pertama sebuah gambar —
+    // terasa sebagai "foto makanannya lama sekali muncul" tepat setelah penjual
+    // mengunggah produk baru, lalu normal setelah refresh karena hasilnya sudah
+    // tersimpan di cache optimizer. WebP didukung semua browser target dan
+    // ukurannya sudah cukup kecil untuk foto makanan.
     formats: ["image/webp"],
     remotePatterns: [
       {

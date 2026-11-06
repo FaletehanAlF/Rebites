@@ -34,7 +34,7 @@ export function PageOrnaments() {
       />
       <motion.div
         style={{ y: reduce ? 0 : y2 }}
-        className="absolute -right-32 top-40 h-[26rem] w-[26rem] rounded-[45%_55%_50%_50%_/55%_45%_55%_45%] bg-sage-500/10 blur-3xl"
+        className="absolute -right-32 top-40 h-[26rem] w-[26rem] rounded-[45%_55%_50%_50%_/55%_45%_55%_45%] bg-primary/10 blur-3xl"
       />
       <motion.div
         style={{ y: reduce ? 0 : y3 }}
@@ -43,7 +43,7 @@ export function PageOrnaments() {
 
       <motion.div
         style={{ y: reduce ? 0 : y2 }}
-        className="absolute -right-12 top-24 hidden h-[360px] w-[680px] text-sage-500/20 lg:block"
+        className="absolute -right-12 top-24 hidden h-[360px] w-[680px] text-muted-foreground/20 lg:block"
       >
         <ArcLines className="h-full w-full" />
       </motion.div>
@@ -55,28 +55,28 @@ export function PageOrnaments() {
         <DotPattern className="h-full w-full" />
       </motion.div>
 
-      <LeafSprig className="-left-6 top-72 hidden h-44 w-44 -rotate-12 text-sage-500/25 lg:block" />
+      <LeafSprig className="-left-6 top-72 hidden h-44 w-44 -rotate-12 text-muted-foreground/25 lg:block" />
 
       {reduce ? (
         <Leaf
-          className="absolute right-8 top-72 hidden h-5 w-5 text-sage-500/40 lg:block"
+          className="absolute right-8 top-72 hidden h-5 w-5 text-muted-foreground/40 lg:block"
           strokeWidth={1.5}
         />
       ) : (
         <FloatingLeaf
-          className="right-8 top-72 hidden h-5 w-5 text-sage-500/40 lg:block"
+          className="right-8 top-72 hidden h-5 w-5 text-muted-foreground/40 lg:block"
           delay={1.2}
         />
       )}
 
       {reduce ? (
         <Leaf
-          className="absolute left-8 top-[58rem] hidden h-5 w-5 text-sage-500/40 lg:block"
+          className="absolute left-8 top-[58rem] hidden h-5 w-5 text-muted-foreground/40 lg:block"
           strokeWidth={1.5}
         />
       ) : (
         <FloatingLeaf
-          className="left-8 top-[58rem] hidden h-5 w-5 text-sage-500/40 lg:block"
+          className="left-8 top-[58rem] hidden h-5 w-5 text-muted-foreground/40 lg:block"
           delay={0.4}
         />
       )}

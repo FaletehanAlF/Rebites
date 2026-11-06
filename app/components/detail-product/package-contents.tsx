@@ -12,7 +12,7 @@ export function PackageContents({ items }: { items: string[] }) {
       <StaggerGroup as="ul" className="mt-4 space-y-2.5" stagger={0.06}>
         {items.map((item) => (
           <StaggerItem key={item} as="li">
-            <span className="flex items-start gap-3 font-inter text-sm leading-relaxed text-charcoal-500">
+            <span className="flex items-start gap-3 font-secondary text-sm leading-relaxed text-muted-foreground">
               <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               {item}
             </span>

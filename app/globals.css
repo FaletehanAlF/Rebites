@@ -4,48 +4,77 @@
 
 @layer base {
   :root {
+    /* Surfaces — white is the primary surface, very light neutral is secondary */
     --background: 0 0% 100%;
-    --foreground: 50 5% 11%;
+    --foreground: 150 25% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 50 5% 11%;
+    --card-foreground: 150 25% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 50 5% 11%;
+    --popover-foreground: 150 25% 10%;
 
+    /* Brand — the ReBites deep green */
     --primary: 148 41% 23%;
-    --primary-foreground: 40 30% 96%;
+    --primary-dark: 148 42% 17%;
+    --primary-foreground: 0 0% 100%;
     --primary-foreground-strong: 0 0% 100%;
 
-    --secondary: 40 30% 96%;
+    /* Secondary / muted — neutral, never warm */
+    --secondary: 150 17% 98%;
     --secondary-foreground: 148 41% 23%;
+    --muted: 150 14% 95%;
+    --muted-foreground: 150 6% 40%;
 
-    --muted: 40 24% 92%;
-    --muted-foreground: 50 5% 36%;
+    /* Accent — subtle green for selected and hover states */
+    --accent: 148 30% 94%;
+    --accent-foreground: 148 41% 20%;
 
-    --accent: 148 41% 23%;
-    --accent-foreground: 40 30% 96%;
-
+    /* Semantic status colours (restrained, never competing with the brand) */
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 98%;
-
-    --warning: 35 90% 50%;
+    --warning: 35 90% 38%;
     --warning-foreground: 0 0% 100%;
+    /* Versi gelap --warning untuk dipakai sebagai WARNA TEKS (badge/label).
+       --warning sendiri terlalu terang untuk teks (1.9:1 di atas tint 15%),
+       sedangkan nilai ini ±6:1 sehingga badge peringatan tetap terbaca. */
+    --warning-strong: 28 85% 30%;
+    --success: 145 60% 32%;
+    --success-foreground: 0 0% 100%;
 
-    --success: 148 41% 30%;
-    --success-foreground: 40 30% 96%;
-
-    --border: 40 14% 88%;
-    --input: 40 14% 86%;
+    /* Lines and focus */
+    --border: 144 11% 91%;
+    --input: 144 10% 88%;
     --ring: 148 41% 23%;
 
-    --caramel: 32 38% 65%;
-
+    /* Charts — green and neutral only */
     --chart-1: 148 41% 23%;
-    --chart-2: 148 41% 35%;
-    --chart-3: 40 30% 60%;
-    --chart-4: 148 30% 50%;
-    --chart-5: 50 5% 30%;
+    --chart-2: 145 55% 34%;
+    --chart-3: 145 35% 55%;
+    --chart-4: 150 20% 72%;
+    --chart-5: 150 6% 40%;
 
     --radius: 0.25rem;
+
+    /* --- Token panel admin -----------------------------------------
+       Didefinisikan di `:root`, bukan hanya di dalam `.admin-root`,
+       supaya utilitas Tailwind (`bg-admin-canvas`, `bg-admin-panel`,
+       `border-admin-line`) tetap resolve ketika komponen admin
+       dirender lewat portal di luar `.admin-root` (dialog, drawer).
+       Halaman publik tidak memakai token ini.
+
+         canvas  : latar area kerja panel admin. Sedikit lebih gelap dari
+                   putih supaya konten yang TRANSPARAN (tanpa kartu
+                   filled) tetap punya batas visual tanpa garis 1px.
+         panel   : permukaan elevated (kartu KPI, dropdown, modal) —
+                   putih, berdiri di atas canvas.
+         surface : band tint di dalam konten (pita header tabel, kotak
+                   info, state kosong). Lebih gelap dari canvas.
+         line    : hairline fungsional (pemisah baris tabel, tepi
+                   kontrol form) — satu-satunya "border" yang tersisa. */
+    --admin-canvas: 0 0% 100%;
+    --admin-panel: 0 0% 100%;
+    --admin-surface: 152 20% 94.8%;
+    --admin-surface-hover: 152 20% 92.5%;
+    --admin-line: 150 16% 87%;
   }
 
   * {
@@ -58,14 +87,51 @@
     scroll-behavior: smooth;
   }
 
+  /* Jarak jangkar saat halaman digulir. Topbar admin bersifat sticky
+     (tinggi ±57px), jadi 4.5rem (72px) memberi ruang supaya judul
+     section tidak pernah tertutup navbar. Nilai lama 6.5rem menyisakan
+     celah kosong excessive pada halaman admin. */
   [id] {
-    scroll-margin-top: 6.5rem;
+    scroll-margin-top: 4.5rem;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
-    font-feature-settings: 'ss01', 'ss02';
+    /* Setelan 'ss01'/'ss02' warisan Plus Jakarta Sans dihapus: pada Inter
+       fitur tersebut mengubah bentuk angka/huruf sehingga tampilannya tidak
+       konsisten. Angka tabular tetap dipakai lewat utilitas `tabular-nums`
+       di komponen yang membutuhkannya (harga, kode pesanan, kuantitas). */
+  }
+
+  /* Hierarki tipografi dasar. Hampir semua komponen menetapkan ukuran
+     teksnya sendiri, jadi aturan ini hanya menjaga ritme untuk heading dan
+     paragraf yang tidak memberi kelas ukuran/line-height. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    line-height: 1.25;
+    letter-spacing: -0.011em;
+  }
+
+  p {
+    line-height: 1.6;
+  }
+
+  /* Elemen form mewarisi keluarga font halaman. Tailwind preflight sudah
+     mengatur hal ini, ditegaskan ulang agar input, select, dan textarea di
+     dalam portal/dialog maupun panel admin tetap memakai font utama. */
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    font-family: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
   }
 
   ::selection {
@@ -75,20 +141,133 @@
 }
 
 @layer components {
-  .font-display {
-    font-family: var(--font-sans);
-  }
-  .font-sans {
-    font-family: var(--font-sans);
-  }
+  /* Semua alias font diarahkan ke keluarga yang benar:
+     - font-display / font-sans / font-inter -> Plus Jakarta Sans (--font-sans)
+     - font-secondary -> Be Vietnam Pro (--font-secondary, dari develop)
+     Alias dipertahankan sebagai kelas agar markup lama tetap valid tanpa
+     memperkenalkan keluarga font baru. */
+  .font-display,
+  .font-sans,
   .font-inter {
-    font-family: var(--font-secondary);
+    font-family: var(--font-sans);
   }
   .font-secondary {
     font-family: var(--font-secondary);
   }
-  .font-script {
-    font-family: var(--font-script);
+}
+
+/* Token khusus panel admin. Diterapkan hanya di dalam .admin-root
+   (app/dashboard/admin/layout.tsx) sehingga halaman publik tidak berubah.
+   - Hijau aksen lebih ringan dari --primary global namun tetap 5.7:1
+     terhadap teks putih, jadi aman untuk tombol hijau dan teks kecil.
+   - Garis dan permukaan pakai netral hijau muda, bukan beige hangat,
+     supaya kontras kartu/tabel di atas background putih tetap bersih. */
+.admin-root {
+  /* Kanvas panel admin = PUTIH murni (#ffffff = hsl(0 0% 100%)).
+     Sebelumnya 150 25% 97% (hijau-abu), sehingga sisi kanan halaman tidak
+     pernah benar-benar putih. Kartu/tabel tetap dibedakan lewat hairline
+     `--admin-line` dan bayangan, bukan lewat warna latar. */
+  --admin-canvas: 0 0% 100%;
+  --admin-surface: 150 20% 96.5%;
+  --admin-surface-hover: 150 20% 94%;
+  --radius: 0.5rem;
+  --primary: 152 40% 32%;
+  --primary-foreground: 0 0% 100%;
+  --primary-foreground-strong: 0 0% 100%;
+  --secondary: 150 30% 96%;
+  --secondary-foreground: 152 40% 26%;
+  --accent: 152 40% 32%;
+  --accent-foreground: 0 0% 100%;
+  --muted: 150 22% 95%;
+  --muted-foreground: 155 10% 34%;
+  --border: 150 12% 89%;
+  --input: 150 14% 84%;
+  --ring: 152 40% 32%;
+  --success: 152 40% 29%;
+  --success-foreground: 0 0% 100%;
+  --warning: 33 88% 34%;
+  --warning-foreground: 0 0% 100%;
+  --warning-strong: 33 88% 29%;
+  --destructive: 0 70% 45%;
+  --destructive-foreground: 0 0% 100%;
+  --chart-1: 152 40% 32%;
+  --chart-2: 152 34% 45%;
+  --chart-3: 33 88% 50%;
+  --chart-4: 152 28% 56%;
+  --chart-5: 155 10% 34%;
+
+  /* Token permukaan khusus admin (dipakai lewat utility di bawah).
+     Nilai surface/surface-hover/line sudah didefinisikan di `:root`
+     (lihat blok token panel admin) supaya ikut berlaku untuk konten
+     yang dirender di luar `.admin-root` (portal dialog/drawer). */
+}
+
+@layer components {
+  /* Abu-abu sekunder admin. Nilai default sage-500 hanya 3.5:1 di atas
+     putih, jadi dinaikkan ke 4.7:1 tanpa mengubah warna hardcoded global. */
+  .admin-root .text-sage-500 {
+    color: #5a7a6c;
+  }
+
+  /* Hijau solid admin (tombol utama, badge, dot aktif).
+     7.3:1 terhadap teks putih, menggantikan hover caramel yang
+     hanya 1.9:1. */
+  .admin-root .hover\:bg-caramel:hover {
+    background-color: hsl(152 40% 26%);
+  }
+  .admin-root .hover\:border-caramel:hover {
+    border-color: hsl(152 40% 26%);
+  }
+  .admin-root .hover\:border-primary\/30:hover {
+    border-color: hsl(152 40% 26%);
+  }
+
+  /* Permukaan tabel & kotak info.
+     Sebelumnya `bg-cream-50` dipaksa menjadi #ffffff persis sama dengan
+     kartu, sehingga:
+       - pita header tabel (`thead`) hilang, label uppercase menggantung
+         di atas putih tanpa pembeda;
+       - kotak "belum ada data" (bg-cream-50) tidak terlihat sama sekali;
+       - state hover `hover:bg-cream-50` (#FAF8F5 di atas putih) nyaris
+         tak perceptible sehingga terasa "klik tidak bereaksi".
+     Sekarang permukaan dipetakan ke hijau abu-abu sangat muda
+     (--admin-surface) sehingga kartu putih tetap bersih tetapi lapisan
+     di dalamnya terbaca jelas. */
+  .admin-root .bg-cream-50 {
+    background-color: hsl(var(--admin-surface));
+  }
+  .admin-root .bg-cream-50\/70 {
+    background-color: hsl(var(--admin-surface) / 0.7);
+  }
+  .admin-root .bg-cream-50\/60 {
+    background-color: hsl(var(--admin-surface) / 0.6);
+  }
+  .admin-root .bg-cream-50\/50 {
+    background-color: hsl(var(--admin-surface) / 0.5);
+  }
+  .admin-root .bg-cream-50\/40 {
+    background-color: hsl(var(--admin-surface) / 0.4);
+  }
+  .admin-root .hover\:bg-cream-50:hover {
+    background-color: hsl(var(--admin-surface-hover));
+  }
+
+  /* Hairline admin: netral dan tipis, bukan hijau solid. Garis 1px
+     hanya dipertahankan untuk hal yang benar-benar butuh batas baca
+     (pemisah baris tabel, tepi kontrol form) — kartu dan panel
+     dipisahkan lewat bayangan, bukan garis. */
+  .admin-root .border-border,
+  .admin-root .border-border\/70 {
+    border-color: hsl(var(--admin-line));
+  }
+  /* `hover:border-border/70` adalah kelas BERBEDA dari `border-border/70`,
+     jadi butuh override sendiri; tanpa ini garis hover jatuh ke beige
+     global dan terlihat seperti warna asing di panel admin. */
+  .admin-root .hover\:border-border\/70:hover {
+    border-color: hsl(152 40% 32% / 0.45);
+  }
+  .admin-root .hover\:border-border:hover {
+    border-color: hsl(152 40% 32% / 0.45);
   }
 }
 
@@ -104,117 +283,11 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.035;
+    opacity: 0.05;
+    /* Optimasi: mix-blend-mode multiply dihapus. Blend mode pada layer besar
+       memaksa komposit ulang seluruh section saat scroll — paling terasa di
+       perangkat lemah. Tekstur tetap tampil dengan opacity sedikit dinaikkan. */
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    mix-blend-mode: multiply;
-  }
-  .duotone-green {
-    filter: grayscale(100%) contrast(1.05) brightness(0.95);
-    mix-blend-mode: multiply;
-  }
-  .duotone-green::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.4));
-    mix-blend-mode: color;
-    pointer-events: none;
-  }
-.text-shadow-cream {
-    text-shadow: 0 1px 0 hsl(var(--secondary));
-  }
-
-  .toast {
-    position: fixed;
-    right: 28px;
-    bottom: 28px;
-    z-index: 50;
-    background: hsl(var(--primary) / 0.96);
-    color: hsl(var(--primary-foreground));
-    border-radius: 999px;
-    padding: 12px 18px;
-    box-shadow: 0 18px 36px hsl(var(--primary) / 0.2);
-    font-size: 0.9rem;
-    font-weight: 500;
-  }
-
-  .chef-avatar {
-    flex-shrink: 0;
-    width: 58px;
-    height: 58px;
-    border-radius: 50%;
-    border: 4px solid hsl(var(--primary) / 0.15);
-    overflow: hidden;
-    background: hsl(var(--caramel) / 0.35);
-  }
-
-  .chef-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .recommendation div:last-child {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .recommendation span {
-    color: hsl(var(--primary) / 0.8);
-    font-size: 0.82rem;
-    letter-spacing: 0.01em;
-  }
-
-  .recommendation a {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: hsl(var(--primary));
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
-  .recommendation a svg {
-    color: hsl(var(--caramel));
-  }
-
-  .scroll-cue {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: fit-content;
-    margin-left: 60px;
-    margin-top: -32px;
-    color: hsl(var(--primary) / 0.72);
-    text-transform: lowercase;
-    font-size: 0.78rem;
-    letter-spacing: 0.16em;
-  }
-
-  .scroll-cue svg {
-    transform: rotate(90deg);
-  }
-
-  .promo-card {
-    display: none;
-  }
-
-  .toast {
-    position: fixed;
-    right: 28px;
-    bottom: 28px;
-    z-index: 50;
-    background: hsl(var(--primary) / 0.96);
-    color: hsl(var(--primary-foreground));
-    border-radius: 999px;
-    padding: 12px 18px;
-    box-shadow: 0 18px 36px hsl(var(--primary) / 0.2);
-    font-size: 0.9rem;
-    font-weight: 500;
   }
 }
 
@@ -224,9 +297,6 @@ html.lenis body {
 }
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
-}
-.lenis.lenis-stopped {
-  overflow: hidden;
 }
 
 ::-webkit-scrollbar {
@@ -242,30 +312,6 @@ html.lenis body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary));
-}
-
-.leaflet-container {
-  font-family: var(--font-sans);
-  background: hsl(var(--secondary));
-}
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  border-radius: var(--radius);
-}
-.leaflet-popup-content {
-  margin: 10px 14px;
-  font-size: 13px;
-}
-.leaflet-control-zoom a {
-  background: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-  border-radius: 0 !important;
-  border: none !important;
-}
-.leaflet-control-attribution {
-  display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

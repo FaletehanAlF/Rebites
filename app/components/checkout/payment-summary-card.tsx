@@ -23,6 +23,8 @@ export function PaymentSummaryCard() {
     missingRequirement,
     submitting,
     submitOrder,
+    fulfillment,
+    selectedShippingOption,
   } = useCheckout();
   const cardRef = useRef<HTMLDivElement>(null);
   const [stuck, setStuck] = useState(false);
@@ -46,39 +48,39 @@ export function PaymentSummaryCard() {
     <div
       ref={cardRef}
       className={cn(
-        "relative overflow-hidden rounded-3xl bg-cream-100 p-5 transition-shadow duration-300 sm:p-6",
+        "relative overflow-hidden rounded-3xl bg-muted p-5 transition-shadow duration-300 sm:p-6",
         stuck ? "shadow-xl shadow-primary/10" : "shadow-md shadow-primary/5",
       )}
     >
       <DotPattern className="pointer-events-none absolute inset-0 h-full w-full text-primary/[0.05]" />
 
       <div className="relative">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sage-500">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Ringkasan Pesanan
         </p>
 
         {}
         <div className="mt-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-charcoal-900">
+            <p className="truncate text-sm font-semibold text-foreground">
               {draft.productName}
             </p>
-            <p className="mt-0.5 text-xs text-charcoal-500">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {draft.vendorName} · x{quantity}
             </p>
           </div>
-          <p className="shrink-0 text-right text-sm font-medium tabular-nums text-charcoal-900">
+          <p className="shrink-0 text-right text-sm font-medium tabular-nums text-foreground">
             <AnimatedNumber value={summary.subtotal} format={formatRupiah} />
           </p>
         </div>
 
         {}
-        <dl className="mt-5 space-y-3 border-t border-sage-500/20 pt-4 text-sm">
+        <dl className="mt-5 space-y-3 border-t border-primary/30 pt-4 text-sm">
           <div className="flex items-center justify-between gap-4">
-            <dt className="text-charcoal-500">
+            <dt className="text-muted-foreground">
               Total sementara ({quantity} porsi)
             </dt>
-            <dd className="font-medium tabular-nums text-charcoal-900">
+            <dd className="font-medium tabular-nums text-foreground">
               <AnimatedNumber value={summary.subtotal} format={formatRupiah} />
             </dd>
           </div>
@@ -96,8 +98,8 @@ export function PaymentSummaryCard() {
           )}
 
           <div className="flex items-center justify-between gap-4">
-            <dt className="text-charcoal-500">Biaya admin</dt>
-            <dd className="font-medium tabular-nums text-charcoal-900">
+            <dt className="text-muted-foreground">Biaya admin</dt>
+            <dd className="font-medium tabular-nums text-foreground">
               <AnimatedNumber
                 value={summary.serviceFee}
                 format={formatRupiah}
@@ -105,14 +107,36 @@ export function PaymentSummaryCard() {
             </dd>
           </div>
 
-          {summary.deliveryFee > 0 && (
+          {/* delivery menampilkan harga opsi terpilih (tanpa fallback
+              Rp8.000); belum memilih = placeholder. Pickup = behavior lama. */}
+          {fulfillment === 'delivery'
+            ? selectedShippingOption && (
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-charcoal-500">Biaya pengiriman</dt>
+                  <dd className="font-medium tabular-nums text-charcoal-900">
+                    <AnimatedNumber
+                      value={summary.deliveryFee}
+                      format={formatRupiah}
+                    />
+                  </dd>
+                </div>
+              )
+            : summary.deliveryFee > 0 && (
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-charcoal-500">Biaya pengiriman</dt>
+                  <dd className="font-medium tabular-nums text-charcoal-900">
+                    <AnimatedNumber
+                      value={summary.deliveryFee}
+                      format={formatRupiah}
+                    />
+                  </dd>
+                </div>
+              )}
+          {fulfillment === 'delivery' && !selectedShippingOption && (
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-charcoal-500">Biaya pengantaran</dt>
-              <dd className="font-medium tabular-nums text-charcoal-900">
-                <AnimatedNumber
-                  value={summary.deliveryFee}
-                  format={formatRupiah}
-                />
+              <dt className="text-charcoal-500">Biaya pengiriman</dt>
+              <dd className="font-medium tabular-nums text-sage-500">
+                Pilih pengiriman
               </dd>
             </div>
           )}
@@ -143,12 +167,12 @@ export function PaymentSummaryCard() {
         </dl>
 
         {}
-        <div className="mt-5 flex items-center gap-3 rounded-xl border border-caramel/30 bg-caramel/10 px-3.5 py-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-caramel text-white shadow-sm">
+        <div className="mt-5 flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-3.5 py-2.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm">
             <Coins className="h-4 w-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-charcoal-900">
+            <p className="text-xs font-semibold text-foreground">
               Dapatkan +
               <AnimatedNumber
                 value={summary.coinEarned}
@@ -156,7 +180,7 @@ export function PaymentSummaryCard() {
               />{" "}
               ReBites Coin
             </p>
-            <p className="text-[11px] leading-snug text-charcoal-500">
+            <p className="text-[11px] leading-snug text-muted-foreground">
               Coin masuk otomatis setelah pesanan selesai
             </p>
           </div>
@@ -166,9 +190,9 @@ export function PaymentSummaryCard() {
 
         <UseCoinsCard />
 
-        <div className="mt-5 border-t border-sage-500/25 pt-4">
+        <div className="mt-5 border-t border-primary/30 pt-4">
           <div className="flex items-center justify-between gap-4">
-            <span className="font-display text-base font-medium text-charcoal-900">
+            <span className="font-display text-base font-medium text-foreground">
               Total
             </span>
             <span className="font-display text-2xl font-semibold tabular-nums text-primary">
@@ -187,8 +211,8 @@ export function PaymentSummaryCard() {
           className={cn(
             "mx-auto mt-6 flex w-fit items-center whitespace-nowrap rounded-full px-8 py-3.5 text-sm font-semibold transition-colors duration-200",
             canPay
-              ? "bg-primary text-white shadow-lg shadow-primary/25 hover:bg-caramel"
-              : "cursor-not-allowed bg-sage-100 text-sage-500",
+              ? "bg-primary text-white shadow-lg shadow-primary/25 hover:bg-primary-dark"
+              : "cursor-not-allowed bg-muted text-muted-foreground",
           )}
         >
           {submitting
@@ -197,12 +221,12 @@ export function PaymentSummaryCard() {
         </motion.button>
 
         {!canPay && !submitting && missingRequirement && (
-          <p role="status" className="mt-2 text-center text-xs text-sage-500">
+          <p role="status" className="mt-2 text-center text-xs text-muted-foreground">
             {missingRequirement}
           </p>
         )}
 
-        <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-charcoal-500">
+        <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
           <Lock className="h-3.5 w-3.5 text-primary" />
           Transaksi terenkripsi · Dana ditahan sampai pesanan diterima
         </p>

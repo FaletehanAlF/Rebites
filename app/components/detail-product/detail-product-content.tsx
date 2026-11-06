@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import DetailPage from "@/app/components/detail-product/detail-page";
+import DetailPage, {
+  type DetailProductShell,
+} from "@/app/components/detail-product/detail-page";
 import type {
   ProductDetail,
   RelatedProduct,
@@ -11,7 +13,17 @@ import type {
 import { fetchProductDetail, fetchRelatedProducts } from "./detail-data";
 import { getProductReviews } from "@/lib/review-storage";
 
-export function DetailProductContent() {
+/**
+ * Fetches one product (plus its reviews and related products) and renders it
+ * inside the shell the calling route provides. The shell is the only thing
+ * that differs between the application route (`/detail/product`) and the
+ * public showcase route (`/preview/product`).
+ */
+export function DetailProductContent({
+  shell,
+}: {
+  shell: DetailProductShell;
+}) {
   const searchParams = useSearchParams();
   const productId = searchParams.get("id") ?? searchParams.get("slug");
 
@@ -62,21 +74,21 @@ export function DetailProductContent() {
   }, [product]);
 
   if (status === "loading") {
-    return <div className="min-h-screen bg-cream-50" />;
+    return <div className="min-h-screen bg-secondary" />;
   }
 
   if (status === "not-found" || !product) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-cream-50 px-6 text-center">
-        <p className="font-sans text-lg font-bold text-charcoal-900">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-secondary px-6 text-center">
+        <p className="font-sans text-lg font-bold text-foreground">
           Produk tidak ditemukan
         </p>
-        <p className="max-w-sm text-sm leading-relaxed text-charcoal-500">
+        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
           Menu yang kamu cari mungkin sudah habis atau dihapus penjualnya.
         </p>
         <a
           href="/"
-          className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-caramel"
+          className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
         >
           Kembali ke Beranda
         </a>
@@ -89,6 +101,7 @@ export function DetailProductContent() {
       product={product}
       reviews={reviews}
       relatedProducts={relatedProducts}
+      shell={shell}
     />
   );
 }

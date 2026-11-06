@@ -1,210 +1,250 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
-  ChevronDown,
+  Coins,
+  Flame,
+  Heart,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
   MapPin,
   Menu,
+  Newspaper,
+  Settings,
   Store,
   User,
+  UtensilsCrossed,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
-import { useProfile } from "@/hooks/use-profile";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useSellerStatus } from "@/hooks/use-seller-status";
+import { CATEGORIES } from "@/lib/categories";
+import { scrollToId } from "@/lib/scroll";
 
-const LOCATIONS = ["Depok", "Jakarta Selatan", "Bekasi", "Bogor", "Tangerang"];
+const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const NAV_LINKS = [
-  { id: "home", label: "Beranda" },
-  { id: "rekomendasi", label: "Makanan" },
-  { id: "flashSale", label: "Diskon Kilat" },
-  { id: "umkm", label: "UMKM" },
-  { id: "langganan", label: "Langganan" },
+  { id: "rekomendasi", label: "Rekomendasi Makanan", icon: UtensilsCrossed },
+  { id: "flashSale", label: "Diskon Kilat", icon: Flame },
+] as const;
+
+// Sub-menu akun memakai route/halaman yang benar: Toko Diikuti dan
+// Pengaturan punya halaman khusus; yang masih berupa section profil
+// (Makanan Disukai, ReBites Coin, Alamat) tetap memakai hash.
+const ACCOUNT_LINKS: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}[] = [
+  { href: "/profile", label: "Profil Saya", icon: User },
+  { href: "/profile#sukai-makanan", label: "Makanan Disukai", icon: Heart },
+  { href: "/toko-diikuti", label: "Toko Diikuti", icon: Store },
+  { href: "/pengaturan/coin", label: "ReBites Coin", icon: Coins },
+  { href: "/profile#alamat", label: "Alamat Pengiriman", icon: MapPin },
+  { href: "/pengaturan", label: "Pengaturan", icon: Settings },
 ];
-
-function scrollToId(id: string) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-interface AuthSessionUser {
-  email?: string;
-  user_metadata?: { full_name?: string };
-}
 
 export function MobileNavbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [locationOpen, setLocationOpen] = useState(false);
-  const [location, setLocation] = useState(LOCATIONS[0]);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [sessionUser, setSessionUser] = useState<{
-    fullName: string;
-    email: string;
-  } | null>(null);
-  const { userId } = useCurrentUser();
-  const { avatarUrl } = useProfile();
-  const { unreadCount: unreadNotifCount } = useNotifications(userId, "buyer");
-  const { isSeller } = useSellerStatus();
-
-  useEffect(() => {
-    let cancelled = false;
-    const readUser = ({
-      data,
-    }: {
-      data: { session: { user: AuthSessionUser | null } | null };
-    }) => {
-      if (cancelled) return;
-      const user = data.session?.user;
-      if (!user) {
-        setSessionUser(null);
-        return;
-      }
-      setSessionUser({
-        fullName: user.user_metadata?.full_name ?? "",
-        email: user.email ?? "",
-      });
-    };
-    supabase.auth.getSession().then(readUser);
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      readUser({
-        data: { session } as { session: { user: AuthSessionUser | null } | null },
-      });
-    });
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, []);
+  const drawerRef = useRef<HTMLElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const { user, userId } = useCurrentUser();
+  const { unreadCount } = useNotifications(userId, "buyer");
+  const { isSeller, loading: sellerLoading } = useSellerStatus();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setSessionUser(null);
-    setProfileOpen(false);
+    setDrawerOpen(false);
     router.push("/auth/login");
   };
 
-  const handleNav = (id: string) => {
-    setDrawerOpen(false);
-    scrollToId(id);
+  const closeDrawer = () => setDrawerOpen(false);
+
+  const handleSectionNavigate = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    id: string,
+  ) => {
+    if (pathname === "/home") {
+      event.preventDefault();
+      scrollToId(id);
+      window.history.replaceState(null, "", `#${id}`);
+    }
+    closeDrawer();
   };
 
-  const initials = sessionUser?.fullName
-    ? sessionUser.fullName
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((p) => p.charAt(0).toUpperCase())
-        .join("")
-    : "";
+  useEffect(() => {
+    if (!drawerOpen) return;
+
+    const menuButton = menuButtonRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const focusTimer = window.setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 0);
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setDrawerOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const root = drawerRef.current;
+      if (!root) return;
+
+      const focusable = Array.from(
+        root.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.offsetParent !== null);
+
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey && activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      menuButton?.focus();
+    };
+  }, [drawerOpen]);
 
   return (
     <>
-      {/* Mobile-only sticky header */}
-      <header className="fixed inset-x-0 top-0 z-50 lg:hidden">
-        <div className="bg-white/95 backdrop-blur-lg border-b border-sage-100">
-          <div className="flex items-center gap-3 px-4 py-2.5">
-            <Link href="/home" className="flex shrink-0 items-center gap-2">
-              <Image
-                src="/logo.png"
-                alt="ReBites"
-                width={32}
-                height={32}
-                className="h-8 w-8 rounded-full object-cover"
-              />
-              <span className="font-display text-lg font-bold tracking-tight text-primary">
-                ReBites
-              </span>
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-white/95 backdrop-blur-xl">
+        <div className="flex h-14 items-center gap-3 px-4">
+          <Link
+            href="/home"
+            aria-label="ReBites — ke beranda"
+            className={cn(
+              "flex shrink-0 items-center gap-2 rounded-full",
+              FOCUS_RING,
+            )}
+          >
+            <Image
+              src="/logo.avif"
+              alt=""
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-full object-cover"
+            />
+            <span className="font-display text-lg font-bold tracking-tight text-primary">
+              ReBites
+            </span>
+          </Link>
+
+          <div className="ml-auto flex items-center gap-1">
+            <Link
+              href="/notifikasi/pembeli"
+              aria-label={
+                unreadCount > 0
+                  ? `Notifikasi, ${unreadCount} belum dibaca`
+                  : "Notifikasi"
+              }
+              className={cn(
+                "relative flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-primary",
+                FOCUS_RING,
+              )}
+            >
+              <Bell className="h-5 w-5" aria-hidden />
+              {unreadCount > 0 && (
+                <span className="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </Link>
 
-            <div className="ml-auto flex items-center gap-1">
-              <Link
-                href="/notifikasi/pembeli"
-                className="relative flex h-9 w-9 items-center justify-center rounded-full text-charcoal-600 hover:bg-cream-100"
-              >
-                <Bell className="h-5 w-5" />
-                {unreadNotifCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white">
-                    {unreadNotifCount}
-                  </span>
-                )}
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => setProfileOpen(true)}
-                aria-label="Profil"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal-600 hover:bg-cream-100"
-              >
-                {avatarUrl ? (
-                  <span className="relative h-7 w-7 overflow-hidden rounded-full ring-1 ring-black/5">
-                    <Image
-                      src={avatarUrl}
-                      alt="Foto profil"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </span>
-                ) : initials ? (
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-                    {initials}
-                  </span>
-                ) : (
-                  <User className="h-5 w-5" />
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(true)}
-                aria-label="Buka menu navigasi"
-                aria-expanded={drawerOpen}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal-600 hover:bg-cream-100"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            </div>
+            <button
+              ref={menuButtonRef}
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Buka menu navigasi"
+              aria-expanded={drawerOpen}
+              aria-controls="buyer-mobile-navigation"
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-primary",
+                FOCUS_RING,
+              )}
+            >
+              <Menu className="h-5 w-5" aria-hidden />
+            </button>
           </div>
-
-
         </div>
       </header>
 
-      {/* Mobile drawer */}
       <AnimatePresence>
         {drawerOpen && (
           <>
+            {/* Latar tanpa `backdrop-blur`: blur satu layar penuh adalah satu
+                dari operasi GPU termahal di Android kelas bawah, dan inilah
+                yang membuat drawer pembeli terasa tersendat saat dibuka.
+                Warna solid yang sedikit transparan memberi kesan fokus yang
+                sama tanpa biaya render per frame. */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setDrawerOpen(false)}
-              className="fixed inset-0 z-[55] bg-primary/40 backdrop-blur-sm lg:hidden"
+              transition={{ duration: 0.2, ease: "linear" }}
+              onClick={closeDrawer}
+              className="fixed inset-0 z-[60] bg-charcoal-900/45"
+              aria-hidden
             />
+
             <motion.aside
+              id="buyer-mobile-navigation"
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigasi pembeli"
               initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[60] flex h-full w-[85vw] max-w-[320px] flex-col bg-cream-50 shadow-2xl lg:hidden"
+              // Masuk 0.26s, keluar 0.18s. Hanya `transform` yang dianimasikan
+              // supaya drawer digeser oleh compositor, bukan di-layout ulang
+              // setiap frame — isi drawer berisi belasan tautan dan label.
+              animate={{ x: 0, transition: { duration: 0.26, ease: EASE } }}
+              exit={{ x: "100%", transition: { duration: 0.18, ease: EASE } }}
+              style={{ willChange: "transform" }}
+              className="fixed right-0 top-0 z-[70] flex h-full w-[88vw] max-w-[340px] flex-col bg-white shadow-2xl"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-sage-100">
+              {/* px-4 disamakan dengan <nav> di bawah. Sebelumnya header
+                  memakai px-5 sementara isi memakai px-4, sehingga logo dan
+                  tombol tutup tidak sejajar dengan tepi daftar menu. */}
+              <div className="flex items-center justify-between border-b border-border px-4 py-3.5">
                 <span className="flex items-center gap-2">
                   <Image
-                    src="/logo.png"
-                    alt="ReBites"
+                    src="/logo.avif"
+                    alt=""
                     width={32}
                     height={32}
                     className="h-8 w-8 rounded-full object-cover"
@@ -214,108 +254,209 @@ export function MobileNavbar() {
                   </span>
                 </span>
                 <button
+                  ref={closeButtonRef}
                   type="button"
-                  onClick={() => setDrawerOpen(false)}
-                  aria-label="Tutup menu"
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-charcoal-600 hover:bg-cream-100"
+                  onClick={closeDrawer}
+                  aria-label="Tutup menu navigasi"
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                    FOCUS_RING,
+                  )}
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-5 w-5" aria-hidden />
                 </button>
               </div>
 
-              <nav className="flex-1 overflow-y-auto p-4">
-                <ul className="space-y-1">
-                  {NAV_LINKS.map((link) => (
-                    <li key={link.id}>
-                      <a
-                        href={`#${link.id}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleNav(link.id);
-                        }}
-                        className="block rounded-xl px-4 py-3 font-inter text-sm font-medium text-charcoal-700 hover:bg-cream-100 hover:text-caramel"
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-4 border-t border-sage-100 pt-4 space-y-1">
-                  <Link
-                    href="/notifikasi/pembeli"
-                    onClick={() => setDrawerOpen(false)}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 font-inter text-sm text-charcoal-700 hover:bg-cream-100 hover:text-caramel"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Bell className="h-4 w-4" />
-                      Notifikasi
-                    </span>
-                    {unreadNotifCount > 0 && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">
-                        {unreadNotifCount}
-                      </span>
-                    )}
-                  </Link>
-
-                  <Link
-                    href="/profile"
-                    onClick={() => setDrawerOpen(false)}
-                    className="flex items-center gap-2 rounded-xl px-4 py-3 font-inter text-sm text-charcoal-700 hover:bg-cream-100 hover:text-caramel"
-                  >
-                    <User className="h-4 w-4" />
-                    Profil Saya
-                  </Link>
-
-                  {isSeller && (
-                    <Link
-                      href="/dashboard/penjual"
-                      onClick={() => setDrawerOpen(false)}
-                      className="flex items-center gap-2 rounded-xl px-4 py-3 font-inter text-sm text-charcoal-700 hover:bg-cream-100 hover:text-caramel"
-                    >
-                      <Store className="h-4 w-4" />
-                      Dashboard Penjual
-                    </Link>
-                  )}
-                </div>
-
-                <div className="mt-4 border-t border-sage-100 pt-4">
-                  <p className="px-4 text-xs font-semibold uppercase tracking-wider text-charcoal-500">
-                    Lokasi
+              {/* `pb-6` + safe-area di bawah: pada iPhone berponi, baris
+                  terakhir sebelumnya tertutup gesture bar sehingga tautan
+                  terasa "hilang" saat digulir mentok ke dasar. */}
+              <nav className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4">
+                <div className="space-y-0.5">
+                  <p className="px-3 pb-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Jelajahi
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLocation(
-                        LOCATIONS[
-                          (LOCATIONS.indexOf(location) + 1) % LOCATIONS.length
-                        ],
-                      );
-                    }}
-                    className="mt-2 flex items-center gap-2 px-4 text-sm font-medium text-primary"
-                  >
-                    <MapPin className="h-4 w-4" />
-                    {location}
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
+
+                  {NAV_LINKS.map(({ id, label, icon: Icon }) => (
+                    <Link
+                      key={id}
+                      href={`/home#${id}`}
+                      onClick={(event) => handleSectionNavigate(event, id)}
+                      className={cn(
+                        "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-primary",
+                        FOCUS_RING,
+                      )}
+                    >
+                      <Icon className="h-[18px] w-[18px] shrink-0 text-muted-foreground" aria-hidden />
+                      {label}
+                    </Link>
+                  ))}
                 </div>
+
+                {/* Katalog dipisah dari tautan anchor beranda. Sebelumnya
+                    enam tautan dengan tujuan berbeda (scroll di /home vs
+                    pindah halaman) berdiri dalam satu daftar tanpa penanda,
+                    sehingga batas antara keduanya tidak terlihat. */}
+                <div className="mt-5 space-y-0.5 border-t border-border/70 pt-4">
+                  <p className="px-3 pb-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Katalog
+                  </p>
+
+                  <Link
+                    href="/makanan"
+                    onClick={closeDrawer}
+                    className={cn(
+                      "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-primary",
+                      FOCUS_RING,
+                    )}
+                  >
+                    <UtensilsCrossed className="h-[18px] w-[18px] shrink-0 text-muted-foreground" aria-hidden />
+                    Semua Makanan
+                  </Link>
+
+                  <Link
+                    href="/toko"
+                    onClick={closeDrawer}
+                    className={cn(
+                      "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-primary",
+                      FOCUS_RING,
+                    )}
+                  >
+                    <Store className="h-[18px] w-[18px] shrink-0 text-muted-foreground" aria-hidden />
+                    UMKM / Semua Toko
+                  </Link>
+
+                  <Link
+                    href="/artikel"
+                    onClick={closeDrawer}
+                    className={cn(
+                      "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-primary",
+                      FOCUS_RING,
+                    )}
+                  >
+                    <Newspaper className="h-[18px] w-[18px] shrink-0 text-muted-foreground" aria-hidden />
+                    Artikel
+                  </Link>
+                </div>
+
+                <div className="mt-5 border-t border-border/70 pt-4">
+                  <p className="px-3 pb-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Kategori
+                  </p>
+                  {/* gap-2 (bukan gap-1.5): kartu kategori sebelumnya hampir
+                      menyentuh satu sama lain sehingga fingertip mudah salah
+                      tekan di layar sempit. */}
+                  <div className="mt-1 grid grid-cols-2 gap-2">
+                    {CATEGORIES.map((category) => (
+                      <Link
+                        key={category.id}
+                        href={`/makanan/${category.id}`}
+                        onClick={closeDrawer}
+                        className={cn(
+                          // min-h-11 = 44px: ambang target sentuh yang
+                          // direkomendasikan; sebelumnya 40px.
+                          "flex min-h-11 items-center rounded-xl border border-border bg-white px-3 text-left text-[12px] font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:bg-accent hover:text-primary",
+                          FOCUS_RING,
+                        )}
+                      >
+                        <span className="line-clamp-2">{category.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5 border-t border-border/70 pt-4">
+                  <p className="px-3 pb-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Akun
+                  </p>
+
+                  <div className="mt-1 space-y-0.5">
+                    {ACCOUNT_LINKS.map(({ href, label, icon: Icon }) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        onClick={closeDrawer}
+                        className={cn(
+                          "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-primary",
+                          FOCUS_RING,
+                        )}
+                      >
+                        <Icon
+                          className="h-[18px] w-[18px] shrink-0 text-muted-foreground"
+                          aria-hidden
+                        />
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Judul seksi ikut disembunyikan selama status penjual belum
+                    diketahui. Sebelumnya judul "Jualan" sudah tampil sementara
+                    isinya kosong, sehingga drawer memperlihatkan seksi
+                    menggantung tanpa tautan selama beberapa ratus milidetik. */}
+                {!sellerLoading && (
+                  <div className="mt-5 border-t border-border/70 pt-4">
+                    <p className="px-3 pb-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      Jualan
+                    </p>
+
+                    <div className="mt-1">
+                      {isSeller ? (
+                        <Link
+                          href="/dashboard/penjual"
+                          onClick={closeDrawer}
+                          className={cn(
+                            "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-primary transition-colors hover:bg-accent",
+                            FOCUS_RING,
+                          )}
+                        >
+                          <LayoutDashboard className="h-[18px] w-[18px] shrink-0" aria-hidden />
+                          Dashboard Penjual
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/auth/register/penjual"
+                          onClick={closeDrawer}
+                          className={cn(
+                            "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-primary transition-colors hover:bg-accent",
+                            FOCUS_RING,
+                          )}
+                        >
+                          <Store className="h-[18px] w-[18px] shrink-0" aria-hidden />
+                          Mulai Jualan
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                )}
               </nav>
 
-              <div className="border-t border-sage-100 p-4">
-                {sessionUser ? (
+              {/* Footer diberi safe-area bawah: pada perangkat berponi, tombol
+                  Keluar/Masuk sebelumnya tertutup gesture bar iOS sehingga
+                  setengah area sentuhnya tidak bisa dijangkau. */}
+              <div className="border-t border-border px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                {user ? (
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-100"
+                    className={cn(
+                      "flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-destructive/25 bg-destructive/5 px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10",
+                      FOCUS_RING,
+                    )}
                   >
+                    <LogOut className="h-4 w-4" aria-hidden />
                     Keluar Akun
                   </button>
                 ) : (
                   <Link
                     href="/auth/login"
-                    onClick={() => setDrawerOpen(false)}
-                    className="block w-full rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white hover:bg-caramel"
+                    onClick={closeDrawer}
+                    className={cn(
+                      "flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-dark",
+                      FOCUS_RING,
+                    )}
                   >
+                    <LogIn className="h-4 w-4" aria-hidden />
                     Masuk / Daftar
                   </Link>
                 )}

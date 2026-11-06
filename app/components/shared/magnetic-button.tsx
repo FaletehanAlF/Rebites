@@ -7,7 +7,6 @@ import {
   useSpring,
   useTransform,
 } from 'framer-motion';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 const SPRING = { stiffness: 320, damping: 24, mass: 0.8 };
@@ -23,7 +22,7 @@ export function MagneticButton({
   children: React.ReactNode;
   href?: string;
   onClick?: () => void;
-  variant?: 'default' | 'outline' | 'cream' | 'white';
+  variant?: 'default' | 'outline' | 'light' | 'white';
   className?: string;
   strength?: number;
 }) {
@@ -59,13 +58,13 @@ export function MagneticButton({
   const base = cn(
     'group relative inline-flex items-center justify-center gap-2 rounded-[var(--radius)] px-7 py-3.5 font-sans text-sm font-medium tracking-tight transition-colors duration-300',
     variant === 'default' &&
-      'bg-primary text-primary-foreground-strong hover:bg-caramel',
+      'bg-primary text-primary-foreground-strong hover:bg-primary-dark',
     variant === 'outline' &&
-      'border border-primary/40 text-primary hover:border-caramel hover:bg-caramel hover:text-white',
-    variant === 'cream' &&
-      'bg-secondary text-primary hover:bg-caramel hover:text-white border border-primary/10',
+      'border border-primary/40 text-primary hover:border-primary hover:bg-primary-dark hover:text-white',
+    variant === 'light' &&
+      'bg-secondary text-primary hover:bg-primary-dark hover:text-white border border-primary/10',
     variant === 'white' &&
-      'border border-caramel/40 bg-white text-primary hover:border-caramel hover:bg-caramel hover:text-white',
+      'border border-primary/40 bg-white text-primary hover:border-primary hover:bg-primary-dark hover:text-white',
     className
   );
 
@@ -110,40 +109,3 @@ export function MagneticButton({
   );
 }
 
-export function ArrowLink({
-  href,
-  children,
-  className,
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        'group inline-flex items-center gap-2 font-sans text-sm font-medium text-primary transition-colors',
-        className
-      )}
-    >
-      <span className="relative">
-        {children}
-        <span className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-caramel transition-transform duration-300 ease-out group-hover:scale-x-100" />
-      </span>
-      <svg
-        className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-        viewBox="0 0 16 16"
-        fill="none"
-      >
-        <path
-          d="M3 8h10M9 4l4 4-4 4"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </Link>
-  );
-}

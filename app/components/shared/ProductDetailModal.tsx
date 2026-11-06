@@ -83,7 +83,7 @@ export function ProductDetailModal({
   const { user, loading: authLoading } = useCurrentUser();
 
   const handleBuy = useCallback(() => {
-    if (authLoading) return;
+    if (authLoading || product.stockRemaining <= 0) return;
     if (!user) {
       toast({
         title: "Silakan login terlebih dahulu",
@@ -99,11 +99,13 @@ export function ProductDetailModal({
     router.push(
       `/detail/pesanan?product=${encodeURIComponent(product.id)}&qty=${qty}`,
     );
-  }, [onClose, qty, product.id, router, user, authLoading]);
+  }, [onClose, qty, product.id, product.stockRemaining, router, user, authLoading]);
 
   const savings = product.originalPrice - product.discountedPrice;
   const savingsPercent = Math.round((savings / product.originalPrice) * 100);
   const primaryImage = product.images[0];
+  // Sumber kebenaran stok adalah angka (<= 0 berarti habis).
+  const isOutOfStock = product.stockRemaining <= 0;
   const lowStock = product.stockRemaining <= 3;
 
   return (
@@ -133,7 +135,7 @@ export function ProductDetailModal({
             type="button"
             aria-label="Tutup detail produk"
             onClick={onClose}
-            className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white backdrop-blur-sm transition-all hover:bg-caramel hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white backdrop-blur-sm transition-all hover:bg-primary-dark hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             <X className="h-[18px] w-[18px]" strokeWidth={2.5} />
           </button>
@@ -164,7 +166,7 @@ export function ProductDetailModal({
             <Link
               href={`/detail/toko?id=${encodeURIComponent(product.vendor.id)}`}
               onClick={onClose}
-              className="inline-flex w-fit items-center gap-1.5 rounded-full bg-charcoal-900/5 px-3 py-1 text-[11px] font-semibold text-charcoal-900 transition-colors hover:bg-charcoal-900/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="inline-flex w-fit items-center gap-1.5 rounded-full bg-foreground/5 px-3 py-1 text-[11px] font-semibold text-foreground transition-colors hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <Store className="h-3 w-3" />
               {product.vendor.name}
@@ -186,7 +188,7 @@ export function ProductDetailModal({
                       "h-4 w-4",
                       i < Math.round(product.rating)
                         ? "fill-yellow-400 text-yellow-400"
-                        : "fill-charcoal-900/10 text-charcoal-900/10",
+                        : "fill-foreground/10 text-foreground/10",
                     )}
                   />
                 ))}
@@ -194,7 +196,7 @@ export function ProductDetailModal({
               <span className="text-sm font-semibold text-primary">
                 {product.rating.toFixed(1)}
               </span>
-              <span className="text-sm text-charcoal-500">
+              <span className="text-sm text-muted-foreground">
                 · {product.reviewCount} ulasan
               </span>
             </div>
@@ -204,7 +206,7 @@ export function ProductDetailModal({
               <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
                 Deskripsi
               </h3>
-              <p className="mt-2 text-[13px] leading-relaxed text-charcoal-600">
+              <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
                 {product.description}
               </p>
             </div>
@@ -215,7 +217,7 @@ export function ProductDetailModal({
                 "inline-block h-1.5 w-1.5 rounded-full mr-1.5",
                 lowStock ? "bg-sale" : "bg-primary/100",
               )} />
-              {lowStock ? `Stok terbatas, ${product.stockRemaining} tersisa` : `${product.stockRemaining} tersedia`}
+              {isOutOfStock ? `Stok Habis` : lowStock ? `Stok terbatas, ${product.stockRemaining} tersisa` : `${product.stockRemaining} tersedia`}
             </p>
 
             {}
@@ -227,7 +229,7 @@ export function ProductDetailModal({
                     Rp{formatIDR(product.discountedPrice)}
                   </span>
                   {savings > 0 && (
-                    <span className="text-sm text-charcoal-400 line-through">
+                    <span className="text-sm text-muted-foreground line-through">
                       Rp{formatIDR(product.originalPrice)}
                     </span>
                   )}
@@ -236,17 +238,17 @@ export function ProductDetailModal({
                 {}
                 <div className="mt-5 flex items-center gap-3">
                   {}
-                  <div className="flex h-11 items-center overflow-hidden rounded-2xl border border-charcoal-900/10 bg-white">
+                  <div className="flex h-11 items-center overflow-hidden rounded-2xl border border-foreground/10 bg-white">
                     <button
                       type="button"
                       aria-label="Kurangi jumlah"
                       onClick={() => setQty((q) => Math.max(1, q - 1))}
                       disabled={qty <= 1}
-                      className="flex h-full w-10 items-center justify-center text-charcoal-900 transition-colors hover:bg-charcoal-900/5 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                      className="flex h-full w-10 items-center justify-center text-foreground transition-colors hover:bg-foreground/5 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                     >
                       <Minus className="h-4 w-4" />
                     </button>
-                    <span className="flex h-full w-10 items-center justify-center text-sm font-semibold tabular-nums text-charcoal-900">
+                    <span className="flex h-full w-10 items-center justify-center text-sm font-semibold tabular-nums text-foreground">
                       {qty}
                     </span>
                     <button
@@ -256,7 +258,7 @@ export function ProductDetailModal({
                         setQty((q) => Math.min(product.stockRemaining, q + 1))
                       }
                       disabled={qty >= product.stockRemaining}
-                      className="flex h-full w-10 items-center justify-center text-charcoal-900 transition-colors hover:bg-charcoal-900/5 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                      className="flex h-full w-10 items-center justify-center text-foreground transition-colors hover:bg-foreground/5 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                     >
                       <Plus className="h-4 w-4" />
                     </button>
@@ -266,20 +268,20 @@ export function ProductDetailModal({
                   <button
                     type="button"
                     onClick={handleBuy}
-                    disabled={added || product.stockRemaining === 0}
+                    disabled={added || isOutOfStock}
                     className={cn(
                       "flex h-11 flex-1 items-center justify-center rounded-2xl text-sm font-semibold transition-all active:scale-[0.97]",
-                      product.stockRemaining === 0
-                        ? "bg-charcoal-900/10 text-charcoal-400 cursor-not-allowed"
+                      isOutOfStock
+                        ? "bg-foreground/10 text-muted-foreground cursor-not-allowed"
                         : added
                           ? "bg-primary text-white"
-                          : "bg-primary text-white hover:bg-caramel",
+                          : "bg-primary text-white hover:bg-primary-dark",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                     )}
                   >
                     {added
                       ? "Ditambahkan!"
-                      : product.stockRemaining === 0
+                      : isOutOfStock
                         ? "Stok Habis"
                         : "Beli Sekarang"}
                   </button>

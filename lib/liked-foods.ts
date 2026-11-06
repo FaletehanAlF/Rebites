@@ -1,6 +1,7 @@
 'use client';
 
 import { supabase } from './supabase';
+import { isMenuScheduleVisible } from './menu-schedule';
 
 export const FAVORITE_UPDATED_EVENT = 'rebites:favorite-updated';
 
@@ -33,11 +34,11 @@ async function resolveProductId(key: string): Promise<string | null> {
   if (uuidRegex.test(trimmed)) return trimmed;
   
   try {
-    const { data } = await supabase.from('products').select('id').eq('id', trimmed).maybeSingle();
+    const { data } = await supabase.from('products').select('id').eq('id', trimmed).eq('verification_status', 'approved').maybeSingle();
     if (data?.id) return data.id;
   } catch {}
   try {
-    const { data } = await supabase.from('products').select('id').eq('slug', trimmed).maybeSingle();
+    const { data } = await supabase.from('products').select('id').eq('slug', trimmed).eq('verification_status', 'approved').maybeSingle();
     if (data?.id) return data.id;
   } catch {}
   
@@ -167,21 +168,44 @@ export async function getLikedFoods(): Promise<LikedFood[]> {
     try {
       const { data, error } = await supabase
         .from('product_favorites')
-        .select('product_id, created_at, products(id, slug, name, image_url, surplus_price, original_price)')
+        .select(
+          'product_id, created_at, products(id, slug, name, image_url, surplus_price, original_price, scheduled_start, scheduled_end)'
+        )
         .eq('user_id', userId)
+        .eq('products.verification_status', 'approved')
         .order('created_at', { ascending: false })
         .limit(100);
       if (!error && data) {
-        return data.map((row: any) => {
-          const prod = row.products as { id: string; slug: string | null; name: string | null; image_url: string | null; surplus_price: number | null; original_price: number | null } | null;
-          return {
-            id: String(row.product_id),
-            productId: String(row.product_id),
-            name: prod?.name ?? undefined,
-            image: prod?.image_url ?? null,
-            price: prod?.surplus_price ?? prod?.original_price ?? null,
-          };
-        });
+        return data
+          .filter((row: any) => {
+            const prod = row.products as
+              | { scheduled_start?: string | null; scheduled_end?: string | null }
+              | null;
+            return (
+              prod != null &&
+              isMenuScheduleVisible({
+                scheduledStart: prod.scheduled_start ?? null,
+                scheduledEnd: prod.scheduled_end ?? null,
+              })
+            );
+          })
+          .map((row: any) => {
+            const prod = row.products as {
+              id: string;
+              slug: string | null;
+              name: string | null;
+              image_url: string | null;
+              surplus_price: number | null;
+              original_price: number | null;
+            } | null;
+            return {
+              id: String(row.product_id),
+              productId: String(row.product_id),
+              name: prod?.name ?? undefined,
+              image: prod?.image_url ?? null,
+              price: prod?.surplus_price ?? prod?.original_price ?? null,
+            };
+          });
       }
     } catch {}
 

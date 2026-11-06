@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getUserFromBearer } from '@/lib/server/supabase';
+import { validateCoordinatePairFields } from '@/lib/location-validation';
 
 export const runtime = 'nodejs';
 
@@ -14,9 +15,15 @@ export const runtime = 'nodejs';
  *
  * Kolom sesuai skema DB: label, receiver_name, phone, province, city,
  * district, full_address, note, is_selected.
+ * + postal_code (5 digit, opsional/NULL), latitude (-90..90, NULL),
+ * longitude (-180..180, NULL). Tanpa geocoding, tanpa koordinat palsu.
+ * Tahap 3: latitude/longitude wajib berpasangan — dikirim dua-duanya
+ * (angka valid atau NULL) atau tidak sama sekali; setengah pasangan ditolak.
  */
 
 const ALLOWED_LABELS = ['Rumah', 'Kos', 'Sekolah', 'Lainnya'];
+
+const POSTAL_CODE_RE = /^[0-9]{5}$/;
 
 type AddressPayload = {
   label?: string;
@@ -28,6 +35,9 @@ type AddressPayload = {
   full_address?: string;
   note?: string | null;
   is_selected?: boolean;
+  postal_code?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 function pickFields(body: Record<string, unknown>): AddressPayload {
@@ -41,7 +51,40 @@ function pickFields(body: Record<string, unknown>): AddressPayload {
   if (typeof body.full_address === 'string') out.full_address = body.full_address;
   if (typeof body.note === 'string' || body.note === null) out.note = body.note as string | null;
   if (typeof body.is_selected === 'boolean') out.is_selected = body.is_selected;
+  // postal_code opsional; string kosong -> NULL (bukan valid).
+  if (typeof body.postal_code === 'string') {
+    const trimmed = body.postal_code.trim();
+    out.postal_code = trimmed === '' ? null : trimmed;
+  } else if (body.postal_code === null) {
+    out.postal_code = null;
+  }
+  // 7B-1 (Tahap 3): lat/lng opsional tetapi wajib berpasangan. Helper
+  // bersama memvalidasi angka, rentang, dan kelengkapan pasangan sekaligus;
+  // hasilnya hanya ditulis bila dua-duanya dikirim (angka valid atau NULL).
+  const coordinatePair = validateCoordinatePairFields(body.latitude, body.longitude);
+  if (!coordinatePair.ok) {
+    (out as Record<string, unknown>).__coordinatePairError = coordinatePair.error;
+  } else if (coordinatePair.provided) {
+    out.latitude = coordinatePair.latitude;
+    out.longitude = coordinatePair.longitude;
+  }
   return out;
+}
+
+/** Validasi dasar 7B-1 untuk field lokasi opsional. Return pesan error atau null. */
+function validateLocationFields(fields: AddressPayload): string | null {
+  const raw = fields as Record<string, unknown>;
+  // Tahap 3: pasangan koordinat sudah divalidasi lengkap oleh helper bersama
+  // (angka, rentang, dan kelengkapan pasangan) saat pickFields.
+  if (typeof raw.__coordinatePairError === 'string') {
+    return raw.__coordinatePairError;
+  }
+  if (fields.postal_code !== undefined && fields.postal_code !== null) {
+    if (!POSTAL_CODE_RE.test(fields.postal_code)) {
+      return 'Kode pos harus 5 digit angka (cth. 16424).';
+    }
+  }
+  return null;
 }
 
 /** Nonaktifkan alamat lain agar patuh unique index `addresses_one_selected_per_user`. */
@@ -91,6 +134,11 @@ export async function POST(req: NextRequest) {
   }
 
   const fields = pickFields(body);
+  const locationError = validateLocationFields(fields);
+  delete (fields as Record<string, unknown>).__coordinatePairError;
+  if (locationError) {
+    return NextResponse.json({ error: locationError }, { status: 400 });
+  }
   if (!fields.label || !fields.receiver_name || !fields.full_address) {
     return NextResponse.json(
       { error: 'label, receiver_name, dan full_address wajib diisi.' },
@@ -138,6 +186,11 @@ export async function PUT(req: NextRequest) {
   }
 
   const fields = pickFields(body);
+  const locationError = validateLocationFields(fields);
+  delete (fields as Record<string, unknown>).__coordinatePairError;
+  if (locationError) {
+    return NextResponse.json({ error: locationError }, { status: 400 });
+  }
   if (Object.keys(fields).length === 0) {
     return NextResponse.json({ error: 'Tidak ada perubahan.' }, { status: 400 });
   }

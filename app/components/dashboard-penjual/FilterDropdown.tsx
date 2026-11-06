@@ -73,12 +73,12 @@ export function FilterDropdown({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
-        className="inline-flex items-center gap-1.5 rounded-full border border-sage-100 bg-cream-50 px-3 py-1.5 text-xs font-semibold text-charcoal-900 transition-colors hover:bg-sage-100/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         {current?.label}
         <ChevronDown
           className={cn(
-            'h-3.5 w-3.5 text-sage-500 transition-transform',
+            'h-3.5 w-3.5 text-muted-foreground transition-transform',
             open && 'rotate-180'
           )}
         />
@@ -93,7 +93,7 @@ export function FilterDropdown({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 z-30 mt-1.5 min-w-[9rem] overflow-hidden rounded-xl border border-sage-100 bg-white py-1 shadow-lg"
+            className="absolute right-0 z-30 mt-1.5 min-w-[9rem] overflow-hidden rounded-xl border border-border bg-white py-1 shadow-lg"
           >
             {options.map((option, index) => (
               <li key={option.value} role="option" aria-selected={option.value === value}>
@@ -105,8 +105,8 @@ export function FilterDropdown({
                   }}
                   onMouseEnter={() => setActiveIndex(index)}
                   className={cn(
-                    'flex w-full items-center justify-between gap-2 px-3.5 py-2 text-left text-xs font-medium text-charcoal-900 transition-colors hover:bg-sage-100/60',
-                    index === activeIndex && 'bg-sage-100/50'
+                    'flex w-full items-center justify-between gap-2 px-3.5 py-2 text-left text-xs font-medium text-foreground transition-colors hover:bg-muted/60',
+                    index === activeIndex && 'bg-muted/50'
                   )}
                 >
                   {option.label}

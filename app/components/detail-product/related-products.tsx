@@ -7,7 +7,17 @@ import type { RelatedProduct } from "@/app/components/detail-product/data";
 import { formatIDR } from "@/app/components/detail-product/data";
 import { StaggerGroup, StaggerItem } from "./anim";
 
-export function RelatedProducts({ products }: { products: RelatedProduct[] }) {
+export function RelatedProducts({
+  products,
+  productPath,
+  seeAllHref,
+}: {
+  products: RelatedProduct[];
+  /** Route of the product detail page in the current context. */
+  productPath: string;
+  /** Where "Lihat Semua" leads: the application home or the landing catalog. */
+  seeAllHref: string;
+}) {
   return (
     <section className="pt-20">
       <div className="flex items-end justify-between gap-4">
@@ -15,14 +25,14 @@ export function RelatedProducts({ products }: { products: RelatedProduct[] }) {
           <h2 className="font-sans text-2xl font-bold tracking-tight text-primary sm:text-3xl">
             Selamatkan Juga
           </h2>
-          <p className="mt-2 max-w-md font-inter text-sm leading-relaxed text-charcoal-500">
+          <p className="mt-2 max-w-md font-secondary text-sm leading-relaxed text-muted-foreground">
             Masih ada porsi lain yang menunggu diselamatkan hari ini, jangan
             sampai terbuang.
           </p>
         </div>
         <Link
-          href="/homePage"
-          className="hidden items-center gap-1.5 font-inter text-sm font-semibold text-primary transition-colors hover:text-caramel sm:inline-flex"
+                  href={seeAllHref}
+                  className="hidden items-center gap-1.5 font-secondary text-sm font-semibold text-primary transition-colors hover:text-primary sm:inline-flex"
         >
           Lihat Semua
           <ArrowRight className="h-4 w-4" />
@@ -40,10 +50,10 @@ export function RelatedProducts({ products }: { products: RelatedProduct[] }) {
             className="min-w-[220px] snap-start sm:min-w-[240px] lg:min-w-0"
           >
             <Link
-              href={`/detail/product?id=${encodeURIComponent(product.slug)}`}
-              className="group block h-full overflow-hidden rounded-2xl border border-sage-100 bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_50px_-30px_rgba(47,66,53,0.45)]"
+              href={`${productPath}?id=${encodeURIComponent(product.slug)}`}
+              className="group block h-full overflow-hidden rounded-2xl border border-border bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_50px_-30px_rgba(47,66,53,0.45)]"
             >
-              <div className="relative aspect-[4/3] overflow-hidden bg-cream-100">
+              <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                 <Image
                   src={product.image}
                   alt={product.name}
@@ -53,17 +63,17 @@ export function RelatedProducts({ products }: { products: RelatedProduct[] }) {
                 />
               </div>
               <div className="p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sage-500">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   {product.vendorName}
                 </p>
-                <p className="mt-1 truncate font-sans text-sm font-semibold text-charcoal-900">
+                <p className="mt-1 truncate font-sans text-sm font-semibold text-foreground">
                   {product.name}
                 </p>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="font-sans text-base font-bold text-primary">
                     Rp{formatIDR(product.discountedPrice)}
                   </span>
-                  <span className="font-inter text-xs text-charcoal-500 line-through">
+                  <span className="font-secondary text-xs text-muted-foreground line-through">
                     Rp{formatIDR(product.originalPrice)}
                   </span>
                 </div>

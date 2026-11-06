@@ -1,106 +1,186 @@
 ﻿'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Check, ChevronRight, Coins, Star } from 'lucide-react';
+import { Check, ChevronRight, Package, Star, Store, Truck } from 'lucide-react';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { formatRupiah } from '@/lib/data';
-import { fetchProductDetail } from '@/app/components/detail-product/detail-data';
 import type { StoredOrder } from '@/lib/types';
 import { formatOrderDate, getOrderSubStatus, SUB_STATUS_LABEL } from '@/lib/order-utils';
-import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+
+/**
+ * Kartu satu pesanan pada daftar "Pesanan Saya".
+ *
+ * Aturan:
+ * - Status ditampilkan dengan label teks + ikon, bukan warna saja.
+ * - Tidak ada angka karangan: ongkir hanya muncul bila `deliveryFee > 0`.
+ * - "Lacak Pesanan" hanya tampil untuk Diantar yang sudah mulai diantar;
+ *   lokasi live-nya sendiri belum tersedia (lihat DeliveryStatusPanel).
+ */
+
+type StatusPresentation = {
+  label: string;
+  icon: typeof Truck;
+  className: string;
+  dotClassName: string;
+};
+
+function resolveStatus(order: StoredOrder): StatusPresentation {
+  const sub = getOrderSubStatus(order);
+  const os = order.orderStatus ?? '';
+  const done = order.status === 'completed' || os === 'completed';
+  const cancelled = os === 'cancelled' || os === 'refunded';
+
+  if (cancelled) {
+    return {
+      label: sub === 'selesai' ? 'Selesai' : 'Dibatalkan',
+      icon: Package,
+      className: 'bg-cream-100 text-charcoal-700',
+      dotClassName: 'bg-charcoal-500',
+    };
+  }
+  if (done) {
+    return {
+      label: SUB_STATUS_LABEL.selesai,
+      icon: Check,
+      className: 'bg-green-50 text-green-600',
+      dotClassName: 'bg-green-600',
+    };
+  }
+  if (sub === 'diantar' || sub === 'siap-diambil') {
+    return {
+      label: SUB_STATUS_LABEL[sub],
+      icon: order.fulfillment === 'delivery' ? Truck : Store,
+      className: 'bg-primary/10 text-primary',
+      dotClassName: 'bg-primary',
+    };
+  }
+  return {
+    label: SUB_STATUS_LABEL[sub],
+    icon: Package,
+    className: 'bg-caramel/15 text-caramel-700',
+    dotClassName: 'bg-caramel',
+  };
+}
 
 export function OrderCard({
   order,
   reviewed,
   onViewDetail,
+  onTrack,
   highlighted = false,
 }: {
   order: StoredOrder;
   reviewed: boolean;
   onViewDetail: (order: StoredOrder) => void;
+  /** Hanya diberikan bila pesanan memang bisa dilacak (Diantar + sedang diantar). */
+  onTrack?: (order: StoredOrder) => void;
   highlighted?: boolean;
 }) {
-  const router = useRouter();
-  const [reordering] = useState(false);
-  const isOngoing = order.status === 'ongoing';
-  const subStatus = getOrderSubStatus(order);
-  const isDelivered = order.status === 'completed' || order.orderStatus === 'completed';
-
-  const badge = isDelivered
-    ? { label: SUB_STATUS_LABEL[subStatus], dot: 'bg-[#16A34A]', bg: 'bg-[#F0FDF4] text-[#16A34A]', ring: 'ring-[#86EFAC]/30' }
-    : subStatus === 'diantar' || subStatus === 'siap-diambil'
-      ? { label: SUB_STATUS_LABEL[subStatus], dot: 'bg-[#2563EB]', bg: 'bg-[#EFF6FF] text-[#2563EB]', ring: 'ring-[#93C5FD]/30' }
-      : { label: SUB_STATUS_LABEL[subStatus], dot: 'bg-[#EA580C]', bg: 'bg-[#FFF7ED] text-[#EA580C]', ring: 'ring-[#FDBA74]/30' };
-
-  const dateStr = formatOrderDate(order.createdAt);
-
-  const moreText = order.quantity > 1 ? ` & ${order.quantity} items` : '';
-  
-  const description = `${order.productName} | ${order.vendorName}${moreText}`;
+  const status = resolveStatus(order);
+  const StatusIcon = status.icon;
+  const os = order.orderStatus ?? '';
+  const isDelivered = order.status === 'completed' || os === 'completed';
+  const canTrack = order.fulfillment === 'delivery' && os === 'out_for_delivery';
+  const isPickup = order.fulfillment === 'pickup';
 
   return (
     <article
-      onClick={() => onViewDetail(order)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onViewDetail(order);
-        }
-      }}
       className={cn(
-        'group flex cursor-pointer flex-col rounded-xl border bg-white p-4 transition-colors hover:border-zinc-300 hover:bg-zinc-50/50 sm:p-5',
-        highlighted ? 'border-primary ring-2 ring-primary/20 shadow-md' : 'border-zinc-200'
+        'flex flex-col overflow-hidden rounded-2xl border bg-white transition-colors',
+        highlighted ? 'border-primary ring-2 ring-primary/15' : 'border-hairline hover:border-sage-500/40'
       )}
     >
-      {}
-      <div className="flex items-center gap-2">
-        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${badge.bg} ${badge.ring}`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
-          {badge.label}
+      {/* Kepala kartu: kode pesanan + status. */}
+      <div className="flex items-center justify-between gap-3 border-b border-hairline bg-cream-50/60 px-4 py-2.5">
+        <p className="min-w-0 truncate text-xs font-semibold tracking-tight text-charcoal-700">
+          {order.orderId}
+        </p>
+        <span
+          className={cn(
+            'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold',
+            status.className
+          )}
+        >
+          <StatusIcon className="h-3 w-3" aria-hidden />
+          {status.label}
         </span>
-        <span className="text-[11px] text-zinc-400">|</span>
-        <span className="text-[11px] text-zinc-500">{dateStr}</span>
       </div>
 
-      {}
-      <div className="mt-3 flex items-start gap-3">
-        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-zinc-100">
-          <SmartImage src={order.image} alt={order.productName} sizes="56px" />
-          {}
+      <div className="flex flex-1 flex-col gap-3 p-4 sm:flex-row sm:items-start">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-cream-100">
+          <SmartImage src={order.image} alt={order.productName} sizes="64px" />
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-semibold text-primary">
-            Order ID: {order.orderId}
+          <p className="line-clamp-2 text-sm font-semibold leading-snug text-charcoal-900">
+            {order.productName}
           </p>
-          <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-zinc-700">
-            {description}
-            {}
-            {order.quantity > 1 && (
-              <span className="font-medium text-primary"> & {order.quantity} items</span>
+          <p className="mt-0.5 text-xs text-charcoal-500">
+            {order.vendorName}
+            {order.quantity > 1 ? ` · ${order.quantity} item` : ''}
+          </p>
+
+          {/* Metode + ongkir: hanya nilai yang benar-benar tercatat pada pesanan. */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-charcoal-500">
+            <span className="inline-flex items-center gap-1 font-medium text-charcoal-700">
+              {isPickup ? (
+                <Store className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              ) : (
+                <Truck className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              )}
+              {isPickup ? 'Ambil sendiri' : 'Diantar'}
+            </span>
+            {!isPickup && order.deliveryFee > 0 && (
+              <span>Ongkir {formatRupiah(order.deliveryFee)}</span>
             )}
-          </p>
-          <p className="mt-1 text-[13px] font-semibold text-zinc-900">Rp{order.total.toLocaleString('id-ID')}</p>
-          {order.status === 'completed' && (
-            <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold">
+            <span>{formatOrderDate(order.createdAt)}</span>
+          </div>
+
+          {isDelivered && (
+            <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold">
               {reviewed ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-sage-100 px-2 py-0.5 text-sage-600">
-                  <Star className="h-3 w-3 fill-caramel text-caramel" /> Sudah dinilai
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
+                  <Star className="h-3 w-3 fill-primary text-primary" aria-hidden /> Sudah dinilai
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-caramel/15 px-2 py-0.5 text-caramel-700">
-                  <Star className="h-3 w-3" /> Belum dinilai · Beri ulasan
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-primary">
+                  <Star className="h-3 w-3" aria-hidden /> Belum dinilai
                 </span>
               )}
             </p>
           )}
         </div>
 
-        <ChevronRight className="mt-2 h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+        <div className="flex shrink-0 items-end justify-between gap-3 sm:flex-col sm:items-end">
+          <div className="sm:text-right">
+            <p className="text-[11px] text-charcoal-500">Total</p>
+            <p className="text-sm font-bold tabular-nums text-charcoal-900">
+              {formatRupiah(order.total)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Aksi: setiap tombol punya fungsi nyata. */}
+      <div className="flex flex-col-reverse gap-2 border-t border-hairline px-4 py-3 sm:flex-row sm:justify-end">
+        {canTrack && onTrack && (
+          <button
+            type="button"
+            onClick={() => onTrack(order)}
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-hairline px-4 text-xs font-semibold text-charcoal-900 transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            <Truck className="h-3.5 w-3.5" aria-hidden />
+            Lacak Pesanan
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => onViewDetail(order)}
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-xs font-semibold text-white transition-colors hover:bg-caramel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
+          Lihat Detail
+          <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+        </button>
       </div>
     </article>
   );

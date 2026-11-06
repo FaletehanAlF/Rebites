@@ -15,6 +15,19 @@ import {
   Lock,
 } from "lucide-react";
 import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/use-seller-status";
+import {
+  CurrentUserRoleError,
+  fetchCurrentUserRole,
+  getHomePathForRole,
+} from "@/lib/current-user";
+import {
+  EMAIL_COOLDOWN_SECONDS,
+  getAuthCallbackUrl,
+  getDesiredNextPath,
+  mapResendError,
+  parseCooldownSeconds,
+  useEmailCooldown,
+} from "@/lib/auth-email";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -54,7 +67,7 @@ function FieldBox({
       >
         {label}
       </label>
-      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
         <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]" />
         {children}
         {trailing}
@@ -84,7 +97,7 @@ function PasswordVisibilityButton({
 }
 
 function inputClass(additional?: string) {
-  return `w-full bg-transparent py-1 font-sans text-[14px] leading-none text-[#1B3F2C] outline-none placeholder:text-muted-foreground ${additional ?? ""}`;
+  return `w-full bg-transparent py-1 font-sans text-[14px] leading-none text-foreground outline-none placeholder:text-muted-foreground ${additional ?? ""}`;
 }
 
 export default function PenjualLoginForm() {
@@ -95,10 +108,77 @@ export default function PenjualLoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
+  const {
+    remainingSec: resendRemainingSec,
+    isCooling: isResendCooling,
+    start: startResendCooldown,
+  } = useEmailCooldown(EMAIL_COOLDOWN_SECONDS);
+
+  async function handleResend() {
+    const targetEmail = email.trim();
+    if (!targetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
+      setResendMessage("Masukkan email yang valid terlebih dahulu.");
+      return;
+    }
+    if (isResendCooling) {
+      setResendMessage(
+        `Tunggu ${resendRemainingSec} detik sebelum kirim ulang.`
+      );
+      return;
+    }
+    // Cegah request berulang selama request sebelumnya masih berjalan.
+    if (resendLoading) return;
+    setResendLoading(true);
+    setResendMessage("");
+    try {
+      const { supabase } = await import("@/lib/supabase");
+      const desiredNext =
+        typeof window !== "undefined"
+          ? getDesiredNextPath(
+              window.location.search,
+              "/auth/register/penjual"
+            )
+          : "/auth/register/penjual";
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email: targetEmail,
+        options: { emailRedirectTo: getAuthCallbackUrl(desiredNext) },
+      });
+      if (resendError) {
+        const friendly = mapResendError(resendError.message);
+        setResendMessage(friendly.message);
+        if (friendly.isRateLimited) {
+          // Pakai durasi Supabase bila pesannya menyediakannya.
+          startResendCooldown(
+            parseCooldownSeconds(resendError.message) ??
+              EMAIL_COOLDOWN_SECONDS
+          );
+        }
+        return;
+      }
+      startResendCooldown(EMAIL_COOLDOWN_SECONDS);
+      setResendMessage(
+        "Email konfirmasi dikirim ulang. Cek inbox, spam, dan folder promosi, lalu klik tautan terbaru dalam 5 menit."
+      );
+    } catch (err) {
+      setResendMessage(
+        err instanceof Error && err.message
+          ? err.message
+          : "Gagal mengirim ulang. Silakan coba lagi."
+      );
+    } finally {
+      setResendLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    setNeedsVerification(false);
+    setResendMessage("");
 
     const emailTrim = email.trim();
     const nameTrim = businessName.trim();
@@ -134,7 +214,10 @@ export default function PenjualLoginForm() {
           throw new Error("Email atau kata sandi salah.");
         }
         if (msg.includes("Email not confirmed")) {
-          throw new Error("Email belum diverifikasi. Cek email Anda.");
+          setNeedsVerification(true);
+          throw new Error(
+            "Email belum diverifikasi. Cek email Anda dan klik tautan terbaru, atau kirim ulang di bawah."
+          );
         }
         throw new Error(msg);
       }
@@ -180,7 +263,42 @@ export default function PenjualLoginForm() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event(SELLER_STATUS_UPDATED_EVENT));
       }
-      router.push("/dashboard/penjual");
+      let role: Awaited<ReturnType<typeof fetchCurrentUserRole>> = null;
+      try {
+        role = await fetchCurrentUserRole(user.id);
+      } catch (roleErr) {
+        if (roleErr instanceof CurrentUserRoleError) {
+          setError(roleErr.message);
+        } else {
+          setError("Gagal membaca peran akun. Silakan coba lagi.");
+        }
+        return;
+      }
+      if (!role) {
+        setError("Peran akun tidak ditemukan. Hubungi administrator ReBites.");
+        return;
+      }
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        await supabase.from("activity_logs").insert({
+          user_id: user.id,
+          activity_type: "login",
+          description: "Masuk sebagai penjual.",
+          metadata: { business_name: nameTrim },
+          target_type: "store",
+          target_id: umkm.id,
+        });
+      } catch {
+        // Logging aktivitas bersifat non-blokir agar login tetap berjalan.
+      }
+      // Seller flow dipertahankan: umkm (dan anomali buyer/null yang lolos
+      // cek umkm_profiles) tetap ke dashboard penjual. Hanya admin yang
+      // diarahkan keluar via mapping terpusat.
+      const target =
+        role === "admin"
+          ? getHomePathForRole(role)
+          : getHomePathForRole("umkm");
+      router.push(target);
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       setError(message || "Terjadi kesalahan. Silakan coba lagi.");
@@ -194,9 +312,9 @@ export default function PenjualLoginForm() {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="flex h-full flex-col"
+      className="flex min-h-0 flex-col"
     >
-      <motion.div variants={itemVariants} className="mb-3 flex-shrink-0">
+      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
         <Link
           href="/auth/register/penjual"
           className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-[hsl(var(--primary))]"
@@ -208,10 +326,10 @@ export default function PenjualLoginForm() {
 
       <motion.div
         variants={itemVariants}
-        className="mb-5 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
+        className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
       >
         <Image
-          src="/logo.png"
+          src="/logo.avif"
           alt="ReBites"
           width={28}
           height={28}
@@ -224,13 +342,13 @@ export default function PenjualLoginForm() {
 
       <motion.h1
         variants={itemVariants}
-        className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-[#14261E] flex-shrink-0"
+        className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-foreground flex-shrink-0"
       >
         Masuk sebagai Penjual
       </motion.h1>
       <motion.p
         variants={itemVariants}
-        className="mt-1.5 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
+        className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
       >
         Sudah punya toko? Masukkan email, nama toko, dan password untuk
         melanjutkan ke dashboard penjual.
@@ -238,7 +356,7 @@ export default function PenjualLoginForm() {
 
       <motion.form
         variants={itemVariants}
-        className="mt-6 grid grid-cols-1 gap-4"
+        className="mt-5 grid grid-cols-1 gap-4"
         onSubmit={handleSubmit}
         noValidate
       >
@@ -300,16 +418,48 @@ export default function PenjualLoginForm() {
         {error && (
           <p
             role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700"
+            className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive"
           >
             {error}
           </p>
         )}
 
+        {needsVerification && (
+          <div className="rounded-lg border border-border bg-secondary px-3 py-2.5">
+            <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
+              Tidak menemukan email? Cek spam/promosi, lalu kirim ulang ke{" "}
+              <span className="font-semibold text-[hsl(var(--primary))]">
+                {email.trim() || "email kamu"}
+              </span>
+              .
+            </p>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendLoading || isResendCooling || !email.trim()}
+              className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-4 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--primary))] transition-colors hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {resendLoading
+                ? "Mengirim…"
+                : isResendCooling
+                  ? `Kirim ulang dalam ${resendRemainingSec} detik`
+                  : "Kirim Ulang Email Konfirmasi"}
+            </button>
+            {resendMessage && (
+              <p
+                role="status"
+                className="mt-2 font-sans text-[12px] leading-relaxed text-muted-foreground"
+              >
+                {resendMessage}
+              </p>
+            )}
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading ? "Memverifikasi..." : "Masuk"}
         </button>
@@ -322,7 +472,7 @@ export default function PenjualLoginForm() {
         Belum punya toko?{" "}
         <Link
           href="/auth/register/penjual"
-          className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-[#1B3F2C]"
+          className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-foreground"
         >
           Daftar sebagai penjual
         </Link>

@@ -57,14 +57,14 @@ function SalesTooltip({
   if (!point) return null;
 
   return (
-    <div className="rounded-xl border border-sage-100 bg-white/95 px-3.5 py-2.5 text-xs shadow-lg backdrop-blur">
-      <p className="font-semibold text-charcoal-900">{point.day}</p>
-      <div className="mt-1.5 flex items-center gap-1.5 text-charcoal-900">
+    <div className="rounded-xl border border-border bg-white/95 px-3.5 py-2.5 text-xs shadow-lg backdrop-blur">
+      <p className="font-semibold text-foreground">{point.day}</p>
+      <div className="mt-1.5 flex items-center gap-1.5 text-foreground">
         <span className="h-2 w-2 rounded-full bg-primary" />
         Terjual
         <span className="ml-auto pl-3 font-semibold">{point.terjual} porsi</span>
       </div>
-      <p className="mt-2 border-t border-sage-100 pt-1.5 font-medium text-primary">
+      <p className="mt-2 border-t border-border pt-1.5 font-medium text-primary">
         Pendapatan hari itu {formatRupiah(point.revenue)}
       </p>
     </div>
@@ -125,7 +125,7 @@ export function SalesStatsCard({
     <Card>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sage-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Statistik Penjualan
           </p>
           <h2 className="mt-1 font-display text-xl font-medium tracking-tight text-primary">
@@ -141,7 +141,7 @@ export function SalesStatsCard({
               options={PERIOD_OPTIONS}
               ariaLabel="Pilih rentang waktu statistik"
             />
-            <div role="group" aria-label="Tipe grafik" className="flex rounded-full bg-cream-100 p-1">
+            <div role="group" aria-label="Tipe grafik" className="flex rounded-full bg-muted p-1">
               <button
                 type="button"
                 aria-label="Tampilkan grafik batang"
@@ -150,7 +150,7 @@ export function SalesStatsCard({
                   'flex h-7 w-7 items-center justify-center rounded-full transition-colors',
                   kind === 'bar'
                     ? 'bg-white text-primary shadow-sm'
-                    : 'text-sage-500 hover:text-charcoal-900'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <BarChart2 className="h-4 w-4" />
@@ -163,7 +163,7 @@ export function SalesStatsCard({
                   'flex h-7 w-7 items-center justify-center rounded-full transition-colors',
                   kind === 'line'
                     ? 'bg-white text-primary shadow-sm'
-                    : 'text-sage-500 hover:text-charcoal-900'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <LineChartIcon className="h-4 w-4" />
@@ -174,7 +174,7 @@ export function SalesStatsCard({
                 <button
                   type="button"
                   aria-label="Opsi lainnya"
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-sage-500 transition-colors hover:bg-sage-100 hover:text-charcoal-900"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </button>
@@ -209,10 +209,10 @@ export function SalesStatsCard({
         <div className="mt-5 space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {[0, 1].map((i) => (
-              <div key={i} aria-hidden className="h-20 animate-pulse rounded-2xl bg-cream-50" />
+              <div key={i} aria-hidden className="h-20 animate-pulse rounded-2xl bg-secondary" />
             ))}
           </div>
-          <div aria-hidden className="h-[230px] animate-pulse rounded-2xl bg-cream-50" />
+          <div aria-hidden className="h-[230px] animate-pulse rounded-2xl bg-secondary" />
         </div>
       ) : !hasOrders ? (
         <div className="mt-4">
@@ -224,33 +224,33 @@ export function SalesStatsCard({
       ) : (
         <>
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl bg-cream-50 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sage-500">
+            <div className="rounded-2xl bg-secondary p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Pendapatan
               </p>
               <p className="mt-1.5 truncate font-display text-[28px] font-medium leading-none tracking-tight text-primary">
                 <span>{formatRupiah(revenueCountValue)}</span>
               </p>
             </div>
-            <div className="rounded-2xl bg-cream-50 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sage-500">
+            <div className="rounded-2xl bg-secondary p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Porsi Terjual
               </p>
               <p className="mt-1.5 truncate font-display text-[28px] font-medium leading-none tracking-tight text-primary">
                 <span>{porsiCountValue}</span>{' '}
-                <span className="text-sm font-medium text-charcoal-500">porsi</span>
+                <span className="text-sm font-medium text-muted-foreground">porsi</span>
               </p>
             </div>
           </div>
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-4 text-xs font-medium text-charcoal-900">
+            <div className="flex items-center gap-4 text-xs font-medium text-foreground">
               <span className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-primary" />
                 Terjual
               </span>
             </div>
-            <p className="text-xs text-sage-500">Periode {period.replace('-', ' ')}</p>
+            <p className="text-xs text-muted-foreground">Periode {period.replace('-', ' ')}</p>
           </div>
 
           <div className="mt-4 h-[230px] w-full">
