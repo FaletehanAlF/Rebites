@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { LandingNavbar } from '@/app/components/landing/LandingNavbar';
 import { LandingFooter } from '@/app/components/landing/LandingFooter';
+import { BlogIndex } from '@/app/components/landing/blog-index';
 
 export const metadata: Metadata = {
   title: 'Blog - ReBites',
@@ -9,17 +10,15 @@ export const metadata: Metadata = {
 };
 
 /**
- * Halaman Blog — publik, konten menyusul.
- *
- * Kosong secara visual kecuali navbar dan footer landing; `<h1>` tersembunyi
- * menjaga struktur aksesibilitas (landmark + heading) tanpa mengisi halaman.
+ * Halaman Blog — publik. Daftar artikel published (terbaru dulu) dengan
+ * pencarian, filter kategori, dan kartu featured untuk artikel teratas.
  */
 export default function BlogPage() {
   return (
     <>
       <LandingNavbar />
-      <main className="min-h-screen bg-white pt-16 sm:pt-[72px]">
-        <h1 className="sr-only">Blog</h1>
+      <main className="min-h-screen bg-secondary pt-16 sm:pt-[72px]">
+        <BlogIndex />
       </main>
       <LandingFooter />
     </>
