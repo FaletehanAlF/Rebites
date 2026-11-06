@@ -140,7 +140,7 @@ async function parseError(res: Response, fallback: string): Promise<never> {
 export function orderStatusLabel(status: string | null | undefined): string {
   switch ((status ?? '').trim().toLowerCase()) {
     case 'pending':
-      return 'Pending';
+      return 'Menunggu';
     case 'paid':
       return 'Dibayar';
     case 'processing':
@@ -158,7 +158,7 @@ export function orderStatusLabel(status: string | null | undefined): string {
     case 'cancelled':
       return 'Dibatalkan';
     case 'refunded':
-      return 'Refund';
+      return 'Dana dikembalikan';
     default:
       return status?.trim() ? String(status) : '-';
   }
@@ -171,9 +171,9 @@ export function paymentStatusLabel(status: string | null | undefined): string {
     case 'paid':
       return 'Lunas';
     case 'failed':
-      return 'Gagal / Kadaluarsa';
+      return 'Gagal / Kedaluwarsa';
     case 'refunded':
-      return 'Refund';
+      return 'Dana dikembalikan';
     default:
       return status?.trim() ? String(status) : '-';
   }
@@ -192,7 +192,7 @@ export function lifecycleLabel(status: string | null | undefined): string {
 
 export function progressLabel(status: string | null | undefined): string {
   if (status === null || status === undefined || String(status).trim() === '') {
-    return 'Progress belum tersedia';
+    return 'Progres belum tersedia';
   }
   switch (String(status).trim().toLowerCase()) {
     case 'disiapkan':
@@ -207,8 +207,8 @@ export function progressLabel(status: string | null | undefined): string {
 }
 
 export function deliveryLabel(option: string | null | undefined): string {
-  if (option === 'delivery') return 'Delivery';
-  if (option === 'pickup') return 'Pickup';
+  if (option === 'delivery') return 'Diantar';
+  if (option === 'pickup') return 'Ambil sendiri';
   return option?.trim() ? String(option) : '-';
 }
 

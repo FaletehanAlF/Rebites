@@ -3,15 +3,16 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BadgePercent, Check, X } from 'lucide-react';
-import { useCheckout } from './checkout-context';
+import { useCheckout, usePromoInput } from './checkout-context';
 
 export function PromoCodeInput() {
-  const { promo, promoInput, setPromoInput, promoError, applyPromo, clearPromo } =
-    useCheckout();
+  const { promo } = useCheckout();
+  const { promoInput, setPromoInput, promoError, applyPromo, clearPromo } =
+    usePromoInput();
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-t border-sage-100 pt-4">
+    <div className="border-t border-border pt-4">
       {promo ? (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -29,7 +30,7 @@ export function PromoCodeInput() {
             type="button"
             onClick={clearPromo}
             aria-label="Hapus kode promo"
-            className="rounded-full p-1 text-sage-500 transition-colors hover:bg-sage-100 hover:text-caramel"
+            className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
           >
             <X className="h-4 w-4" />
           </button>
@@ -40,7 +41,7 @@ export function PromoCodeInput() {
             type="button"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:text-caramel"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:text-primary"
           >
             <BadgePercent className="h-4 w-4" />
             {open ? 'Tutup kode promo' : 'Punya Kode Promo?'}
@@ -70,12 +71,12 @@ export function PromoCodeInput() {
                     placeholder="Masukkan kode promo"
                     aria-label="Kode promo"
                     aria-invalid={promoError !== null}
-                    className="w-full rounded-xl border border-sage-100 bg-white px-3.5 py-2.5 text-sm uppercase text-charcoal-900 placeholder:normal-case placeholder:text-sage-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm uppercase text-foreground placeholder:normal-case placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                   <button
                     type="button"
                     onClick={applyPromo}
-                    className="shrink-0 rounded-xl bg-primary px-4 text-sm font-semibold text-white transition-colors hover:bg-caramel"
+                    className="shrink-0 rounded-xl bg-primary px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
                   >
                     Gunakan
                   </button>
@@ -89,7 +90,7 @@ export function PromoCodeInput() {
                     {promoError}
                   </p>
                 ) : (
-                  <p className="mt-2 flex items-center gap-1.5 text-xs text-sage-500">
+                  <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Check className="h-3.5 w-3.5 text-primary" />
                     Coba kode <span className="font-semibold">REBITES26</span>{' '}
                     untuk diskon 5%

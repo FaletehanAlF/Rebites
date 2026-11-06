@@ -1,6 +1,7 @@
 'use client';
 
-import { AdminAuthError, getAdminAuthHeader } from './admin-auth';
+import { fetchAdminWithAuth } from './admin-auth';
+import { AuthError } from './auth-token';
 
 export interface AdminUmkmOwner {
   id: string;
@@ -35,6 +36,8 @@ export interface AdminUmkmItem {
   is_verified: boolean;
   rating: number | null;
   is_open: boolean | null;
+  /** false = dinonaktifkan admin: toko & produknya tidak tampil ke pembeli. */
+  is_active: boolean;
   created_at: string | null;
   owner: AdminUmkmOwner | null;
   subscription: AdminUmkmSubscription | null;
@@ -65,13 +68,24 @@ export interface AdminUmkmDetailSubscription extends AdminUmkmSubscription {
 export interface AdminUmkmProductSummary {
   id: string | null;
   name: string;
+  description: string | null;
   image_url: string | null;
   category: string | null;
   original_price: number | null;
   surplus_price: number | null;
   stock: number | null;
+  status: string | null;
   verification_status: string | null;
+  rejection_reason: string | null;
+  reviewed_at: string | null;
+  weight_gram: number | null;
+  length_cm: number | null;
+  width_cm: number | null;
+  height_cm: number | null;
+  is_delivery: boolean | null;
+  is_pickup: boolean | null;
   created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface AdminUmkmDetail {
@@ -82,9 +96,9 @@ export interface AdminUmkmDetail {
   category: string | null;
   address: string | null;
   city: string | null;
-  /** 7B-1: origin foundation, NULL untuk data legacy. */
+  /** origin foundation, NULL untuk data legacy. */
   postal_code?: string | null;
-  /** 7B-1: telepon toko, NULL jika belum diisi. */
+  /** telepon toko, NULL jika belum diisi. */
   phone?: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -93,6 +107,8 @@ export interface AdminUmkmDetail {
   is_verified: boolean;
   rating: number | null;
   is_open: boolean | null;
+  /** false = dinonaktifkan admin: toko & produknya tidak tampil ke pembeli. */
+  is_active: boolean;
   open_hours: string | null;
   tagline: string | null;
   owner_name: string | null;
@@ -123,12 +139,17 @@ export class AdminUmkmApiError extends Error {
   }
 }
 
-async function authHeader(): Promise<string> {
+/**
+ * Satu refresh + satu retry saat 401 — kontrak yang sama dengan
+ * `lib/admin-reports.ts`. Sebelumnya token hanya diambil sekali sehingga 401
+ * di tengah sesi langsung menjadi error tanpa percobaan refresh.
+ */
+async function adminFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   try {
-    return await getAdminAuthHeader();
+    return await fetchAdminWithAuth(input, init);
   } catch (err) {
-    if (err instanceof AdminAuthError) {
-      throw new AdminUmkmApiError(err.message, 401);
+    if (err instanceof AuthError) {
+      throw new AdminUmkmApiError(err.message, err.status);
     }
     throw err;
   }
@@ -139,19 +160,21 @@ async function parseError(res: Response, fallback: string): Promise<never> {
   throw new AdminUmkmApiError(json?.error ?? fallback, res.status);
 }
 
+export type AdminUmkmVerificationFilter = 'verified' | 'unverified';
+
 export async function fetchAdminUmkm(
   limit = 20,
   offset = 0,
-  search = ''
+  search = '',
+  verification: '' | AdminUmkmVerificationFilter = ''
 ): Promise<AdminUmkmListResult> {
   const params = new URLSearchParams({
     limit: String(limit),
     offset: String(offset),
   });
   if (search.trim()) params.set('search', search.trim());
-  const res = await fetch(`/api/admin/umkm?${params.toString()}`, {
-    headers: { Authorization: await authHeader() },
-  });
+  if (verification) params.set('verification', verification);
+  const res = await adminFetch(`/api/admin/umkm?${params.toString()}`);
   if (!res.ok) {
     await parseError(res, 'Gagal memuat daftar UMKM.');
   }
@@ -168,9 +191,7 @@ export async function fetchAdminUmkm(
 }
 
 export async function fetchAdminUmkmDetail(id: string): Promise<AdminUmkmDetailResult> {
-  const res = await fetch(`/api/admin/umkm/${encodeURIComponent(id)}`, {
-    headers: { Authorization: await authHeader() },
-  });
+  const res = await adminFetch(`/api/admin/umkm/${encodeURIComponent(id)}`);
   if (!res.ok) {
     await parseError(res, 'Gagal memuat detail UMKM.');
   }
@@ -182,9 +203,8 @@ export async function fetchAdminUmkmDetail(id: string): Promise<AdminUmkmDetailR
 }
 
 export async function toggleUmkmVerification(id: string): Promise<{ is_verified: boolean }> {
-  const res = await fetch(`/api/admin/umkm/${encodeURIComponent(id)}/verify`, {
+  const res = await adminFetch(`/api/admin/umkm/${encodeURIComponent(id)}/verify`, {
     method: 'POST',
-    headers: { Authorization: await authHeader() },
   });
   if (!res.ok) {
     await parseError(res, 'Gagal mengubah status verifikasi.');
@@ -196,4 +216,30 @@ export async function toggleUmkmVerification(id: string): Promise<{ is_verified:
     throw new AdminUmkmApiError('Respons verifikasi UMKM tidak valid.', 500);
   }
   return { is_verified: json.is_verified };
+}
+
+/**
+ * Menonaktifkan / mengaktifkan toko. Berbeda dengan verifikasi: toko nonaktif
+ * hilang dari katalog publik dan tidak bisa dibeli, sedangkan penjual tidak
+ * dapat mengaktifkannya kembali sendiri.
+ */
+export async function setUmkmActive(
+  id: string,
+  isActive: boolean
+): Promise<{ is_active: boolean }> {
+  const res = await adminFetch(`/api/admin/umkm/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ is_active: isActive }),
+  });
+  if (!res.ok) {
+    await parseError(res, 'Gagal mengubah status toko.');
+  }
+  const json = (await res.json().catch(() => null)) as {
+    is_active?: boolean;
+  } | null;
+  if (!json || typeof json.is_active !== 'boolean') {
+    throw new AdminUmkmApiError('Respons status toko tidak valid.', 500);
+  }
+  return { is_active: json.is_active };
 }

@@ -75,7 +75,7 @@ export default function AuthCenteredShell({
 
             <div className="relative z-10 flex items-center gap-2.5 p-8 xl:p-10">
               <Image
-                src="/logo.png"
+                src="/logo.avif"
                 alt="ReBites"
                 width={36}
                 height={36}

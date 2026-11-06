@@ -10,13 +10,21 @@ const badgeVariants = cva(
       variant: {
         default: 'border-transparent bg-primary text-primary-foreground-strong',
         secondary: 'border-transparent bg-secondary text-secondary-foreground',
-        outline: 'border-caramel/40 text-caramel',
+        // `outline` sebelumnya memakai `text-caramel` (#C8A882). Di atas
+        // putih kontrasnya hanya ~1.9:1 sehingga teks badge praktis tidak
+        // terbaca pada ukuran 11px. Sekarang memakai hijau primary panel
+        // (7.3:1) dengan latar sangat tipis.
+        outline: 'border-primary/30 bg-primary/[0.06] text-primary',
+        // Catatan: opacity 15 TIDAK ada di skala opacity bawaan Tailwind,
+        // sehingga `bg-success/15` tidak pernah menghasilkan CSS dan badge
+        // tampil tanpa latar sama sekali. Nilai arbitrer /[0.15] dipakai
+        // supaya tint yang dimaksud benar-benar diterapkan.
         success:
-          'border-transparent bg-success/15 text-success',
+          'border-transparent bg-success/[0.15] text-success',
         warning:
-          'border-transparent bg-warning/15 text-warning',
+          'border-transparent bg-warning/[0.15] text-warning-strong',
         destructive:
-          'border-transparent bg-destructive/15 text-destructive',
+          'border-transparent bg-destructive/[0.15] text-destructive',
       },
     },
     defaultVariants: {

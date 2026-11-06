@@ -17,16 +17,16 @@ export function DashboardDecor() {
     >
       <motion.div
         style={{ y: yBlobTop }}
-        className="absolute -right-28 -top-28 h-96 w-96 rounded-full bg-sage-100/70 blur-3xl"
+        className="absolute -right-28 -top-28 h-96 w-96 rounded-full bg-muted/70 blur-3xl"
       />
       <motion.div
         style={{ y: yBlobMid }}
-        className="absolute -left-36 top-1/2 h-[30rem] w-[30rem] rounded-full bg-cream-100/80 blur-3xl"
+        className="absolute -left-36 top-1/2 h-[30rem] w-[30rem] rounded-full bg-muted/80 blur-3xl"
       />
       <motion.div style={{ y: ySprig }} className="absolute right-[5%] top-36">
-        <LeafSprig className="h-44 w-44 text-sage-100" />
+        <LeafSprig className="h-44 w-44 text-primary-foreground" />
       </motion.div>
-      <DotPattern className="left-10 top-10 h-44 w-44 text-sage-100/70" />
+      <DotPattern className="left-10 top-10 h-44 w-44 text-primary-foreground/70" />
     </div>
   );
 }

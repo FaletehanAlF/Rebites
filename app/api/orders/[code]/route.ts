@@ -71,7 +71,9 @@ export async function GET(req: NextRequest, { params }: { params: { code: string
     return NextResponse.json({ order });
   } catch (err) {
     console.error('[orders/[code]] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan saat memuat pesanan' },
+      { status: 500 },
+    );
   }
 }

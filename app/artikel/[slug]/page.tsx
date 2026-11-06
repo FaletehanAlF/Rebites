@@ -4,8 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, CalendarDays, Newspaper } from "lucide-react";
-import { MobileNavbar } from "@/app/components/shared/MobileNavbar";
-import { MobileBottomNav } from "@/app/components/shared/MobileBottomNav";
+import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { SmartImage } from "@/app/components/shared/SmartImage";
 
 interface PublicArticleDetail {
@@ -113,12 +112,8 @@ export default function ArtikelDetailPage() {
   }, [status, article]);
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <div className="lg:hidden">
-        <MobileNavbar />
-      </div>
-
-      <main className="pb-24 pt-[120px] sm:pt-[140px] lg:pb-10 lg:pt-8">
+    <BuyerShell>
+      <main className="min-h-screen bg-cream-50 pb-28 pt-4 sm:pt-6 lg:pb-12 lg:pt-8">
         <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
@@ -243,8 +238,6 @@ export default function ArtikelDetailPage() {
           )}
         </div>
       </main>
-
-      <MobileBottomNav />
-    </div>
+    </BuyerShell>
   );
 }

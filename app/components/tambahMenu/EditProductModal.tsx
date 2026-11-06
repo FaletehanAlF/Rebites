@@ -10,6 +10,13 @@ import {
   type SellerProduct,
 } from '@/lib/product-storage';
 import { MENU_CATEGORIES, parseShippingNumber } from './types';
+import {
+  isScheduleRangeValid,
+  scheduleEndToIso,
+  scheduleStartToIso,
+  toScheduleDateInput,
+  todayScheduleDateInput,
+} from '@/lib/menu-schedule';
 import { NumberField } from './NumberField';
 import { ShippingInfoSection } from './ShippingInfoSection';
 import {
@@ -21,9 +28,9 @@ import {
 } from '@/app/components/ui/dialog';
 
 const labelClass =
-  'mb-1 block text-[10px] font-semibold uppercase tracking-wider text-charcoal-900';
+  'mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground';
 const inputClass =
-  'w-full rounded-lg border border-sage-200 bg-white px-3 py-2 text-sm text-charcoal-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20';
+  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20';
 
 function ToggleSwitch({
   checked,
@@ -36,7 +43,7 @@ function ToggleSwitch({
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-xs font-semibold text-charcoal-900">{label}</span>
+      <span className="text-xs font-semibold text-foreground">{label}</span>
       <button
         type="button"
         role="switch"
@@ -45,7 +52,7 @@ function ToggleSwitch({
         onClick={() => onChange(!checked)}
         className={cn(
           'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
-          checked ? 'bg-primary' : 'bg-sage-200'
+          checked ? 'bg-primary' : 'bg-muted'
         )}
       >
         <span
@@ -63,10 +70,13 @@ export function EditProductModal({
   product,
   open,
   onClose,
+  initialShowAdvanced = false,
 }: {
   product: SellerProduct | null;
   open: boolean;
   onClose: () => void;
+  /** Buka bagian "Edit lebih lanjut" langsung (dipakai arahan isi berat dari Menu Saya). */
+  initialShowAdvanced?: boolean;
 }) {
   const [name, setName] = useState('');
   const [image, setImage] = useState('');
@@ -79,10 +89,12 @@ export function EditProductModal({
   const [endTime, setEndTime] = useState('17:00');
   const [allDay, setAllDay] = useState(false);
   const [isSurplusToday, setIsSurplusToday] = useState(true);
-  // 7B-2B: kapabilitas fulfillment (DB NOT NULL, default true untuk legacy).
+  const [scheduledStart, setScheduledStart] = useState<string | null>(null);
+  const [scheduledEnd, setScheduledEnd] = useState<string | null>(null);
+  // kapabilitas fulfillment (DB NOT NULL, default true untuk legacy).
   const [isDelivery, setIsDelivery] = useState(true);
   const [isPickup, setIsPickup] = useState(true);
-  // 7B-2D-1: package opsional sebagai teks mentah ('' = kosong = NULL).
+  // package opsional sebagai teks mentah ('' = kosong = NULL).
   const [weightRaw, setWeightRaw] = useState('');
   const [lengthRaw, setLengthRaw] = useState('');
   const [widthRaw, setWidthRaw] = useState('');
@@ -105,16 +117,20 @@ export function EditProductModal({
     setEndTime(product.endTime || '17:00');
     setAllDay(product.allDay ?? false);
     setIsSurplusToday(product.isSurplusToday);
+    // State selalu berupa tanggal (YYYY-MM-DD) untuk <input type="date">.
+    // Konversi ke awal/akhir hari WIB dilakukan saat menyimpan.
+    setScheduledStart(product.scheduledStart ? toScheduleDateInput(product.scheduledStart) : null);
+    setScheduledEnd(product.scheduledEnd ? toScheduleDateInput(product.scheduledEnd) : null);
     setIsDelivery(product.isDelivery ?? true);
     setIsPickup(product.isPickup ?? true);
-    // 7B-2D-1: produk lama tanpa package (NULL) tampil sebagai kosong.
+    // produk lama tanpa package (NULL) tampil sebagai kosong.
     setWeightRaw(product.weightGram != null ? String(product.weightGram) : '');
     setLengthRaw(product.lengthCm != null ? String(product.lengthCm) : '');
     setWidthRaw(product.widthCm != null ? String(product.widthCm) : '');
     setHeightRaw(product.heightCm != null ? String(product.heightCm) : '');
-    setShowAdvanced(false);
+    setShowAdvanced(initialShowAdvanced);
     setError('');
-  }, [open, product]);
+  }, [open, product, initialShowAdvanced]);
 
   if (!product) return null;
 
@@ -156,18 +172,26 @@ export function EditProductModal({
       setError('Harga normal tidak boleh negatif.');
       return;
     }
-    // 7B-2B: minimal satu metode pengambilan harus aktif.
+    // minimal satu metode pengambilan harus aktif.
     if (!isDelivery && !isPickup) {
       setError('Pilih minimal satu metode pengambilan: Diantar atau Ambil Sendiri.');
       return;
     }
-    // 7B-2D-1: berat/dimensi boleh kosong (NULL); jika diisi harus angka positif.
+    // dimensi boleh kosong (NULL); jika diisi harus angka positif.
     const weightParsed = parseShippingNumber(weightRaw);
     const lengthParsed = parseShippingNumber(lengthRaw);
     const widthParsed = parseShippingNumber(widthRaw);
     const heightParsed = parseShippingNumber(heightRaw);
     if (!weightParsed.ok || !lengthParsed.ok || !widthParsed.ok || !heightParsed.ok) {
       setError('Berat dan dimensi harus berupa angka positif. Kosongkan jika belum tahu.');
+      return;
+    }
+    // Berat TIDAK wajib: server memakai berat bawaan kategori bila kosong
+    // (lib/package-weight.ts), dan pembeli diberi tahu bahwa ongkirnya
+    // perkiraan. Kewajiban lama ini memblokir 44 dari 50 produk yang belum
+    // punya berat sehingga penjual tidak bisa menyimpan perubahan apa pun.
+    if (!isScheduleRangeValid(scheduledStart, scheduledEnd)) {
+      setError('Tanggal selesai tidak boleh mendahului tanggal mulai.');
       return;
     }
 
@@ -197,7 +221,7 @@ export function EditProductModal({
           : 0;
       const updated = await patchSellerProduct(product.id, {
         name: trimmedName,
-        image: finalImage || '/foods/ikansayur.jpg',
+        image: finalImage || '/foods/ikansayur.avif',
         category,
         surplusPrice: Math.max(0, surplusPrice),
         stock: nextStock,
@@ -207,11 +231,13 @@ export function EditProductModal({
         endTime,
         allDay,
         isSurplusToday,
+        scheduledStart: scheduleStartToIso(scheduledStart),
+        scheduledEnd: scheduleEndToIso(scheduledEnd),
         discountPercent,
-        // 7B-2B: kapabilitas fulfillment pilihan seller.
+        // kapabilitas fulfillment pilihan seller.
         isDelivery,
         isPickup,
-        // 7B-2D-1: package opsional (NULL jika kosong, tanpa angka palsu).
+        // package opsional (NULL jika kosong, tanpa angka palsu).
         weightGram: weightParsed.value,
         lengthCm: lengthParsed.value,
         widthCm: widthParsed.value,
@@ -241,7 +267,7 @@ export function EditProductModal({
           <DialogTitle className="font-display text-lg font-medium tracking-tight text-primary">
             Edit Menu
           </DialogTitle>
-          <DialogDescription className="text-xs leading-relaxed text-sage-500">
+          <DialogDescription className="text-xs leading-relaxed text-muted-foreground">
             Ubah informasi utama menu. Field lain tersedia di “Edit lebih lanjut”.
           </DialogDescription>
         </DialogHeader>
@@ -264,11 +290,11 @@ export function EditProductModal({
           <div>
             <span className={labelClass}>Foto Produk</span>
             <div className="flex items-center gap-3">
-              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-sage-100 bg-sage-100">
+              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
                 {image ? (
                   <SmartImage src={image} alt={`Foto ${product.name}`} />
                 ) : (
-                  <span className="flex h-full w-full items-center justify-center text-sage-500">
+                  <span className="flex h-full w-full items-center justify-center text-muted-foreground">
                     <Camera className="h-5 w-5" />
                   </span>
                 )}
@@ -277,7 +303,7 @@ export function EditProductModal({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border border-sage-200 bg-white px-3 py-1.5 text-xs font-semibold text-charcoal-900 transition-colors hover:border-caramel hover:bg-caramel/20 hover:text-caramel"
+                  className="inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:bg-primary-dark/20 hover:text-primary"
                 >
                   <ImagePlus className="h-3.5 w-3.5" />
                   Ganti Foto
@@ -286,7 +312,7 @@ export function EditProductModal({
                   <button
                     type="button"
                     onClick={() => setImage('')}
-                    className="inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border border-sage-200 bg-white px-3 py-1.5 text-xs font-semibold text-charcoal-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                    className="inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Hapus
@@ -307,12 +333,13 @@ export function EditProductModal({
             <label htmlFor="edit-product-category" className={labelClass}>
               Kategori
             </label>
-            <select
-              id="edit-product-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className={cn(inputClass, 'appearance-none')}
-            >
+            <div className="relative">
+              <select
+                id="edit-product-category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={cn(inputClass, 'appearance-none pr-8')}
+              >
               {MENU_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -323,6 +350,10 @@ export function EditProductModal({
                 <option value={category}>{category} (lama)</option>
               )}
             </select>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -342,7 +373,7 @@ export function EditProductModal({
             />
           </div>
 
-          <div className="space-y-3 rounded-xl bg-cream-50 p-3">
+          <div className="space-y-3 rounded-xl bg-secondary p-3">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-charcoal-900">
               Metode Pengambilan
             </p>
@@ -361,12 +392,12 @@ export function EditProductModal({
             </p>
           </div>
 
-          <div className="rounded-xl bg-cream-50 p-3">
+          <div className="rounded-xl bg-secondary p-3">
             <button
               type="button"
               onClick={() => setShowAdvanced((prev) => !prev)}
               aria-expanded={showAdvanced}
-              className="flex w-fit items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:text-caramel"
+              className="flex w-fit items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:text-primary"
             >
               {showAdvanced ? (
                 <ChevronUp className="h-3.5 w-3.5" />
@@ -377,7 +408,7 @@ export function EditProductModal({
             </button>
 
             {showAdvanced && (
-              <div className="mt-3 space-y-4 rounded-lg border border-sage-100 bg-white p-3">
+              <div className="mt-3 space-y-4 rounded-lg border border-border bg-white p-3">
                 <NumberField
                   id="edit-product-normalprice"
                   label="Harga Normal"
@@ -414,24 +445,70 @@ export function EditProductModal({
                         type="time"
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
-                        className="h-9 flex-1 rounded-lg border border-sage-200 bg-white px-2 text-sm text-charcoal-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        className="h-9 flex-1 rounded-lg border border-border bg-white px-2 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                       />
-                      <span className="text-xs text-sage-500">–</span>
+                      <span className="text-xs text-muted-foreground">–</span>
                       <input
                         type="time"
                         value={endTime}
                         onChange={(e) => setEndTime(e.target.value)}
-                        className="h-9 flex-1 rounded-lg border border-sage-200 bg-white px-2 text-sm text-charcoal-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        className="h-9 flex-1 rounded-lg border border-border bg-white px-2 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                       />
                     </div>
                   </div>
                 )}
 
-                <ToggleSwitch
-                  checked={isSurplusToday}
-                  onChange={setIsSurplusToday}
-                  label="Tandai sebagai surplus hari ini"
-                />
+                <div className="rounded-xl bg-secondary p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground">Jadwal Ketersediaan</p>
+                  <p className="text-[10px] text-muted-foreground">Pilih kapan menu tersedia.</p>
+                  <div className="mt-2 space-y-2">
+                    <label className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors hover:border-primary hover:bg-primary-dark/5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="edit-schedule"
+                        checked={!scheduledStart}
+                        onChange={() => {
+                          setScheduledStart(null);
+                          setScheduledEnd(null);
+                          setIsSurplusToday(true);
+                        }}
+                        className="h-3.5 w-3.5 accent-primary"
+                      />
+                      <span className="text-xs font-medium text-foreground">Sekarang / Surplus Hari Ini</span>
+                    </label>
+                    <label className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors hover:border-primary hover:bg-primary-dark/5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="edit-schedule"
+                        checked={!!scheduledStart}
+                        onChange={() => {
+                          setScheduledStart(todayScheduleDateInput());
+                          setScheduledEnd(null);
+                          setIsSurplusToday(false);
+                        }}
+                        className="h-3.5 w-3.5 accent-primary"
+                      />
+                      <span className="text-xs font-medium text-foreground">Jadwalkan Tanggal Tertentu</span>
+                    </label>
+                    {!!scheduledStart && (
+                      <div className="flex gap-2 pl-5">
+                        <input
+                          type="date"
+                          value={scheduledStart ? scheduledStart.slice(0, 10) : ''}
+                          onChange={(e) => setScheduledStart(e.target.value || null)}
+                          className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-[10px] text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        />
+                        <input
+                          type="date"
+                          value={scheduledEnd ? scheduledEnd.slice(0, 10) : ''}
+                          onChange={(e) => setScheduledEnd(e.target.value || null)}
+                          placeholder="Sampai"
+                          className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-[10px] text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 <div>
                   <ShippingInfoSection
@@ -453,17 +530,17 @@ export function EditProductModal({
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] font-medium text-red-600">
+            <p className="rounded-lg bg-destructive/10 px-2.5 py-1.5 text-[11px] font-medium text-destructive">
               {error}
             </p>
           )}
         </div>
 
-        <div className="mt-5 flex items-center justify-end gap-2 border-t border-sage-100 pt-4">
+        <div className="mt-5 flex items-center justify-end gap-2 border-t border-border pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center whitespace-nowrap rounded-full border border-sage-200 bg-white px-4 py-2 text-xs font-semibold text-charcoal-900 transition-colors hover:bg-sage-50"
+            className="inline-flex items-center whitespace-nowrap rounded-full border border-border bg-white px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
           >
             Batal
           </button>
@@ -471,7 +548,7 @@ export function EditProductModal({
             type="button"
             onClick={() => void handleSave()}
             disabled={saving}
-            className="inline-flex items-center whitespace-nowrap rounded-full bg-primary px-5 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-caramel disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex items-center whitespace-nowrap rounded-full bg-primary px-5 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-70"
           >
             {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
           </button>

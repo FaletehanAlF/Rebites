@@ -16,7 +16,7 @@ export function SiteFooter() {
           <div>
             <Link href="/" className="flex items-center gap-3">
               <Image
-                src="/logo.png"
+                src="/logo.avif"
                 alt="ReBites"
                 width={48}
                 height={48}
@@ -40,14 +40,14 @@ export function SiteFooter() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground/80 transition-colors hover:border-caramel hover:bg-caramel hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground/80 transition-colors hover:border-primary hover:bg-primary-dark hover:text-white"
                 aria-label="Instagram"
               >
                 <Instagram className="h-4 w-4" />
               </a>
               <a
                 href="mailto:halo@rebites.id"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground/80 transition-colors hover:border-caramel hover:bg-caramel hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground/80 transition-colors hover:border-primary hover:bg-primary-dark hover:text-white"
                 aria-label="Email"
               >
                 <Mail className="h-4 w-4" />
@@ -63,7 +63,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/#cara-kerja"
-                  className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-caramel-foreground"
+                  className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-primary"
                 >
                   Cara Kerja
                 </Link>
@@ -71,7 +71,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/#umkm"
-                  className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-caramel-foreground"
+                  className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-primary"
                 >
                   Untuk UMKM
                 </Link>
@@ -79,7 +79,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/#pembeli"
-                  className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-caramel-foreground"
+                  className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-primary"
                 >
                   Untuk Pembeli
                 </Link>
@@ -87,7 +87,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/#langganan"
-                  className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-caramel-foreground"
+                  className="font-sans text-sm text-primary-foreground/80 transition-colors hover:text-primary"
                 >
                   Paket Langganan
                 </Link>
@@ -146,15 +146,15 @@ export function SiteFooter() {
           </p>
 
           <div className="flex flex-wrap items-center gap-6 font-sans text-xs text-primary-foreground/50">
-            <span className="cursor-pointer transition-colors hover:text-caramel-foreground">
+            <span className="cursor-pointer transition-colors hover:text-primary">
               Kebijakan Privasi
             </span>
 
-            <span className="cursor-pointer transition-colors hover:text-caramel-foreground">
+            <span className="cursor-pointer transition-colors hover:text-primary">
               Syarat Penggunaan
             </span>
 
-            <span className="cursor-pointer transition-colors hover:text-caramel-foreground">
+            <span className="cursor-pointer transition-colors hover:text-primary">
               Penyangkalan
             </span>
           </div>

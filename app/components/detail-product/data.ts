@@ -18,19 +18,19 @@ export interface ProductDetail {
   stockRemaining: number;
   rating: number;
   reviewCount: number;
-  /** 7B-1: NULL = jarak belum diketahui (jangan tampilkan angka palsu). */
+  /** NULL = jarak belum diketahui (jangan tampilkan angka palsu). */
   distanceKm: number | null;
-  /** 7B-2B: kapabilitas fulfillment dari products.is_delivery. */
+  /** kapabilitas fulfillment dari products.is_delivery. */
   isDelivery: boolean;
-  /** 7B-2B: kapabilitas fulfillment dari products.is_pickup. */
+  /** kapabilitas fulfillment dari products.is_pickup. */
   isPickup: boolean;
-  /** 7B-2D-1: berat per kemasan (products.weight_gram). NULL = belum diketahui. */
+  /** berat per kemasan (products.weight_gram). NULL = belum diketahui. */
   weightGram: number | null;
-  /** 7B-2D-1: panjang kemasan cm (products.length_cm). NULL = belum diketahui. */
+  /** panjang kemasan cm (products.length_cm). NULL = belum diketahui. */
   lengthCm: number | null;
-  /** 7B-2D-1: lebar kemasan cm (products.width_cm). NULL = belum diketahui. */
+  /** lebar kemasan cm (products.width_cm). NULL = belum diketahui. */
   widthCm: number | null;
-  /** 7B-2D-1: tinggi kemasan cm (products.height_cm). NULL = belum diketahui. */
+  /** tinggi kemasan cm (products.height_cm). NULL = belum diketahui. */
   heightCm: number | null;
   originalPrice: number;
   discountedPrice: number;

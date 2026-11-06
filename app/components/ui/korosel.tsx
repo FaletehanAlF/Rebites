@@ -29,6 +29,7 @@ export interface OptionWheelProps {
   inset?: number;
   loop?: boolean;
   draggable?: boolean;
+  interactive?: boolean;
   className?: string;
   renderItem?: (index: number, item: string) => ReactNode;
   plateSize?: number;
@@ -58,6 +59,18 @@ interface WheelConfig {
 
 const DEFAULT_ITEMS: string[] = [];
 
+// Read once per page instead of on every render (getComputedStyle forces a
+// style recalc). Only affects animation math, never SSR'd markup, so the
+// server-side fallback of 16 is safe.
+let cachedRemPx: number | null = null;
+function getRemPx(): number {
+  if (typeof window === 'undefined') return 16;
+  if (cachedRemPx == null) {
+    cachedRemPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  }
+  return cachedRemPx;
+}
+
 const OptionWheel = ({
   items = DEFAULT_ITEMS,
   defaultSelected = 3,
@@ -76,6 +89,7 @@ const OptionWheel = ({
   inset = 80,
   loop = false,
   draggable = true,
+  interactive = true,
   className = '',
   renderItem,
   plateSize = 440,
@@ -97,14 +111,16 @@ const OptionWheel = ({
   const dragRef = useRef<{ coord: number; start: number; id: number } | null>(null);
   const dragMovedRef = useRef(false);
   const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Hemat CPU: loop rAF & auto-rotate dihentikan saat wheel di luar viewport
+  // atau tab tidak aktif — kedua loop hanya berjalan saat benar-benar terlihat.
+  const visibleRef = useRef(true);
   const [selectedIndex, setSelectedIndex] = useState(defaultSelected);
   const [isDragging, setIsDragging] = useState(false);
 
-  const remPx = typeof window !== 'undefined' ? parseFloat(getComputedStyle(document.documentElement).fontSize) || 16 : 16;
+  const remPx = getRemPx();
   const isPlateMode = renderItem != null;
 
-  onChangeRef.current = onChange;
-  cfgRef.current = {
+  const cfg: WheelConfig = {
     count: items.length,
     items,
     rowH: isPlateMode ? (plateSize * spacing * 0.7) : Math.max(fontSize * spacing * remPx, 1),
@@ -122,7 +138,15 @@ const OptionWheel = ({
     orientation,
   };
 
+  // Mirror the latest config/callback for the rAF loop and event handlers.
+  onChangeRef.current = onChange;
+  cfgRef.current = cfg;
+
   const runFrame = useCallback((now: number) => {
+    if (!visibleRef.current) {
+      rafRef.current = null;
+      return;
+    }
     const dt = Math.min((now - lastRef.current) / 1000, 0.05);
     lastRef.current = now;
     const cfg = cfgRef.current;
@@ -182,7 +206,15 @@ const OptionWheel = ({
       }
       el.style.transform = transform;
       el.style.opacity = String(Math.max(cfg.minOpacity, 1 - dist * cfg.fade));
-      el.style.filter = cfg.blur > 0 ? `blur(${(dist * cfg.blur).toFixed(2)}px)` : 'none';
+      // Quantized to 0.5px steps so the (paint-triggering) blur value rarely
+      // changes between frames and style invalidation is minimized.
+      if (cfg.blur > 0) {
+        const b = Math.round(dist * cfg.blur * 2) / 2;
+        const filter = `blur(${b}px)`;
+        if (el.style.filter !== filter) el.style.filter = filter;
+      } else if (el.style.filter !== 'none') {
+        el.style.filter = 'none';
+      }
       el.style.setProperty('--ow-p', p.toFixed(4));
     }
 
@@ -190,6 +222,7 @@ const OptionWheel = ({
   }, [isPlateMode]);
 
   const startLoop = useCallback(() => {
+    if (!visibleRef.current) return;
     if (rafRef.current != null) {
       cancelAnimationFrame(rafRef.current);
     }
@@ -224,7 +257,7 @@ const OptionWheel = ({
       clearTimeout(autoTimerRef.current);
       autoTimerRef.current = null;
     }
-    if (!autoRotate) return;
+    if (!autoRotate || !visibleRef.current) return;
     const jitter = (Math.random() - 0.5) * 2;
     const delay = Math.max(1000, autoRotateInterval + autoRotateInterval * 0.3 * jitter);
     autoTimerRef.current = setTimeout(() => {
@@ -245,6 +278,45 @@ const OptionWheel = ({
     return pauseAutoTimer;
   }, [resetAutoTimer, pauseAutoTimer]);
 
+  // IntersectionObserver + visibilitychange: nyalakan ulang loop & auto-rotate
+  // hanya saat komponen kembali terlihat. Tanpa ini, karusel menggambar & memutar
+  // terus di background dan menghabiskan CPU saat pengguna scroll ke bawah.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    let inView = true;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        update();
+      },
+      { threshold: 0.05 }
+    );
+    io.observe(el);
+    const onVis = () => update();
+    document.addEventListener('visibilitychange', onVis);
+    function update() {
+      const visible = inView && !document.hidden;
+      if (visible === visibleRef.current) return;
+      visibleRef.current = visible;
+      if (visible) {
+        lastRef.current = performance.now();
+        startLoop();
+        resetAutoTimer();
+      } else {
+        pauseAutoTimer();
+        if (rafRef.current != null) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+      }
+    }
+    return () => {
+      io.disconnect();
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [startLoop, resetAutoTimer, pauseAutoTimer]);
+
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
@@ -259,12 +331,13 @@ const OptionWheel = ({
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
       wheelTimerRef.current = setTimeout(() => applyTarget(targetRef.current, true), 140);
     };
+    if (!interactive) return;
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => {
       el.removeEventListener('wheel', onWheel);
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
     };
-  }, [applyTarget, resetAutoTimer]);
+  }, [applyTarget, resetAutoTimer, interactive]);
 
   useEffect(() => {
     if (!apiRef) return;
@@ -359,10 +432,11 @@ const OptionWheel = ({
   return (
     <div
       ref={rootRef}
-      role="listbox"
-      tabIndex={0}
-      aria-label="Pilihan menu makanan"
-      className={`relative h-full w-full select-none overflow-hidden outline-none [touch-action:none]${isPlateMode ? ' py-16 sm:py-20' : ''} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}${className ? ` ${className}` : ''}`}
+      role={interactive ? 'listbox' : undefined}
+      tabIndex={interactive ? 0 : -1}
+      aria-label={interactive ? 'Pilihan menu makanan' : undefined}
+      aria-hidden={!interactive}
+      className={`relative h-full w-full select-none overflow-hidden outline-none [touch-action:none]${isPlateMode ? ' py-16 sm:py-20' : ''} ${interactive ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : 'pointer-events-none'}${className ? ` ${className}` : ''}`}
       style={
         {
           '--ow-text-color': textColor,
@@ -371,11 +445,11 @@ const OptionWheel = ({
           '--ow-inset': `${inset}px`
         } as CSSProperties
       }
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerEnd}
-      onPointerCancel={handlePointerEnd}
-      onKeyDown={handleKeyDown}
+      onPointerDown={interactive ? handlePointerDown : undefined}
+      onPointerMove={interactive ? handlePointerMove : undefined}
+      onPointerUp={interactive ? handlePointerEnd : undefined}
+      onPointerCancel={interactive ? handlePointerEnd : undefined}
+      onKeyDown={interactive ? handleKeyDown : undefined}
       onMouseEnter={pauseAutoTimer}
       onMouseLeave={resetAutoTimer}
     >
@@ -388,22 +462,22 @@ const OptionWheel = ({
           role="option"
           aria-selected={selectedIndex === index}
           className={
-            cfgRef.current.plateMode
+            cfg.plateMode
               ? 'absolute left-1/2 top-1/2 cursor-pointer will-change-[transform,opacity,filter]'
               : `absolute top-1/2 cursor-pointer whitespace-nowrap leading-none will-change-[transform,opacity,filter] [font-size:var(--ow-font-size)] [color:color-mix(in_srgb,var(--ow-active-color)_calc(var(--ow-p,0)*100%),var(--ow-text-color))] ${
-                  cfgRef.current.orientation === 'horizontal'
+                  cfg.orientation === 'horizontal'
                     ? 'left-0 w-max'
                     : side === 'right' ? 'right-[var(--ow-inset)] origin-right' : 'left-[var(--ow-inset)] origin-left'
                 } ${selectedIndex === index ? 'font-medium' : 'font-extralight'}`
           }
           style={
-            cfgRef.current.plateMode
+            cfg.plateMode
               ? { width: plateSize, height: plateSize, marginLeft: -plateSize / 2 }
               : undefined
           }
           onClick={() => handleItemClick(index)}
         >
-          {cfgRef.current.plateMode ? renderItem?.(index, label) : label}
+          {cfg.plateMode ? renderItem?.(index, label) : label}
         </div>
       ))}
     </div>

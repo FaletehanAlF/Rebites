@@ -3,6 +3,8 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 import { notifySellerModeration } from '@/lib/server/moderation-notifications';
 
@@ -10,7 +12,11 @@ export const runtime = 'nodejs';
 
 /**
  * POST /api/admin/products/:id/approve
- * Setujui produk pending (khusus admin). Body tidak diperlukan.
+ * Setujui produk (khusus admin). Body tidak diperlukan.
+ * Mendukung auto-approve era post-publish monitoring:
+ *   - pending -> approved  (approve antrean lama)
+ *   - rejected -> approved (restore setelah takedown)
+ * Produk yang sudah approved ditolak dengan 409.
  * Auth: Authorization: Bearer <supabase access_token admin>
  */
 
@@ -41,7 +47,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const { data: existing, error: fetchErr } = await db
       .from('products')
-      .select('id, verification_status')
+      .select('id, verification_status, deleted_at')
       .eq('id', id)
       .maybeSingle();
 
@@ -53,10 +59,21 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ error: 'Produk tidak ditemukan.' }, { status: 404 });
     }
 
-    const current = (existing as ProductRow).verification_status as string | null;
-    if (current !== 'pending') {
+    // Produk yang sudah ditarik penjual tidak boleh diaktifkan kembali:
+    // "approve" akan menghapus rejection_reason dan menampilkannya lagi di
+    // riwayat moderasi seolah produk itu masih dikelola penjual. Produk
+    // terhapus sengaja tidak tayang sampai penjual membuat produk baru.
+    if ((existing as ProductRow).deleted_at) {
       return NextResponse.json(
-        { error: `Produk sudah dimoderasi (status: ${current}). Hanya produk pending yang bisa disetujui.` },
+        { error: 'Produk sudah dihapus oleh penjual, sehingga tidak bisa diaktifkan kembali.' },
+        { status: 409 }
+      );
+    }
+
+    const current = (existing as ProductRow).verification_status as string | null;
+    if (current !== 'pending' && current !== 'rejected') {
+      return NextResponse.json(
+        { error: `Produk sudah aktif (status: ${current}). Hanya produk pending/rejected yang bisa disetujui.` },
         { status: 409 }
       );
     }
@@ -71,7 +88,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         rejection_reason: null,
       })
       .eq('id', id)
-      .eq('verification_status', 'pending')
+      .eq('verification_status', current)
       .select()
       .maybeSingle();
 
@@ -140,8 +157,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     return NextResponse.json({ product: updated });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/products/approve] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses produk." }, { status: 500 });
   }
 }

@@ -12,7 +12,7 @@ type ReBitesStepCardProps = {
 
 export default function ReBitesStepCard({ step }: ReBitesStepCardProps) {
   return (
-    <div className="cursor-pointer overflow-hidden rounded-xl border border-hairline bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-2 hover:border-sage-100 hover:shadow-[0_20px_45px_-15px_rgba(27,77,50,0.35)]">
+    <div className="cursor-pointer overflow-hidden rounded-xl border border-border bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-2 hover:border-border hover:shadow-[0_20px_45px_-15px_rgba(27,77,50,0.35)]">
       <div className="relative h-[190px] w-full shrink-0 overflow-hidden">
         <Image
           src={step.image}
@@ -27,7 +27,7 @@ export default function ReBitesStepCard({ step }: ReBitesStepCardProps) {
         <h3 className="font-display text-lg font-bold leading-snug text-primary-800">
           {step.title}
         </h3>
-        <p className="mt-2.5 font-sans text-sm leading-[1.6] text-stone">
+        <p className="mt-2.5 font-sans text-sm leading-[1.6] text-muted-foreground">
           {step.description}
         </p>
       </div>

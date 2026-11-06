@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAnonServerClient } from '@/lib/server/supabase';
+import { sanitizeSearchTerm } from '@/lib/filter-search';
 
 export const runtime = 'nodejs';
 
@@ -31,14 +32,9 @@ const MAX_LIMIT = 50;
 const MAX_SEARCH_LENGTH = 100;
 const MAX_CATEGORY_LENGTH = 50;
 
-function sanitizeSearch(raw: string | null): string {
-  if (!raw) return '';
-  return raw.trim().slice(0, MAX_SEARCH_LENGTH).replace(/[%(),]/g, '');
-}
-
 function sanitizeCategory(raw: string | null): string {
   if (!raw) return '';
-  return raw.trim().slice(0, MAX_CATEGORY_LENGTH).replace(/[%(),]/g, '');
+  return sanitizeSearchTerm(raw, MAX_CATEGORY_LENGTH);
 }
 
 export async function GET(req: NextRequest) {
@@ -50,7 +46,7 @@ export async function GET(req: NextRequest) {
       ? Math.min(MAX_LIMIT, Math.max(1, Math.floor(rawLimit)))
       : DEFAULT_LIMIT;
     const offset = Number.isFinite(rawOffset) ? Math.max(0, Math.floor(rawOffset)) : 0;
-    const search = sanitizeSearch(params.get('search'));
+    const search = sanitizeSearchTerm(params.get('search'), MAX_SEARCH_LENGTH);
     const category = sanitizeCategory(params.get('category'));
 
     const db = createAnonServerClient();

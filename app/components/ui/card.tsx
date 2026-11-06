@@ -1,6 +1,14 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
+/**
+ * Permukaan kartu admin.
+ *
+ * Tanpa garis 1px: pemisahan antar kartu memakai bayangan lembut
+ * (`shadow-admin-card`) di atas latar kanvas. Kartu ini hanya dipakai
+ * panel admin — tidak ada halaman publik yang mengimpornya — jadi
+ * perubahan di sini tidak Affect halaman publik.
+ */
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -8,7 +16,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'rounded-[var(--radius)] border border-border/70 bg-card text-card-foreground transition-all duration-300',
+      'rounded-xl bg-card text-card-foreground shadow-admin-card',
       className
     )}
     {...props}

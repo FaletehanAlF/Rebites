@@ -1,20 +1,43 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-  Search,
-  ShieldAlert,
-  Users,
-} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { CheckCircle2, ChevronRight, RefreshCw, Store, Users } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Card, CardContent } from '@/app/components/ui/card';
+import {
+  AdminPageHeader,
+  ADMIN_PAGE_WRAPPER,
+} from './admin-page-header';
+import {
+  AdminEmptyState,
+  AdminErrorState,
+  AdminForbiddenState,
+  AdminLoadingState,
+} from './admin-state';
+import {
+  AdminPagination,
+  AdminSearchInput,
+  AdminSelect,
+  AdminToolbar,
+} from './admin-controls';
+import {
+  AdminTableCard,
+  AdminTableHead,
+  AdminTd,
+  AdminTh,
+  AdminTr,
+} from './admin-table';
+import {
+  formatTanggal,
+  labelPeran,
+  labelStatusPenjual,
+  varianPeran,
+  varianStatusPenjual,
+} from './admin-format';
 import {
   AdminUsersApiError,
   fetchAdminUsers,
@@ -24,51 +47,18 @@ import {
 
 const PAGE_LIMIT = 20;
 const SEARCH_DEBOUNCE_MS = 400;
+/** Lama pesan "daftar diperbarui" tampil sebelum hilang sendiri. */
+const REFRESH_NOTE_MS = 4000;
 
-const SELLER_FILTER_OPTIONS: { value: '' | AdminSellerStatus; label: string }[] = [
-  { value: '', label: 'Semua' },
+/** Hasil satu putaran pemuatan; dipakai untuk feedback tombol Muat ulang. */
+type LoadOutcome = 'ok' | 'error' | 'forbidden' | 'unauthorized' | 'stale';
+
+const SELLER_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: 'Semua status' },
   { value: 'active', label: 'Seller aktif' },
   { value: 'no_subscription', label: 'Langganan tidak aktif' },
   { value: 'no_store', label: 'Belum punya toko' },
 ];
-
-const formatDate = (iso: string | null | undefined) => {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-};
-
-function roleBadgeVariant(role: string | null): 'default' | 'secondary' | 'success' {
-  if (role === 'admin') return 'default';
-  if (role === 'umkm') return 'success';
-  return 'secondary';
-}
-
-function roleLabel(role: string | null): string {
-  if (role === 'admin') return 'Admin';
-  if (role === 'umkm') return 'UMKM';
-  if (role === 'buyer') return 'Buyer';
-  return role ?? '-';
-}
-
-function sellerStatusBadgeVariant(
-  status: AdminSellerStatus | null | undefined
-): 'success' | 'warning' | 'secondary' {
-  if (status === 'active') return 'success';
-  if (status === 'no_subscription') return 'warning';
-  return 'secondary';
-}
-
-function sellerStatusLabel(status: AdminSellerStatus | null | undefined): string {
-  if (status === 'active') return 'Aktif';
-  if (status === 'no_subscription') return 'Langganan tidak aktif';
-  return 'Belum punya toko';
-}
 
 export function UsersManagementView() {
   const router = useRouter();
@@ -80,35 +70,51 @@ export function UsersManagementView() {
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [sellerFilter, setSellerFilter] = useState<'' | AdminSellerStatus>('');
+  const [refreshNote, setRefreshNote] = useState<string | null>(null);
+  // Pencarian (debounce) + filter memicu beberapa request sekaligus. Hanya
+  // respons dari request terbaru yang boleh menulis state; respons lama yang
+  // datang terlambat tidak boleh menimpa hasil yang sudah tampil.
+  const requestIdRef = useRef(0);
 
   const load = useCallback(
-    async (nextOffset: number, nextSearch: string, nextSeller: '' | AdminSellerStatus) => {
+    async (
+      nextOffset: number,
+      nextSearch: string,
+      nextSeller: '' | AdminSellerStatus
+    ): Promise<LoadOutcome> => {
+      const requestId = requestIdRef.current + 1;
+      requestIdRef.current = requestId;
       setStatus('loading');
       setErrorMsg('');
       try {
         const result = await fetchAdminUsers(PAGE_LIMIT, nextOffset, nextSearch, nextSeller);
+        if (requestId !== requestIdRef.current) return 'stale';
         setItems(result.users);
         setTotal(result.total);
         setOffset(result.offset);
         setStatus('ready');
+        return 'ok';
       } catch (err) {
+        if (requestId !== requestIdRef.current) return 'stale';
         if (err instanceof AdminUsersApiError && err.status === 401) {
           router.replace('/auth/login');
-          return;
+          return 'unauthorized';
         }
         if (err instanceof AdminUsersApiError && err.status === 403) {
           setStatus('forbidden');
-          return;
+          return 'forbidden';
         }
         setErrorMsg(err instanceof Error ? err.message : 'Gagal memuat daftar pengguna.');
         setStatus('error');
+        return 'error';
       }
     },
     [router]
   );
 
   useEffect(() => {
-    load(0, search, sellerFilter);
+    setRefreshNote(null);
+    void load(0, search, sellerFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, sellerFilter]);
 
@@ -119,218 +125,279 @@ export function UsersManagementView() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const showingFrom = total === 0 ? 0 : offset + 1;
-  const showingTo = Math.min(offset + PAGE_LIMIT, total);
-  const hasPrev = offset > 0;
-  const hasNext = offset + PAGE_LIMIT < total;
+  // Feedback tombol Muat ulang: hanya muncul bila pemuatan benar-benar sukses.
+  useEffect(() => {
+    if (!refreshNote) return;
+    const timer = setTimeout(() => setRefreshNote(null), REFRESH_NOTE_MS);
+    return () => clearTimeout(timer);
+  }, [refreshNote]);
+
+  const handleReload = useCallback(async () => {
+    setRefreshNote(null);
+    const outcome = await load(offset, search, sellerFilter);
+    if (outcome === 'ok') setRefreshNote('Daftar pengguna diperbarui.');
+  }, [load, offset, search, sellerFilter]);
+
+  const resetFilters = useCallback(() => {
+    setSearchInput('');
+    setSearch('');
+    setSellerFilter('');
+  }, []);
+
+  const page = Math.floor(offset / PAGE_LIMIT) + 1;
+  const hasActiveFilter = search.trim() !== '' || sellerFilter !== '';
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-      <Link
-        href="/dashboard/admin"
-        className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[13px] font-semibold text-charcoal-500 transition-colors hover:bg-white hover:text-primary"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Dashboard Admin
-      </Link>
+    <div className={ADMIN_PAGE_WRAPPER}>
+      <AdminPageHeader
+        eyebrow="Admin · Pengguna"
+        title="Manajemen Pengguna"
+        description="Pantau pengguna terdaftar beserta peran dan status tokonya."
+        actions={
+          <>
+            <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">
+              {total} pengguna
+            </Badge>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleReload()}
+              disabled={status === 'loading'}
+            >
+              <RefreshCw aria-hidden className="h-4 w-4" />
+              Muat ulang
+            </Button>
+          </>
+        }
+      />
 
-      <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-caramel">
-            Admin · Pengguna
-          </p>
-          <h1 className="mt-1 font-display text-[clamp(1.6rem,3.5vw,2.4rem)] font-semibold tracking-tight text-primary">
-            Manajemen Pengguna
-          </h1>
-          <p className="mt-1 text-sm text-sage-500">
-            Pantau pengguna terdaftar beserta peran dan status tokonya.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="px-3 py-1.5 text-xs font-bold">
-            {total} Pengguna
-          </Badge>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => load(offset, search, sellerFilter)}
-            disabled={status === 'loading'}
-          >
-            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-            Muat ulang
-          </Button>
-        </div>
-      </div>
-
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex flex-1 items-center gap-2 rounded-xl border border-border/70 bg-white px-3 py-2 focus-within:border-primary">
-          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <input
-            type="search"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') setSearch(searchInput.trim());
-            }}
-            placeholder="Cari email atau nama..."
-            aria-label="Cari pengguna"
-            className="w-full bg-transparent py-1 text-sm text-charcoal-900 outline-none placeholder:text-muted-foreground"
-          />
-        </div>
-        <select
+      <AdminToolbar className="mb-6">
+        <AdminSearchInput
+          value={searchInput}
+          onChange={setSearchInput}
+          label="Cari pengguna"
+          labelVisible
+          placeholder="Cari nama atau email…"
+        />
+        <AdminSelect
           value={sellerFilter}
-          onChange={(e) => setSellerFilter(e.target.value as '' | AdminSellerStatus)}
-          aria-label="Filter status seller"
-          className="appearance-none rounded-xl border border-border/70 bg-white px-3 py-2.5 text-sm font-medium text-charcoal-900 outline-none focus:border-primary"
-        >
-          {SELLER_FILTER_OPTIONS.map((opt) => (
-            <option key={opt.label} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
+          onChange={(value) => setSellerFilter(value as '' | AdminSellerStatus)}
+          label="Status penjual"
+          options={SELLER_FILTER_OPTIONS}
+        />
+      </AdminToolbar>
 
-      {status === 'loading' && (
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
+      {refreshNote && (
+        <p
+          role="status"
+          className="mb-6 flex items-center gap-1.5 text-xs font-semibold text-success"
+        >
+          <CheckCircle2 aria-hidden className="h-4 w-4 shrink-0" />
+          {refreshNote}
+        </p>
       )}
 
+      {status === 'loading' && <AdminLoadingState label="Memuat daftar pengguna" />}
+
       {status === 'forbidden' && (
-        <Card className="mt-8">
-          <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-            <ShieldAlert className="h-10 w-10 text-caramel" />
-            <h2 className="mt-4 font-display text-xl font-semibold text-primary">Akses ditolak</h2>
-            <p className="mt-1 max-w-sm text-sm text-sage-500">
-              Halaman ini hanya untuk admin. Akun kamu tidak memiliki hak mengelola pengguna.
-            </p>
-            <Link href="/" className="mt-5">
-              <Button type="button" variant="outline" size="sm">
-                Kembali ke Beranda
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <AdminForbiddenState message="Akun kamu tidak memiliki hak mengelola pengguna." />
       )}
 
       {status === 'error' && (
-        <Card className="mt-8">
-          <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-            <ShieldAlert className="h-10 w-10 text-caramel" />
-            <h2 className="mt-4 font-display text-xl font-semibold text-primary">Gagal memuat pengguna</h2>
-            <p className="mt-1 max-w-sm text-sm text-sage-500">{errorMsg}</p>
-            <Button type="button" size="sm" className="mt-5" onClick={() => load(offset, search, sellerFilter)}>
-              Coba lagi
-            </Button>
-          </CardContent>
-        </Card>
+        <AdminErrorState
+          title="Gagal memuat pengguna"
+          message={errorMsg}
+          onRetry={() => void load(offset, search, sellerFilter)}
+        />
       )}
 
       {status === 'ready' && items.length === 0 && (
-        <Card className="mt-8">
-          <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-            <Users className="h-10 w-10 text-primary" />
-            <h2 className="mt-4 font-display text-xl font-semibold text-primary">
-              {search ? 'Pengguna tidak ditemukan' : 'Belum ada pengguna'}
-            </h2>
-            <p className="mt-1 max-w-sm text-sm text-sage-500">
-              {search
-                ? `Tidak ada pengguna yang cocok dengan "${search}".`
-                : 'Pengguna yang terdaftar akan muncul di sini.'}
-            </p>
-          </CardContent>
-        </Card>
+        <AdminEmptyState
+          icon={<Users aria-hidden className="h-10 w-10 text-primary" />}
+          title={hasActiveFilter ? 'Tidak ada pengguna yang cocok' : 'Belum ada pengguna'}
+          description={
+            hasActiveFilter
+              ? 'Tidak ada pengguna yang cocok dengan pencarian atau status penjual yang dipilih.'
+              : 'Pengguna yang terdaftar akan muncul di sini.'
+          }
+          action={
+            hasActiveFilter ? (
+              <Button type="button" variant="outline" onClick={resetFilters}>
+                <RefreshCw aria-hidden className="h-4 w-4" />
+                Atur ulang filter
+              </Button>
+            ) : undefined
+          }
+        />
       )}
 
       {status === 'ready' && items.length > 0 && (
         <>
-          <Card className="mt-6 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-border/70 bg-cream-50 text-[11px] uppercase tracking-wider text-sage-500">
-                    <th className="px-4 py-3 font-bold">Nama</th>
-                    <th className="px-4 py-3 font-bold">Email</th>
-                    <th className="px-4 py-3 font-bold">Role</th>
-                    <th className="px-4 py-3 font-bold">Status Seller</th>
-                    <th className="px-4 py-3 font-bold">Terdaftar</th>
-                  </tr>
-                </thead>
-                <tbody>
-            {items.map((item, index) => (
-              <tr
-                key={item.id ?? item.email ?? `user-row-${index}`}
-                      className="border-b border-border/50 last:border-0 hover:bg-cream-50/60"
+          <AdminTableCard label="Daftar pengguna" minWidth={720} className="hidden md:block">
+            <AdminTableHead>
+              <AdminTh>Nama</AdminTh>
+              <AdminTh>Email</AdminTh>
+              <AdminTh>Peran</AdminTh>
+              <AdminTh>Status Penjual</AdminTh>
+              <AdminTh>Koin</AdminTh>
+              <AdminTh>Terdaftar</AdminTh>
+            </AdminTableHead>
+            <tbody>
+              {items.map((item, index) => {
+                const nama = item.full_name?.trim() || item.email || '-';
+                const href = item.id ? `/dashboard/admin/pengguna/${item.id}` : null;
+                return (
+                  <AdminTr
+                    key={item.id ?? item.email ?? `user-row-${index}`}
+                    className={cn(
+                      href &&
+                        'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40'
+                    )}
+                    {...(href
+                      ? {
+                          tabIndex: 0,
+                          role: 'link' as const,
+                          'aria-label': `Buka detail pengguna ${nama}`,
+                          onClick: () => router.push(href),
+                          onKeyDown: (e: React.KeyboardEvent<HTMLTableRowElement>) => {
+                            if (e.target !== e.currentTarget) return;
+                            if (e.key !== 'Enter' && e.key !== ' ') return;
+                            e.preventDefault();
+                            router.push(href);
+                          },
+                        }
+                      : {})}
+                  >
+                    {/* Nama tampil sebagai teks biasa, bukan <Link>: seluruh
+                        baris sudah menjadi tautan. Tautan di dalam baris
+                        yang juga bertautan membuat klik ganda dan fokus
+                        keyboard yang membingungkan. */}
+                    <AdminTd className="max-w-[200px] font-medium text-charcoal-900">
+                      <span className="block truncate" title={nama}>
+                        {nama}
+                      </span>
+                    </AdminTd>
+                    <AdminTd
+                      className="max-w-[220px] truncate"
+                      title={item.email ?? undefined}
                     >
-                      <td className="max-w-[180px] truncate px-4 py-3 font-semibold text-charcoal-900">
-                        {item.id ? (
-                          <Link
-                            href={`/dashboard/admin/pengguna/${item.id}`}
-                            className="hover:text-primary hover:underline"
-                          >
-                            {item.full_name?.trim() || item.email || '-'}
-                          </Link>
-                        ) : (
-                          item.full_name?.trim() || '-'
-                        )}
-                      </td>
-                      <td className="max-w-[220px] truncate px-4 py-3 text-charcoal-900">
-                        {item.email ?? '-'}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <Badge variant={roleBadgeVariant(item.role)}>
-                          {roleLabel(item.role)}
-                        </Badge>
-                      </td>
-                      <td className="max-w-[220px] px-4 py-3">
-                        <Badge variant={sellerStatusBadgeVariant(item.seller_status)}>
-                          {sellerStatusLabel(item.seller_status)}
-                        </Badge>
-                        {item.seller?.business_name && (
-                          <span className="mt-1 block truncate text-xs font-medium text-charcoal-900">
-                            {item.seller.business_name}
-                          </span>
-                        )}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-xs text-sage-500">
-                        {formatDate(item.created_at)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                      {item.email ?? '-'}
+                    </AdminTd>
+                    <AdminTd className="whitespace-nowrap">
+                      {/* Super Admin memakai SATU badge, bukan dua.
+                          Sebelumnya akun Super Admin menampilkan badge "Admin"
+                          DAN badge kuning "Super Admin" berdampingan —
+                          informasi yang sama dua kali dengan warna berbeda,
+                          sehingga tidak jelas mana yang mengikat. Kini satu
+                          badge hijau bertuliskan "Super Admin". */}
+                      {item.is_super_admin ? (
+                        <Badge variant="success">Super Admin</Badge>
+                      ) : (
+                        <Badge variant={varianPeran(item.role)}>{labelPeran(item.role)}</Badge>
+                      )}
+                    </AdminTd>
+                    <AdminTd className="max-w-[220px]">
+                      <Badge variant={varianStatusPenjual(item.seller_status)}>
+                        {labelStatusPenjual(item.seller_status)}
+                      </Badge>
+                      {item.seller?.business_name && (
+                        <span
+                          className="mt-1 block truncate text-xs font-medium text-charcoal-900"
+                          title={item.seller.business_name}
+                        >
+                          {item.seller.business_name}
+                        </span>
+                      )}
+                    </AdminTd>
+                    {/* Saldo koin dihitung server dari seluruh ledger, satu
+                        query agregat per halaman — bukan satu query per baris. */}
+                    <AdminTd className="whitespace-nowrap tabular-nums font-semibold text-charcoal-900">
+                      {(item.coin_balance ?? 0).toLocaleString('id-ID')}
+                    </AdminTd>
+                    <AdminTd className="whitespace-nowrap text-xs text-sage-500">
+                      {formatTanggal(item.created_at)}
+                    </AdminTd>
+                  </AdminTr>
+                );
+              })}
+            </tbody>
+          </AdminTableCard>
 
-          <div className="mt-8 flex flex-col items-center justify-between gap-3 sm:flex-row">
-            <p className="text-xs text-sage-500">
-              Menampilkan {showingFrom}–{showingTo} dari {total} pengguna
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={!hasPrev}
-                onClick={() => load(Math.max(0, offset - PAGE_LIMIT), search, sellerFilter)}
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                Sebelumnya
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={!hasNext}
-                onClick={() => load(offset + PAGE_LIMIT, search, sellerFilter)}
-              >
-                Berikutnya
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
+          <div className="space-y-3 md:hidden">
+            {items.map((item, index) => {
+              const nama = item.full_name?.trim() || item.email || '-';
+              const href = item.id ? `/dashboard/admin/pengguna/${item.id}` : null;
+              const body = (
+                <CardContent className="px-4 py-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Satu badge untuk Super Admin (hijau), sama seperti
+                        tabel desktop — bukan dua badge bersebelahan. */}
+                    {item.is_super_admin ? (
+                      <Badge variant="success">Super Admin</Badge>
+                    ) : (
+                      <Badge variant={varianPeran(item.role)}>{labelPeran(item.role)}</Badge>
+                    )}
+                    <Badge variant={varianStatusPenjual(item.seller_status)}>
+                      {labelStatusPenjual(item.seller_status)}
+                    </Badge>
+                  </div>
+                  {/* Nama jadi teks biasa karena SELURUH kartu sekarang
+                      tautan — sebelumnya hanya nama yang bisa diketuk,
+                      sehingga area ketuk sangat kecil di layar sentuh. */}
+                  <p className="mt-2 truncate text-sm font-semibold text-charcoal-900" title={nama}>
+                    {nama}
+                  </p>
+                  <p className="mt-0.5 truncate text-sm text-sage-500" title={item.email ?? undefined}>
+                    {item.email ?? '-'}
+                  </p>
+                  {item.seller?.business_name && (
+                    <p className="mt-1 flex items-center gap-1.5 truncate text-xs font-medium text-charcoal-700">
+                      <Store aria-hidden className="h-3.5 w-3.5 shrink-0 text-sage-500" />
+                      {item.seller.business_name}
+                    </p>
+                  )}
+                  <div className="mt-1.5 flex items-center justify-between gap-2">
+                    <p className="text-xs text-sage-500">
+                      Terdaftar {formatTanggal(item.created_at)}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-semibold tabular-nums text-charcoal-700">
+                        {(item.coin_balance ?? 0).toLocaleString('id-ID')} Koin
+                      </p>
+                      {href && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                          Detail
+                          <ChevronRight aria-hidden className="h-3.5 w-3.5" />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              );
+
+              return href ? (
+                <Link
+                  key={item.id ?? `user-card-${index}`}
+                  href={href}
+                  aria-label={`Buka detail pengguna ${nama}`}
+                  className="block rounded-xl transition-shadow hover:shadow-admin-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+                >
+                  <Card>{body}</Card>
+                </Link>
+              ) : (
+                <Card key={item.email ?? `user-card-${index}`}>{body}</Card>
+              );
+            })}
           </div>
+
+          <AdminPagination
+            total={total}
+            page={page}
+            pageSize={PAGE_LIMIT}
+            noun="pengguna"
+            className="mt-6"
+            onPageChange={(next) => void load((next - 1) * PAGE_LIMIT, search, sellerFilter)}
+          />
         </>
       )}
     </div>

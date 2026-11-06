@@ -173,14 +173,16 @@ export function OrderSuccessView() {
     };
 
     fetchStatus();
+    // Interval polling tidak boleh lebih sering dari batas server
+    // (VERIFY_CHECK_WINDOW 15 dtk di lib/server/verify-throttle.ts).
     pollRef.current = setInterval(() => {
-      elapsed += 3000;
-      if (elapsed >= 90_000 && pollRef.current) {
+      elapsed += 15000;
+      if (elapsed >= 180000 && pollRef.current) {
         clearInterval(pollRef.current);
         return;
       }
       fetchStatus();
-    }, 3000);
+    }, 15000);
 
     return () => {
       cancelled = true;
@@ -204,10 +206,10 @@ export function OrderSuccessView() {
 
   if (!orderId) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-cream-50 px-6 text-center">
-        <p className="font-sans text-lg font-bold text-charcoal-900">Order ID tidak ditemukan</p>
-        <p className="max-w-sm text-sm leading-relaxed text-charcoal-500">Link pembayaran tidak valid.</p>
-        <Link href="/home" className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-caramel">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-secondary px-6 text-center">
+        <p className="font-sans text-lg font-bold text-foreground">Order ID tidak ditemukan</p>
+        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">Link pembayaran tidak valid.</p>
+        <Link href="/home" className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark">
           Kembali ke Beranda
         </Link>
       </main>
@@ -215,15 +217,15 @@ export function OrderSuccessView() {
   }
 
   if (order === undefined) {
-    return <main className="min-h-screen bg-cream-50" />;
+    return <main className="min-h-screen bg-secondary" />;
   }
 
   if (order === null) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-cream-50 px-6 text-center">
-        <p className="font-sans text-lg font-bold text-charcoal-900">Pesanan tidak ditemukan</p>
-        <p className="max-w-sm text-sm leading-relaxed text-charcoal-500">Pesanan #{orderId} tidak ada atau sudah dihapus.</p>
-        <Link href="/home" className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-caramel">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-secondary px-6 text-center">
+        <p className="font-sans text-lg font-bold text-foreground">Pesanan tidak ditemukan</p>
+        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">Pesanan #{orderId} tidak ada atau sudah dihapus.</p>
+        <Link href="/home" className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark">
           Kembali ke Beranda
         </Link>
       </main>
@@ -237,7 +239,7 @@ export function OrderSuccessView() {
   const prepText = typeof order.preparationMinutes === 'number' ? `${order.preparationMinutes} menit persiapan` : null;
 
   return (
-    <main className="relative min-h-screen bg-cream-50">
+    <main className="relative min-h-screen bg-secondary">
       {}
       <div
         className={cn(
@@ -250,15 +252,15 @@ export function OrderSuccessView() {
           initial={{ opacity: 0, y: 24, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.45, ease: EASE }}
-          className="w-full max-w-md overflow-hidden rounded-[28px] border border-sage-100 bg-white shadow-[0_40px_80px_-30px_rgba(47,66,53,0.25)]"
+          className="w-full max-w-md overflow-hidden rounded-[28px] border border-border bg-white shadow-[0_40px_80px_-30px_rgba(47,66,53,0.25)]"
         >
           {}
-          <div className="bg-sage-50 px-5 pb-6 pt-9 text-center sm:px-8">
-            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-sage-400 shadow">
+          <div className="bg-secondary px-5 pb-6 pt-9 text-center sm:px-8">
+            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-muted-foreground-400 shadow">
               <ReceiptText className="h-8 w-8" />
             </span>
-            <h1 className="mt-4 font-display text-2xl font-semibold tracking-tight text-charcoal-900">Detail Pesanan</h1>
-            <p className="mt-1.5 text-sm text-charcoal-500">#{order.orderId} · {formatDateTime(order.createdAt)}</p>
+            <h1 className="mt-4 font-display text-2xl font-semibold tracking-tight text-foreground">Detail Pesanan</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">#{order.orderId} · {formatDateTime(order.createdAt)}</p>
             {order.estimatedMinutes && (
               <p className="mt-2 inline-flex rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white">
                 Estimasi selesai {estimasiText} {jarakText ? `· ${jarakText}` : ''}
@@ -271,31 +273,31 @@ export function OrderSuccessView() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.35, ease: EASE }}
-              className="flex items-center gap-3 rounded-2xl border border-caramel/40 bg-caramel/15 px-4 py-3.5 shadow-md shadow-caramel/10"
+              className="flex items-center gap-3 rounded-2xl border border-primary/40 bg-primary/15 px-4 py-3.5 shadow-md shadow-primary/25"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-caramel text-white shadow">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow">
                 <Coins className="h-5 w-5" />
               </span>
               <div>
-                <p className="font-display text-xl font-bold tabular-nums text-caramel-dark">
+                <p className="font-display text-xl font-bold tabular-nums text-primary">
                   +<AnimatedNumber value={order.coinEarned} format={(v) => v.toLocaleString('id-ID')} /> ReBites Coin
                 </p>
-                <p className="text-xs text-charcoal-500">Coin akan ditambahkan ke saldo kamu</p>
+                <p className="text-xs text-muted-foreground">Coin akan ditambahkan ke saldo kamu</p>
               </div>
             </motion.div>
           </div>
 
           <div className="px-6 pb-7 pt-5">
-            <div className="flex items-start gap-4 rounded-2xl border border-sage-100 bg-cream-50 p-4">
-              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-sage-100">
+            <div className="flex items-start gap-4 rounded-2xl border border-border bg-secondary p-4">
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted">
                 <SmartImage src={order.image} alt={order.productName} sizes="64px" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-charcoal-900">{order.productName}</p>
-                <p className="mt-0.5 text-xs text-charcoal-500">
+                <p className="truncate text-sm font-semibold text-foreground">{order.productName}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {order.quantity} porsi · {formatDateTime(order.createdAt)}
                 </p>
-                <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-sage-100 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+                <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-semibold text-primary">
                   {order.fulfillment === 'delivery' ? (
                     <>
                       <Truck className="h-3 w-3" /> Diantar {jarakText ? `· ${jarakText}` : ''}
@@ -315,8 +317,8 @@ export function OrderSuccessView() {
               <Row label="Biaya admin" value={formatRupiah(order.serviceFee)} />
               {order.deliveryFee > 0 && <Row label="Biaya pengantaran" value={formatRupiah(order.deliveryFee)} />}
               {(order.coinUsed ?? 0) > 0 && <Row label="ReBites Coin" value={`−${formatRupiah(order.coinUsed ?? 0)}`} accent />}
-              <div className="flex items-center justify-between border-t border-sage-100 pt-2.5">
-                <dt className="font-display font-medium text-charcoal-900">Total</dt>
+              <div className="flex items-center justify-between border-t border-border pt-2.5">
+                <dt className="font-display font-medium text-foreground">Total</dt>
                 <dd className="font-display text-lg font-semibold tabular-nums text-primary">{formatRupiah(order.total)}</dd>
               </div>
               <Row label="Metode pembayaran" value={PAYMENT_NAMES[order.paymentMethodId] ?? '-'} />
@@ -340,8 +342,8 @@ export function OrderSuccessView() {
           </DialogHeader>
 
           {isFailed ? (
-            <div className="bg-red-600 px-5 pb-10 pt-9 text-center text-white sm:px-8">
-              <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-red-600 shadow-lg">
+            <div className="bg-destructive px-5 pb-10 pt-9 text-center text-white sm:px-8">
+              <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-destructive shadow-lg">
                 <XCircle className="h-8 w-8" strokeWidth={2.5} />
               </span>
               <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight">Pembayaran Gagal</h2>
@@ -349,8 +351,8 @@ export function OrderSuccessView() {
               <p className="mt-2 text-xs text-white/70">Stok telah dikembalikan.</p>
             </div>
           ) : isPending ? (
-            <div className="bg-caramel px-5 pb-6 pt-9 text-center text-white sm:px-8">
-              <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-caramel-dark shadow-lg">
+            <div className="bg-primary px-5 pb-6 pt-9 text-center text-white sm:px-8">
+              <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-primary shadow-lg">
                 <Clock className="h-8 w-8" strokeWidth={2.2} />
               </span>
               <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight">Menunggu Pembayaran</h2>
@@ -388,15 +390,15 @@ export function OrderSuccessView() {
           {}
           {!isFailed && (
             <div className="bg-white px-6 pt-4">
-              <div className="flex items-center gap-3 rounded-2xl border border-caramel/40 bg-caramel/15 px-4 py-3.5 shadow-sm">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-caramel text-white shadow">
+              <div className="flex items-center gap-3 rounded-2xl border border-primary/40 bg-primary/15 px-4 py-3.5 shadow-sm">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow">
                   <Coins className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="font-display text-xl font-bold tabular-nums text-caramel-dark">
+                  <p className="font-display text-xl font-bold tabular-nums text-primary">
                     +<AnimatedNumber value={order.coinEarned} format={(v) => v.toLocaleString('id-ID')} /> ReBites Coin
                   </p>
-                  <p className="text-xs text-charcoal-500">Coin akan ditambahkan ke saldo kamu</p>
+                  <p className="text-xs text-muted-foreground">Coin akan ditambahkan ke saldo kamu</p>
                 </div>
               </div>
             </div>
@@ -404,13 +406,13 @@ export function OrderSuccessView() {
 
           <div className="px-6 pb-7 pt-5">
             {}
-            <div className="flex items-start gap-4 rounded-2xl border border-sage-100 bg-cream-50 p-4">
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-sage-100">
+            <div className="flex items-start gap-4 rounded-2xl border border-border bg-secondary p-4">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-muted">
                 <SmartImage src={order.image} alt={order.productName} sizes="48px" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-charcoal-900">{order.productName}</p>
-                <p className="mt-0.5 text-xs text-charcoal-500">{order.quantity} porsi · {order.vendorName}</p>
+                <p className="truncate text-sm font-semibold text-foreground">{order.productName}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{order.quantity} porsi · {order.vendorName}</p>
               </div>
               <p className="shrink-0 font-display text-sm font-semibold tabular-nums text-primary">{formatRupiah(order.total)}</p>
             </div>
@@ -420,14 +422,14 @@ export function OrderSuccessView() {
                 <>
                   <Link
                     href={`/detail/pesanan?product=${encodeURIComponent(order.productId)}&qty=${order.quantity}`}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 text-sm font-semibold text-primary hover:bg-caramel hover:text-white"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 text-sm font-semibold text-primary hover:bg-primary-dark hover:text-white"
                     onClick={() => setShowPopup(false)}
                   >
                     <ArrowRight className="h-4 w-4 rotate-180" /> Coba Lagi
                   </Link>
                   <Link
                     href="/home"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:bg-caramel"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:bg-primary-dark"
                     onClick={() => setShowPopup(false)}
                   >
                     Beranda
@@ -438,13 +440,13 @@ export function OrderSuccessView() {
                   <button
                     type="button"
                     onClick={() => setShowPopup(false)}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-sage-300 bg-white px-4 py-3 text-sm font-semibold text-charcoal-700 hover:bg-cream-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-border-300 bg-white px-4 py-3 text-sm font-semibold text-foreground hover:bg-secondary"
                   >
                     Lihat Detail
                   </button>
                   <Link
                     href={`/riwayatPesanan?orderId=${encodeURIComponent(order.orderId)}`}
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:bg-caramel"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:bg-primary-dark"
                   >
                     <ReceiptText className="h-4 w-4" /> Riwayat
                   </Link>
@@ -453,14 +455,14 @@ export function OrderSuccessView() {
                 <>
                   <Link
                     href="/home"
-                    className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:bg-caramel"
+                    className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:bg-primary-dark"
                     onClick={() => setShowPopup(false)}
                   >
                     Beranda <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                   <Link
                     href={`/riwayatPesanan?orderId=${encodeURIComponent(order.orderId)}`}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-primary bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-caramel hover:text-white"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-primary bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary-dark hover:text-white"
                     onClick={() => setShowPopup(false)}
                   >
                     <ReceiptText className="h-4 w-4" /> Riwayat
@@ -473,15 +475,15 @@ export function OrderSuccessView() {
               <button
                 type="button"
                 onClick={() => setShowPopup(false)}
-                className="mt-3 w-full text-center text-xs font-medium text-charcoal-500 hover:text-charcoal-700"
+                className="mt-3 w-full text-center text-xs font-medium text-muted-foreground hover:text-foreground"
               >
                 Lihat detail pesanan di belakang
               </button>
             )}
 
             {isPaid && (
-              <p className="mt-3 text-center text-xs text-charcoal-400">
-                Beranda dalam <span className="font-semibold tabular-nums text-charcoal-600">{countdown}</span> detik…
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                Beranda dalam <span className="font-semibold tabular-nums text-muted-foreground">{countdown}</span> detik…
               </p>
             )}
           </div>
@@ -502,8 +504,8 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <dt className="text-charcoal-500">{label}</dt>
-      <dd className={accent ? 'font-medium tabular-nums text-primary' : 'font-medium tabular-nums text-charcoal-900'}>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={accent ? 'font-medium tabular-nums text-primary' : 'font-medium tabular-nums text-foreground'}>
         {value}
       </dd>
     </div>

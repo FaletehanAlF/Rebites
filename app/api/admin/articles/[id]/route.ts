@@ -3,6 +3,8 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
 import { COVER_IMAGE_ERROR, isArticleCoverUrl } from '@/lib/article-cover';
 
@@ -38,6 +40,27 @@ const MAX_TAG_LENGTH = 50;
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Kolom untuk detail satu artikel. Berbeda dari daftar: `content`
+ * (hingga 50.000 karakter) ikut diambil — hanya satu baris, bukan 20.
+ */
+const ADMIN_DETAIL_SELECT = [
+  'id',
+  'title',
+  'slug',
+  'excerpt',
+  'content',
+  'cover_image',
+  'status',
+  'published_at',
+  'author_id',
+  'umkm_id',
+  'category',
+  'tags',
+  'created_at',
+  'updated_at',
+].join(', ');
 
 type Row = Record<string, unknown>;
 
@@ -90,6 +113,69 @@ async function requireAdmin(req: NextRequest) {
     };
   }
   return { admin, authHeader };
+}
+
+/**
+ * GET /api/admin/articles/:id — detail satu artikel (khusus admin).
+ *
+ * Daftar (GET /api/admin/articles) sengaja TIDAK mengambil kolom `content`
+ * karena satu artikel bisa 50.000 karakter dan halaman memuat 20 baris.
+ * Pratinjau dan form ubah memakai endpoint ini untuk mengambil isi artikel.
+ *
+ * Auth: Authorization: Bearer <supabase access_token admin>
+ */
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const auth = await requireAdmin(req);
+    if ('error' in auth) return auth.error;
+
+    const id = params.id?.trim();
+    if (!id || !UUID_RE.test(id)) {
+      return NextResponse.json({ error: 'ID artikel tidak valid.' }, { status: 400 });
+    }
+
+    const db = createAuthedServerClient(auth.authHeader);
+
+    const { data, error } = await db
+      .from('articles')
+      .select(ADMIN_DETAIL_SELECT)
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('[admin/articles/detail] fetch error', error.message);
+      return NextResponse.json({ error: 'Gagal memuat artikel.' }, { status: 500 });
+    }
+    if (!data) {
+      return NextResponse.json({ error: 'Artikel tidak ditemukan.' }, { status: 404 });
+    }
+
+    const row = (data as unknown) as Row;
+
+    // Nama penulis bersifat pelengkap: kegagalan join tidak menggagalkan detail.
+    let author: { id: string; full_name: string | null; email: string | null } | null = null;
+    if (typeof row.author_id === 'string') {
+      const { data: profile } = await db
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('id', row.author_id)
+        .maybeSingle();
+      if (profile) {
+        const p = (profile as unknown) as Row;
+        author = {
+          id: typeof p.id === 'string' ? p.id : row.author_id,
+          full_name: typeof p.full_name === 'string' ? p.full_name : null,
+          email: typeof p.email === 'string' ? p.email : null,
+        };
+      }
+    }
+
+    return NextResponse.json({ article: { ...row, author } });
+  } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
+    console.error('[admin/articles/detail] unexpected', err);
+    return NextResponse.json({ error: 'Gagal memproses artikel.' }, { status: 500 });
+  }
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
@@ -282,9 +368,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     return NextResponse.json({ article: updated });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/articles/update] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses artikel." }, { status: 500 });
   }
 }
 
@@ -323,8 +411,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     return NextResponse.json({ success: true, id });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/articles/delete] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses artikel." }, { status: 500 });
   }
 }

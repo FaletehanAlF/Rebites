@@ -15,11 +15,11 @@ export interface AddressFormValues {
   district: string;
   fullAddress: string;
   note?: string;
-  /** 7B-1: kode pos 5 digit, opsional (NULL untuk legacy). */
+  /** kode pos 5 digit, opsional (NULL untuk legacy). */
   postalCode?: string | null;
-  /** 7B-1: selalu NULL dari form (tanpa map-picker). */
+  /** koordinat GPS/manual dari form (opsional, pasangan lengkap). */
   latitude?: number | null;
-  /** 7B-1: selalu NULL dari form (tanpa map-picker). */
+  /** koordinat GPS/manual dari form (opsional, pasangan lengkap). */
   longitude?: number | null;
 }
 
@@ -53,7 +53,8 @@ function valuesToRow(values: AddressFormValues): AddressRow {
     district: values.district,
     full_address: values.fullAddress,
     note: values.note ?? null,
-    // 7B-1: postal opsional ("" -> NULL di API), lat/lng dari form selalu NULL.
+    // postal opsional ("" -> NULL di API); lat/lng pasangan
+    // lengkap dari form GPS/manual (NULL bila dikosongkan).
     postal_code: values.postalCode?.trim() ? values.postalCode.trim() : null,
     latitude: values.latitude ?? null,
     longitude: values.longitude ?? null,

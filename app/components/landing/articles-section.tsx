@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CalendarDays } from 'lucide-react';
-import { Reveal } from '@/app/components/reveal';
+import { Reveal } from '@/app/components/shared/reveal';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 
 interface LandingArticle {

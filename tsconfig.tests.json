@@ -1,0 +1,54 @@
+{
+  // tsconfig.tests.json - Pemeriksaan tipe untuk berkas tes (NOTIF-1J-B).
+  //
+  // DIBACA HANYA oleh: `npm run typecheck:tests`
+  //   = `tsc --noEmit --project tsconfig.tests.json`.
+  //
+  // MENGAPA PERLU:
+  //   1. Semua berkas tes mengimpor modul sumber dengan ekstensi `.ts` eksplisit
+  //      (contoh: `import ... from '../lib/admin-access.ts'`). Ekstensi itu wajib
+  //      bagi Node type-stripping yang menjalankan tes (`node --test tests/*.test.ts`).
+  //      TypeScript menolak ekstensi `.ts` pada import kecuali
+  //      `allowImportingTsExtensions: true` aktif.
+  //   2. Karena itu berkas tes TIDAK bisa masuk `tsconfig.json` utama tanpa
+  //      mengubah opsi compiler program aplikasi. Konfigurasi ini membuat
+  //      tsconfig utama bisa tetap UTUH - cakupan `npm run typecheck` terhadap
+  //      kode aplikasi tidak berubah sama sekali.
+  //
+  // DIABAIKAN oleh: `npm run typecheck` (`tsc` tanpa `-p` hanya mencari
+  // `tsconfig.json`), `next build`, dan VS Code (yang hanya auto-load
+  // `tsconfig.json`). Jadi berkas ini tidak dapat mengubah perilaku build
+  // maupun editor.
+  //
+  // `target` di-set ES2022 karena inilah realitas runtime: tes dijalankan
+  // langsung oleh Node lewat type-stripping, tanpa transpile turun-level,
+  // dan Node 24 yang dipakai di mesin ini >= ES2023. Tanpa `target`,
+  // tsc mengasumsikan ES3 dan 3 error `TS2802` muncul palsu.
+  //
+  // CATATAN: `target` di sini SENGAJA berbeda dari tsconfig main (yang tak
+  // men-set `target` sama sekali). Bila `tests` kelak dimasukkan ke
+  // `tsconfig.json` utama, `target` main harus dinaikkan dahulu.
+  "compilerOptions": {
+    "ignoreDeprecations": "5.0",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "skipLibCheck": true,
+    "incremental": false,
+    "target": "ES2022",
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["tests/**/*.test.ts"],
+  "exclude": []
+}

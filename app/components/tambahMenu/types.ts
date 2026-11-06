@@ -8,11 +8,14 @@
   startTime: string;
   endTime: string;
   isSurplusToday: boolean;
+  // Jadwal ketersediaan menu (bukan flash sale). NULL = tidak dijadwalkan khusus.
+  scheduledStart?: string | null; // YYYY-MM-DD
+  scheduledEnd?: string | null; // YYYY-MM-DD
   photo: string;
-  // 7B-2B: kapabilitas fulfillment. Minimal satu harus true.
+  // kapabilitas fulfillment. Minimal satu harus true.
   isDelivery: boolean;
   isPickup: boolean;
-  // 7B-2D-1: data package opsional (products.weight_gram/length_cm/width_cm/height_cm).
+  // data package opsional (products.weight_gram/length_cm/width_cm/height_cm).
   // NULL = belum diketahui (produk legacy / seller belum mengisi). Tanpa default palsu.
   weightGram: number | null;
   lengthCm: number | null;
@@ -26,18 +29,38 @@ export type ShippingNumberParse =
   | { ok: false };
 
 /**
- * 7B-2D-1: parse input teks berat/dimensi dari form seller.
+ * parse input teks berat/dimensi dari form seller.
  * - string kosong -> { ok: true, value: null } (legacy aman, tanpa angka palsu)
  * - angka positif -> { ok: true, value: int >= 1 } (DB integer)
- * - 0 / negatif / bukan angka -> { ok: false }
+ * - pemisah ribuan '1.000' / '1,000' -> dibaca 1000 (bukan 1)
+ * - desimal '500,5' -> dibulatkan ke bawah (perilaku lama dipertahankan)
+ * - 0 / negatif / bukan angka / di luar batas integer DB -> { ok: false }
  */
 export function parseShippingNumber(raw: string): ShippingNumberParse {
-  const trimmed = raw.trim().replace(',', '.');
+  const trimmed = raw.trim();
   if (!trimmed) return { ok: true, value: null };
-  const num = Number(trimmed);
+
+  // Normalisasi yang aman sebelum Number(): digit murni, pemisah ribuan
+  // '.' / ',' (grup 3 digit), atau satu pemisah desimal. Format lain
+  // (huruf, notasi ilmiah, spasi di tengah) ditolak, bukan ditebak.
+  let normalized: string;
+  if (/^\d+$/.test(trimmed)) {
+    normalized = trimmed;
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(trimmed)) {
+    normalized = trimmed.replace(/\./g, '');
+  } else if (/^\d{1,3}(,\d{3})+$/.test(trimmed)) {
+    normalized = trimmed.replace(/,/g, '');
+  } else if (/^\d+[.,]\d+$/.test(trimmed)) {
+    normalized = trimmed.replace(',', '.');
+  } else {
+    return { ok: false };
+  }
+
+  const num = Number(normalized);
   if (!Number.isFinite(num) || num <= 0) return { ok: false };
   const int = Math.floor(num);
-  if (int < 1) return { ok: false };
+  // Batas kolom integer Postgres (int4) agar gagal di form, bukan di DB.
+  if (int < 1 || int > 2147483647) return { ok: false };
   return { ok: true, value: int };
 }
 
@@ -53,20 +76,6 @@ export const MENU_CATEGORIES = [
   'Minuman',
 ] as const;
 
-export interface FoodPreset {
-  id: string;
-  src: string;
-  label: string;
-}
-
-export const FOOD_PRESETS: FoodPreset[] = [
-  { id: 'ikansayur', src: '/foods/ikansayur.jpg', label: 'Ikan & sayur' },
-  { id: 'supkrimlabu', src: '/foods/supkrimlabu.jpg', label: 'Sup krim labu' },
-  { id: 'saladkebun', src: '/foods/saladkebun.jpg', label: 'Salad kebun' },
-  { id: 'kopisusu', src: '/foods/kopisusu.jpg', label: 'Es kopi susu' },
-  { id: 'boxdonat', src: '/foods/boxdonat.jpg', label: 'Donat kampung' },
-];
-
 export const DEFAULT_MENU_FORM: MenuFormState = {
   name: '',
   category: 'Makanan Berat',
@@ -77,11 +86,13 @@ export const DEFAULT_MENU_FORM: MenuFormState = {
   startTime: '16:00',
   endTime: '19:00',
   isSurplusToday: true,
+  scheduledStart: null,
+  scheduledEnd: null,
   photo: '',
-  // 7B-2B: default keduanya tersedia (selaras DB DEFAULT true).
+  // default keduanya tersedia (selaras DB DEFAULT true).
   isDelivery: true,
   isPickup: true,
-  // 7B-2D-1: package opsional, default kosong (NULL).
+  // package opsional, default kosong (NULL).
   weightGram: null,
   lengthCm: null,
   widthCm: null,

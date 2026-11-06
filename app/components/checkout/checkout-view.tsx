@@ -8,7 +8,6 @@ import type { ProductDetail } from "@/app/components/detail-product/data";
 import { fetchProductDetail } from "@/app/components/detail-product/detail-data";
 import type { OrderDraft } from "@/lib/types";
 import { CheckoutProvider } from "./checkout-context";
-import { CheckoutDecor } from "./checkout-decor";
 import { OrderItemCard } from "./order-item-card";
 import { QuantityStepperCard } from "./quantity-stepper-card";
 import { FulfillmentToggle } from "./fulfillment-toggle";
@@ -18,6 +17,7 @@ import { ShippingOptionSection } from "./shipping-option-section";
 import { PaymentSummaryCard } from "./payment-summary-card";
 import { StickyMobileBar } from "./sticky-mobile-bar";
 import { CheckoutSuccessDialog } from "./checkout-success-dialog";
+import { CheckoutPriceReviewDialog } from "./checkout-price-review-dialog";
 import { useCurrentUser } from "@/lib/current-user";
 import { toast } from "@/hooks/use-toast";
 
@@ -35,10 +35,11 @@ function buildOrderDraft(product: ProductDetail): OrderDraft {
     discountedPrice: product.discountedPrice,
     stockRemaining: product.stockRemaining,
     distanceKm: product.distanceKm,
-    // 7B-2B: kapabilitas fulfillment untuk gating UI (server validasi ulang).
+    // kapabilitas fulfillment untuk gating UI (server validasi ulang).
     isDelivery: product.isDelivery ?? true,
     isPickup: product.isPickup ?? true,
-    // 7B-2D-1: package dari ProductDetail (NULL = belum diketahui).
+    // package dari ProductDetail (NULL = belum diketahui; server memakai
+    // berat perkiraan kategori sehingga Diantar tetap bisa dipilih).
     weightGram: product.weightGram ?? null,
     lengthCm: product.lengthCm ?? null,
     widthCm: product.widthCm ?? null,
@@ -61,22 +62,20 @@ function CheckoutContent({
 }) {
   return (
     <CheckoutProvider draft={draft} initialQuantity={initialQuantity}>
-      <main className="relative min-h-screen bg-cream-50 pb-32 sm:pb-28 lg:pb-16">
-        <CheckoutDecor />
-
+      <main className="relative min-h-screen bg-secondary pb-32 sm:pb-28 lg:pb-16">
         <div className="relative mx-auto max-w-[1400px] px-4 pt-4 sm:px-8 sm:pt-6 lg:px-12 lg:pt-10">
           {}
           <div className="flex items-center gap-3">
             <Link
               href="/home"
               aria-label="Kembali"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-sage-100 bg-white text-primary transition-colors hover:bg-caramel hover:text-white"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-primary transition-colors hover:bg-primary-dark hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </div>
 
-          <h1 className="mt-3 font-display text-[clamp(1.5rem,5vw,3.4rem)] font-light leading-[1.05] tracking-[-0.02em] text-charcoal-900 sm:mt-5">
+          <h1 className="mt-3 font-display text-[clamp(1.5rem,5vw,3.4rem)] font-light leading-[1.05] tracking-[-0.02em] text-foreground sm:mt-5">
             Detail pesanan
           </h1>
 
@@ -107,6 +106,7 @@ function CheckoutContent({
       </main>
 
       <CheckoutSuccessDialog />
+      <CheckoutPriceReviewDialog />
     </CheckoutProvider>
   );
 }
@@ -171,7 +171,7 @@ export function CheckoutView() {
   // Early returns after all hooks
   if (authLoading || !authChecked) {
     return (
-      <div className="min-h-screen bg-cream-50 flex items-center justify-center">
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
       </div>
     );
@@ -182,21 +182,21 @@ export function CheckoutView() {
   }
 
   if (status === "loading") {
-    return <div className="min-h-screen bg-cream-50" />;
+    return <div className="min-h-screen bg-secondary" />;
   }
 
   if (status === "not-found" || !draft) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-cream-50 px-6 text-center">
-        <p className="font-sans text-lg font-bold text-charcoal-900">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-secondary px-6 text-center">
+        <p className="font-sans text-lg font-bold text-foreground">
           Produk tidak ditemukan
         </p>
-        <p className="max-w-sm text-sm leading-relaxed text-charcoal-500">
+        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
           Menu yang akan kamu pesan sudah tidak tersedia.
         </p>
         <Link
           href="/home"
-          className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-caramel"
+          className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
         >
           Kembali ke Beranda
         </Link>

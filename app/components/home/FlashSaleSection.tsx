@@ -1,8 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Heart, MapPin, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRupiah } from "@/lib/data";
@@ -10,18 +9,17 @@ import { useCatalog } from "@/lib/catalog";
 import { useCountdown, formatCountdown } from "@/lib/useCountdown";
 import { SmartImage } from "@/app/components/shared/SmartImage";
 import { useLikedFoods } from "@/hooks/use-liked-foods";
-import { SoftBlob } from "@/app/components/shared/ornaments";
-import { Marquee } from "@/app/components/shared/marquee";
 import type { UrgentItem, UrgentSlot } from "@/lib/types";
 import {
-  FLASH_SELLER_STORE_HREF,
   getActiveFlashSaleProducts,
+  FLASH_SLOTS,
+  formatFlashScheduleLabel,
   type FlashSaleCardItem,
 } from "@/lib/flash-sale";
 import { PRODUCTS_UPDATED_EVENT } from "@/lib/product-storage";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-primary";
 
 const WIB_OFFSET_MS = 7 * 3600 * 1000;
 
@@ -113,41 +111,27 @@ function SectionCountdown({
   const [h, m, s] = text.split(":");
 
   return (
-    <div
-      id="flashSale"
-      className="rounded-2xl bg-white px-5 py-3.5 shadow-[0_18px_40px_-18px_rgba(185,28,28,0.3)]"
-    >
-      <div className="flex items-center gap-2.5">
-        <p className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-          {label}
-        </p>
-      </div>
+    <div className="rounded-xl bg-white px-4 py-3 shadow-sm">
+      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+        {label}
+      </p>
 
-      <div className="mt-1 flex items-baseline gap-1">
-        <span className="min-w-[2ch] text-center font-sans text-2xl font-bold tabular-nums leading-none text-sale sm:text-3xl">
-          {h}
-        </span>
-        <span
-          aria-hidden
-          className="w-[1ch] text-center font-sans text-2xl font-bold leading-none text-sale sm:text-3xl"
-        >
+      <div
+        className="mt-1 flex items-baseline gap-1 font-sans text-2xl font-bold tabular-nums leading-none text-sale"
+        aria-live="off"
+      >
+        <span className="min-w-[2ch] text-center">{h}</span>
+        <span aria-hidden className="w-[1ch] text-center">
           :
         </span>
-        <span className="min-w-[2ch] text-center font-sans text-2xl font-bold tabular-nums leading-none text-sale sm:text-3xl">
-          {m}
-        </span>
-        <span
-          aria-hidden
-          className="w-[1ch] text-center font-sans text-2xl font-bold leading-none text-sale sm:text-3xl"
-        >
+        <span className="min-w-[2ch] text-center">{m}</span>
+        <span aria-hidden className="w-[1ch] text-center">
           :
         </span>
-        <span className="min-w-[2ch] text-center font-sans text-2xl font-bold tabular-nums leading-none text-sale sm:text-3xl">
-          {s}
-        </span>
+        <span className="min-w-[2ch] text-center">{s}</span>
       </div>
 
-      <div className="mt-1 flex gap-1 font-sans text-[9px] font-semibold uppercase tracking-[0.18em] text-primary">
+      <div className="mt-1 flex gap-1 font-sans text-[9px] font-semibold uppercase tracking-[0.14em] text-primary/70">
         <span className="min-w-[2ch] text-center">Jam</span>
         <span aria-hidden className="w-[1ch]" />
         <span className="min-w-[2ch] text-center">Menit</span>
@@ -163,23 +147,15 @@ function UrgentCard({
   startsAtIso,
   endsAtIso,
   onViewDetail,
-  detailHref,
 }: {
-  item: UrgentItem;
+  item: FlashSaleCardItem;
   startsAtIso: string;
   endsAtIso: string;
   onViewDetail?: (id: string) => void;
-
-  detailHref?: string;
 }) {
-  const router = useRouter();
-  const openDetail = () => {
-    if (detailHref) {
-      router.push(detailHref);
-      return;
-    }
-    onViewDetail?.(item.id);
-  };
+  // Semua kartu produk memakai popup yang sama (ProductDetailModal lewat
+  // onViewDetail). Kartu flash sale tidak lagi punya halaman detail sendiri.
+  const openDetail = () => onViewDetail?.(item.id);
 
   const remainingToStart = useCountdown(startsAtIso);
   const remainingToEnd = useCountdown(endsAtIso);
@@ -210,49 +186,31 @@ function UrgentCard({
           : undefined
       }
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white outline-none transition-all duration-300",
+        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white outline-none transition-colors duration-150",
         isActive
-          ? "cursor-pointer hover:-translate-y-1 hover:border-zinc-300 hover:shadow-lg hover:shadow-primary/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          : "cursor-default opacity-95",
+          ? "cursor-pointer hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+          : "cursor-default",
       )}
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-sage-100">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <SmartImage
           src={item.image}
           alt={`Foto ${item.name} dari ${item.vendorName}`}
           sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
           className={cn(
-            "transition-transform duration-500",
-            isActive && "group-hover:scale-105",
-            !isActive &&
-              "scale-105 blur-[1.5px] brightness-[0.85] saturate-[0.7]",
+            !isActive && "brightness-[0.85] saturate-[0.7]",
           )}
         />
 
-        {isActive && (
-          <motion.span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 z-10 w-1/3 -skew-x-12 bg-white/20 blur-md"
-            initial={{ left: "-40%" }}
-            animate={{ left: "130%" }}
-            transition={{
-              duration: 2.8,
-              repeat: Infinity,
-              repeatDelay: 2,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          />
-        )}
-
         {!isActive && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-charcoal-900/30 backdrop-blur-[1px]">
-            <span className="rounded-full bg-white px-4 py-1.5 font-sans text-xs font-bold uppercase tracking-[0.14em] text-charcoal-900 shadow">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-t from-foreground/50 via-foreground/20 to-foreground/10">
+            <span className="rounded-full bg-white/95 px-4 py-1.5 font-sans text-[11px] font-extrabold uppercase tracking-[0.18em] text-foreground shadow-lg shadow-black/10">
               Akan Datang
             </span>
           </div>
         )}
 
-        <div className="absolute left-3 top-3 z-20 rounded-full bg-sale px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow-md">
+        <div className="absolute left-3 top-3 z-20 rounded-full bg-sale px-2.5 py-1 text-[11px] font-bold leading-none text-white">
           Hemat {item.discountPercent}%
         </div>
 
@@ -266,38 +224,38 @@ function UrgentCard({
             if (isActive) toggle(item.id);
           }}
           className={cn(
-            "absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-zinc-500 shadow-md backdrop-blur-sm transition-colors hover:bg-white hover:text-sale",
-            liked && isActive && "bg-white text-sale",
+            "absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white text-muted-foreground shadow-sm transition-colors hover:text-sale",
+            liked && isActive && "text-sale",
             !isActive && "opacity-60",
           )}
         >
           <Heart
             className={cn(
               "h-4 w-4",
-              liked && isActive && "fill-sale text-sale",
+              liked && isActive && "text-sale",
             )}
           />
         </button>
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="line-clamp-1 font-sans text-[15px] font-bold leading-snug text-charcoal-900">
+        <h3 className="line-clamp-1 font-sans text-[15px] font-bold leading-snug text-foreground">
           {item.name}
         </h3>
-        <p className="mt-0.5 line-clamp-1 font-sans text-[13px] text-charcoal-500">
+        <p className="mt-0.5 line-clamp-1 font-sans text-[13px] text-muted-foreground">
           {item.vendorName}
         </p>
 
-        <div className="mt-2 flex items-center gap-3 text-xs text-charcoal-500">
+        <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
           {item.rating != null && (
-            <span className="flex items-center gap-1 font-medium text-charcoal-900">
-              <Star className="h-3.5 w-3.5 fill-caramel text-caramel" />
+            <span className="flex items-center gap-1 font-medium text-foreground">
+              <Star className="h-3.5 w-3.5 fill-primary text-primary" />
               {item.rating.toFixed(1)}
             </span>
           )}
           {item.distanceKm != null && (
             <span className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5 text-sage-500" />
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
               {item.distanceKm} km
             </span>
           )}
@@ -305,31 +263,35 @@ function UrgentCard({
 
         {isActive &&
           (stockPct === null ? (
-            <span className="mt-2.5 w-fit rounded-full bg-cream-100 px-3 py-1 text-[11px] font-medium text-charcoal-600">
+            <span className="mt-2.5 w-fit rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
               {item.stockLabel}
             </span>
           ) : (
             <div className="mt-2.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-destructive">
+                <span className="font-extrabold text-red-600 drop-shadow-sm">
                   Sisa {stockCount}
                 </span>
-                <span className="text-destructive">Buru!</span>
+                <span className="font-extrabold text-red-600 drop-shadow-sm">Buru!</span>
               </div>
-              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-cream-100">
-                <motion.div
+              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                {/* Lebar statis dari data stok: cukup dirender, tidak dianimasikan. */}
+                <div
                   className="h-full rounded-full bg-sale"
-                  initial={{ width: 0 }}
-                  whileInView={{ width: `${stockPct}%` }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ width: `${stockPct}%` }}
                 />
               </div>
             </div>
           ))}
 
+        {!isActive && item.startsAt && (
+          <div className="mt-1.5 rounded-md bg-secondary/80 px-2 py-0.5 text-[10px] font-extrabold text-foreground shadow-sm">
+            {formatFlashScheduleLabel(item.startsAt)}
+          </div>
+        )}
+
         <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-xs text-charcoal-500 line-through">
+          <span className="text-xs text-muted-foreground line-through">
             {formatRupiah(item.originalPrice)}
           </span>
           <span className="text-[16px] font-bold leading-none text-primary">
@@ -345,10 +307,10 @@ function UrgentCard({
             if (isActive) openDetail();
           }}
           className={cn(
-            "mt-4 inline-flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-caramel focus-visible:ring-offset-2",
+            "mt-4 inline-flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
             isActive
-              ? "bg-primary text-white hover:bg-caramel"
-              : "cursor-not-allowed bg-zinc-100 text-zinc-400",
+              ? "bg-primary text-white hover:bg-primary-dark"
+              : "cursor-not-allowed bg-muted text-muted-foreground",
           )}
         >
           {isActive ? "Lihat Detail" : "Akan Datang"}
@@ -358,12 +320,24 @@ function UrgentCard({
   );
 }
 
+/**
+ * Flash sale per slot waktu.
+ *
+ * Latar hijau solid (tanpa gradient, tanpa grain overlay) menjadi satu-satunya
+ * blok warna pekat di beranda, sehingga bagian lain bisa memakai permukaan
+ * putih yang tenang. Pita marquee berjalan dan kilau melintas di setiap kartu
+ * dihapus: keduanya berjalan terus-menerus tanpa memberi informasi.
+ */
 export function FlashSaleSection({
   onViewDetail,
 }: {
   onViewDetail?: (id: string) => void;
 }) {
-  const { realSlot, setSelectedSlot, activeSlot, tick } = useSlotRotation();
+  const { realSlot, setSelectedSlot, activeSlot } = useSlotRotation();
+  const reducedMotion = useReducedMotion();
+
+  type StatusFilter = 'Semua' | 'Berlangsung' | 'Akan Datang';
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('Semua');
 
   const activeSlotDef = activeSlot
     ? (SLOTS.find((s) => s.key === activeSlot) ?? null)
@@ -381,6 +355,11 @@ export function FlashSaleSection({
   );
   const { urgentItems, loading: catalogLoading } = useCatalog();
 
+  // Dependensi sengaja HANYA `realSlot`. Sebelumnya efek ini bergantung pada
+  // `tick` (penanda 20 detik), sehingga setiap 20 detik daftar dikosongkan ke
+  // `[]` lalu diisi ulang -> kartu dilepas, Gambar berpindah kembali ke
+  // keadaan "belum dimuat", dan foto terlihat berkedip/hilang. Slot yang
+  // berganti tetap tertangkap lewat `activeSlot` di bawah.
   useEffect(() => {
     let mounted = true;
     const load = () => {
@@ -394,7 +373,7 @@ export function FlashSaleSection({
       mounted = false;
       window.removeEventListener(PRODUCTS_UPDATED_EVENT, load);
     };
-  }, [tick]);
+  }, [realSlot]);
 
   const staticSlotItems: FlashSaleCardItem[] = activeSlot
     ? urgentItems.filter((i) => i.slot === activeSlot)
@@ -402,159 +381,82 @@ export function FlashSaleSection({
   const dynamicSlotItems = sellerFlashItems.filter(
     (item) => item.slot === activeSlot,
   );
-  const staticIds = new Set(staticSlotItems.map((item) => item.id));
-  const visibleItems: FlashSaleCardItem[] = [
-    ...staticSlotItems,
-    ...dynamicSlotItems.filter((item) => !staticIds.has(item.id)),
-  ];
+  /**
+   * Katalog publik (`urgentItems`, dari tabel products.slot/expires_at) dan
+   * daftar flash sale penjual membaca BARIS YANG SAMA dengan `id` yang sama,
+   * tetapi bentuk kartunya berbeda: katalog memakai harga surplus + stok
+   * tersedia, sedangkan flash sale memakai harga flash + status jadwal.
+   *
+   * Sebelumnya katalog menang (union), sehingga produk yang baru dijadikan
+   * flash sale tetap tampil dengan harga normal dan tanpa badge diskon — baru
+   * "berubah" setelah refresh halaman. Sekarang entri katalog dibuang bila id
+   * yang sama sudah ada di daftar flash sale.
+   */
   const dynamicIds = new Set(dynamicSlotItems.map((item) => item.id));
+  let baseVisible: FlashSaleCardItem[] = [
+    ...staticSlotItems.filter((item) => !dynamicIds.has(item.id)),
+    ...dynamicSlotItems,
+  ];
+
+  if (statusFilter !== 'Semua') {
+    baseVisible = baseVisible.filter((item) => {
+      const startMs = item.startsAt ? new Date(item.startsAt).getTime() : 0;
+      const endMs = item.endsAt ? new Date(item.endsAt).getTime() : Infinity;
+      const nowMs = Date.now();
+      const isActiveStatus = nowMs >= startMs && nowMs < endMs;
+      return statusFilter === 'Berlangsung' ? isActiveStatus : !isActiveStatus && startMs > nowMs;
+    });
+  }
+
+  const visibleItems: FlashSaleCardItem[] = baseVisible;
 
   return (
     <section
-      id="flash-sale"
+      id="flashSale"
       data-nav="green"
-      className="relative overflow-hidden bg-gradient-to-tr from-primary via-primary "
+      className="scroll-mt-20 bg-primary py-10 sm:py-12 lg:py-14"
     >
-      <div className="relative bg-primary py-3">
-        <Marquee pauseOnHover>
-          {[
-            "SELAMATKAN MAKANAN",
-            "HARGA LEBIH HEMAT",
-            "SURPLUS, BUKAN SISA",
-            "LAYAK KONSUMSI",
-            "DISKON HINGGA 50%",
-            "LEBIH HEMAT, LEBIH BERMAKNA",
-          ].map((t, i) => (
-            <span
-              key={i}
-              className="mx-6 flex items-center gap-3 font-sans text-lg font-medium tracking-tight text-white lg:text-xl"
-            >
-              {t}
-            </span>
-          ))}
-        </Marquee>
-      </div>
-
-      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <SoftBlob className="-left-24 top-1/4 h-80 w-80 bg-white/25" />
-        <SoftBlob className="-right-20 bottom-0 h-96 w-96 bg-cream-50/50" />
-        <SoftBlob className="-bottom-24 left-1/3 h-80 w-80 bg-caramel/20" />
-
-        {[
-          { top: "10%", left: "8%" },
-          { top: "22%", right: "12%" },
-          { top: "46%", left: "3%" },
-          { top: "70%", right: "6%" },
-          { bottom: "8%", right: "20%" },
-        ].map((pos, i) => (
-          <motion.span
-            key={i}
-            aria-hidden
-            className="pointer-events-none absolute"
-            style={pos}
-            animate={{
-              y: [0, -12, 0],
-              rotate: [0, 45, 0],
-              opacity: [0.35, 1, 0.35],
-            }}
-            transition={{
-              duration: 4.5 + i * 0.6,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.5,
-            }}
-          >
-            <span className="block h-2.5 w-2.5 bg-white/60" style={{ clipPath: "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)" }} />
-          </motion.span>
-        ))}
-
-        {[
-          { top: "14%", left: "5%" },
-          { top: "32%", right: "8%" },
-          { bottom: "16%", left: "11%" },
-          { top: "58%", right: "4%" },
-        ].map((pos, i) => (
-          <motion.span
-            key={i}
-            aria-hidden
-            className="pointer-events-none absolute h-2 w-2 rounded-full bg-white/70"
-            style={pos}
-            animate={{
-              y: [0, -18, 0],
-              rotate: [0, 120, 0],
-              opacity: [0.4, 1, 0.4],
-            }}
-            transition={{
-              duration: 4 + i,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.7,
-            }}
-          />
-        ))}
-
-        {[
-          { top: "20%", left: "30%" },
-          { top: "55%", right: "16%" },
-          { bottom: "12%", left: "24%" },
-        ].map((pos, i) => (
-          <motion.span
-            key={`caramel-dot-${i}`}
-            aria-hidden
-            className="pointer-events-none absolute h-2.5 w-2.5 rounded-full bg-caramel/50"
-            style={pos}
-            animate={{
-              y: [0, -14, 0],
-              rotate: [0, -100, 0],
-              opacity: [0.3, 0.9, 0.3],
-            }}
-            transition={{
-              duration: 4.8 + i * 0.6,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.6,
-            }}
-          />
-        ))}
-
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sale" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-sale" />
-              </span>
-              <span className="font-sans text-xs font-bold uppercase tracking-[0.3em] text-white">
-                Flash Sale
+              <span className="h-2 w-2 rounded-full bg-sale" aria-hidden />
+              {/* "Diskon Kilat" — sama dengan label di sidebar, drawer, dan
+                  kartu pintasan hero. Sebelumnya bagian ini menulis
+                  "Flash sale", sehingga pengguna mengira keduanya fitur
+                  berbeda. */}
+              <span className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-white sm:text-[11px]">
+                Diskon Kilat
               </span>
             </div>
 
-            <h2 className="mt-3 font-sans text-[22px] font-bold tracking-tight text-white sm:text-[28px]">
-              Segera <span className="text-caramel">Beli</span>
+            <h2 className="mt-2.5 font-sans text-lg font-bold tracking-tight text-white sm:text-[22px] lg:text-[26px]">
+              Segera beli
             </h2>
 
-            <p className="mt-2 max-w-md font-sans text-sm text-white/80">
-              Nikmati makanan surplus pilihan dengan harga lebih hemat. Jangan
-              lewatkan sebelum stoknya habis!
+            <p className="mt-1.5 max-w-md font-sans text-xs leading-relaxed text-white/80 sm:text-sm">
+              Makanan surplus pilihan dengan harga lebih hemat. Jangan lewatkan
+              sebelum stoknya habis.
             </p>
           </div>
 
-          <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center">
+          <div className="shrink-0">
             {slotEndIso ? (
-              <SectionCountdown
-                deadlineIso={slotEndIso}
-                label="Berakhir dalam"
-              />
+              <SectionCountdown deadlineIso={slotEndIso} label="Berakhir dalam" />
             ) : (
               <SectionCountdown
                 deadlineIso={nextStartIso}
-                label="Flash sale dimulai dalam"
+                label="Dimulai dalam"
               />
             )}
           </div>
         </div>
 
-        <div className="relative mt-6 flex flex-wrap items-center justify-center gap-2 sm:mt-9 md:flex-nowrap md:gap-8">
+        {/*
+          Slot waktu memakai grid 2×2 di ponsel: empat tombol selebar penuh
+          dalam satu baris tidak muat dan sebelumnya terpotong di layar sempit.
+        */}
+        <div className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:grid-cols-4 sm:gap-3">
           {SLOTS.map((slot) => {
             const isReal = realSlot === slot.key;
             const isActive = activeSlot === slot.key;
@@ -569,103 +471,110 @@ export function FlashSaleSection({
                   )
                 }
                 className={cn(
-                  "group relative flex items-center gap-1.5 rounded-full border px-3 py-2 sm:gap-2.5 sm:px-4 sm:py-2.5 md:px-6 md:py-3.5 font-sans transition-all duration-300",
+                  "flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-left font-sans transition-colors duration-150 sm:px-4",
                   isActive
-                    ? "border-transparent bg-caramel text-white shadow-lg shadow-primary/40 hover:bg-white hover:text-caramel"
-                    : "border-white/60 bg-white text-primary shadow-lg shadow-primary/25 hover:bg-caramel hover:text-white",
+                    ? "border-white bg-white text-primary"
+                    : "border-white/30 bg-transparent text-white hover:border-white/70",
                   FOCUS_RING,
                 )}
               >
-                <span className="flex flex-col items-start leading-tight">
-                  <span className="text-sm font-bold tabular-nums">
+                <span className="flex flex-col leading-tight">
+                  <span className="text-[13px] font-bold tabular-nums sm:text-sm">
                     {slot.range}
                   </span>
                   <span
                     className={cn(
-                      "text-[10px] font-semibold uppercase tracking-[0.18em]",
-                      isActive
-                        ? "text-white/70 group-hover:text-caramel"
-                        : "text-caramel/60 group-hover:text-white",
+                      "text-[10px] font-semibold uppercase tracking-[0.14em]",
+                      isActive ? "text-primary/60" : "text-white/70",
                     )}
                   >
                     {slot.name}
                   </span>
                 </span>
+
                 {isReal && (
                   <span
-                    className="relative flex h-2 w-2 shrink-0"
+                    className="h-2 w-2 shrink-0 rounded-full bg-sale"
                     title="Slot aktif sekarang"
-                  >
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sale opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-sale" />
-                  </span>
+                    aria-hidden
+                  />
                 )}
               </button>
             );
           })}
         </div>
 
-        <div className="relative mt-10">
-          {visibleItems.length > 0 ? (
+        {/* Filter status */}
+        <div className="mt-4 flex flex-wrap gap-1.5 sm:mt-5">
+          {(['Semua', 'Berlangsung', 'Akan Datang'] as StatusFilter[]).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setStatusFilter(f)}
+              className={cn(
+                'rounded-full border px-3 py-1 text-[11px] font-bold shadow-sm transition-colors',
+                statusFilter === f
+                  ? 'border-white bg-white text-primary shadow-white/20'
+                  : 'border-white/40 bg-white/15 text-white hover:border-white/80 hover:bg-white/25'
+              )}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-5 sm:mt-6">
+          {catalogLoading && visibleItems.length === 0 && (
+            <div className="flex h-40 items-center justify-center text-sm text-white/80">
+              Memuat flash sale...
+            </div>
+          )}
+
+          {visibleItems.length > 0 && (
+            /*
+             * Kartu bergeser masuk saat slot berganti. Hanya opacity + translate
+             * (compositor), tanpa stagger panjang sehingga interaksi tidak
+             * tertahan. `initial={false}` membuat hasil render awal — termasuk
+             * kembali dari halaman lain — tidak beranimasi ulang.
+             */
             <motion.div
-              key={activeSlot}
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: {},
-                visible: { transition: { staggerChildren: 0.07 } },
-              }}                  className="grid grid-flow-col auto-cols-[75%] snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-4 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-3 xl:grid-cols-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              key={activeSlot ?? "none"}
+              initial={reducedMotion ? false : { opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={reducedMotion ? { duration: 0 } : { duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4"
             >
               {visibleItems.map((item) => (
-                <motion.div
+                <UrgentCard
                   key={item.id}
-                  variants={{
-                    hidden: { opacity: 0, y: 24 },
-                    visible: {
-                      opacity: 1,
-                      y: 0,
-                      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-                    },
-                  }}
-                  className="min-w-0 snap-start"
-                >
-                  <UrgentCard
-                    item={item}
-                    startsAtIso={item.startsAt ?? slotStartIso!}
-                    endsAtIso={item.endsAt ?? slotEndIso!}
-                    onViewDetail={onViewDetail}
-                    detailHref={
-                      dynamicIds.has(item.id)
-                        ? `${FLASH_SELLER_STORE_HREF}#menu-surplus`
-                        : undefined
-                    }
-                  />
-                </motion.div>
+                  item={item}
+                  startsAtIso={item.startsAt ?? slotStartIso!}
+                  endsAtIso={item.endsAt ?? slotEndIso!}
+                  onViewDetail={onViewDetail}
+                />
               ))}
             </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-3xl border border-white/20 bg-white/20 p-10 text-center backdrop-blur-sm sm:p-14"
-            >
-              <p className="mt-5 font-sans text-xs font-bold uppercase tracking-[0.3em] text-white">
-                Flash Sale
-              </p>
-              <h3 className="mt-3 font-sans text-3xl font-bold text-white sm:text-4xl">
-                Flash sale dimulai pukul 09.00 WIB
+          )}
+
+          {!catalogLoading && visibleItems.length === 0 && (
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-6 py-10 text-center">
+              <h3 className="font-sans text-lg font-bold text-white sm:text-xl">
+                {activeSlot
+                  ? "Belum ada menu di slot ini"
+                  : "Flash sale dimulai pukul 09.00 WIB"}
               </h3>
-              <p className="mx-auto mt-3 max-w-md font-sans text-sm text-white/75">
-                Jangan sampai kelewatan!
+              {/*
+                Hitungan waktu sengaja tidak diulang di sini: header section
+                sudah menampilkan angka yang sama ("Berakhir dalam" saat slot
+                aktif, "Dimulai dalam" di luar slot). Dua salinan angka identik
+                pada satu layar hanya menambah kebisingan.
+              */}
+              <p className="mx-auto mt-2 max-w-sm font-sans text-xs leading-relaxed text-white/75 sm:text-sm">
+                {activeSlot
+                  ? "Coba pilih slot waktu lain atau kembali lagi nanti."
+                  : "Jangan sampai kelewatan — nantikan harga spesialnya."}
               </p>
-              <div className="mt-7 flex justify-center">
-                <SectionCountdown
-                  deadlineIso={nextStartIso}
-                  label="Dimulai dalam"
-                />
-              </div>
-            </motion.div>
+            </div>
           )}
         </div>
       </div>

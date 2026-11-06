@@ -1,12 +1,11 @@
-'use client';
 
 import { cn } from '@/lib/utils';
-import { SoftBlob } from '@/app/components/ornaments';
+import { SoftBlob } from '@/app/components/shared/ornaments';
 
-type SectionTone = 'cream' | 'white' | 'green' | 'transparent';
+type SectionTone = 'neutral' | 'white' | 'green' | 'transparent';
 
 const toneClasses: Record<SectionTone, string> = {
-  cream: 'grain-overlay bg-cream',
+  neutral: 'grain-overlay bg-secondary',
   white: 'grain-overlay bg-white',
   green: 'grain-overlay bg-primary',
   transparent: '',
@@ -14,7 +13,7 @@ const toneClasses: Record<SectionTone, string> = {
 
 interface SectionShellProps {
   id?: string;
-  dataNav?: 'cream' | 'green';
+  dataNav?: 'neutral' | 'green';
   tone?: SectionTone;
   className?: string;
   containerClassName?: string;
@@ -28,7 +27,7 @@ interface SectionShellProps {
 export function SectionShell({
   id,
   dataNav,
-  tone = 'cream',
+  tone = 'neutral',
   className,
   containerClassName,
   children,
@@ -45,7 +44,9 @@ export function SectionShell({
     >
       <SoftBlob
         className={cn(
-          'pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full blur-3xl',
+          // `blur-3xl` (filter 64px pada bidang 448px) diganti gradien radial
+          // di SoftBlob: glow sama, tanpa biaya filter saat halaman digulir.
+          'pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full',
           tone === 'green' ? 'bg-white/[0.06]' : 'bg-primary/[0.06]',
         )}
       />

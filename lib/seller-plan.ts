@@ -91,6 +91,37 @@ export async function readSellerPlan(): Promise<SellerEntitlements> {
   return getSellerEntitlements(subscription);
 }
 
+const SELLER_PLAN_CACHE_TTL_MS = 30_000; // 30 detik
+let planCache: Promise<SellerEntitlements> | null = null;
+let planCacheTimestamp = 0;
+
+function invalidatePlanCache() {
+  planCache = null;
+  planCacheTimestamp = 0;
+}
+
+// Invalidasi sekali di level modul (terdaftar saat import, lebih dulu daripada
+// listener instance mana pun) agar N instance useSellerPlan berbagi SATU fetch
+// saat event berlangganan berubah.
+if (typeof window !== 'undefined') {
+  window.addEventListener(SUBSCRIPTION_UPDATED_EVENT, invalidatePlanCache);
+}
+
+// Cache promise readSellerPlan: mount bersamaan / dalam TTL berbagi satu hasil.
+function readSellerPlanCached(): Promise<SellerEntitlements> {
+  if (planCache && Date.now() - planCacheTimestamp < SELLER_PLAN_CACHE_TTL_MS) {
+    return planCache;
+  }
+  const run = readSellerPlan();
+  planCache = run;
+  planCacheTimestamp = Date.now();
+  // Hasil gagal jangan di-cache agar percobaan berikutnya fetch ulang.
+  run.catch(() => {
+    if (planCache === run) planCache = null;
+  });
+  return run;
+}
+
 export function useSellerPlan() {
   const [plan, setPlan] = useState<SellerEntitlements>(ENTITLEMENTS.basic);
   const [hydrated, setHydrated] = useState(false);
@@ -99,7 +130,7 @@ export function useSellerPlan() {
     let mounted = true;
 
     const refresh = () => {
-      readSellerPlan().then((result) => {
+      readSellerPlanCached().then((result) => {
         if (!mounted) return;
         setPlan(result);
         setHydrated(true);

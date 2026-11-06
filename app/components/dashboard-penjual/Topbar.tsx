@@ -9,6 +9,7 @@ import {
 } from '@/lib/store-settings-storage';
 import { useCurrentUser } from '@/lib/current-user';
 import { useNotifications } from '@/hooks/use-notifications';
+import { ORDERS_UPDATED_EVENT } from '@/lib/order-storage';
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -19,8 +20,25 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const [storeImage, setStoreImage] = useState('');
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
   const { userId } = useCurrentUser();
-  
-  const { unreadCount } = useNotifications(userId, 'seller');
+
+  const { unreadCount, refresh: refreshNotifications } = useNotifications(userId, 'seller');
+
+  /**
+   * Badge lonceng ikut disegarkan saat ada pesanan baru masuk.
+   *
+   * Sebelumnya angka ini hanya berubah setelah Realtime `notifications`
+   * memanggil refresh untuk dirinya sendiri; pesanan yang baru dibayar bisa
+   * membuat penjual menunggu tanpa angka yang berubah di layar.
+   */
+  useEffect(() => {
+    const onOrdersUpdated = () => {
+      void refreshNotifications();
+    };
+    window.addEventListener(ORDERS_UPDATED_EVENT, onOrdersUpdated);
+    return () => {
+      window.removeEventListener(ORDERS_UPDATED_EVENT, onOrdersUpdated);
+    };
+  }, [refreshNotifications]);
 
   useEffect(() => {
     const refresh = () => {
@@ -38,14 +56,14 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-sage-100 bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-border bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5 lg:px-10">
         { }
         <button
           type="button"
           onClick={onMenuClick}
           aria-label="Buka menu navigasi"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-charcoal-900 transition-colors hover:bg-sage-100 lg:hidden"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-muted lg:hidden"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -64,7 +82,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               <Store className="h-4 w-4" />
             </div>
           )}
-          <span className="text-sm font-bold text-charcoal-900">
+          <span className="text-sm font-bold text-foreground">
             {storeName || '-'}
           </span>
         </Link>
@@ -73,11 +91,11 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <Link
             href="/dashboard/penjual/notifikasi"
             aria-label={`Notifikasi${unreadCount > 0 ? ` (${unreadCount} belum dibaca)` : ''}`}
-            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-sage-100 bg-white text-primary shadow-sm transition-colors duration-200 hover:border-caramel hover:bg-caramel hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-primary shadow-sm transition-colors duration-200 hover:border-primary hover:bg-primary-dark hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             <Bell className="h-[18px] w-[18px]" />
             {unreadCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+              <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}

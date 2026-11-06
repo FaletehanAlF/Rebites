@@ -3,7 +3,10 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
+import { isSuperAdminUserId } from '@/lib/admin-access';
 import {
   resolveSellerStatus,
   type SellerStatus,
@@ -132,6 +135,10 @@ export async function GET(
         email: row.email ?? null,
         full_name: row.full_name ?? null,
         role: row.role ?? null,
+        // Boolean saja (TANPA UUID): apakah target adalah Super Admin yang
+        // dikonfigurasi (SUPER_ADMIN_USER_ID). Dipakai UI untuk menonaktifkan
+        // kontrol yang tidak diizinkan; otorisasi tetap di server.
+        is_super_admin: isSuperAdminUserId(id),
         phone: row.phone ?? null,
         is_verified: row.is_verified ?? false,
         created_at: row.created_at ?? null,
@@ -174,8 +181,10 @@ export async function GET(
       },
     });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/users/detail] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memproses data pengguna." }, { status: 500 });
   }
 }

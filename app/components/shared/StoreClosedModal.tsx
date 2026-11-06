@@ -72,25 +72,25 @@ export function StoreClosedModal({
               type="button"
               onClick={onClose}
               aria-label="Tutup"
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-charcoal-400 transition-colors hover:bg-charcoal-100 hover:text-charcoal-700"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <X className="h-4 w-4" />
             </button>
 
             {}
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-caramel-100">
-              <Clock className="h-8 w-8 text-caramel-dark" />
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/15">
+              <Clock className="h-8 w-8 text-primary" />
             </div>
 
             {}
-            <h2 className="mt-5 font-display text-xl font-bold text-charcoal-900">
+            <h2 className="mt-5 font-display text-xl font-bold text-foreground">
               Toko Sedang Tutup
             </h2>
 
             {}
-            <p className="mt-3 text-sm leading-relaxed text-charcoal-500">
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               Makanan ini belum tersedia saat ini. Kembali lagi{" "}
-              <span className="font-semibold text-charcoal-900">
+              <span className="font-semibold text-foreground">
                 besok di jam {availableFrom} - {availableTo}
               </span>{" "}
               untuk menikmatinya.
@@ -100,7 +100,7 @@ export function StoreClosedModal({
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 w-full rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-caramel active:scale-[0.98]"
+              className="mt-6 w-full rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark active:scale-[0.98]"
             >
               Mengerti
             </button>

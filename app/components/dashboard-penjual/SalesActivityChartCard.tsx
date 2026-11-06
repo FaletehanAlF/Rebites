@@ -53,14 +53,14 @@ function SalesTooltip({
   if (!point) return null;
 
   return (
-    <div className="rounded-xl border border-sage-100 bg-white/95 px-3.5 py-2.5 text-xs shadow-lg backdrop-blur">
-      <p className="font-semibold text-charcoal-900">{point.day}</p>
-      <div className="mt-1.5 flex items-center gap-1.5 text-charcoal-900">
+    <div className="rounded-xl border border-border bg-white/95 px-3.5 py-2.5 text-xs shadow-lg backdrop-blur">
+      <p className="font-semibold text-foreground">{point.day}</p>
+      <div className="mt-1.5 flex items-center gap-1.5 text-foreground">
         <span className="h-2 w-2 rounded-full bg-primary" />
         Terjual
         <span className="ml-auto pl-3 font-semibold">{point.terjual} porsi</span>
       </div>
-      <p className="mt-2 border-t border-sage-100 pt-1.5 font-medium text-primary">
+      <p className="mt-2 border-t border-border pt-1.5 font-medium text-primary">
         Pendapatan hari itu {formatRupiah(point.revenue)}
       </p>
     </div>
@@ -118,11 +118,11 @@ export function SalesActivityChartCard() {
             >
               {value}
             </span>
-            <span className="text-sm font-medium text-charcoal-900">
+            <span className="text-sm font-medium text-foreground">
               porsi terjual · {periodLabel}
             </span>
           </div>
-          <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-sage-500">
+          <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Statistik penjualan
           </p>
         </div>
@@ -135,7 +135,7 @@ export function SalesActivityChartCard() {
               options={PERIOD_OPTIONS}
               ariaLabel="Pilih rentang waktu penjualan"
             />
-            <div role="group" aria-label="Tipe grafik" className="flex rounded-full bg-cream-100 p-1">
+            <div role="group" aria-label="Tipe grafik" className="flex rounded-full bg-muted p-1">
               <button
                 type="button"
                 aria-label="Tampilkan grafik batang"
@@ -144,7 +144,7 @@ export function SalesActivityChartCard() {
                   'flex h-7 w-7 items-center justify-center rounded-full transition-colors',
                   kind === 'bar'
                     ? 'bg-white text-primary shadow-sm'
-                    : 'text-sage-500 hover:text-charcoal-900'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <BarChart2 className="h-4 w-4" />
@@ -157,7 +157,7 @@ export function SalesActivityChartCard() {
                   'flex h-7 w-7 items-center justify-center rounded-full transition-colors',
                   kind === 'line'
                     ? 'bg-white text-primary shadow-sm'
-                    : 'text-sage-500 hover:text-charcoal-900'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <LineChartIcon className="h-4 w-4" />
@@ -182,13 +182,13 @@ export function SalesActivityChartCard() {
         <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_232px]">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-4 text-xs font-medium text-charcoal-900">
+              <div className="flex items-center gap-4 text-xs font-medium text-foreground">
                 <span className="flex items-center gap-1.5">
                   <span className="h-2.5 w-2.5 rounded-full bg-primary" />
                   Terjual
                 </span>
               </div>
-              <p className="text-xs text-sage-500">Periode {periodLabel}</p>
+              <p className="text-xs text-muted-foreground">Periode {periodLabel}</p>
             </div>
 
             <div className="mt-4 h-[230px] w-full">
@@ -256,7 +256,7 @@ export function SalesActivityChartCard() {
             </p>
           </div>
 
-          <div className="lg:border-l lg:border-sage-100 lg:pl-6">
+          <div className="lg:border-l lg:border-border lg:pl-6">
             <PartnerScoreGauge />
           </div>
         </div>

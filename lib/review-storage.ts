@@ -26,10 +26,14 @@ function rowToDisplayReview(row: ReviewRow): Review {
 
 async function resolveProductId(slug: string): Promise<string | null> {
   if (!slug) return null;
+  // Hanya produk approved yang boleh punya ulasan yang tampil publik.
+  // Konsisten dengan filter di detail-data.ts, dan menutup jalur ini
+  // sebelum migration 20261011000000 (RLS) diterapkan.
   const { data } = await supabase
     .from('products')
     .select('id')
     .eq('slug', slug)
+    .eq('verification_status', 'approved')
     .maybeSingle();
   return data?.id ?? null;
 }
@@ -198,6 +202,22 @@ export async function saveReview(review: OrderReview): Promise<void> {
   }
   if ((orderRow as Record<string, any>).buyer_id !== review.userId) {
     throw new Error('Hanya pembeli pesanan yang dapat memberi ulasan');
+  }
+
+  // Produk ditolak/di-takedown setelah pesanan dibuat tidak boleh mendapat
+  // ulasan BARU. Ulasan lama tidak dihapus (tidak ada perubahan data di sini);
+  // yang dicegah hanya penambahan baru untuk produk non-approved.
+  const orderProductId = (orderRow as Record<string, any>).product_id;
+  if (orderProductId) {
+    const { data: reviewedProduct } = await supabase
+      .from('products')
+      .select('id')
+      .eq('id', orderProductId)
+      .eq('verification_status', 'approved')
+      .maybeSingle();
+    if (!reviewedProduct) {
+      throw new Error('Produk ini sedang tidak tersedia untuk diberi ulasan');
+    }
   }
   
   let authorName: string | null = null;

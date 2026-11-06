@@ -3,7 +3,10 @@ import {
   createAuthedServerClient,
   getAdminUser,
   getUserFromBearer,
+  isSupabaseUnavailable,
+  upstreamUnavailableResponse,
 } from '@/lib/server/supabase';
+import { sanitizeSearchTerm } from '@/lib/filter-search';
 
 export const runtime = 'nodejs';
 
@@ -38,11 +41,6 @@ const SUBS_SELECT = [
   'xendit_status',
   'created_at',
 ].join(', ');
-
-function sanitizeSearch(raw: string | null): string {
-  if (!raw) return '';
-  return raw.trim().slice(0, 100).replace(/[%(),]/g, '');
-}
 
 function sanitizeSlug(raw: string | null): string {
   if (!raw) return '';
@@ -100,7 +98,7 @@ export async function GET(req: NextRequest) {
     const rawOffset = Number(params.get('offset') ?? '0');
     const limit = Number.isFinite(rawLimit) ? Math.min(100, Math.max(1, Math.floor(rawLimit))) : 20;
     const offset = Number.isFinite(rawOffset) ? Math.max(0, Math.floor(rawOffset)) : 0;
-    const search = sanitizeSearch(params.get('search'));
+    const search = sanitizeSearchTerm(params.get('search'));
 
     const statusRaw = (params.get('status') ?? '').trim().toLowerCase();
     const statusFilter: RawStatus | null = (STATUS_ALLOWLIST as readonly string[]).includes(
@@ -310,8 +308,10 @@ export async function GET(req: NextRequest) {
       offset,
     });
   } catch (err) {
+    if (isSupabaseUnavailable(err)) return upstreamUnavailableResponse();
     console.error('[admin/subscriptions] unexpected', err);
-    const msg = err instanceof Error ? err.message : 'Terjadi kesalahan';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Pesan internal (stack trace, detail TLS/query) hanya ke log server;
+    // client menerima pesan publik agar tidak ada informasi internal yang bocor.
+    return NextResponse.json({ error: "Gagal memuat langganan." }, { status: 500 });
   }
 }
