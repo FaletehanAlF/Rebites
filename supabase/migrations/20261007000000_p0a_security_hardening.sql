@@ -1,29 +1,29 @@
--- ============================================================================
--- P0-A SECURITY HARDENING (database & authorization)
---
--- 1. reserve_stock / release_stock: hanya untuk service_role.
--- 2. profiles: is_verified, role, account_status tidak bisa diset user.
--- 3. umkm_profiles: is_verified, rating tidak bisa diset owner.
--- 4. subscriptions: user tidak bisa insert/update aktivasi sendiri.
--- 5. orders: INSERT client dipaksa ke nilai default yang aman.
---
--- Semua perubahan idempotent, tidak menghapus/mengubah data existing.
--- service_role (checkout server, webhook, verify) selalu diizinkan
--- melewati trigger fail-safe dengan pola yang sama seperti
--- guard_order_payment_status / lock_profiles_account_status_on_update.
--- ============================================================================
 
--- ---------------------------------------------------------------------------
--- 1. reserve_stock / release_stock: cabut dari anon & authenticated
--- ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 REVOKE EXECUTE ON FUNCTION public.reserve_stock(text, integer) FROM anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.release_stock(text, integer) FROM anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.reserve_stock(text, integer) TO service_role;
 GRANT EXECUTE ON FUNCTION public.release_stock(text, integer) TO service_role;
 
--- ---------------------------------------------------------------------------
--- 2. profiles: kunci is_verified (UPDATE) + paksa default aman (INSERT)
--- ---------------------------------------------------------------------------
+
+
+
 CREATE OR REPLACE FUNCTION public.lock_profiles_is_verified_on_update()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -70,9 +70,9 @@ CREATE TRIGGER trg_profiles_guard_insert
   BEFORE INSERT ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.guard_profiles_insert_defaults();
 
--- ---------------------------------------------------------------------------
--- 3. umkm_profiles: is_verified & rating hanya admin/service_role
--- ---------------------------------------------------------------------------
+
+
+
 CREATE OR REPLACE FUNCTION public.lock_umkm_sensitive_columns_on_update()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -119,9 +119,9 @@ CREATE TRIGGER trg_umkm_guard_insert
   BEFORE INSERT ON public.umkm_profiles
   FOR EACH ROW EXECUTE FUNCTION public.guard_umkm_insert_defaults();
 
--- ---------------------------------------------------------------------------
--- 4. subscriptions: user biasa tidak bisa insert/update aktivasi
--- ---------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "subs_insert_own" ON public.subscriptions;
 DROP POLICY IF EXISTS "subs_update_own_or_admin" ON public.subscriptions;
 
@@ -160,12 +160,12 @@ CREATE TRIGGER trg_subscriptions_lock_sensitive
   BEFORE UPDATE ON public.subscriptions
   FOR EACH ROW EXECUTE FUNCTION public.lock_subscriptions_sensitive_on_update();
 
--- Tanpa policy INSERT untuk authenticated, insert user langsung ditolak
--- RLS. Flow subscription sah (Xendit) memakai service_role.
 
--- ---------------------------------------------------------------------------
--- 5. orders: INSERT dari client dipaksa ke nilai default yang aman
--- ---------------------------------------------------------------------------
+
+
+
+
+
 CREATE OR REPLACE FUNCTION public.guard_orders_insert_client_defaults()
 RETURNS trigger
 LANGUAGE plpgsql

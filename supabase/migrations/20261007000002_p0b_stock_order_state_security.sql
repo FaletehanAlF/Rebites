@@ -1,59 +1,59 @@
--- ============================================================================
--- P0-B: STOCK & ORDER STATE SECURITY HARDENING
---
--- Temuan:
---   * release_stock() tidak idempotent: EXPIRED/FAILED duplikat, verify +
---     webhook, atau cancel + webhook dapat mengembalikan stok berkali-kali.
---   * Pembatalan order dari client tidak mengembalikan stok sama sekali.
---   * Guard transisi order_status (0019) dan guard payment_status (0013)
---     memakai current_user di dalam fungsi SECURITY DEFINER; current_user di
---     sana selalu pemilik fungsi (postgres) sehingga guard tidak pernah
---     menolak siapa pun (no-op). Terbukti via probe remote: buyer dapat
---     set order_status completed/paid, mengubah total_price, umkm_id,
---     shipment_status, biteship_waybill_id pada order sendiri.
---
--- Desain:
---   1. orders.stock_reserved_at / stock_released_at = penanda tingkat order.
---      Checkout server menandai stock_reserved_at saat reserve_stock berhasil.
---   2. Satu trigger BEFORE UPDATE (guard_orders_update) yang:
---        a. untuk caller non-privileged (bukan service_role / admin / owner
---           DB): hanya mengizinkan kolom operasional (whitelist) berubah dan
---           memvalidasi transisi order_status / lifecycle_status /
---           progress_status berdasarkan peran (buyer / seller pemilik toko)
---           dan payment_status di database;
---        b. untuk SEMUA caller: bila order masuk keadaan batal/gagal dan
---           stok pernah dikunci tetapi belum pernah dilepas, stok dilepas
---           dan stock_released_at diisi dalam satu transaksi/baris yang sama.
---           Hasil release_stock DIPERIKSA: bila pelepasan gagal (mis. slug
---           produk tidak ditemukan karena di-rename / baris produk hilang),
---           stock_released_at SENGAJA dibiarkan NULL (fail-open + retry):
---           transisi status tetap commit, percobaan rilis berikutnya mencoba
---           lagi, dan release_order_stock() mengembalikan false (jujur).
---      Atomik terhadap request bersamaan: UPDATE mengunci baris order;
---      request kedua menunggu lock, lalu trigger-nya melihat OLD terbaru
---      (stock_released_at sudah terisi bila berhasil) sehingga tidak
---      melepas lagi.
---   3. release_order_stock(order_code): wrapper idempotent (service_role only).
---   4. INSERT guard (P0-A) diperketat: client tidak dapat mengisi kolom stok /
---      shipment / tracking saat insert.
---   5. order_status_history: INSERT hanya untuk peserta order (sebelumnya
---      WITH CHECK (true)).
---
--- Data existing: hanya menambah 2 kolom + backfill penanda (tidak mengubah
--- status/harga/stok/payment order mana pun). Idempotent.
--- ============================================================================
 
--- ---------------------------------------------------------------------------
--- 1. Kolom penanda stok
--- ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS stock_reserved_at timestamptz,
   ADD COLUMN IF NOT EXISTS stock_released_at timestamptz;
 
--- Backfill: order hasil checkout (punya order_code + product_slug) selalu
--- melakukan reserve_stock sebelum insert. Order yang sudah berstatus
--- batal/gagal ditandai "sudah dilepas" agar tidak pernah dilepas ulang.
--- Tidak ada perubahan pada kolom lain; trigger baru belum aktif saat ini.
+
+
+
+
 UPDATE public.orders
    SET stock_reserved_at = created_at
  WHERE stock_reserved_at IS NULL
@@ -67,9 +67,9 @@ UPDATE public.orders
    AND (order_status IN ('cancelled', 'refunded', 'failed')
         OR payment_status IN ('failed', 'refunded'));
 
--- ---------------------------------------------------------------------------
--- 2. Guard UPDATE orders + pelepasan stok idempotent
--- ---------------------------------------------------------------------------
+
+
+
 CREATE OR REPLACE FUNCTION public.guard_orders_update()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -100,9 +100,9 @@ BEGIN
     v_old := to_jsonb(OLD);
     v_new := to_jsonb(NEW);
 
-    -- (a) Whitelist kolom: selain kolom operasional, semua kolom order
-    -- (harga, pembayaran, kepemilikan, pengiriman, stok, dst.) hanya boleh
-    -- diubah server/admin.
+    
+    
+    
     FOR v_key IN
       SELECT n.key FROM jsonb_each(v_new) AS n
        WHERE n.value IS DISTINCT FROM (v_old -> n.key)
@@ -125,7 +125,7 @@ BEGIN
         USING ERRCODE = '42501';
     END IF;
 
-    -- (b) order_status
+    
     IF NEW.order_status IS DISTINCT FROM OLD.order_status THEN
       IF NEW.order_status IN ('paid', 'failed', 'refunded') THEN
         RAISE EXCEPTION 'Status % hanya dapat diatur oleh sistem pembayaran', NEW.order_status
@@ -165,7 +165,7 @@ BEGIN
       END IF;
     END IF;
 
-    -- (c) lifecycle_status: hanya ongoing -> completed pada order lunas & aktif
+    
     IF NEW.lifecycle_status IS DISTINCT FROM OLD.lifecycle_status THEN
       IF NEW.lifecycle_status IS DISTINCT FROM 'completed'
          OR OLD.lifecycle_status IS NOT DISTINCT FROM 'completed' THEN
@@ -179,7 +179,7 @@ BEGIN
       END IF;
     END IF;
 
-    -- (d) progress_status: hanya seller, maju searah, order lunas & aktif
+    
     IF NEW.progress_status IS DISTINCT FROM OLD.progress_status THEN
       IF NOT v_is_seller THEN
         RAISE EXCEPTION 'Hanya penjual yang dapat mengubah progres pesanan'
@@ -203,8 +203,8 @@ BEGIN
       END IF;
     END IF;
 
-    -- (e) completed_at hanya bersamaan dengan penyelesaian;
-    --     data pengantaran hanya oleh penjual.
+    
+    
     IF NEW.completed_at IS DISTINCT FROM OLD.completed_at
        AND NEW.lifecycle_status IS DISTINCT FROM 'completed' THEN
       RAISE EXCEPTION 'completed_at hanya dapat diisi saat pesanan diselesaikan'
@@ -220,20 +220,20 @@ BEGIN
     END IF;
   END IF;
 
-  -- Pelepasan stok idempoten berbasis state (berlaku untuk semua caller).
-  -- Hasil release_stock TIDAK diabaikan (fail-open + retry):
-  --   * sukses -> marker stock_released_at diisi (idempoten: update
-  --     berikutnya tidak melepas lagi);
-  --   * gagal (paling sering: slug produk tidak ditemukan karena produk
-  --     di-rename / baris produk hilang) -> marker SENGAJA dibiarkan NULL
-  --     + RAISE WARNING supaya (i) transisi status order tetap commit,
-  --     (ii) percobaan rilis berikutnya (update order ini / wrapper
-  --     release_order_stock) mencoba lagi -> self-healing bila data produk
-  --     pulih, dan (iii) release_order_stock() mengembalikan false (jujur),
-  --     bukan sukses palsu.
-  --     Konsekuensi: bila produk memang tidak pernah pulih, setiap UPDATE
-  --     order ini mencoba melepas lagi (no-op dibatalkan + WARNING). Setara:
-  --     pelepasan ganda tetap mustahil karena marker hanya diisi saat sukses.
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   IF NEW.stock_reserved_at IS NOT NULL
      AND OLD.stock_released_at IS NULL
      AND NEW.stock_released_at IS NULL
@@ -242,8 +242,8 @@ BEGIN
      AND NEW.lifecycle_status IS DISTINCT FROM 'completed'
      AND NEW.quantity > 0 THEN
     IF NEW.product_slug IS NULL THEN
-      -- Order tanpa slug produk tidak punya reservasi stok terikat
-      -- (reservasi selalu berbasis slug); tidak ada yang dilepas.
+      
+      
       NEW.stock_released_at := now();
     ELSIF public.release_stock(NEW.product_slug, NEW.quantity) THEN
       NEW.stock_released_at := now();
@@ -260,7 +260,7 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION public.guard_orders_update() FROM PUBLIC, anon, authenticated;
 
--- Trigger lama berbasis current_user (no-op) digantikan; fungsi lama tidak dihapus.
+
 DROP TRIGGER IF EXISTS orders_guard_order_status ON public.orders;
 
 DROP TRIGGER IF EXISTS trg_orders_guard_update ON public.orders;
@@ -268,10 +268,10 @@ CREATE TRIGGER trg_orders_guard_update
   BEFORE UPDATE ON public.orders
   FOR EACH ROW EXECUTE FUNCTION public.guard_orders_update();
 
--- ---------------------------------------------------------------------------
--- 3. release_order_stock: wrapper idempotent untuk server (service_role only)
---    Mengembalikan true hanya bila panggilan ini yang benar-benar melepas stok.
--- ---------------------------------------------------------------------------
+
+
+
+
 CREATE OR REPLACE FUNCTION public.release_order_stock(p_order_code text)
 RETURNS boolean
 LANGUAGE plpgsql
@@ -299,10 +299,10 @@ $$;
 REVOKE EXECUTE ON FUNCTION public.release_order_stock(text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.release_order_stock(text) TO service_role;
 
--- ---------------------------------------------------------------------------
--- 4. INSERT guard (P0-A) diperketat: stok / shipment / tracking / waktu
---    tidak dapat diisi client saat insert.
--- ---------------------------------------------------------------------------
+
+
+
+
 CREATE OR REPLACE FUNCTION public.guard_orders_insert_client_defaults()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -347,9 +347,9 @@ BEGIN
 END;
 $$;
 
--- ---------------------------------------------------------------------------
--- 5. order_status_history: INSERT hanya peserta order (buyer / seller / admin)
--- ---------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "osh_insert_service" ON public.order_status_history;
 DROP POLICY IF EXISTS "osh_insert_participants" ON public.order_status_history;
 CREATE POLICY "osh_insert_participants"

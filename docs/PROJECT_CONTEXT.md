@@ -58,8 +58,9 @@ app/
     home/                  # buyer app home
     makanan/[category]/    # SSG category pages (8 categories)
     detail/                # product, pesanan, pesanan/sukses, toko
-    dashboard/penjual/     # seller dashboard (menu, pesanan, ulasan, performa,
-                           #   pengaturan, notifikasi, langganan)
+    dashboard/penjual/     # seller dashboard; `[storeId]/` memuat id toko di URL
+                           #   (menu, pesanan, ulasan, performa, pengaturan,
+                           #   notifikasi, langganan); halaman tanpa id mengalihkan
     riwayatPesanan/ notifikasi/ profile/ toko/ langganan/pembayaran
                            #   langganan/sukses
   auth/                    # login, register, seller login/register,
@@ -85,7 +86,8 @@ be dead structure.
 ## 4. Routes (from `npm run build`)
 
 Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
-`/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`,
+`/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`
+(termasuk `/dashboard/penjual/[storeId]/**`),
 `/dashboard/admin/*`, `/langganan/pembayaran`, **`/preview/product`**
 (public product detail).
 SSG (●): `/makanan/[category]` (8 paths).
@@ -239,8 +241,10 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 
 ## 10. Known issues / technical debt (verified)
 
-- Tailwind prints an `ambiguous` warning for
-  `ease-[cubic-bezier(0.22,1,0.36,1)]` (escape it or extract a token).
+- Peringatan Tailwind `ambiguous` untuk kelas easing arbitrary sudah
+  dihilangkan: kurva `cubic-bezier(0.23, 1, 0.32, 1)` kini berupa token
+  `ease-smooth` di `tailwind.config.ts`. Jangan memakai `ease-[cubic-bezier(...)]`
+  lagi; tambahkan token bila butuh kurva lain.
 - `next build` skips ESLint (`eslint.ignoreDuringBuilds: true` in
   `next.config.js`); run `npm run lint` separately. Remaining warnings are
   pre-existing (`<img>` in seller dashboard, hook deps in `detail/toko`).

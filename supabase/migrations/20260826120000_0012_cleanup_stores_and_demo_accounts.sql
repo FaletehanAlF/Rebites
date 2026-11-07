@@ -1,36 +1,36 @@
--- ============================================================================
--- 0012: Cleanup toko + akun penjual demo untuk 3 toko resmi
---
---   Aplikasi hanya mengenal 3 toko demo berikut:
---     - warung-nusantara
---     - dapur-ibu-tini   (sudah diklaim seller@rebites.id via 0007)
---     - warkop-pak-iman
---
---   1. Hapus semua umkm_profiles lain beserta produk/pesanan/review/follow/
---      langganan-nya (ON DELETE CASCADE).
---      Auth users yang pernah mendaftarkan toko tersebut TIDAK dihapus
---      (aman: akun tanpa toko hanya dorman, bisa daftar ulang).
---   2. Buat 2 akun penjual demo + klaim tokonya (pola 0007):
---        warungnusantara@rebites.id / rebites123
---        pakiman@rebites.id         / rebites123
---   3. Aktifkan langganan premium utk 2 toko baru (pola 0009) agar dashboard
---      penjual terbuka seluruh fiturnya.
---   4. Perbaiki typo slug seed produk Roti Kopi '/makanan14.jpg' -> 'roti-kopi'.
---
---   Idempotent: aman dijalankan berulang.
--- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
--- ----------------------------------------------------------------------------
--- 1. Hapus semua toko di luar 3 toko demo resmi (cascade ke data turunannya)
--- ----------------------------------------------------------------------------
+
+
+
 DELETE FROM public.umkm_profiles
 WHERE slug NOT IN ('warung-nusantara', 'dapur-ibu-tini', 'warkop-pak-iman');
 
--- ----------------------------------------------------------------------------
--- 2a. Akun demo Warung Nusantara
--- ----------------------------------------------------------------------------
+
+
+
 INSERT INTO auth.users (
   instance_id, id, aud, role, email, encrypted_password,
   email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
@@ -51,9 +51,9 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- CATATAN: provider_id memakai sub/uuid user (konvensi GoTrue) karena
---   ('email','email') sudah dipakai identity milik 0007 pada constraint
---   identities_provider_id_provider_unique.
+
+
+
 INSERT INTO auth.identities (
   id, user_id, provider_id, provider, identity_data,
   last_sign_in_at, created_at, updated_at
@@ -81,9 +81,9 @@ SET user_id = 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e',
 WHERE slug = 'warung-nusantara'
   AND (user_id IS NULL OR user_id = 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e');
 
--- ----------------------------------------------------------------------------
--- 2b. Akun demo Warkop Pak Iman
--- ----------------------------------------------------------------------------
+
+
+
 INSERT INTO auth.users (
   instance_id, id, aud, role, email, encrypted_password,
   email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
@@ -131,9 +131,9 @@ SET user_id = 'c3d4e5f6-a7b8-4c9d-8e0f-2a3b4c5d6e7f',
 WHERE slug = 'warkop-pak-iman'
   AND (user_id IS NULL OR user_id = 'c3d4e5f6-a7b8-4c9d-8e0f-2a3b4c5d6e7f');
 
--- ----------------------------------------------------------------------------
--- 3. Langganan premium aktif utk 2 toko demo baru (pola 0009)
--- ----------------------------------------------------------------------------
+
+
+
 INSERT INTO public.subscriptions (
   umkm_id, plan_id, status, billing, price_paid, payment_method_id,
   current_period_start, current_period_end
@@ -153,9 +153,9 @@ WHERE u.slug IN ('warung-nusantara', 'warkop-pak-iman')
       AND s.current_period_end > now()
   );
 
--- ----------------------------------------------------------------------------
--- 4. Perbaiki typo slug produk Roti Kopi dari seed 0004
--- ----------------------------------------------------------------------------
+
+
+
 UPDATE public.products
 SET slug = 'roti-kopi'
 WHERE slug = '/makanan14.jpg';

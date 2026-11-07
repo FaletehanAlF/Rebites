@@ -1,17 +1,17 @@
--- ============================================================================
--- 0009: Langganan Max aktif untuk toko demo Dapur Ibu Tini
---   Toko demo yang dipakai tampilan Dashboard Penjual (slug 'dapur-ibu-tini')
---   diberikan paket ReBites Max (plans.slug = 'premium') berstatus active
---   selama 1 tahun sehingga seluruh fitur premium terbuka: Kategori Terlaris,
---   Menu Terlaris, Analisis Permintaan, Flash Sale tanpa batas, dan
---   Promosi Unggulan.
---
---   getSubscription() di lib/subscription-storage.ts mengambil row terbaru
---   (created_at desc, limit 1), jadi insert ini otomatis menang atas
---   langganan lama apa pun statusnya.
---
---   Idempotent: aman dijalankan berulang (guard NOT EXISTS).
--- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 INSERT INTO public.subscriptions (
   umkm_id,

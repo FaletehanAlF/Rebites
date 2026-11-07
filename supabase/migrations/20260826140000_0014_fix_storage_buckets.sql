@@ -1,13 +1,13 @@
--- ============================================================================
--- 0014: Fix storage buckets for image uploads
---   - Jadikan product-images public (sebelumnya false karena dibuat manual
---     sebelum migrasi 0003, ON CONFLICT DO NOTHING tidak update flag)
---   - Tambah policy untuk bucket umkm-logos (sebelumnya hanya dibuat
---     bucketnya di 0005 tanpa policy, sehingga upload selalu RLS violation
---     "Bucket not found" / "new row violates row-level security")
--- ============================================================================
 
--- 1. Buckets: pastikan public = true untuk media yang dipakai frontend
+
+
+
+
+
+
+
+
+
 UPDATE storage.buckets SET public = true WHERE id = 'product-images' AND public = false;
 UPDATE storage.buckets SET public = true WHERE id = 'avatars' AND public = false;
 UPDATE storage.buckets SET public = true WHERE id = 'umkm-logos' AND public = false;
@@ -18,7 +18,7 @@ VALUES ('product-images', 'product-images', true),
        ('umkm-logos', 'umkm-logos', true)
 ON CONFLICT (id) DO UPDATE SET public = EXCLUDED.public;
 
--- 2. Perluas policy generik ReBites agar mencakup umkm-logos
+
 DROP POLICY IF EXISTS "rebites_public_read_media" ON storage.objects;
 CREATE POLICY "rebites_public_read_media"
 ON storage.objects FOR SELECT
@@ -44,8 +44,8 @@ ON storage.objects FOR DELETE
 TO authenticated
 USING (bucket_id IN ('product-images','avatars','umkm-logos'));
 
--- 3. Tambah policy eksplisit untuk umkm-logos (paritas product-images) supaya
---    kompatibel bila ada policy lama yang masih spesifik per-bucket.
+
+
 DROP POLICY IF EXISTS "Anyone can view umkm logos" ON storage.objects;
 CREATE POLICY "Anyone can view umkm logos"
 ON storage.objects FOR SELECT

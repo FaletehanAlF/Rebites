@@ -24,7 +24,7 @@ Read this file before writing code. Do not weaken it to make a change pass.
 | Lint | Zero lint errors, and no new warnings above the recorded baseline | `npm run lint` | task end |
 | Build | Production build succeeds | `npm run build` | task end |
 | Routes | Public and application routes keep their URLs: `/`, `/home`, `/detail/*`, `/makanan/*`, `/auth/*`, `/dashboard/*` | `npm run build` route table + manual route checks | task end |
-| Boundary | `app/(landing)/**` must not import application chrome: `components/shared/navbar` (ProfileNavbar), `MobileNavbar`, `MobileBottomNav`, `account-sidebar`, `lib/current-user`, `lib/supabase`, `hooks/use-*` | import review of `app/(landing)` at review time | every change to `(landing)` |
+| Boundary | `app/(landing)/**` must not import application chrome: `components/shared/navbar` (ProfileNavbar), `MobileNavbar`, `MobileBottomNav`, `profile-sidebar-nav`, `lib/current-user`, `lib/supabase`, `hooks/use-*` | import review of `app/(landing)` at review time | every change to `(landing)` |
 
 A dimension with a number and no command in this column is an aspiration, not a
 constraint.
@@ -33,7 +33,7 @@ constraint.
 
 | Metric | Today | Direction |
 | --- | --- | --- |
-| `npm run lint` warnings | 4 (pre-existing: `<img>` in `dashboard-penjual/Topbar.tsx`, `dashboard/penjual/pengaturan/page.tsx`, `dashboard/penjual/ulasan/page.tsx`; hook deps in `app/components/detail-toko` usage via `detail/toko/page.tsx`) | must not grow |
+| `npm run lint` warnings | 4 (pre-existing: `<img>` in `dashboard-penjual/Topbar.tsx`, `dashboard/penjual/[storeId]/pengaturan/page.tsx`, `dashboard/penjual/[storeId]/ulasan/page.tsx`; hook deps in `app/components/detail-toko` usage via `detail/toko/page.tsx`) | must not grow |
 | Test coverage | no test runner configured | none to hold |
 
 ## Exceptions

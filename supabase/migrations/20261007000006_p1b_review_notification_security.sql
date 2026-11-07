@@ -1,27 +1,27 @@
--- ============================================================================
--- P1-B: Review & Notification Authorization
---
--- Tujuan:
---   1. Review hanya boleh dibuat oleh buyer pemilik order yang sudah
---      completed, dengan product_id/umkm_id yang konsisten dengan order.
---   2. Kolom identitas review (user_id/order_id/order_code/product_id/
---      umkm_id) tidak dapat diubah melalui client setelah insert.
---   3. notifications INSERT dari client dibatasi hanya untuk notifikasi
---      milik diri sendiri (user_id = auth.uid()). Notifikasi untuk pihak
---      lawan hanya dibuat oleh jalur terpercaya: service_role (server),
---      trigger DB di atas orders/reviews, atau admin.
---   4. UPDATE notifications dari client dibatasi hanya pada kolom `read`.
---   5. Notifikasi status order dan review baru dibuat oleh trigger DB
---      (SECURITY DEFINER) agar client tidak perlu (dan tidak boleh)
---      menyisipkan notifikasi untuk user lain.
---
--- Tidak mengubah schema lama; hanya mengganti policy/function/trigger.
--- Idempotent.
--- ============================================================================
 
--- ----------------------------------------------------------------------------
--- 1. Helper validasi review: order ada, milik user, completed, konsisten.
--- ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 CREATE OR REPLACE FUNCTION public.can_review_order(
   p_order_code text,
   p_order_id uuid,
@@ -47,9 +47,9 @@ AS $$
   );
 $$;
 
--- ----------------------------------------------------------------------------
--- 2. reviews: policy INSERT/UPDATE ketat berbasis validasi order.
--- ----------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "reviews_insert_own" ON public.reviews;
 CREATE POLICY "reviews_insert_own"
 ON public.reviews FOR INSERT
@@ -69,9 +69,9 @@ WITH CHECK (
   AND public.can_review_order(order_code, order_id, user_id, product_id, umkm_id)
 );
 
--- ----------------------------------------------------------------------------
--- 3. reviews: freeze kolom identitas pada UPDATE.
--- ----------------------------------------------------------------------------
+
+
+
 CREATE OR REPLACE FUNCTION public.guard_reviews_identity()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -95,9 +95,9 @@ CREATE TRIGGER trg_reviews_guard_identity
   BEFORE UPDATE ON public.reviews
   FOR EACH ROW EXECUTE FUNCTION public.guard_reviews_identity();
 
--- ----------------------------------------------------------------------------
--- 4. reviews -> notifikasi 'new_review' untuk penjual (trusted path).
--- ----------------------------------------------------------------------------
+
+
+
 CREATE OR REPLACE FUNCTION public.notify_on_review_insert()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -141,9 +141,9 @@ CREATE TRIGGER trg_reviews_notify_new
   AFTER INSERT ON public.reviews
   FOR EACH ROW EXECUTE FUNCTION public.notify_on_review_insert();
 
--- ----------------------------------------------------------------------------
--- 5. notifications: INSERT hanya untuk diri sendiri; UPDATE hanya kolom read.
--- ----------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "notifications_insert_any_authed" ON public.notifications;
 CREATE POLICY "notifications_insert_self"
 ON public.notifications FOR INSERT
@@ -182,9 +182,9 @@ CREATE TRIGGER trg_notifications_guard_update
   BEFORE UPDATE ON public.notifications
   FOR EACH ROW EXECUTE FUNCTION public.guard_notifications_update();
 
--- ----------------------------------------------------------------------------
--- 6. orders -> notifikasi status order untuk buyer & penjual (trusted path).
--- ----------------------------------------------------------------------------
+
+
+
 CREATE OR REPLACE FUNCTION public.notify_on_order_status_change()
 RETURNS trigger
 LANGUAGE plpgsql

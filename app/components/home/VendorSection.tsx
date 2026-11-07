@@ -1,118 +1,108 @@
-﻿"use client";
-
-import { useMemo, useState } from "react";
+"use client";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCatalog } from "@/lib/catalog";
 import { VendorCard } from "@/app/components/home/VendorCard";
+import { VendorCardSkeleton } from "@/app/components/shared/VendorCardSkeleton";
 import { SELLER_VENDOR_SLUG } from "@/lib/product-storage";
 import { useSellerPlan } from "@/lib/seller-plan";
-import { isVendorReallyOpen } from "@/lib/store-status";
-
-const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
-
-/**
- * Grid toko pembuka.
- *
- * Rail geser dengan tombol panah diganti grid: jumlah toko yang tampil
- * sekaligus lebih banyak, tidak ada lagi kartu terpotong di tepi layar, dan
- * tidak ada lagi pengukuran lebar untuk menentukan langkah geser.
- */
+import { orderVendorsOpenFirst } from "@/lib/store-status";
+const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+const ITEMS_PER_PAGE = 4;
 export function VendorSection() {
-  const { plan } = useSellerPlan();
-  const { vendors, loading } = useCatalog();
-
-  // Logic buka/tutup: isOpen (toggle penjual) DAN isOpenNow(openHours) harus true
-  const sortedVendors = useMemo(() => {
-    const openOnly = vendors.filter((v) => isVendorReallyOpen(v));
-    if (!plan.priorityListing) return openOnly;
-    return [...openOnly].sort(
-      (a, b) => Number(b.id === SELLER_VENDOR_SLUG) - Number(a.id === SELLER_VENDOR_SLUG)
-    );
-  }, [vendors, plan.priorityListing]);
-
-  return (
-    <section
-      id="umkm"
-      data-nav="neutral"
-      className="scroll-mt-20 bg-background py-10 sm:py-12 lg:py-14"
-    >
+    const { plan } = useSellerPlan();
+    const { vendors, loading } = useCatalog();
+    const reducedMotion = useReducedMotion();
+    const [page, setPage] = useState(1);
+    const [direction, setDirection] = useState<1 | -1>(1);
+    const sortedVendors = useMemo(() => orderVendorsOpenFirst(vendors, plan.priorityListing ? SELLER_VENDOR_SLUG : null), [vendors, plan.priorityListing]);
+    const pageCount = Math.max(1, Math.ceil(sortedVendors.length / ITEMS_PER_PAGE));
+    useEffect(() => {
+        setPage((current) => Math.min(Math.max(1, current), pageCount));
+    }, [pageCount]);
+    const pageItems = useMemo(() => sortedVendors.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE), [sortedVendors, page]);
+    const goToPage = (next: number) => {
+        const clamped = Math.min(Math.max(1, next), pageCount);
+        if (clamped === page)
+            return;
+        setDirection(clamped > page ? 1 : -1);
+        setPage(clamped);
+    };
+    return (<section id="umkm" data-nav="neutral" className="scroll-mt-20 py-10 sm:py-12 lg:py-14">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="font-secondary text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-              Toko lokal
-            </p>
-            <h2 className="mt-2 font-sans text-lg font-bold tracking-tight text-foreground sm:text-[22px] lg:text-[26px]">
+            <h2 className="font-sans text-lg font-bold tracking-tight text-foreground sm:text-[22px] lg:text-[26px]">
               Rekomendasi toko buat kamu
             </h2>
             <p className="mt-1 max-w-md font-sans text-xs text-muted-foreground sm:text-sm">
-              Toko lokal yang rutin menyelamatkan makanan surplusnya setiap hari.
-              Dukung mereka.
+              Toko yang sedang tutup tetap tampil, jadi jam bukanya bisa kamu
+              cek dulu.
             </p>
           </div>
 
-          <Link
-            href="/toko"
-            className={cn(
-              "hidden shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 font-sans text-[13px] font-semibold text-primary transition-colors duration-150 hover:border-primary/40 hover:bg-accent sm:inline-flex",
-              FOCUS_RING,
-            )}
-          >
-            Lihat semua toko
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            
+            {!loading && sortedVendors.length > ITEMS_PER_PAGE && (<>
+                <button type="button" onClick={() => goToPage(page - 1)} disabled={page <= 1} aria-label="Halaman toko sebelumnya" className={cn("flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-primary transition-colors duration-150 hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-white", FOCUS_RING)}>
+                  <ChevronLeft className="h-5 w-5" aria-hidden/>
+                </button>
+                <button type="button" onClick={() => goToPage(page + 1)} disabled={page >= pageCount} aria-label="Halaman toko berikutnya" className={cn("flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-primary transition-colors duration-150 hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-white", FOCUS_RING)}>
+                  <ChevronRight className="h-5 w-5" aria-hidden/>
+                </button>
+              </>)}
+            <Link href="/toko" className={cn("hidden shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 font-sans text-[13px] font-semibold text-primary transition-colors duration-150 hover:border-primary/40 hover:bg-accent sm:inline-flex", FOCUS_RING)}>
+              Lihat semua toko
+            </Link>
+          </div>
         </div>
 
-        {loading && (
-          <div className="mt-6 flex h-40 items-center justify-center text-sm text-muted-foreground">
-            Memuat toko...
-          </div>
-        )}
+        {loading && (<div role="status" aria-label="Memuat toko" className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+            {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (<VendorCardSkeleton key={index}/>))}
+          </div>)}
 
-        {!loading && sortedVendors.length === 0 && (
-          <div className="mt-6 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
+        {!loading && sortedVendors.length === 0 && (<div className="mt-6 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
             <p className="font-sans text-sm font-semibold text-foreground">
-              Belum ada toko yang buka
+              Belum ada toko
             </p>
             <p className="mt-1 font-sans text-xs text-muted-foreground">
-              Coba lagi nanti saat jam jual toko di sekitarmu sudah aktif.
+              Toko UMKM akan muncul di sini setelah pemiliknya mendaftar.
             </p>
-          </div>
-        )}
+          </div>)}
 
-        {!loading && sortedVendors.length > 0 && (
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
-            {sortedVendors.map((vendor) => (
-              <VendorCard
-                key={vendor.id}
-                vendor={vendor}
-                badgeLabel={
-                  plan.priorityListing && vendor.id === SELLER_VENDOR_SLUG
+        {!loading && sortedVendors.length > 0 && (<>
+            
+            <div className="relative mt-6 overflow-hidden">
+              <AnimatePresence initial={false} mode="popLayout" custom={direction}>
+                <motion.div key={page} custom={direction} variants={{
+                enter: (dir: number) => ({ opacity: 0, x: 40 * dir }),
+                center: { opacity: 1, x: 0 },
+                exit: (dir: number) => ({ opacity: 0, x: -40 * dir }),
+            }} initial="enter" animate="center" exit="exit" transition={reducedMotion
+                ? { duration: 0 }
+                : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+                  {pageItems.map((vendor) => (<VendorCard key={vendor.id} vendor={vendor} badgeLabel={plan.priorityListing && vendor.id === SELLER_VENDOR_SLUG
                     ? "Prioritas"
-                    : undefined
-                }
-              />
-            ))}
-          </div>
-        )}
+                    : undefined}/>))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
 
-        {/* Katalog UMKM lengkap ada di /toko; beranda hanya menampilkan
-            sekumpulan toko pilihan. */}
-        <div className="mt-8 flex justify-center">
-          <Link
-            href="/toko"
-            className={cn(
-              "inline-flex min-h-11 items-center gap-2 rounded-full border border-primary/40 px-6 font-sans text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white",
-              FOCUS_RING,
-            )}
-          >
-            Lihat Semua UMKM
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </div>
+            
+            {pageCount > 1 && (<nav aria-label="Halaman toko" className="mt-6 flex flex-wrap items-center justify-start gap-2">
+                {Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => {
+                    const active = pageNumber === page;
+                    return (<button key={pageNumber} type="button" onClick={() => goToPage(pageNumber)} aria-current={active ? "page" : undefined} aria-label={`Ke halaman toko ${pageNumber}`} className={cn("flex h-10 w-10 items-center justify-center rounded-full font-sans text-sm font-semibold tabular-nums transition-colors duration-150", active
+                            ? "bg-primary text-white"
+                            : "border border-border bg-white text-muted-foreground hover:border-primary/40 hover:text-primary", FOCUS_RING)}>
+                        {pageNumber}
+                      </button>);
+                })}
+              </nav>)}
+          </>)}
       </div>
-    </section>
-  );
+    </section>);
 }
