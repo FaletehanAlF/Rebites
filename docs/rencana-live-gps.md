@@ -1,19 +1,20 @@
 # Rencana Live GPS Kurir — ReBites
 
-**Status: RENCANA SAJA. Belum ada SQL yang dijalankan, migration yang dibuat, atau
-konfigurasi Supabase yang diubah.** Dokumen ini adalah prasyarat sebelum
-`LIVE_LOCATION_READY` boleh diberi nilai `true` di
-`app/components/order-history/courier-live-tracker.tsx`.
+**Status: SUDAH DITERAPKAN.** Tabel `delivery_locations` ber-RLS, Realtime
+Postgres Changes (`hooks/use-courier-location.ts`), dan peta
+`delivery-map.tsx` sudah berjalan. Dokumen ini disimpan sebagai catatan
+desain — bagian di bawahnya adalah audit SEBELUM implementasi, dan alasan
+utamanya tetap berlaku: kanal Broadcast publik tidak boleh dihidupkan lagi.
 
-## 1. Kondisi saat ini (hasil audit)
+## 1. Kondisi SEBELUM implementasi (hasil audit)
 
 | Hal | Nilai aktual |
 |---|---|
-| `LIVE_LOCATION_READY` | `false` di `courier-live-tracker.tsx:21` |
+| `LIVE_LOCATION_READY` | Sudah tidak dipakai — bendera dan `courier-live-tracker.tsx` dihapus; GPS live berjalan lewat `delivery_locations` + Realtime |
 | Kanal lokasi | Supabase **Broadcast publik** `delivery:<orderCode>` — sudah **dicabut** dari UI |
 | Tabel lokasi | **Tidak ada** di seluruh `supabase/migrations/` |
 | RLS lokasi | Tidak ada |
-| `delivery-live-tracking.tsx` | Masih ada, tapi **tidak diimpor** di mana pun |
+| `delivery-live-tracking.tsx` | Sudah dihapus |
 | Role kurir | Tidak ada. `profiles.role` dibatasi `CHECK (role IN ('admin','umkm','buyer'))` |
 
 **Kenapa Broadcast tidak boleh dihidupkan lagi:** kanal Broadcast di Supabase dapat
@@ -113,7 +114,7 @@ tab tanpa sempat mengirim "selesai".
 `DeliveryStatusPanel` sudah punya state `on-the-way` dengan label **"GPS belum aktif"**
 dan blok **"Posisi kurir belum tersedia"**. Saat backend siap, yang berubah hanya:
 
-1. `LIVE_LOCATION_READY = true`.
+1. Bendera `LIVE_LOCATION_READY` dihapus — live GPS berjalan tanpa gerbang manual.
 2. Panel membaca `delivery_locations` (bukan Broadcast), lalu merender marker.
 3. Tiga state baru dipakai sesuai data: `aktif` (data < 30 dtk), `terlambat` (30–90 dtk),
    `tidak tersedia` (> 90 dtk atau tanpa izin).

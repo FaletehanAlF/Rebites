@@ -1,14 +1,14 @@
--- ============================================================================
--- 0007: Akun penjual demo + klaim toko Dapur Ibu Tini
---   Email    : seller@rebites.id
---   Password : rebites123
---   Akun ini pemilik umkm_profiles slug 'dapur-ibu-tini' sehingga dashboard
---   penjual bisa kelola produk, langganan, dan pengaturan toko (RLS lolos).
--- ============================================================================
+
+
+
+
+
+
+
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
--- 1. User auth
+
 INSERT INTO auth.users (
   instance_id, id, aud, role, email, encrypted_password,
   email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
@@ -29,7 +29,7 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- 2. Identitas GoTrue agar login email dikenali
+
 INSERT INTO auth.identities (
   id, user_id, provider_id, provider, identity_data,
   last_sign_in_at, created_at, updated_at
@@ -48,7 +48,7 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- 3. Klaim toko Dapur Ibu Tini oleh akun tersebut
+
 UPDATE public.umkm_profiles
 SET user_id = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'
 WHERE slug = 'dapur-ibu-tini' AND user_id IS NULL;

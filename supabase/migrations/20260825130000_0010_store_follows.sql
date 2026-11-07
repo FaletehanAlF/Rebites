@@ -1,12 +1,12 @@
--- ============================================================================
--- 0010: Relasi "Toko Diikuti" (follow store)
---   Fitur ikuti toko sebelumnya hanya state lokal di halaman detail toko.
---   Tabel ini menyimpan relasi user <-> UMKM agar tombol "Ikuti Toko"
---   persisten dan daftar "Toko Diikuti" bisa tampil di halaman profil.
---
---   RLS: user hanya boleh melihat/mengelola relasi miliknya sendiri.
---   Idempotent: aman dijalankan berulang.
--- ============================================================================
+
+
+
+
+
+
+
+
+
 
 CREATE TABLE IF NOT EXISTS public.store_follows (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

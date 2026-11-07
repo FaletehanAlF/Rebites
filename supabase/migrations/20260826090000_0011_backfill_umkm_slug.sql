@@ -1,6 +1,6 @@
--- 0011: Backfill slug untuk umkm_profiles yang belum memiliki slug.
--- Toko legacy tanpa slug harus tetap valid untuk routing Detail Toko,
--- Rekomendasi Toko, dan relasi products.umkm_id.
+
+
+
 
 DO $$
 DECLARE
@@ -36,6 +36,6 @@ BEGIN
   END LOOP;
 END $$;
 
--- Setelah backfill, slug wajib ada untuk setiap toko baru dari aplikasi.
+
 ALTER TABLE public.umkm_profiles
   ALTER COLUMN slug SET NOT NULL;

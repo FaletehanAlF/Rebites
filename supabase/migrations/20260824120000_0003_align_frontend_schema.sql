@@ -1,15 +1,15 @@
-﻿-- ============================================================================
--- 0003: Align schema dengan data model frontend ReBites
--- Sumber acuan: lib/types.ts, lib/data.ts, lib/product-storage.ts,
---   lib/order-storage.ts, lib/notification-storage.ts, lib/review-storage.ts,
---   lib/subscription-storage.ts, lib/store-settings-storage.ts,
---   hooks/use-addresses.ts, hooks/use-rebites-coins.ts
--- ============================================================================
+﻿
 
--- ----------------------------------------------------------------------------
--- 1. UMKM PROFILES: slug katalog + field tampilan toko
---    (Vendor, VendorProfileExtra, SellerStoreSettings)
--- ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
 ALTER TABLE public.umkm_profiles ALTER COLUMN user_id DROP NOT NULL;
 
 ALTER TABLE public.umkm_profiles
@@ -30,9 +30,9 @@ ALTER TABLE public.umkm_profiles
 CREATE UNIQUE INDEX IF NOT EXISTS umkm_slug_key ON public.umkm_profiles(slug);
 CREATE INDEX IF NOT EXISTS umkm_slug_idx ON public.umkm_profiles(slug);
 
--- ----------------------------------------------------------------------------
--- 2. PRODUCTS: union(FoodItem, UrgentItem, SellerProduct, StoreMenu)
--- ----------------------------------------------------------------------------
+
+
+
 ALTER TABLE public.products
   ADD COLUMN IF NOT EXISTS slug text,
   ADD COLUMN IF NOT EXISTS discount_percent integer NOT NULL DEFAULT 0,
@@ -51,9 +51,9 @@ ALTER TABLE public.products
 
 CREATE UNIQUE INDEX IF NOT EXISTS products_slug_key ON public.products(slug);
 
--- ----------------------------------------------------------------------------
--- 3. ORDERS: match StoredOrder (snapshot + breakdown harga + coin + estimasi)
--- ----------------------------------------------------------------------------
+
+
+
 ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS order_code text UNIQUE,
   ADD COLUMN IF NOT EXISTS product_name text,
@@ -84,9 +84,9 @@ ALTER TABLE public.orders
 CREATE INDEX IF NOT EXISTS idx_orders_code ON public.orders(order_code);
 CREATE INDEX IF NOT EXISTS idx_orders_vendor_slug ON public.orders(vendor_slug);
 
--- ----------------------------------------------------------------------------
--- 4. PLANS: match SubscriptionPlan (basic/standar/premium) + subscriptions
--- ----------------------------------------------------------------------------
+
+
+
 ALTER TABLE public.plans
   ADD COLUMN IF NOT EXISTS slug text UNIQUE,
   ADD COLUMN IF NOT EXISTS tagline text,
@@ -98,13 +98,13 @@ ALTER TABLE public.subscriptions
   ADD COLUMN IF NOT EXISTS payment_method_id text,
   ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
--- Hapus seed lama yang gak match frontend (Starter/Berkembang/Premium),
--- diganti seed baru di 0004 sesuai SUBSCRIPTION_PLANS.
+
+
 DELETE FROM public.plans WHERE slug IS NULL;
 
--- ----------------------------------------------------------------------------
--- 5. REVIEWS: OrderReview + StoreReview + ServiceReview
--- ----------------------------------------------------------------------------
+
+
+
 CREATE TABLE IF NOT EXISTS public.reviews (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id uuid REFERENCES public.orders(id) ON DELETE SET NULL,
@@ -148,9 +148,9 @@ ON public.reviews FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
 
--- ----------------------------------------------------------------------------
--- 6. NOTIFICATIONS: Notification (buyer/seller, realtime enabled)
--- ----------------------------------------------------------------------------
+
+
+
 CREATE TABLE IF NOT EXISTS public.notifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -176,9 +176,9 @@ ON public.notifications FOR SELECT
 TO authenticated
 USING (auth.uid() = user_id);
 
--- Sengaja longgar: alur sekarang membuat notifikasi untuk pihak lawan
--- (buyer insert utk seller & sebaliknya) langsung dari client.
--- Nanti diperketat dengan trigger DB saat fase rewrite.
+
+
+
 DROP POLICY IF EXISTS "notifications_insert_any_authed" ON public.notifications;
 CREATE POLICY "notifications_insert_any_authed"
 ON public.notifications FOR INSERT
@@ -198,9 +198,9 @@ ON public.notifications FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
 
--- ----------------------------------------------------------------------------
--- 7. ADDRESSES: DeliveryAddress
--- ----------------------------------------------------------------------------
+
+
+
 CREATE TABLE IF NOT EXISTS public.addresses (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -226,9 +226,9 @@ TO authenticated
 USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
--- ----------------------------------------------------------------------------
--- 8. COIN TRANSACTIONS: CoinTransaction (saldo = SUM earned - SUM spent)
--- ----------------------------------------------------------------------------
+
+
+
 CREATE TABLE IF NOT EXISTS public.coin_transactions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS public.coin_transactions (
 );
 ALTER TABLE public.coin_transactions ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_coin_tx_user ON public.coin_transactions(user_id, created_at DESC);
--- cegah settle ganda per order+type (paritas dgn hasTransactionFor di hook)
+
 CREATE UNIQUE INDEX IF NOT EXISTS coin_tx_once_per_order_type
   ON public.coin_transactions(user_id, order_code, type) WHERE order_code IS NOT NULL;
 
@@ -256,9 +256,9 @@ ON public.coin_transactions FOR INSERT
 TO authenticated
 WITH CHECK (auth.uid() = user_id);
 
--- ----------------------------------------------------------------------------
--- 9. PROMO CODES: PromoCode
--- ----------------------------------------------------------------------------
+
+
+
 CREATE TABLE IF NOT EXISTS public.promo_codes (
   code text PRIMARY KEY,
   percent_off integer NOT NULL CHECK (percent_off BETWEEN 1 AND 100),
@@ -282,9 +282,9 @@ TO authenticated
 USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin'))
 WITH CHECK (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin'));
 
--- ----------------------------------------------------------------------------
--- 10. RPC: reserve_stock - kurangi stok secara atomik (anti oversell)
--- ----------------------------------------------------------------------------
+
+
+
 CREATE OR REPLACE FUNCTION public.reserve_stock(p_product_id uuid, p_quantity integer)
 RETURNS boolean
 LANGUAGE plpgsql
@@ -313,9 +313,9 @@ $$;
 REVOKE EXECUTE ON FUNCTION public.reserve_stock(uuid, integer) FROM anon;
 GRANT EXECUTE ON FUNCTION public.reserve_stock(uuid, integer) TO authenticated;
 
--- ----------------------------------------------------------------------------
--- 11. REALTIME: notifications & orders
--- ----------------------------------------------------------------------------
+
+
+
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'notifications') THEN
@@ -326,9 +326,9 @@ BEGIN
   END IF;
 END $$;
 
--- ----------------------------------------------------------------------------
--- 12. STORAGE BUCKETS: product-images & avatars (public read)
--- ----------------------------------------------------------------------------
+
+
+
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('product-images', 'product-images', true), ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;

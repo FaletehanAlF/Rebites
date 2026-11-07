@@ -1,22 +1,22 @@
--- ============================================================================
--- 7B-2A: Product Shipping Schema (berat + dimensi + guard harga/stok)
--- SCOPE:
---   - products: + weight_gram, length_cm, width_cm, height_cm (nullable)
---   - CHECK positif untuk 4 kolom baru (NULL lolos untuk produk legacy)
---   - CHECK >= 0 untuk original_price, surplus_price, stock
---     (audit remote 2026-09-29: 50 produk, nihil nilai negatif -> aman)
--- PRINSIP:
---   - additive, tidak menghapus kolom/data lama
---   - semua kolom baru NULLABLE, tanpa DEFAULT, tanpa backfill buatan
---     (jangan isi 500 gram / angka buatan untuk data lama)
---   - tidak menyentuh RLS, verification, moderation, payment, address
---   - tidak menyentuh is_delivery/is_pickup behavior
--- STATUS: dibuat saja, JANGAN dijalankan ke Supabase remote dulu (7B-2A).
--- ============================================================================
 
--- ----------------------------------------------------------------------------
--- 1. Kolom shipping baru (satuan gram / cm, NULL = belum diketahui)
--- ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ALTER TABLE public.products
   ADD COLUMN IF NOT EXISTS weight_gram integer,
   ADD COLUMN IF NOT EXISTS length_cm integer,
@@ -64,9 +64,9 @@ COMMENT ON COLUMN public.products.length_cm IS '7B-2A: panjang kemasan cm, NULL 
 COMMENT ON COLUMN public.products.width_cm IS '7B-2A: lebar kemasan cm, NULL untuk produk legacy.';
 COMMENT ON COLUMN public.products.height_cm IS '7B-2A: tinggi kemasan cm, NULL untuk produk legacy.';
 
--- ----------------------------------------------------------------------------
--- 2. Guard harga/stok non-negatif (kolom NOT NULL, audit nihil negatif)
--- ----------------------------------------------------------------------------
+
+
+
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -95,9 +95,9 @@ BEGIN
 END
 $$;
 
--- ----------------------------------------------------------------------------
--- 3. discount_percent: SENGAJA tidak diubah pada tahap ini
---    (integer NOT NULL DEFAULT 0, tanpa CHECK; di luar scope 7B-2A).
--- 4. RLS / verification / moderation / payment / address: tidak diubah.
--- ----------------------------------------------------------------------------
--- (Sengaja tidak ada CREATE POLICY / TRIGGER baru.)
+
+
+
+
+
+

@@ -1,40 +1,40 @@
--- ============================================================================
--- TES INTEGRASI pgTAP — perilaku trigger guard_orders_update (P0-B) ketika
--- release_stock() mengembalikan false.
---
--- STATUS: TIDAK DIJALANKAN OLEH SISTEM/TES TypeScript. Jalankan manual
--- terhadap DATABASE LOKAL yang sudah menerapkan SEMUA migration (0001 s/d
--- terakhir). Contoh (supabase CLI lokal atau Postgres + pgTAP):
---   psql "postgres://postgres:postgres@127.0.0.1:54322/postgres" \
---     -f supabase/tests/stock_release_guard.sql
--- JANGAN dijalankan pada database produksi (fixture tidak boleh menulis ke
--- database lapisan produksi — file ini hanya untuk dev lokal).
---
--- Yang dibuktikan (perilaku trigger sungguhan, bukan simulasi TypeScript):
---   1. UPDATE batal-normatif dengan release_stock SUKSES → stok +quantity,
---      marker stock_released_at terisi; panggilan kedua release_order_stock
---      idempotent (false) tanpa pelepasan kedua.
---   2. UPDATE ketika slug produk tidak ditemukan (release_stock false) →
---      transisi status TETAP commit (fail-open, tanpa exception), stok TIDAK
---      berubah, marker dibiarkan NULL.
---   3. Setelah slug dipulihkan, release_order_stock() mengembalikan true dan
---      stok dilepas tepat-1x.
---   4. Wrapper jujur: mengembalikan false selama stok belum berhasil dilepas.
---
--- Prasyarat & asumsi:
---   - Sesi berjalan sebagai superuser (session_user 'postgres'): guard
---     memperlakukannya privileged sehingga whitelist kolom dilewati; blok
---     pelepasan stok tetap berjalan untuk semua caller.
---   - guard_orders_insert_client_defaults menimpa kolom stok untuk caller
---     non-admin (auth.jwt() NULL pada sesi psql), jadi stock_reserved_at
---     diklaim lewat UPDATE terpisah privileged setelah insert.
---   - Trigger handle_new_user (0001) otomatis membuat baris profiles dari
---     auth.users, sehingga fixture tidak memasukkan profiles secara eksplisit.
---   - Kolom pada auth.users dapat berbeda antar versi GoTrue; bila insert
---     gagal karena kolom NOT NULL tambahan, sesuaikan fixture di bawah.
---   - Trigger lain (koin P1-A, invoice_state 2D-E, activity log) aman untuk
---     fixture ini karena coin_used = 0 dan idempoten per order_code.
--- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 BEGIN;
 
@@ -42,10 +42,10 @@ CREATE EXTENSION IF NOT EXISTS pgtap;
 
 SELECT plan(16);
 
--- ---------------------------------------------------------------------------
--- Fixture 1: order yang pelepasannya SUKSES.
--- Produk slug 'test-release-ayam', stok 0 (reservasi konseptual = 2).
--- ---------------------------------------------------------------------------
+
+
+
+
 DO $$
 DECLARE
   v_user uuid := gen_random_uuid();
@@ -60,7 +60,7 @@ BEGIN
     now(), now()
   );
 
-  -- (profiles dibuat otomatis oleh trigger handle_new_user.)
+  
 
   INSERT INTO public.umkm_profiles (user_id, business_name, city)
   VALUES (v_user, 'UMKM Tes Pelepasan Stok', 'Jakarta')
@@ -87,7 +87,7 @@ BEGIN
    WHERE order_code = 'RB-STOCK-RELEASE-TEST-1';
 END $$;
 
--- Kasus 1: pelepasan SUKSES → stok +2, marker terisi.
+
 SELECT lives_ok(
   $$UPDATE public.orders SET order_status = 'cancelled'
      WHERE order_code = 'RB-STOCK-RELEASE-TEST-1'$$,
@@ -124,9 +124,9 @@ SELECT is(
   'stok TIDAK bertambah lagi pada pelepasan kedua'
 );
 
--- ---------------------------------------------------------------------------
--- Fixture 2: order yang pelepasannya GAGAL (slug produk di-rename).
--- ---------------------------------------------------------------------------
+
+
+
 DO $$
 DECLARE
   v_user uuid := gen_random_uuid();
@@ -160,13 +160,13 @@ BEGIN
      SET stock_reserved_at = created_at
    WHERE order_code = 'RB-STOCK-RELEASE-TEST-2';
 
-  -- Simulasi kegagalan release_stock: rename slug produk →
-  -- UPDATE ... WHERE slug = 'test-release-bakso' cocok 0 baris → false,
-  -- tanpa menyentuh baris order (products memang tidak dihapus).
+  
+  
+  
   UPDATE public.products SET slug = 'test-release-bakso-renamed' WHERE id = v_product;
 END $$;
 
--- Kasus 2: pelepasan GAGAL → fail-open + retry.
+
 SELECT lives_ok(
   $$UPDATE public.orders
        SET order_status = 'cancelled'
@@ -200,9 +200,9 @@ SELECT is(
   'wrapper release_order_stock jujur mengembalikan false saat stok belum dilepas'
 );
 
--- ---------------------------------------------------------------------------
--- Kasus 3: pemulihan data → retry melepas stok tepat-1x.
--- ---------------------------------------------------------------------------
+
+
+
 UPDATE public.products
    SET slug = 'test-release-bakso'
  WHERE id = (SELECT product_id FROM public.orders WHERE order_code = 'RB-STOCK-RELEASE-TEST-2');
@@ -226,7 +226,7 @@ SELECT is(
   'marker terisi setelah retry sukses'
 );
 
--- Idempotensi akhir: tidak ada pelepasan ketiga.
+
 SELECT is(
   public.release_order_stock('RB-STOCK-RELEASE-TEST-2'),
   false,

@@ -1,20 +1,20 @@
-﻿-- ============================================================================
--- 0004: Seed data - mirror 1:1 dari data hardcoded frontend
---   vendors[]        -> umkm_profiles        (lib/data.ts)
---   VENDOR_PROFILES  -> kolom profil toko    (app/detail/toko/vendor-profiles.ts)
---   STORE.owner      -> owner_name           (app/components/toko/data.ts)
---   foodItems[]      -> products             (lib/data.ts)
---   urgentItems[]    -> products (slot)      (lib/data.ts)
---   SUBSCRIPTION_PLANS -> plans              (lib/subscription-plans.ts)
---   promoCodes       -> promo_codes          (lib/data.ts)
---
--- CATATAN: expires_at memakai now() + interval sebagai pengganti helper
---   inHours(n). Nilainya relatif terhadap waktu push, bukan realtime.
--- ============================================================================
+﻿
 
--- ----------------------------------------------------------------------------
--- PLANS (sesuai SUBSCRIPTION_PLANS di lib/subscription-plans.ts)
--- ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 INSERT INTO public.plans (slug, name, tagline, price_monthly, price_yearly, max_products, features, is_popular, cta)
 VALUES
   ('basic', 'Basic',
@@ -42,9 +42,9 @@ ON CONFLICT (slug) DO UPDATE SET
   is_popular = EXCLUDED.is_popular,
   cta = EXCLUDED.cta;
 
--- ----------------------------------------------------------------------------
--- UMKM PROFILES (vendors[] + VENDOR_PROFILES, user_id NULL karena katalog demo)
--- ----------------------------------------------------------------------------
+
+
+
 INSERT INTO public.umkm_profiles (
   user_id, slug, business_name, description, category, address,
   logo_url, is_verified, rating, distance_km, is_rescue_partner, open_hours,
@@ -78,10 +78,10 @@ VALUES
    'UMKM Partner – Level 3', 187, 2022, '≈ 4 menit', 305, 142)
 ON CONFLICT (slug) DO NOTHING;
 
--- ----------------------------------------------------------------------------
--- PRODUCTS: foodItems[] (id dipertahankan sebagai slug, termasuk typo
--- '/makanan14.jpg' pada item Roti Kopi agar identik dengan frontend)
--- ----------------------------------------------------------------------------
+
+
+
+
 INSERT INTO public.products (
   umkm_id, slug, name, description, category,
   original_price, surplus_price, discount_percent, stock, stock_label,
@@ -106,9 +106,9 @@ VALUES
   ((SELECT id FROM public.umkm_profiles WHERE slug='warkop-pak-iman'),   'iced-matcha-latte',   'Iced Matcha Latte',   '', 'Minuman',       25000, 15000, 40, 10, '10 cup tersisa',   'available', '/makanan15.jpg',  4.8, 0.7, '09:00', '21:00', NULL)
 ON CONFLICT (slug) DO NOTHING;
 
--- ----------------------------------------------------------------------------
--- PRODUCTS: urgentItems[] (slot + countdown)
--- ----------------------------------------------------------------------------
+
+
+
 INSERT INTO public.products (
   umkm_id, slug, name, description, category,
   original_price, surplus_price, discount_percent, stock, stock_label,
@@ -131,9 +131,9 @@ VALUES
   ((SELECT id FROM public.umkm_profiles WHERE slug='dapur-ibu-tini'),   'urgent-ketoprak-telor-malam',         'Ketoprak Telor',          '', 'Makanan Berat', 25000, 16000, 36, 10, '10 porsi tersisa','available', '/makanan9.webp',  4.6, 0.9, '18:00', '21:00', now() + interval '165 minutes','18-21')
 ON CONFLICT (slug) DO NOTHING;
 
--- ----------------------------------------------------------------------------
--- PROMO CODES (promoCodes[])
--- ----------------------------------------------------------------------------
+
+
+
 INSERT INTO public.promo_codes (code, percent_off, is_valid)
 VALUES ('REBITES26', 5, true)
 ON CONFLICT (code) DO UPDATE SET percent_off = EXCLUDED.percent_off, is_valid = EXCLUDED.is_valid;

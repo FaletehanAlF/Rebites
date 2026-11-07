@@ -1,74 +1,74 @@
--- ============================================================================
--- TES INTEGRASI pgTAP — P1-C: refund Coin berbasis LEDGER (bukan snapshot)
---
--- STATUS: BELUM DIJALANKAN. Disiapkan pada Tahap 2.2 dan diperbaiki pada
--- Tahap 2.3D (kualitas tes: I7/I9 dibuat diskriminatif, ditambah kasus
--- nominal refund berbasis ledger).
--- Jalankan manual terhadap DATABASE LOKAL yang sudah menerapkan SEMUA
--- migration (termasuk 20261020000000_p1c_coin_refund_ledger_basis.sql).
--- Contoh (supabase CLI lokal atau Postgres + pgTAP):
---   psql "postgres://postgres:postgres@127.0.0.1:54322/postgres" \
---     -f supabase/tests/coin_refund_ledger_basis.sql
--- JANGAN dijalankan pada database produksi/hosted.
---
--- Yang dibuktikan (perilaku trigger & RPC sungguhan, bukan simulasi):
---   I1  'spent' tersedia  -> terminalisasi menghasilkan TEPAT SATU 'refund'
---                            dengan nominal = debit aktual.
---   I2  tidak ada 'spent' -> terminalisasi TIDAK menghasilkan 'refund'
---                            (anti-mint: tidak ada Coin dari nol).
---   I3  terminalisasi berulang -> jumlah 'refund' tetap satu.
---   I4  RPC refund_order_coins lalu terminalisasi -> tetap satu 'refund'.
---   I5  terminalisasi lalu RPC refund_order_coins -> tetap satu 'refund'
---                            dan nominalnya debit aktual (idempoten).
---   I6  order historis tanpa 'spent' lalu dibatalkan -> saldo buyer TIDAK naik.
---   I7  spend_order_coins terhadap order terminal -> ditolak (false) dan
---                            ledger tidak berubah, MESKIPUN saldo buyer
---                            cukup (jadi false bukan berasal dari saldo).
---   I8  status utang durable (SQL saja): tiga kolom ada, nilai
---                            pending/rpc_error dapat ditulis dan tersimpan,
---                            CHECK menolak nilai di luar kontrak, dan
---                            orders.coin_used tidak berubah. Perilaku
---                            TypeScript (klasifikasi debit di coin-debit.ts,
---                            pencatatan utang di order-settlement.ts) TIDAK
---                            diperiksa oleh SQL ini.
---   I9  spend_order_coins menolak p_user_id yang bukan pemilik order
---                            (buyer_id) tanpa menyentuh ledger, dan tetap
---                            idempoten untuk pemanggilan pemilik yang sah.
---                            Saldo U8 (bukan pemilik) SENGAJA cukup, jadi
---                            false hanya dapat berasal dari pemeriksaan
---                            pemilik.
---   I10 coin_used 900 dengan debit 'spent' 300 -> refund = 300 (nominal
---                            LEDGER), bukan 900 (snapshot), dan tetap satu
---                            saat transisi terminal diulang.
---
--- Prasyarat & asumsi:
---   - Sesi berjalan sebagai superuser (session_user 'postgres'). Trigger
---     guard P0-A/P0-B/2D-E mengizinkan service_role lewat
---     request.jwt.claims; claims diset dengan statement-level
---     `SET LOCAL request.jwt.claims` (transaction-scoped) TANPA 'sub' supaya
---     auth.uid() = NULL dan insert activity_logs memakai buyer order
---     (FK profiles tetap valid).
---   - orders.coin_used TIDAK boleh diubah oleh trigger mana pun; di sini
---     nilainya dipasang lewat INSERT (service_role melewati guard insert).
---   - Saldo Coin = SUM(earned + refund) - SUM(spent) (tidak ada kolom saldo).
---
--- Batas bukti (BACA SEBELUM MENYIMPULKAN):
---   - SELURUH I-series di file ini bersifat SEKUENSIAL. Tidak ada satu pun
---     assertion yang menjalankan dua sesi/dua transaksi berbarengan.
---   - Race dua sesi untuk Coin (terminalisasi vs spend_order_coins, dan
---     refund_order_coins vs trigger) BELUM DIUJI. Belum ada harness untuk
---     kasus ini.
---   - scripts/stock-release-race/run-race.mjs HANYA menguji pelepasan STOK
---     (mode tc03/tc04). Harness itu tidak menyentuh tabel coin_transactions
---     maupun RPC coin, sehingga TIDAK dapat dipakai sebagai bukti apa pun
---     untuk P1-C.
---   - Analisis urutan lock (L1 order -> L2 advisory coin -> L3 ledger) pada
---     komentar migrasi adalah ANALISIS STATIS. Ia bukan bukti empiris bahwa
---     deadlock/race tidak mungkin terjadi; itu hanya dapat dibuktikan dengan
---     dua sesi nyata.
---   - Kehadiran unique index coin_tx_once_per_order_type diasumsikan dari
---     migrasi 0003; perilaku insert tanpa index TIDAK diuji di sini.
--- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 BEGIN;
 
@@ -76,14 +76,14 @@ CREATE EXTENSION IF NOT EXISTS pgtap;
 
 SELECT plan(42);
 
--- Kontrak service_role untuk sesi ini (tanpa 'sub' -> auth.uid() NULL).
--- Statement-level SET LOCAL: transaction-scoped (BEGIN..ROLLBACK), sehingga
--- nilainya berlaku untuk seluruh assertion di bawah tanpa blok DO.
+
+
+
 SET LOCAL request.jwt.claims = '{"role":"service_role"}';
 
--- ---------------------------------------------------------------------------
--- Fixture
--- ---------------------------------------------------------------------------
+
+
+
 DO $$
 DECLARE
   v_u1 uuid := '11111111-1111-4111-8111-111111111111';
@@ -98,7 +98,7 @@ DECLARE
   v_um uuid;
   v_pr uuid;
 BEGIN
-  -- U1 / O1: order SUDAH paid, coin_used 500, ADA debit 'spent' 500.
+  
   INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at)
   VALUES (v_u1, 'p1c-1@example.com', 'x', now(), now());
   INSERT INTO public.umkm_profiles (user_id, business_name, city)
@@ -117,7 +117,7 @@ BEGIN
   INSERT INTO public.coin_transactions (user_id, order_code, type, amount, description)
   VALUES (v_u1, 'RB-P1C-1', 'spent', 500, 'Potongan pesanan');
 
-  -- U2 / O2: order SUDAH paid, coin_used 500, TIDAK ADA 'spent'.
+  
   INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at)
   VALUES (v_u2, 'p1c-2@example.com', 'x', now(), now());
   INSERT INTO public.umkm_profiles (user_id, business_name, city)
@@ -134,7 +134,7 @@ BEGIN
     'RB-P1C-2', 'p1c-nospent-2', 500, 0, now(), now()
   );
 
-  -- U3 / O3: order SUDAH paid, coin_used 300, ADA 'spent' 300.
+  
   INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at)
   VALUES (v_u3, 'p1c-3@example.com', 'x', now(), now());
   INSERT INTO public.umkm_profiles (user_id, business_name, city)
@@ -153,7 +153,7 @@ BEGIN
   INSERT INTO public.coin_transactions (user_id, order_code, type, amount, description)
   VALUES (v_u3, 'RB-P1C-3', 'spent', 300, 'Potongan pesanan');
 
-  -- U4 / O4: order SUDAH paid, coin_used 700, ADA 'spent' 700.
+  
   INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at)
   VALUES (v_u4, 'p1c-4@example.com', 'x', now(), now());
   INSERT INTO public.umkm_profiles (user_id, business_name, city)
@@ -172,7 +172,7 @@ BEGIN
   INSERT INTO public.coin_transactions (user_id, order_code, type, amount, description)
   VALUES (v_u4, 'RB-P1C-4', 'spent', 700, 'Potongan pesanan');
 
-  -- U5 / O5: order historis: paid, coin_used 900, TIDAK ADA 'spent'.
+  
   INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at)
   VALUES (v_u5, 'p1c-5@example.com', 'x', now(), now());
   INSERT INTO public.umkm_profiles (user_id, business_name, city)
@@ -189,7 +189,7 @@ BEGIN
     'RB-P1C-5', 'p1c-hist-5', 900, 0, now(), now()
   );
 
-  -- U6 / O6: order pending/unpaid (belum dibayar) untuk uji debit terminal.
+  
   INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at)
   VALUES (v_u6, 'p1c-6@example.com', 'x', now(), now());
   INSERT INTO public.umkm_profiles (user_id, business_name, city)
@@ -206,17 +206,17 @@ BEGIN
     'RB-P1C-6', 'p1c-term-6', 0, 0, NULL, now()
   );
 
-  -- T-2: saldo U6 SENGAJA cukup (1000 >= 250 yang diminta I7).
-  -- Tanpa saldo, blok cek saldo di spend_order_coins juga mengembalikan
-  -- false, sehingga I7 lulus walau pemeriksaan status terminal dihapus.
-  -- Dengan saldo cukup, satu-satunya sebab false yang tersisa adalah
-  -- status order terminal.
+  
+  
+  
+  
+  
   INSERT INTO public.coin_transactions (user_id, order_code, type, amount, description)
   VALUES (v_u6, NULL, 'earned', 1000, 'Saldo awal uji I7 (order terminal)');
 
-  -- U7 / O7: order MILIK U7 (unpaid/pending, belum terminal) + saldo 1000.
-  -- U8: user lain dengan saldo 1000 tetapi BUKAN pemilik order, dipakai
-  -- untuk menguji pemeriksaan pemilik (lihat T-1 di bawah).
+  
+  
+  
   INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at)
   VALUES (v_u7, 'p1c-7@example.com', 'x', now(), now());
   INSERT INTO public.umkm_profiles (user_id, business_name, city)
@@ -232,24 +232,24 @@ BEGIN
     'unpaid', 'pending', 'ongoing', 'disiapkan',
     'RB-P1C-7', 'p1c-owner-7', 250, 0, NULL, now()
   );
-  -- Saldo awal U7 (tanpa order_code: unique index tidak berlaku untuk NULL).
+  
   INSERT INTO public.coin_transactions (user_id, order_code, type, amount, description)
   VALUES (v_u7, NULL, 'earned', 1000, 'Saldo awal uji S-1');
 
   INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at)
   VALUES (v_u8, 'p1c-8@example.com', 'x', now(), now());
-  -- T-1: saldo U8 SENGAJA cukup (1000 >= 250). Tanpa saldo, blok cek saldo
-  -- di spend_order_coins juga mengembalikan false, sehingga I9 lulus walau
-  -- pemeriksaan pemilik (buyer_id = p_user_id) dihapus. Dengan saldo cukup,
-  -- false hanya dapat berasal dari pemeriksaan pemilik.
+  
+  
+  
+  
   INSERT INTO public.coin_transactions (user_id, order_code, type, amount, description)
   VALUES (v_u8, NULL, 'earned', 1000, 'Saldo awal uji S-1 (bukan pemilik order)');
 
-  -- T-3: U9 / O9 — orders.coin_used = 900, tetapi debit 'spent' = 300.
-  -- Ini satu-satunya fixture yang membedakan nominal refund berbasis LEDGER
-  -- (300, = debit aktual) dari snapshot orders.coin_used (900). Tanpa
-  -- fixture ini, I1/I4/I5 tidak dapat membedakan kedua basis karena pada
-  -- order-order itu coin_used selalu sama dengan amount spent.
+  
+  
+  
+  
+  
   INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at)
   VALUES (v_u9, 'p1c-9@example.com', 'x', now(), now());
   INSERT INTO public.umkm_profiles (user_id, business_name, city)
@@ -269,7 +269,7 @@ BEGIN
   VALUES (v_u9, 'RB-P1C-9', 'spent', 300, 'Potongan pesanan (nominal ledger)');
 END $$;
 
--- Validasi fixture: prasyarat tiap skenario benar-benar terbentuk.
+
 SELECT ok(
   (SELECT count(*) FROM public.orders o
      JOIN public.coin_transactions ct
@@ -287,10 +287,10 @@ SELECT ok(
   'fixture: RB-P1C-2 paid, coin_used 500, TIDAK ada debit spent'
 );
 
--- T-1/T-2: saldo U6 dan U8 WAJIB cukup. Bila salah satunya bersaldo kurang,
--- I7/I9 tidak diskriminatif: 'false' akan muncul dari blok cek saldo di
--- spend_order_coins meskipun pemeriksaan status terminal / kepemilikan
--- dihapus dari fungsi.
+
+
+
+
 SELECT ok(
   (SELECT count(*) FROM (
      SELECT user_id,
@@ -305,8 +305,8 @@ SELECT ok(
   'fixture: saldo U6 dan U8 >= 250 (cukup) sehingga false pada I7/I9 bukan berasal dari saldo'
 );
 
--- T-3: fixture nominal ledger — coin_used (snapshot) berbeda dari amount
--- 'spent' (fakta debit). Inilah yang membuat I10 dapat membedakan 300 vs 900.
+
+
 SELECT ok(
   (SELECT count(*) FROM public.orders o
      JOIN public.coin_transactions ct
@@ -315,9 +315,9 @@ SELECT ok(
   'fixture: RB-P1C-9 coin_used 900 dengan debit spent 300 (nominal ledger != snapshot)'
 );
 
--- ---------------------------------------------------------------------------
--- I1: 'spent' tersedia -> tepat satu 'refund' sebesar debit aktual
--- ---------------------------------------------------------------------------
+
+
+
 UPDATE public.orders
    SET order_status = 'cancelled', payment_status = 'failed'
  WHERE order_code = 'RB-P1C-1';
@@ -345,9 +345,9 @@ SELECT is(
   'I1: ledger order RB-P1C-1 berisi satu spent + satu refund'
 );
 
--- ---------------------------------------------------------------------------
--- I2: tidak ada 'spent' -> TIDAK ada refund (anti-mint)
--- ---------------------------------------------------------------------------
+
+
+
 UPDATE public.orders
    SET order_status = 'cancelled', payment_status = 'failed'
  WHERE order_code = 'RB-P1C-2';
@@ -369,9 +369,9 @@ SELECT is(
   'I2: saldo buyer tidak naik (tidak ada Coin dari nol)'
 );
 
--- ---------------------------------------------------------------------------
--- I3: terminalisasi berulang -> refund tetap satu
--- ---------------------------------------------------------------------------
+
+
+
 UPDATE public.orders
    SET order_status = 'cancelled', payment_status = 'failed'
  WHERE order_code = 'RB-P1C-1';
@@ -390,9 +390,9 @@ SELECT is(
   'I3: nominal refund tidak berubah setelah transisi kedua'
 );
 
--- ---------------------------------------------------------------------------
--- I4: RPC refund_order_coins lalu terminalisasi -> tetap satu refund
--- ---------------------------------------------------------------------------
+
+
+
 SELECT is(
   public.refund_order_coins('33333333-3333-4333-8333-333333333333', 'RB-P1C-3'),
   true,
@@ -417,9 +417,9 @@ SELECT is(
   'I4: nominal refund = debit aktual (300)'
 );
 
--- ---------------------------------------------------------------------------
--- I5: terminalisasi lalu RPC refund_order_coins (varian sekuensial) -> satu
--- ---------------------------------------------------------------------------
+
+
+
 UPDATE public.orders
    SET order_status = 'cancelled', payment_status = 'failed'
  WHERE order_code = 'RB-P1C-4';
@@ -444,9 +444,9 @@ SELECT is(
   'I5: nominal refund = debit aktual (700)'
 );
 
--- ---------------------------------------------------------------------------
--- I6: order historis tanpa 'spent' yang dibatalkan -> saldo tidak naik
--- ---------------------------------------------------------------------------
+
+
+
 UPDATE public.orders
    SET order_status = 'cancelled', payment_status = 'failed'
  WHERE order_code = 'RB-P1C-5';
@@ -473,9 +473,9 @@ SELECT is(
   'I6: orders.coin_used TIDAK diubah oleh terminalisasi (bukti utang tetap ada)'
 );
 
--- ---------------------------------------------------------------------------
--- I7: debit baru terhadap order terminal ditolak
--- ---------------------------------------------------------------------------
+
+
+
 UPDATE public.orders
    SET order_status = 'cancelled', payment_status = 'failed'
  WHERE order_code = 'RB-P1C-6';
@@ -503,9 +503,9 @@ SELECT is(
   'I7: saldo buyer tetap 1000 setelah debit ditolak (tidak ada debit 250)'
 );
 
--- ---------------------------------------------------------------------------
--- I8: status utang durable (kolom baru) + orders.coin_used tidak berubah
--- ---------------------------------------------------------------------------
+
+
+
 SELECT ok(
   (SELECT count(*) FROM information_schema.columns
     WHERE table_schema = 'public' AND table_name = 'orders'
@@ -534,7 +534,7 @@ SELECT is(
   'I8: orders.coin_used tidak berubah saat status utang ditulis'
 );
 
--- Nilai status di luar kontrak harus DITOLAK oleh CHECK constraint.
+
 CREATE TEMP TABLE p1c_probe (ok boolean) ON COMMIT DROP;
 DO $$
 BEGIN
@@ -567,14 +567,14 @@ SELECT is(
   'I8: pencatatan status utang tidak menambah/mengubah baris refund'
 );
 
--- ---------------------------------------------------------------------------
--- I9 (S-1): pemilik order harus cocok dengan p_user_id
---
--- U8 bukan pemilik RB-P1C-7 (buyer_id = U7) TETAPI saldonya cukup (1000).
--- Debit harus ditolak SEBELUM menyentuh ledger — dan karena saldo bukan
--- penghalang, penolakan hanya bisa berasal dari pemeriksaan pemilik.
--- Pemanggilan oleh pemilik yang sah tetap berhasil dan tetap idempoten.
--- ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 SELECT is(
   public.spend_order_coins('88888888-8888-4888-8888-888888888888', 'RB-P1C-7', 250),
   false,
@@ -622,14 +622,14 @@ SELECT is(
   'I9: pemanggilan idempoten tidak menambah debit kedua'
 );
 
--- ---------------------------------------------------------------------------
--- I10 (T-3): nominal refund berasal dari LEDGER, bukan snapshot coin_used
---
--- Fixture RB-P1C-9: coin_used = 900 (snapshot niat/diskon) tetapi debit
--- 'spent' yang benar-benar tercatat = 300. Trigger refund WAJIB memakai
--- 300. Bila trigger kembali memakai NEW.coin_used, assertion nominal akan
--- membaca 900 dan GAGAL — inilah pembeda yang tidak dimiliki I1/I4/I5.
--- ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 UPDATE public.orders
    SET order_status = 'cancelled', payment_status = 'failed'
  WHERE order_code = 'RB-P1C-9';
@@ -661,9 +661,9 @@ SELECT is(
   'I10: transisi terminal kedua tidak menambah refund (tetap satu, nominal 300)'
 );
 
--- ---------------------------------------------------------------------------
--- Ringkasan: tidak ada 'refund' tanpa 'spent' di seluruh fixture.
--- ---------------------------------------------------------------------------
+
+
+
 SELECT is(
   (SELECT count(*) FROM public.coin_transactions r
     WHERE r.type = 'refund'

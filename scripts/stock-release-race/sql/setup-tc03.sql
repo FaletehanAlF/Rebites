@@ -1,29 +1,29 @@
--- ============================================================================
--- TC-03 (harness) — Setup fixture SATU iterasi (COMMIT; dibutuhkan karena
--- sesi A/B harus melihat baris yang sudah ter-commit).
---
--- Variabel psql (diisi harness):
---   :user_id :email :business :slug :order_code :qty
---
--- Bentuk fixture akhir yang diinginkan — persis kandidat retry lapisan ops:
---   order cancelled/unpaid, stock_reserved_at terisi, stock_released_at NULL,
---   product_slug ada dan produknya ada di tabung → wrapper release_order_stock
---   AKAN benar-benar melepas stok saat dipanggil.
---
--- Cara mencapai status itu TANPA memicu rilis lebih awal (penting):
---   1. Klaim marker reservasi saat order masih pending/unpaid — blok rilis
---      trigger tidak aktif (bukan terminal), jadi tidak ada pelepasan.
---   2. Simulasikan produk hilang saat transisi terminal (slug di-rename
---      sementara) → release_stock gagal → fail-open :250-254: transisi tetap
---      commit, marker DIBIARKAN NULL (inilah yang mustahil dicapai lewat
---      jalur normal seandainya rilis pertama sukses).
---   3. Pulihkan slug produk (UPDATE tabel products saja; tidak menyentuh
---      order, tidak memicu guard orders). Kini order = kandidat retry siap
---      direntengkan pada balapan TC-03.
---
--- Status: BELUM DIJALANKAN. Dijalankan HANYA oleh harness run-race.mjs
--- (guard GUC + penolakan nonlokal + validasi + cleanup ada di harness).
--- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \set ON_ERROR_STOP on
 
@@ -60,7 +60,7 @@ SELECT :'user_id'::uuid, :'umkm_id'::uuid, p.id, :'qty'::integer, (:'qty'::integ
   FROM public.products p
  WHERE p.slug = :'slug';
 
--- Langkah 1: klaim marker reservasi saat order masih pending/unpaid.
+
 UPDATE public.orders
    SET stock_reserved_at = created_at
  WHERE order_code = :'order_code'
@@ -69,7 +69,7 @@ UPDATE public.orders
    AND stock_reserved_at IS NULL
    AND stock_released_at IS NULL;
 
--- Langkah 2: produk "hilang" saat transisi terminal → rilis gagal (fail-open).
+
 UPDATE public.products
    SET slug = :'slug' || '-hidden'
  WHERE slug = :'slug';
@@ -80,10 +80,10 @@ UPDATE public.orders
    AND order_status = 'pending'
    AND payment_status = 'unpaid'
    AND stock_released_at IS NULL;
--- (RAISE WARNING 'pelepasan stok GAGAL ...' dari guard :251-253 di sini
---  memang diharapkan; marker dibiarkan NULL.)
 
--- Langkah 3: pulihkan slug produk (tanpa menyentuh baris order).
+
+
+
 UPDATE public.products
    SET slug = :'slug'
  WHERE slug = :'slug' || '-hidden';

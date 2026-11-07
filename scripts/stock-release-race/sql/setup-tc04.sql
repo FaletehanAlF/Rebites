@@ -1,16 +1,16 @@
--- ============================================================================
--- TC-04 W4 (harness) — Setup fixture SATU iterasi (COMMIT).
---
--- Variabel psql (diisi harness):
---   :user_id :email :business :slug :order_code :qty
---
--- Bentuk fixture akhir: order pending/unpaid dengan marker reservasi
--- (stock_reserved_at) terisi; produk ada dan stok penuh (S0=25, sold_count=5).
--- Balapan A (statement webhook) × B (statement verify) kemudian memperebutkan
--- transisi terminal yang sama — tepat satu boleh menang dan melepas stok.
---
--- Status: BELUM DIJALANKAN. Pengaman sama dengan setup-tc03.sql.
--- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \set ON_ERROR_STOP on
 
@@ -47,8 +47,8 @@ SELECT :'user_id'::uuid, :'umkm_id'::uuid, p.id, :'qty'::integer, (:'qty'::integ
   FROM public.products p
  WHERE p.slug = :'slug';
 
--- Klaim marker reservasi saat order masih pending/unpaid (blok rilis trigger
--- tidak aktif untuk non-terminal) → siap diperebutkan A/B.
+
+
 UPDATE public.orders
    SET stock_reserved_at = created_at
  WHERE order_code = :'order_code'

@@ -106,19 +106,61 @@ RPC database (`SECURITY DEFINER`) → trigger `profiles.role`. Perubahan role
 hanya sah dari konteks `service_role`; admin tim tidak bisa melewati API
 lewat PostgREST.
 
-**Peran & beranda.** `admin → /dashboard/admin`, `umkm → /dashboard/penjual`,
-`buyer → /home` (lihat `lib/current-user.ts`).
+**Peran & beranda.** `admin → /dashboard/admin`, `umkm → /dashboard/penjual/<id-toko>`,
+`buyer → /home` (lihat `lib/current-user.ts` dan `lib/seller-store-path.ts`). Alamat
+`/dashboard/penjual` tanpa id tetap hidup sebagai pengalih: ia mencari toko milik penjual
+yang login lalu mengalihkan ke alamat ber-id, sehingga tautan lama tidak perlu diubah.
 
 **Migrasi.** File di `supabase/migrations/` adalah satu-satunya cara schema
 berubah. Selalu periksa status dengan `npx supabase migration list` sebelum
 dan sesudah menerapkan. Jangan mengubah file migrasi yang sudah diterapkan.
 
-**Preferensi admin** disimpan di `localStorage` (`lib/admin-preferences.ts`),
-bukan di database — belum ada endpoint pengaturan admin.
+**Preferensi admin** dibaca dari `localStorage` sebagai cache dan disinkronkan
+ke akun lewat tabel `user_preferences` (`lib/admin-preferences.ts`), sehingga
+pilihan yang sama tetap terpakai saat admin masuk dari perangkat lain.
+Pengecualiannya lebar sidebar: itu sengaja per perangkat karena besar layar
+berbeda-beda.
 
 ## Status yang perlu diketahui
 
-- `LIVE_LOCATION_READY = false` di
-  `app/components/order-history/courier-live-tracker.tsx` — pelacakan lokasi
-  kurir belum diaktifkan.
+- Live GPS kurir aktif lewat tabel `delivery_locations` ber-RLS + Realtime
+  Postgres Changes (`hooks/use-courier-location.ts`, peta
+  `app/components/order-history/delivery-map.tsx`). Jangan menghidupkan
+  kembali kanal Broadcast publik — siapa pun yang tahu kode pesanan bisa
+  menerimanya.
+- Suspend/ban menahan login di SEMUA pintu: jalur pasca-auth membaca
+  `profiles.account_status` (`lib/account-block.ts`), sanksi juga menyinkronkan
+  `ban_duration` Supabase Auth (`lib/server/account-ban.ts`) dan menonaktifkan
+  toko pemiliknya. Akun yang diblokir melihat pesan di form login.
+- Kotak pesan admin + banding akun terblokir (`20261109000000_support_inbox`):
+  satu percakapan per akun (`support_threads`), isi pesan (`support_messages`),
+  dan banding (`support_appeals`). Satu-satunya jalur dari sisi pengguna adalah
+  halaman banding PUBLIK `/banding`: akun yang diblokir tidak bisa login, dan
+  pengguna memegang kode untuk memantau statusnya di `/banding/status`.
+  Halaman/menu chat pembeli dan penjual sengaja tidak ada — percakapan dibaca
+  dan dibalas admin di menu **Chat** panel admin (`/dashboard/admin/chat`).
+  Tombol "Setujui & buka blokir" mencabut sanksi lewat jalur yang sama dengan
+  panel blokir (`revokeAllActiveBlocks`). Klien hanya memegang `SELECT`; semua
+  penulisan lewat server.
+- Hapus PERMANEN akun (`app/api/admin/users/[id]/hard-deletion/route.ts`)
+  hanya untuk Super Admin, wajib sandi dari env `PASSWORD_DELETE_USER`
+  (+ alasan), dan menolak bila masih ada pesanan berjalan atau artikel penulis.
+  Variabel kosong = fitur mati. Beda dari hapus biasa yang dapat dipulihkan.
+- Ekspor Excel daftar admin: Pengguna, Pesanan, Produk, dan UMKM punya tombol
+  "Ekspor Excel" dengan filter yang sama seperti tabel. Berkas dibuat di server
+  (`lib/server/admin-export.ts` + `lib/admin-export-rules.ts`), dibatasi 5.000
+  baris, dan permintaan yang melebihi batas DITOLAK dengan pesan — bukan
+  dipotong diam-diam. Halaman Laporan memakai pengunduh bersama yang sama.
+- Foto profil memakai bucket `avatars` + kolom `profiles.avatar_url`
+  (`app/api/profile/avatar/route.ts`, `POST` unggah / `DELETE` hapus), sama
+  untuk pembeli, penjual, dan admin. Aturan ukuran dan formatnya satu tempat:
+  `lib/admin-avatar.ts`, dipakai klien dan server sekaligus.
+- Kiriman "Menunggu dikirim" yang lewat 24 jam disorot di halaman Pengiriman
+  (kartu ringkasan + badge umur) dan muncul sebagai item perhatian di
+  Dashboard. Tautannya membuka `/dashboard/admin/pengiriman?state=to_ship`.
+  Ambang dan definisi statusnya satu tempat: `lib/shipment-state.ts`
+  (`TO_SHIP_STALE_HOURS`, `TO_SHIP_STATUSES`).
+- Sanksi yang sudah lama (sebelum blokir disambungkan ke Supabase Auth) bisa
+  disusulkan sekali jalan dengan `npm run sync:account-bans` (uji coba) lalu
+  `npm run sync:account-bans -- --apply`.
 - Proyek memakai **Supabase V1**. Jangan membuat konfigurasi V2.
