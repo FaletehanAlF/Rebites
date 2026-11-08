@@ -80,7 +80,7 @@ const POSITION_PANEL = normalize(
   readProjectFile('app/components/order-history/courier-position-panel.tsx')
 );
 const LOCATION_HOOK = normalize(readProjectFile('hooks/use-courier-location.ts'));
-const SELLER_PAGE = normalize(readProjectFile('app/dashboard/penjual/pesanan/page.tsx'));
+const SELLER_PAGE = normalize(readProjectFile('app/(app)/dashboard/penjual/pesanan/page.tsx'));
 const BUYER_PAGE = normalize(readProjectFile('app/riwayatPesanan/[orderCode]/page.tsx'));
 const SIDEBAR = normalize(readProjectFile('app/components/shared/account-sidebar.tsx'));
 
@@ -293,6 +293,36 @@ test('realtime memakai postgres_changes, bukan broadcast publik', () => {
       'alter publication supabase_realtime add table public.delivery_locations'
     ),
     'tabel posisi harus masuk publikasi realtime'
+  );
+});
+
+test('kanal posisi unik per langganan, bukan satu topik per pesanan', () => {
+  // `supabase.channel(topic)` mengembalikan kanal yang topiknya sama bila
+  // masih terdaftar. Halaman detail pesanan memasang hook ini DUA kali
+  // (halaman + DeliveryStatusPanel), dan StrictMode menjalankan effect dua
+  // kali sebelum removeChannel async selesai. Dengan topik tetap, `.on()`
+  // kedua berjalan pada kanal yang sudah subscribe dan melempar
+  // "cannot add postgres_changes callbacks ... after subscribe()" sehingga
+  // halaman Pesanan jatuh dengan Unhandled Runtime Error.
+  assert.ok(LOCATION_HOOK.includes('channelcounter'), 'topik harus diberi penomoran');
+  assert.ok(
+    LOCATION_HOOK.includes('rebites-courier-location-${orderdbid}-${channelcounter}'),
+    'topik kanal harus memuat nomor langganan yang unik'
+  );
+  assert.ok(
+    !LOCATION_HOOK.includes('rebites-courier-location-${orderdbid}`'),
+    'topik tanpa nomor langganan akan bertabrakan antar pemasangan hook'
+  );
+
+  // Chat kurir dipasang di halaman detail pesanan yang sama, jadi kanalnya
+  // menghadapi tabrakan topik yang persis sama.
+  assert.ok(
+    CHAT.includes('rebites-courier-messages-${orderdbid}-${channelcounter}'),
+    'kanal chat harus memakai topik unik per langganan'
+  );
+  assert.ok(
+    !CHAT.includes('rebites-courier-messages-${orderdbid}`'),
+    'kanal chat dengan topik tetap akan melempar error setelah subscribe'
   );
 });
 

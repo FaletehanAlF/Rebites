@@ -9,7 +9,7 @@ import { ContactForm } from './contact-form';
 export const metadata: Metadata = {
   title: 'Hubungi Kami - ReBites',
   description:
-    'Punya pertanyaan tentang ReBites? Kirim pesan lewat formulir atau email langsung ke halo@rebites.id.',
+    'Hubungi tim ReBites untuk pertanyaan, kerja sama, atau dukungan seputar marketplace makanan surplus UMKM.',
 };
 
 const FOCUS_RING =

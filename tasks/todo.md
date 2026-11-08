@@ -71,11 +71,7 @@ Plan: `tasks/plan.md`. Constraints: `CONSTRAINTS.md`.
 
 ---
 
-<<<<<<< HEAD
-# Tasks — HowItWorks horizontal scroll redesign
-=======
 # Tasks — HowItWorks horizontal timeline (branch `landing-page`)
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 
 - [x] Task 1: Rewrite HowItWorks.tsx as GSAP sticky horizontal slider
 - [x] Task 2: Per-step reveal (line/dot/SplitText), reduced-motion fallback, Lenis sync
@@ -83,8 +79,6 @@ Plan: `tasks/plan.md`. Constraints: `CONSTRAINTS.md`.
 - [x] Checkpoint: typecheck, build pass; manual scroll check recommended
 - [x] Restore original howitworkss look: two-row timeline, growing journey-line, ReBites content, Lenis sync
 - [x] Reduce to 3 steps (1 top-left, 2 bottom, 4 top-right), 3 scroll positions, kill stale dev server
-<<<<<<< HEAD
-=======
 
 ---
 
@@ -124,4 +118,3 @@ Plan: `tasks/plan.md` (third plan, appended 2026-10-14). Constraints: `CONSTRAIN
 
 ## Task 7: Documentation
 - [x] `docs/PROJECT_CONTEXT.md` structure + path references updated; `CONSTRAINTS.md` boundary paths updated (same strength); `docs/ARCHITECTURE.md` added; final report
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34

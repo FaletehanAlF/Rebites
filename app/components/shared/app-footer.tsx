@@ -65,9 +65,9 @@ const EXPLORE_LINKS = [
 ];
 
 const LEGAL_LINKS = [
-  { label: 'Privacy Policy', href: '#' },
-  { label: 'Terms of Use', href: '#' },
-  { label: 'Disclaimer', href: '#' },
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Terms of Use', href: '/terms' },
+  { label: 'Disclaimer', href: '/terms#penyangkalan' },
 ];
 
 function FooterWave() {

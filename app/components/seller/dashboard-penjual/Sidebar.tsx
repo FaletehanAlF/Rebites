@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  Eye,
   LayoutGrid,
   Settings,
   ShieldCheck,
@@ -16,7 +17,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAdminMe } from '@/hooks/use-admin-me';
+import { useIsAdminAccount } from '@/hooks/use-is-admin-account';
 
 interface SidebarProps {
   open: boolean;
@@ -108,9 +109,10 @@ function NavItemLink({ item, onClose }: { item: NavItem; onClose?: () => void })
 }
 
 function SidebarContent({ onClose }: { onClose: () => void }) {
-  // Tautan "Panel Admin" hanya untuk akun dengan status admin terverifikasi
-  // server (GET /api/admin/me). Penjual biasa mendapat `me = null`.
-  const { me } = useAdminMe();
+  // Tautan "Panel Admin" hanya untuk akun ber-role admin. Membaca role sendiri
+  // (bukan GET /api/admin/me) menghindari 403 yang wajar di log untuk setiap
+  // penjual non-admin. Route admin tetap memverifikasi ulang di server.
+  const isAdmin = useIsAdminAccount();
 
   return (
     <motion.div
@@ -151,7 +153,41 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
         ))}
       </nav>
 
-      {me && (
+      {/*
+        Jalan masuk ke sisi pembeli.
+
+        Penjual dan pembeli memakai beranda yang berbeda, dan dashboard penjual
+        tidak menyediakan pratinjau dari sudut pandang pembeli: tanpa tautan ini
+        satu-satunya cara memeriksanya adalah mengetik /home di address bar.
+
+        Diletakkan di luar daftar NAV_ITEMS karena ini bukan halaman lain di
+        dashboard, melainkan berpindah sisi — sama seperti "Panel Admin" di
+        bawahnya. Sengaja satu baris tanpa subjudul: baris dua tingkat membuat
+        tingginya berbeda dari menu di atasnya sehingga terbaca sebagai kartu
+        tersendiri, padahal ia sekadar satu menu lagi.
+
+        Jalan kembali tersedia di sisi pembeli dan tidak diduplikasi di sini:
+        sidebar pembeli menampilkan "Toko Saya" dan drawer ponsel pembeli
+        menampilkan "Dashboard Penjual" untuk akun yang punya toko.
+      */}
+      <div className="relative border-t border-sage-100 px-4 py-3">
+        <Link
+          href="/home"
+          onClick={onClose}
+          className={cn(
+            'group flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-medium transition-colors',
+            'text-charcoal-500 hover:bg-sage-100/60 hover:text-charcoal-900'
+          )}
+        >
+          <Eye
+            aria-hidden
+            className="h-[18px] w-[18px] shrink-0 text-sage-500 group-hover:text-caramel"
+          />
+          <span className="truncate">Lihat sebagai Pembeli</span>
+        </Link>
+      </div>
+
+      {isAdmin && (
         <div className="relative border-t border-sage-100 px-4 py-3">
           <Link
             href="/dashboard/admin"

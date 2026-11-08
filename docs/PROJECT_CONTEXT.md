@@ -77,16 +77,23 @@ supabase/migrations/       # SQL schema + RLS
 public/                    # images (makanan*.jpg, *.avif, …)
 ```
 
+Route groups `(landing)` / `(app)` do **not** affect URLs. There is
+deliberately no `(app)/layout.tsx` and no `(landing)/layout.tsx`: app chrome
+(`BuyerShell` / `MobileNavbar`) is rendered per page today, so layouts would
+be dead structure.
 ## 4. Routes (from `npm run build`)
 
 Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
 `/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`,
-`/langganan/pembayaran`, **`/dashboard/admin/*`** (see §5.1).
+`/dashboard/admin/*`, `/langganan/pembayaran`, **`/preview/product`**
+(public product detail).
 SSG (●): `/makanan/[category]` (8 paths).
 Dynamic (ƒ): `/langganan/sukses`, `/api/checkout/xendit(+verify)`,
 `/api/orders/[code]`, `/api/profile(+addresses|avatar)`,
 `/api/subscriptions/xendit(+verify)`, `/api/webhooks/xendit`,
 `/api/admin/**` (role-guarded helper routes).
+Note: bare `/langganan` has never existed (404 by design — only
+`pembayaran`/`sukses` do).
 
 ## 5.1 Admin panel (merged from `feature/admin-full-update`)
 
@@ -246,12 +253,14 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   fabricated testimonials), `landing/partner-marquee.tsx`,
   `landing/catalog-sections.tsx`, `components/hero-food-carousel.tsx`,
   `components/flash-sale-grid.tsx`, and `RevealWords` in `shared/reveal.tsx`.
-- 20 automated `node --test` suites exist (`tests/*`, wired as npm
-  `test:<name>` scripts) covering checkout pricing/idempotency/failure,
-  Xendit fail-closed paths, admin RBAC and UI regressions, stock release and
-  shipping; run them before touching those areas. Visual verification for new
-  UI stays manual (browser at 320/375/768/1024/1440/1920 — no horizontal
-  overflow observed).
+- `node --test` suites live in `tests/` (wired as npm `test:<name>` scripts)
+  covering checkout pricing/idempotency/failure, Xendit fail-closed paths,
+  admin RBAC and UI regressions, stock release, shipping, order state and
+  seller dashboard attention; run them before touching those areas. Visual
+  verification for new UI stays manual (browser at 320/375/768/1024/1440/1920
+  — no horizontal overflow observed on `/`).
+- `npm run typecheck` reads generated `.next/types`; after moving routes, run
+  `npm run build` first or stale types cause false TS2307 errors.
 - **EOL caveat (Windows, `core.autocrlf=true`)**: `tests/admin-ui-regressions`
   has one EOL-sensitive regex (`ADMIN_ROLE_DECISIONS_SEEN_KEY,\n] as const`);
   if a fresh checkout smudges `lib/admin-preferences.ts` to CRLF the suite can
@@ -263,6 +272,8 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 
 - Keep pages as Server Components; add `"use client"` only for genuine
   interactivity.
+- Respect the landing/app boundary (§5a): public pages under `app/(landing)/`
+  must never render account UI; route-supplied shells, not pathname checks.
 - Buyer pages that require a session wrap the whole view in
   `<RequireAuth>` (see `notifikasi/pembeli/page.tsx`): the guard lives OUTSIDE
   the shell so navbar/title/skeleton are hidden before redirect.

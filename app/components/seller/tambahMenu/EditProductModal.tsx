@@ -10,6 +10,13 @@ import {
   type SellerProduct,
 } from '@/lib/product-storage';
 import { MENU_CATEGORIES, parseShippingNumber } from './types';
+import {
+  isScheduleRangeValid,
+  scheduleEndToIso,
+  scheduleStartToIso,
+  toScheduleDateInput,
+  todayScheduleDateInput,
+} from '@/lib/menu-schedule';
 import { NumberField } from './NumberField';
 import { ShippingInfoSection } from './ShippingInfoSection';
 import {
@@ -82,6 +89,8 @@ export function EditProductModal({
   const [endTime, setEndTime] = useState('17:00');
   const [allDay, setAllDay] = useState(false);
   const [isSurplusToday, setIsSurplusToday] = useState(true);
+  const [scheduledStart, setScheduledStart] = useState<string | null>(null);
+  const [scheduledEnd, setScheduledEnd] = useState<string | null>(null);
   // kapabilitas fulfillment (DB NOT NULL, default true untuk legacy).
   const [isDelivery, setIsDelivery] = useState(true);
   const [isPickup, setIsPickup] = useState(true);
@@ -108,6 +117,10 @@ export function EditProductModal({
     setEndTime(product.endTime || '17:00');
     setAllDay(product.allDay ?? false);
     setIsSurplusToday(product.isSurplusToday);
+    // State selalu berupa tanggal (YYYY-MM-DD) untuk <input type="date">.
+    // Konversi ke awal/akhir hari WIB dilakukan saat menyimpan.
+    setScheduledStart(product.scheduledStart ? toScheduleDateInput(product.scheduledStart) : null);
+    setScheduledEnd(product.scheduledEnd ? toScheduleDateInput(product.scheduledEnd) : null);
     setIsDelivery(product.isDelivery ?? true);
     setIsPickup(product.isPickup ?? true);
     // produk lama tanpa package (NULL) tampil sebagai kosong.
@@ -173,12 +186,12 @@ export function EditProductModal({
       setError('Berat dan dimensi harus berupa angka positif. Kosongkan jika belum tahu.');
       return;
     }
-    // Berat wajib bila Diantar aktif: tanpa weight_gram server menolak ongkir
-    // (product_no_weight) dan checkout, sehingga pembeli melihat error kurir.
-    if (isDelivery && weightParsed.value === null) {
-      setError(
-        'Isi berat makanan (gram) agar pembeli bisa memilih Diantar. Atau matikan toggle Diantar.'
-      );
+    // Berat TIDAK wajib: server memakai berat bawaan kategori bila kosong
+    // (lib/package-weight.ts), dan pembeli diberi tahu bahwa ongkirnya
+    // perkiraan. Kewajiban lama ini memblokir 44 dari 50 produk yang belum
+    // punya berat sehingga penjual tidak bisa menyimpan perubahan apa pun.
+    if (!isScheduleRangeValid(scheduledStart, scheduledEnd)) {
+      setError('Tanggal selesai tidak boleh mendahului tanggal mulai.');
       return;
     }
 
@@ -218,6 +231,8 @@ export function EditProductModal({
         endTime,
         allDay,
         isSurplusToday,
+        scheduledStart: scheduleStartToIso(scheduledStart),
+        scheduledEnd: scheduleEndToIso(scheduledEnd),
         discountPercent,
         // kapabilitas fulfillment pilihan seller.
         isDelivery,
@@ -443,11 +458,57 @@ export function EditProductModal({
                   </div>
                 )}
 
-                <ToggleSwitch
-                  checked={isSurplusToday}
-                  onChange={setIsSurplusToday}
-                  label="Tandai sebagai surplus hari ini"
-                />
+                <div className="rounded-xl bg-secondary p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground">Jadwal Ketersediaan</p>
+                  <p className="text-[10px] text-muted-foreground">Pilih kapan menu tersedia.</p>
+                  <div className="mt-2 space-y-2">
+                    <label className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors hover:border-primary hover:bg-primary-dark/5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="edit-schedule"
+                        checked={!scheduledStart}
+                        onChange={() => {
+                          setScheduledStart(null);
+                          setScheduledEnd(null);
+                          setIsSurplusToday(true);
+                        }}
+                        className="h-3.5 w-3.5 accent-primary"
+                      />
+                      <span className="text-xs font-medium text-foreground">Sekarang / Surplus Hari Ini</span>
+                    </label>
+                    <label className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors hover:border-primary hover:bg-primary-dark/5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="edit-schedule"
+                        checked={!!scheduledStart}
+                        onChange={() => {
+                          setScheduledStart(todayScheduleDateInput());
+                          setScheduledEnd(null);
+                          setIsSurplusToday(false);
+                        }}
+                        className="h-3.5 w-3.5 accent-primary"
+                      />
+                      <span className="text-xs font-medium text-foreground">Jadwalkan Tanggal Tertentu</span>
+                    </label>
+                    {!!scheduledStart && (
+                      <div className="flex gap-2 pl-5">
+                        <input
+                          type="date"
+                          value={scheduledStart ? scheduledStart.slice(0, 10) : ''}
+                          onChange={(e) => setScheduledStart(e.target.value || null)}
+                          className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-[10px] text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        />
+                        <input
+                          type="date"
+                          value={scheduledEnd ? scheduledEnd.slice(0, 10) : ''}
+                          onChange={(e) => setScheduledEnd(e.target.value || null)}
+                          placeholder="Sampai"
+                          className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-[10px] text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 <div>
                   <ShippingInfoSection

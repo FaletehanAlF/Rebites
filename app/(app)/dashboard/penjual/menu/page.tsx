@@ -27,18 +27,29 @@ import {
   deleteSellerProduct,
 } from '@/lib/product-storage';
 import { isProductAvailable } from '@/lib/product-storage';
+import {
+  formatScheduleDate,
+  resolveMenuScheduleStatus,
+  toScheduleDateInput,
+  todayScheduleDateInput,
+} from '@/lib/menu-schedule';
 import { useSellerPlan, type SellerEntitlements } from '@/lib/seller-plan';
 import { useStoreProducts } from '@/hooks/seller/use-store-products';
 import { useSellerStatus } from '@/hooks/seller/use-seller-status';
 import {
+  addWibDays,
   countFlashSaleProducts,
   FLASH_SLOTS,
+  flashSlotRange,
+  formatFlashScheduleLabel,
   getFlashQuota,
+  isFlashSlotPast,
   removeFlashSale,
   resolveFlashSaleStatus,
   setFlashSale,
   slotFromStartIso,
-  slotToWibIso,
+  todayWibDate,
+  validateFlashSaleSchedule,
   type FlashSaleStatus,
 } from '@/lib/flash-sale';
 import type { UrgentSlot } from '@/lib/types';
@@ -61,9 +72,12 @@ function ProductLimitMeter({ products }: { products: SellerProduct[] }) {
   const count = products.length;
   const max = plan.maxProducts;
   const isUnlimited = max === null;
-  const percent = isUnlimited ? 0 : Math.min(100, (count / max) * 100);
+  const percent = isUnlimited ? 100 : Math.min(100, (count / max) * 100);
   const isFull = !isUnlimited && count >= max;
 
+  // Satu garis tipis, bukan kotak abu di dalam kartu: kuota adalah keterangan
+  // tambahan, bukan bagian yang bisa diklik, jadi tidak perlu bingkainya
+  // sendiri.
   return (
     <div className="mt-5 rounded-2xl bg-secondary p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -77,22 +91,17 @@ function ProductLimitMeter({ products }: { products: SellerProduct[] }) {
             isFull ? 'text-warning' : 'text-primary'
           )}
         >
-          {isUnlimited ? `${count} produk · tanpa batas` : `${count}/${max} produk`}
+          <span className="tabular-nums font-bold">{isUnlimited ? `${count} produk · tanpa batas` : `${count}/${max} produk`}</span>
         </p>
       </div>
-      {!isUnlimited && (
-        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white">
-          <div
-            className={cn(
-              'h-full rounded-full transition-all duration-500',
-              isFull ? 'bg-warning' : 'bg-primary'
-            )}
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      )}
+      <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out motion-reduce:transition-none"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
       {plan.tier === 'basic' && (
-        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+        <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
           Paket Basic menyimpan maksimal {max} produk dan riwayat penjualan 30 hari.
         </p>
       )}
@@ -182,6 +191,7 @@ function TimeEditor({ product }: { product: SellerProduct }) {
   };
 
   const available = isProductAvailable(product);
+  const scheduleStatus = resolveMenuScheduleStatus(product);
 
   return (
     <div className="space-y-2">
@@ -233,16 +243,26 @@ function TimeEditor({ product }: { product: SellerProduct }) {
           'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
           available
             ? 'bg-primary/10 text-primary'
+            : scheduleStatus === 'scheduled' || scheduleStatus === 'ended'
+            ? 'bg-caramel/20 text-caramel-dark'
             : 'bg-destructive/15 text-destructive'
         )}
       >
         <span
           className={cn(
             'h-1.5 w-1.5 rounded-full',
-            available ? 'bg-primary' : 'bg-destructive'
+            available
+              ? 'bg-primary/100'
+              : scheduleStatus === 'scheduled' || scheduleStatus === 'ended'
+              ? 'bg-caramel-dark'
+              : 'bg-destructive'
           )}
         />
-        {available
+        {scheduleStatus === 'scheduled'
+          ? `Dijadwalkan ${formatScheduleDate(product.scheduledStart)}`
+          : scheduleStatus === 'ended'
+          ? 'Jadwal Berakhir'
+          : available
           ? allDay
             ? 'Tersedia Sepanjang Hari'
             : 'Sedia Sekarang'
@@ -256,13 +276,20 @@ function TimeEditor({ product }: { product: SellerProduct }) {
 
 function formatPeriodLabel(iso: string): string {
   const date = new Date(iso);
-  const hh = String(date.getHours()).padStart(2, '0');
-  const mm = String(date.getMinutes()).padStart(2, '0');
+  const timeParts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Jakarta',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+  const pick = (type: Intl.DateTimeFormatPartTypes) =>
+    timeParts.find((part) => part.type === type)?.value ?? '00';
   return `${date.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  })} · ${hh}:${mm}`;
+    timeZone: 'Asia/Jakarta',
+  })} · ${pick('hour')}:${pick('minute')} WIB`;
 }
 
 function toInputParts(value: Date) {
@@ -329,31 +356,35 @@ function FlashSalePanel({
   const [error, setError] = useState('');
   const [price, setPrice] = useState('');
   const [selectedSlot, setSelectedSlot] = useState<UrgentSlot>('09-12');
+  const [saleDate, setSaleDate] = useState(() => todayWibDate());
+  const [saving, setSaving] = useState(false);
 
   const isBasic = quota === 0;
   const occupiesSlot = cfg != null;
   const canEnable = !isBasic && (occupiesSlot || used < quota);
   const switchDisabled = isBasic || (!canEnable && !occupiesSlot);
 
+  const firstAvailableSlot = (date: string): UrgentSlot | null =>
+    FLASH_SLOTS.find((slot) => !isFlashSlotPast(date, slot.key))?.key ?? null;
+
+  const handleDateChange = (value: string) => {
+    if (!value) return;
+    setSaleDate(value);
+    setError('');
+    if (isFlashSlotPast(value, selectedSlot)) {
+      const next = firstAvailableSlot(value);
+      if (next) setSelectedSlot(next);
+    }
+  };
+
   const startEditing = () => {
     setPrice(cfg ? String(cfg.price) : String(Math.max(1000, Math.round(product.surplusPrice * 0.8))));
-    if (cfg) {
-      try {
-        const hour = Number(
-          new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', hour: '2-digit', hour12: false }).formatToParts(
-            new Date(cfg.startIso)
-          ).find((p) => p.type === 'hour')?.value ?? '9'
-        );
-        if (hour >= 18) setSelectedSlot('18-21');
-        else if (hour >= 15) setSelectedSlot('15-18');
-        else if (hour >= 12) setSelectedSlot('12-15');
-        else setSelectedSlot('09-12');
-      } catch {
-        setSelectedSlot('09-12');
-      }
-    } else {
-      setSelectedSlot('09-12');
-    }
+    const date = (cfg ? toScheduleDateInput(cfg.startIso) : '') || todayWibDate();
+    setSaleDate(date);
+    const preferred = cfg ? slotFromStartIso(cfg.startIso) : '09-12';
+    setSelectedSlot(
+      isFlashSlotPast(date, preferred) ? firstAvailableSlot(date) ?? preferred : preferred
+    );
     setError('');
     setEditing(true);
   };
@@ -385,28 +416,36 @@ function FlashSalePanel({
       setError('Harga Flash Sale harus lebih rendah dari harga normal.');
       return;
     }
-    // Hitung start/end dari slot yang dipilih (hari ini/besok WIB). Tidak perlu input tanggal manual.
-    let startIso: string;
-    let endIso: string;
-    try {
-      const iso = slotToWibIso(selectedSlot);
-      startIso = iso.startIso;
-      endIso = iso.endIso;
-    } catch {
-      setError('Slot Flash Sale tidak valid.');
+    const range = flashSlotRange(saleDate, selectedSlot);
+    if (!range) {
+      setError('Tanggal atau slot Flash Sale tidak valid.');
       return;
     }
+    const scheduleError = validateFlashSaleSchedule({
+      startIso: range.startIso,
+      endIso: range.endIso,
+      scheduledStart: product.scheduledStart,
+      scheduledEnd: product.scheduledEnd,
+    });
+    if (scheduleError) {
+      setError(scheduleError);
+      return;
+    }
+
+    setSaving(true);
     setFlashSale(product.id, {
       price: priceNum,
-      startIso,
-      endIso,
-    }).then((result) => {
-      if (!result.ok) {
-        setError(result.error ?? 'Gagal menyimpan Flash Sale.');
-        return;
-      }
-      setEditing(false);
-    });
+      startIso: range.startIso,
+      endIso: range.endIso,
+    })
+      .then((result) => {
+        if (!result.ok) {
+          setError(result.error ?? 'Gagal menyimpan Flash Sale.');
+          return;
+        }
+        setEditing(false);
+      })
+      .finally(() => setSaving(false));
   };
 
   const draftDiscount =
@@ -421,9 +460,21 @@ function FlashSalePanel({
     product.surplusPrice > 0
       ? Math.round((1 - previewPrice / product.surplusPrice) * 100)
       : null;
+  const todayDate = todayWibDate();
+  const tomorrowDate = addWibDays(todayDate, 1);
+  const todayHasSlot = firstAvailableSlot(todayDate) != null;
+  const previewRange = flashSlotRange(saleDate, selectedSlot);
+  const previewScheduleError = previewRange
+    ? validateFlashSaleSchedule({
+        startIso: previewRange.startIso,
+        endIso: previewRange.endIso,
+        scheduledStart: product.scheduledStart,
+        scheduledEnd: product.scheduledEnd,
+      })
+    : 'Tanggal atau slot Flash Sale tidak valid.';
 
   return (
-    <div className="mt-3 rounded-2xl bg-secondary p-3">
+    <div className="mt-3 border-t border-border/70 pt-3">
       <div className="flex items-center gap-2">
         <Zap
           className={cn(
@@ -474,7 +525,7 @@ function FlashSalePanel({
         </p>
       ) : editing ? (
         <Dialog open onOpenChange={(open) => !open && setEditing(false)}>
-          <DialogContent className="max-w-md rounded-2xl border-sage-100 bg-white p-5">
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border-sage-100 bg-white p-5">
             <DialogHeader>
               <DialogTitle className="font-display text-base font-semibold text-charcoal-900">
                 Atur Flash Sale
@@ -517,21 +568,81 @@ function FlashSalePanel({
             </div>
           </div>
 
-          {/* Pilih Waktu Flash Sale: Pagi/Siang/Sore/Malam - produk akan tampil di slot ini di home */}
-          <div className="rounded-xl bg-white p-2.5">
+          {/* Tanggal Flash Sale: pembeli melihat promo ini pada tanggal WIB yang dipilih. */}
+          <div className="rounded-xl border border-sage-100 bg-secondary/40 p-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <label
+                htmlFor={`flash-date-${product.id}`}
+                className="text-[10px] font-semibold uppercase tracking-wider text-foreground"
+              >
+                Tanggal Flash Sale
+              </label>
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-sage-500">
+                <CalendarDays className="h-3 w-3" aria-hidden />
+                WIB
+              </span>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                disabled={!todayHasSlot}
+                onClick={() => handleDateChange(todayDate)}
+                className={cn(
+                  'h-8 rounded-lg border px-2.5 text-[11px] font-semibold transition-colors',
+                  saleDate === todayDate
+                    ? 'border-primary bg-primary text-white'
+                    : 'border-border bg-white text-foreground hover:border-primary',
+                  !todayHasSlot && 'cursor-not-allowed opacity-50'
+                )}
+              >
+                Hari ini
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDateChange(tomorrowDate)}
+                className={cn(
+                  'h-8 rounded-lg border px-2.5 text-[11px] font-semibold transition-colors',
+                  saleDate === tomorrowDate
+                    ? 'border-primary bg-primary text-white'
+                    : 'border-border bg-white text-foreground hover:border-primary'
+                )}
+              >
+                Besok
+              </button>
+              <input
+                id={`flash-date-${product.id}`}
+                type="date"
+                min={todayDate}
+                value={saleDate}
+                onChange={(event) => handleDateChange(event.target.value)}
+                className="h-8 min-w-[9.5rem] flex-1 rounded-lg border border-border bg-white px-2 text-[11px] font-semibold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            {!todayHasSlot && (
+              <p className="mt-1.5 text-[10px] leading-relaxed text-caramel-dark">
+                Semua slot hari ini sudah lewat. Pilih tanggal berikutnya.
+              </p>
+            )}
+          </div>
+
+          {/* Slot waktu: hanya slot yang belum lewat pada tanggal terpilih. */}
+          <div className="rounded-xl border border-sage-100 bg-white p-2.5">
             <label className="block text-[10px] font-semibold uppercase tracking-wider text-foreground">
-              Waktu Flash Sale
+              Slot Waktu
             </label>
-            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-              Pilih jam tampil di section Flash Sale home. Produk akan tampil di slot yang dipilih.
+            <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+              Pilih jam tayang promo di beranda. Slot sudah lewat pada tanggal ini dinonaktifkan.
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {FLASH_SLOTS.map((slot) => {
                 const active = selectedSlot === slot.key;
+                const past = isFlashSlotPast(saleDate, slot.key);
                 return (
                   <button
                     key={slot.key}
                     type="button"
+                    disabled={past}
+                    aria-pressed={active}
                     onClick={() => {
                       setSelectedSlot(slot.key);
                       setError('');
@@ -540,11 +651,25 @@ function FlashSalePanel({
                       'rounded-xl border px-3 py-2.5 text-left transition-colors',
                       active
                         ? 'border-primary bg-primary text-white shadow-sm'
-                        : 'border-border bg-white text-foreground hover:border-primary hover:bg-primary-dark/20'
+                        : past
+                          ? 'cursor-not-allowed border-border bg-secondary text-muted-foreground opacity-70'
+                          : 'border-border bg-white text-foreground hover:border-primary hover:bg-primary-dark/20'
                     )}
                   >
-                    <span className="text-xs font-bold">{slot.label}</span>
-                    <span className={cn('block text-[11px]', active ? 'text-white/80' : 'text-muted-foreground')}>
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold">{slot.label}</span>
+                      {past && (
+                        <span className="rounded-full bg-white px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          Lewat
+                        </span>
+                      )}
+                    </span>
+                    <span
+                      className={cn(
+                        'mt-0.5 block text-[11px]',
+                        active ? 'text-white/80' : 'text-muted-foreground'
+                      )}
+                    >
                       {slot.range}
                     </span>
                   </button>
@@ -553,22 +678,38 @@ function FlashSalePanel({
             </div>
           </div>
 
-          {(() => {
-            try {
-              const iso = slotToWibIso(selectedSlot);
-              return (
-                <p className="text-[11px] leading-relaxed text-muted-foreground">
-                  Mulai: {formatPeriodLabel(iso.startIso)}
-                  <br />
-                  Berakhir: {formatPeriodLabel(iso.endIso)}
-                  <br />
-                  <span className="text-[10px]">Jika slot hari ini sudah lewat, otomatis jadwal besok.</span>
-                </p>
-              );
-            } catch {
-              return null;
-            }
-          })()}
+          <div className="rounded-xl border border-primary/10 bg-primary/[0.03] p-2.5">
+            <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-primary">
+              <Clock className="h-3 w-3" aria-hidden />
+              Jadwal promo
+            </p>
+            {previewRange ? (
+              <dl className="mt-1.5 space-y-0.5 text-[11px]">
+                <div className="flex items-baseline justify-between gap-2">
+                  <dt className="text-muted-foreground">Mulai</dt>
+                  <dd className="text-right font-semibold text-foreground">
+                    {formatPeriodLabel(previewRange.startIso)}
+                  </dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-2">
+                  <dt className="text-muted-foreground">Berakhir</dt>
+                  <dd className="text-right font-semibold text-foreground">
+                    {formatPeriodLabel(previewRange.endIso)}
+                  </dd>
+                </div>
+              </dl>
+            ) : (
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                Pilih tanggal dan slot yang valid.
+              </p>
+            )}
+            {previewScheduleError && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-[10px] font-medium leading-relaxed text-caramel-dark">
+                <TriangleAlert className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+                {previewScheduleError}
+              </p>
+            )}
+          </div>
 
           {error && (
             <p className="inline-flex items-center gap-1.5 rounded-lg bg-destructive/10 px-2.5 py-1.5 text-[11px] font-medium text-destructive">
@@ -581,10 +722,11 @@ function FlashSalePanel({
             <button
               type="button"
               onClick={handleSave}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
+              disabled={saving || previewScheduleError != null}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Simpan
+              {saving ? 'Menyimpan...' : 'Simpan'}
             </button>
             {cfg && (
               <button
@@ -611,7 +753,7 @@ function FlashSalePanel({
           </DialogContent>
         </Dialog>
       ) : cfg ? (
-        <div className="mt-2 rounded-xl bg-white p-2.5">
+        <div className="mt-2">
           {/* Ringkasan padat: satu baris harga + slot, sisanya dilipat. */}
           <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
             <span className="flex items-baseline gap-1.5">
@@ -622,16 +764,9 @@ function FlashSalePanel({
                 <span className="text-[10px] font-bold text-primary">−{draftDiscount}%</span>
               )}
             </span>
-            <span className="text-[10px] font-medium text-sage-500">
-              {(() => {
-                try {
-                  const slotKey = slotFromStartIso(cfg.startIso);
-                  const slotDef = FLASH_SLOTS.find((s) => s.key === slotKey);
-                  return slotDef ? `${slotDef.label} ${slotDef.range}` : slotKey;
-                } catch {
-                  return '-';
-                }
-              })()}
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-sage-500">
+              <CalendarDays className="h-3 w-3 shrink-0" aria-hidden />
+              {formatFlashScheduleLabel(cfg.startIso)}
             </span>
           </div>
 
@@ -728,6 +863,7 @@ function MenuCard({
   };
 
   const available = isProductAvailable(product);
+  const scheduleStatus = resolveMenuScheduleStatus(product);
 
   return (
     <Card className="flex flex-col p-4 sm:p-5">
@@ -776,15 +912,48 @@ function MenuCard({
             ) : (
               <Badge variant="warning">Menunggu Verifikasi</Badge>
             )}
+            {scheduleStatus === 'scheduled' && (
+              <Badge variant="warning">
+                <CalendarDays className="h-3 w-3" aria-hidden />
+                Dijadwalkan
+              </Badge>
+            )}
+            {scheduleStatus === 'ended' && (
+              <Badge variant="secondary">Jadwal berakhir</Badge>
+            )}
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]',
                 available ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
               )}
             >
-              {available ? `Stok ${product.stock}` : product.stock <= 0 ? 'Habis' : 'Tutup'}
+              {scheduleStatus === 'scheduled'
+                ? 'Belum tayang'
+                : scheduleStatus === 'ended'
+                ? 'Tidak tayang'
+                : available
+                ? `Stok ${product.stock}`
+                : product.stock <= 0
+                ? 'Habis'
+                : 'Tutup'}
             </span>
           </div>
+          {scheduleStatus !== 'none' && (
+            <p className="mt-1 text-[11px] text-charcoal-500">
+              <CalendarDays className="mr-1 inline h-3 w-3 align-[-1px]" aria-hidden />
+              {scheduleStatus === 'scheduled'
+                ? `Tayang mulai ${formatScheduleDate(product.scheduledStart)}`
+                : scheduleStatus === 'ended'
+                ? `Jadwal berakhir ${formatScheduleDate(product.scheduledEnd)}`
+                : product.scheduledStart
+                ? `Tayang ${formatScheduleDate(product.scheduledStart)}${
+                    product.scheduledEnd
+                      ? ` – ${formatScheduleDate(product.scheduledEnd)}`
+                      : ''
+                  }`
+                : `Tayang sampai ${formatScheduleDate(product.scheduledEnd)}`}
+            </p>
+          )}
 
           <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
             <span className="text-sm font-bold text-primary">
@@ -810,21 +979,21 @@ function MenuCard({
           <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" aria-hidden />
           <div className="min-w-0">
             <p className="text-[11px] font-bold leading-snug text-charcoal-900">
-              Belum siap dikirim kurir
+              Berat belum diisi — ongkir masih perkiraan
             </p>
             <button
               type="button"
               onClick={onFixWeight}
               className="mt-0.5 text-[11px] font-semibold text-caramel-dark underline-offset-2 hover:underline"
             >
-              Isi berat sekarang
+              Isi berat agar ongkir lebih akurat
             </button>
           </div>
         </div>
       ) : null}
 
-      {/* Kontrol: stok & jam. Ditumpuk agar tidak saling menghimpit di kartu sempit. */}
-      <div className="mt-3 space-y-2">
+      {/* Kontrol: stok & jam. Dipisah garis, bukan kotak bersarang. */}
+      <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
         <StockEditor product={product} />
         <TimeEditor product={product} />
       </div>
@@ -881,7 +1050,8 @@ function MenuCard({
   );
 }
 
-function FlashSaleSectionHeader({
+/** Ringkasan Flash Sale: satu baris di dalam kartu daftar menu. */
+function FlashSaleSummaryRow({
   plan,
   quota,
   used,
@@ -892,38 +1062,23 @@ function FlashSaleSectionHeader({
 }) {
   const isBasic = quota === 0;
 
-  const pillText = isBasic
-    ? 'Paket Basic · Flash Sale tidak tersedia'
+  const statusText = isBasic
+    ? 'Tidak tersedia di paket Basic'
     : quota === Infinity
       ? used > 0
-        ? `Paket Max · Tanpa batas produk · Flash Sale aktif untuk ${used} produk`
-        : 'Paket Max · Tanpa batas produk'
-      : `Paket Standar · ${used}/${quota} produk digunakan`;
+        ? `Aktif untuk ${used} produk`
+        : 'Tanpa batas produk'
+      : `${used}/${quota} produk digunakan`;
 
   return (
-    <Card className="mt-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-            <Zap className="h-4 w-4 text-primary" />
-            Flash Sale
-          </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Pilih menu yang ingin kamu tampilkan dalam Flash Sale.
-          </p>
-        </div>
-
-        <span
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold',
-            isBasic ? 'bg-primary/15 text-foreground' : 'bg-muted text-foreground'
-          )}
-        >
-          {isBasic && <Lock className="h-3 w-3" />}
-          {pillText}
-        </span>
-      </div>
-
+    <div className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-2 border-t border-border/70 pt-3.5">
+      <Zap className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+      <span className="text-xs font-bold text-foreground">Flash Sale</span>
+      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-charcoal-500">
+        {isBasic && <Lock className="h-3 w-3" aria-hidden />}
+        {statusText}
+      </span>
+      <span className="text-[11px] text-muted-foreground">paket {plan.label}</span>
       {isBasic && (
         <div className="mt-4 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-secondary p-4 sm:flex-row sm:items-center">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -946,7 +1101,7 @@ function FlashSaleSectionHeader({
           </Link>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
 
@@ -1005,10 +1160,17 @@ export default function MenuSayaPage() {
         </h1>
       </motion.div>
 
-      <Card className="mt-6">
+      {/* Satu kartu untuk daftar menu + kuota + status Flash Sale: sebelumnya
+          tiga kotak bertumpuk (kartu daftar, kotak kuota di dalamnya, lalu
+          kartu Flash Sale terpisah) yang memakan hampir setengah layar
+          sebelum menu pertama terlihat. */}
+      <Card className="mt-6 p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm font-bold text-foreground">
-            Daftar menu toko ({products.length})
+            Menu toko
+            <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold tabular-nums text-charcoal-500">
+              {products.length}
+            </span>
           </p>
           {isLimitReached ? (
             plan.upgradeSlug && (
@@ -1031,18 +1193,19 @@ export default function MenuSayaPage() {
           )}
         </div>
 
-        <ProductLimitMeter products={products} />
+        <div className="mt-4">
+          <ProductLimitMeter products={products} />
+        </div>
+
+        <FlashSaleSummaryRow plan={plan} quota={flashQuota} used={flashUsed} />
 
         {isLimitReached && (
           <p className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">
             <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-primary" />
-            Batas produk tercapai ({products.length}/{plan.maxProducts}). Hapus salah satu
-            menu atau upgrade paket untuk menambah lagi.
+            Batas produk tercapai. Hapus salah satu menu atau upgrade paket.
           </p>
         )}
       </Card>
-
-      <FlashSaleSectionHeader plan={plan} quota={flashQuota} used={flashUsed} />
 
       {quotaBlocked && (
         <p className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-primary/15 px-3 py-2 text-[11px] font-medium text-foreground">

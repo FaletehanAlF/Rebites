@@ -6,6 +6,14 @@ import type { FoodItem, PromoCode, UrgentItem, UrgentSlot, Vendor } from './type
 import { STORE_SETTINGS_UPDATED_EVENT } from './store-settings-storage';
 import { displayBusinessName } from './business-name';
 import { resolveImageSrc } from './image-path';
+import { isMenuScheduleVisible } from './menu-schedule';
+
+function isScheduledVisible(row: ProductRow): boolean {
+  return isMenuScheduleVisible({
+    scheduledStart: row.scheduled_start ?? null,
+    scheduledEnd: row.scheduled_end ?? null,
+  });
+}
 
 export interface CatalogData {
   foodItems: FoodItem[];
@@ -128,7 +136,9 @@ async function queryFoodItems(): Promise<FetchResult<FoodItem>> {
     return { items: [], error: error.message };
   }
   return {
-    items: (data ?? []).filter(hasActiveStore).map(productToFoodItem),
+    items: (data ?? [])
+      .filter((row) => hasActiveStore(row) && isScheduledVisible(row))
+      .map(productToFoodItem),
     error: null,
   };
 }
@@ -150,12 +160,14 @@ async function queryUrgentItems(): Promise<FetchResult<UrgentItem>> {
     return { items: [], error: error.message };
   }
   return {
-    items: (data ?? []).filter(hasActiveStore).map((row) => ({
-      ...productToFoodItem(row),
-      expiresAt:
-        row.expires_at ?? new Date(Date.now() + 2 * 3600 * 1000).toISOString(),
-      slot: (row.slot ?? '09-12') as UrgentSlot,
-    })),
+    items: (data ?? [])
+      .filter((row) => hasActiveStore(row) && isScheduledVisible(row))
+      .map((row) => ({
+        ...productToFoodItem(row),
+        expiresAt:
+          row.expires_at ?? new Date(Date.now() + 2 * 3600 * 1000).toISOString(),
+        slot: (row.slot ?? '09-12') as UrgentSlot,
+      })),
     error: null,
   };
 }
@@ -167,7 +179,7 @@ export async function fetchVendors(): Promise<Vendor[]> {
 export async function fetchCategoryCounts(): Promise<Record<string, number>> {
   const { data, error } = await supabase
     .from('products')
-    .select('category')
+    .select('category, scheduled_start, scheduled_end')
     .eq('status', 'available')
     .eq('verification_status', 'approved');
   if (error) {
@@ -176,6 +188,7 @@ export async function fetchCategoryCounts(): Promise<Record<string, number>> {
   }
   const counts: Record<string, number> = {};
   for (const row of data ?? []) {
+    if (!isScheduledVisible(row as ProductRow)) continue;
     const key = (row as Record<string, any>).category;
     if (!key) continue;
     counts[key] = (counts[key] ?? 0) + 1;
@@ -188,7 +201,10 @@ async function queryVendors(): Promise<FetchResult<Vendor>> {
     // RLS umkm_select_public hanya mengembalikan toko aktif, sehingga toko
     // yang dinonaktifkan admin hilang dari beranda dan halaman /toko.
     supabase.from('umkm_profiles').select('*').order('rating', { ascending: false }),
-    supabase.from('products').select('umkm_id').eq('verification_status', 'approved'),
+    supabase
+      .from('products')
+      .select('umkm_id, scheduled_start, scheduled_end')
+      .eq('verification_status', 'approved'),
   ]);
   if (umkmResult.error) {
     console.error('[catalog] gagal memuat vendor:', umkmResult.error.message);
@@ -197,6 +213,7 @@ async function queryVendors(): Promise<FetchResult<Vendor>> {
 
   const counts = new Map<string, number>();
   for (const p of productResult.data ?? []) {
+    if (!isScheduledVisible(p as ProductRow)) continue;
     counts.set(p.umkm_id, (counts.get(p.umkm_id) ?? 0) + 1);
   }
   return {

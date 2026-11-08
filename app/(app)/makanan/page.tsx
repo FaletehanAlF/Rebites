@@ -101,6 +101,18 @@ export default function MakananCatalogPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
+  /**
+   * Kata kunci awal dari beranda (`/makanan?q=...`).
+   *
+   * Dibaca lewat `window.location` di dalam effect, bukan `useSearchParams`:
+   * hook itu menuntut Suspense boundary saat halaman di-prerender, sedangkan
+   * yang dibutuhkan di sini hanya satu nilai awal pada mount.
+   */
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("q");
+    if (fromUrl) setQuery(fromUrl);
+  }, []);
+
   const result = useMemo(
     () =>
       filterAndSortFoods(foodItems, {

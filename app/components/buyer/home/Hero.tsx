@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Recycle, Store, Tag } from "lucide-react";
+import { ArrowRight, Store, Tag, Truck } from "lucide-react";
 import { Button } from "@/app/components/shared/Button";
 import { SmartImage } from "@/app/components/shared/SmartImage";
 import { scrollToId } from "@/lib/scroll";
@@ -169,8 +169,8 @@ export function Hero() {
             </div>
 
             <p className="flex items-center gap-2 font-secondary text-[11px] text-primary-foreground/75 sm:text-sm">
-              <Recycle className="h-3.5 w-3.5 text-primary-foreground sm:h-4 sm:w-4" />
-              1000+ porsi makanan berhasil diselamatkan
+              <Truck className="h-3.5 w-3.5 text-primary-foreground sm:h-4 sm:w-4" aria-hidden />
+              Setelah dipesan, status pengantaran bisa kamu ikuti sampai tiba
             </p>
           </div>
         </motion.div>
@@ -224,7 +224,7 @@ export function Hero() {
             <div className="absolute inset-0 bg-primary/80 transition-colors duration-300 group-hover:bg-primary-dark/70" />
 
             <div className="relative flex h-full flex-col justify-end p-4 sm:p-6 lg:p-8">
-              <h2 className="mt-2 font-sans text-base font-semibold text-primary-foreground sm:mt-3 sm:text-xl lg:text-2xl">
+              <h2 className="mt-2 font-sans text-base font-semibold leading-snug text-primary-foreground sm:mt-3 sm:text-xl lg:text-2xl">
                 Punya Makanan Surplus?
               </h2>
               <p className="mt-1 max-w-[260px] font-secondary text-xs leading-relaxed text-primary-foreground/80 sm:mt-1.5 sm:text-sm">

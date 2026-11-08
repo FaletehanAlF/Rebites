@@ -122,7 +122,7 @@ export function FoodCard({
             FOCUS_RING,
           )}
         >
-          <Heart className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", liked && "fill-sale text-sale")} />
+          <Heart className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", liked && "text-sale")} />
         </button>
       </div>
 

@@ -52,7 +52,7 @@ function readProjectFile(relativePath: string): string {
   );
 }
 
-const SELLER_PAGE = readProjectFile('app/dashboard/penjual/pesanan/page.tsx');
+const SELLER_PAGE = readProjectFile('app/(app)/dashboard/penjual/pesanan/page.tsx');
 const ORDER_UTILS = readProjectFile('lib/order-utils.ts');
 const STATUS_SOURCE = readProjectFile('lib/order-status-source.ts');
 

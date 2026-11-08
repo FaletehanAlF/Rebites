@@ -94,7 +94,7 @@ export const PUBLIC_ROUTES: RouteDoc[] = [
     detail:
       'Halaman perkenalan ReBites: penjelasan makanan surplus, cara kerja untuk penjual dan pembeli, contoh makanan, FAQ, dan tombol masuk/daftar di kanan atas.',
     group: 'Halaman publik',
-    page: 'page.tsx',
+    page: '(landing)/page.tsx',
   },
   {
     path: '/artikel',
@@ -154,7 +154,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Halaman utama setelah masuk. Berisi sapaan, rekomendasi hari ini, kategori, diskon kilat, dan daftar UMKM. Menu samping kiri berisi navigasi lengkap.',
     group: 'Menu Utama',
-    page: 'home/page.tsx',
+    page: '(app)/home/page.tsx',
   },
   {
     path: '/home#rekomendasi',
@@ -162,7 +162,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Bagian pada halaman Beranda. Untuk membukanya, klik Beranda lalu gulir ke bagian Rekomendasi, atau pilih Makanan di menu samping.',
     group: 'Menu Utama',
-    page: 'home/page.tsx',
+    page: '(app)/home/page.tsx',
   },
   {
     path: '/makanan',
@@ -170,7 +170,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Katalog lengkap dengan pencarian, filter kategori/harga, urutan, dan paginasi. Dibuka dari menu samping: Makanan lalu "Semua makanan".',
     group: 'Menu Utama',
-    page: 'makanan/page.tsx',
+    page: '(app)/makanan/page.tsx',
   },
   {
     path: '/makanan/[category]',
@@ -178,7 +178,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Satu kategori makanan. Kategori yang tersedia dapat dibuka dari submenu Makanan di sidebar: Makanan Berat, Jajanan, Japanese, Roti & Kue, Makanan Cepat Saji, Dessert, Buah & Sayur, Minuman.',
     group: 'Menu Utama',
-    page: 'makanan/[category]/page.tsx',
+    page: '(app)/makanan/[category]/page.tsx',
   },
   {
     path: '/home#flashSale',
@@ -186,7 +186,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Bagian pada halaman Beranda yang menampilkan makanan dengan harga diskon terbatas. Dijangkau lewat menu samping Diskon Kilat.',
     group: 'Menu Utama',
-    page: 'home/page.tsx',
+    page: '(app)/home/page.tsx',
   },
   {
     path: '/toko',
@@ -194,7 +194,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Daftar seluruh UMKM penjual, lengkap dengan pencarian dan filter kota. Dibuka lewat menu samping UMKM.',
     group: 'Menu Utama',
-    page: 'toko/page.tsx',
+    page: '(app)/toko/page.tsx',
   },
   {
     path: '/detail/product',
@@ -202,7 +202,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Halaman detail satu produk: foto, harga normal dan harga surplus, sisa stok, jam penjualan, pilihan diantar atau ambil sendiri, serta tombol tambah ke pesanan. Dibuka dengan menekan kartu makanan — bukan jendela popup.',
     group: 'Halaman detail',
-    page: 'detail/product/page.tsx',
+    page: '(app)/detail/product/page.tsx',
   },
   {
     path: '/detail/toko',
@@ -210,7 +210,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Profil satu toko: deskripsi, jam buka, daftar produk, dan tombol Ikuti toko. Dibuka dengan menekan kartu toko.',
     group: 'Halaman detail',
-    page: 'detail/toko/page.tsx',
+    page: '(app)/detail/toko/page.tsx',
   },
   {
     path: '/riwayatPesanan',
@@ -218,7 +218,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Riwayat seluruh pesanan dengan status pembayaran dan pengantaran. Juga tersedia di navigasi bawah pada ponsel.',
     group: 'Menu Utama',
-    page: 'riwayatPesanan/page.tsx',
+    page: '(app)/riwayatPesanan/page.tsx',
   },
   {
     path: '/riwayatPesanan/[orderCode]',
@@ -234,7 +234,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Alur penyelesaian pesanan setelah memilih produk: alamat pengantaran atau ambil sendiri, lalu pembayaran.',
     group: 'Halaman detail',
-    page: 'detail/pesanan/page.tsx',
+    page: '(app)/detail/pesanan/page.tsx',
   },
   {
     path: '/detail/pesanan/sukses',
@@ -242,7 +242,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Halaman konfirmasi setelah pembayaran. Menampilkan ringkasan dan tautan ke riwayat pesanan.',
     group: 'Halaman detail',
-    page: 'detail/pesanan/sukses/page.tsx',
+    page: '(app)/detail/pesanan/sukses/page.tsx',
   },
   {
     path: '/profile',
@@ -250,7 +250,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Profil pengguna: data akun, alamat, koin ReBites, makanan yang disukai, dan pengaturan. Tersedia di navigasi bawah pada ponsel.',
     group: 'Lainnya',
-    page: 'profile/page.tsx',
+    page: '(app)/profile/page.tsx',
   },
   {
     path: '/profile#sukai-makanan',
@@ -258,7 +258,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Bagian pada halaman Profil yang menampilkan makanan yang pernah disukai. Dijangkau lewat menu samping Lainnya > Makanan Disukai.',
     group: 'Lainnya',
-    page: 'profile/page.tsx',
+    page: '(app)/profile/page.tsx',
   },
   {
     path: '/toko-diikuti',
@@ -282,7 +282,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     detail:
       'Daftar pemberitahuan: status pesanan, balasan penjual, dan informasi lainnya. Tersedia di navigasi bawah pada ponsel.',
     group: 'Lainnya',
-    page: 'notifikasi/pembeli/page.tsx',
+    page: '(app)/notifikasi/pembeli/page.tsx',
   },
 ];
 
@@ -294,7 +294,7 @@ export const SELLER_ROUTES: RouteDoc[] = [
     detail:
       'Ringkasan toko: pesanan terbaru, produk terlaris, dan angka penjualan. Menu samping kiri memuat seluruh menu penjual.',
     group: 'Menu penjual',
-    page: 'dashboard/penjual/page.tsx',
+    page: '(app)/dashboard/penjual/page.tsx',
   },
   {
     path: '/dashboard/penjual/pesanan',
@@ -302,14 +302,14 @@ export const SELLER_ROUTES: RouteDoc[] = [
     detail:
       'Daftar pesanan yang masuk ke toko, dengan status dan aksi menyiapkan atau menyelesaikan pesanan.',
     group: 'Menu penjual',
-    page: 'dashboard/penjual/pesanan/page.tsx',
+    page: '(app)/dashboard/penjual/pesanan/page.tsx',
   },
   {
     path: '/dashboard/penjual/ulasan',
     label: 'Ulasan',
     detail: 'Ulasan dan penilaian pembeli terhadap produk toko.',
     group: 'Menu penjual',
-    page: 'dashboard/penjual/ulasan/page.tsx',
+    page: '(app)/dashboard/penjual/ulasan/page.tsx',
   },
   {
     path: '/dashboard/penjual/menu',
@@ -317,7 +317,7 @@ export const SELLER_ROUTES: RouteDoc[] = [
     detail:
       'Daftar produk yang dijual. Dari sini penjual menambah produk, menyunting stok dan jam tayang, serta mengatur diskon kilat.',
     group: 'Menu penjual',
-    page: 'dashboard/penjual/menu/page.tsx',
+    page: '(app)/dashboard/penjual/menu/page.tsx',
   },
   {
     path: '/dashboard/penjual/tambahMenu',
@@ -325,7 +325,7 @@ export const SELLER_ROUTES: RouteDoc[] = [
     detail:
       'Formulir menambah produk baru: nama, kategori, deskripsi, harga normal dan harga surplus, stok, foto, serta jam penjualan.',
     group: 'Menu penjual',
-    page: 'dashboard/penjual/tambahMenu/page.tsx',
+    page: '(app)/dashboard/penjual/tambahMenu/page.tsx',
   },
   {
     path: '/dashboard/penjual/performa',
@@ -333,7 +333,7 @@ export const SELLER_ROUTES: RouteDoc[] = [
     detail:
       'Grafik dan angka penjualan toko dari waktu ke waktu, termasuk produk terlaris dan kategori teratas.',
     group: 'Menu penjual',
-    page: 'dashboard/penjual/performa/page.tsx',
+    page: '(app)/dashboard/penjual/performa/page.tsx',
   },
   {
     path: '/dashboard/penjual/langganan',
@@ -341,7 +341,7 @@ export const SELLER_ROUTES: RouteDoc[] = [
     detail:
       'Pilihan paket langganan penjual (Basic, Standar, Max) beserta batas jumlah produknya.',
     group: 'Menu penjual',
-    page: 'dashboard/penjual/langganan/page.tsx',
+    page: '(app)/dashboard/penjual/langganan/page.tsx',
   },
   {
     path: '/dashboard/penjual/notifikasi',
@@ -349,7 +349,7 @@ export const SELLER_ROUTES: RouteDoc[] = [
     detail:
       'Pemberitahuan untuk penjual: pesanan baru, hasil moderasi produk, dan informasi akun. Dibuka dari ikon lonceng di bilah atas dashboard penjual.',
     group: 'Menu penjual',
-    page: 'dashboard/penjual/notifikasi/page.tsx',
+    page: '(app)/dashboard/penjual/notifikasi/page.tsx',
   },
   {
     path: '/dashboard/penjual/pengaturan',
@@ -357,7 +357,7 @@ export const SELLER_ROUTES: RouteDoc[] = [
     detail:
       'Profil toko: nama usaha, deskripsi, logo, alamat, dan jam operasional.',
     group: 'Menu penjual',
-    page: 'dashboard/penjual/pengaturan/page.tsx',
+    page: '(app)/dashboard/penjual/pengaturan/page.tsx',
   },
 ];
 

@@ -12,6 +12,7 @@ import {
   Star,
   Store,
   Truck,
+  X,
 } from 'lucide-react';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { ReportUserModal } from '@/app/components/shared/report-user-modal';
@@ -62,6 +63,7 @@ export function OrderDetailModal({
     { rating: number; comment: string; createdAt: string } | undefined
   >(undefined);
   const [confirmingReceipt, setConfirmingReceipt] = useState(false);
+  const [cancellingOrder, setCancellingOrder] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState<{ orderId: string; userId: string } | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
@@ -197,10 +199,43 @@ export function OrderDetailModal({
     }
   };
 
+  const handleCancelOrder = async () => {
+    if (!order || cancellingOrder) return;
+    if (!window.confirm('Batalkan pesanan ini? Pesanan yang dibatalkan tidak dapat dilanjutkan.')) {
+      return;
+    }
+    setCancellingOrder(true);
+    try {
+      const result = await transitionOrderStatus(
+        order.orderId,
+        'cancelled',
+        'Dibatalkan oleh pembeli sebelum pembayaran'
+      );
+      if (result.success) {
+        toast({
+          title: 'Pesanan dibatalkan',
+          description: 'Stok produk sudah dilepas kembali untuk pembeli lain.',
+        });
+        onReviewed();
+        onClose();
+        window.location.reload();
+      } else {
+        toast({ title: 'Gagal membatalkan', description: result.error ?? 'Terjadi kesalahan' });
+      }
+    } catch {
+      toast({ title: 'Gagal membatalkan', description: 'Terjadi kesalahan' });
+    } finally {
+      setCancellingOrder(false);
+    }
+  };
+
   const orderStatus = order?.orderStatus ?? 'processing';
   const canConfirmReceipt = order?.status === 'ongoing' && (
     orderStatus === 'ready_for_pickup' || orderStatus === 'out_for_delivery'
   );
+  // Hanya pesanan yang BELUM dibayar. Setelah `paid`, pembatalan menyangkut
+  // uang dan menjadi wewenang penjual, bukan tombol di sisi pembeli.
+  const canCancelOrder = order?.status === 'ongoing' && orderStatus === 'pending';
 
   return (
     <>
@@ -412,6 +447,17 @@ export function OrderDetailModal({
 
             {}
             <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
+              {canCancelOrder && (
+                <button
+                  type="button"
+                  disabled={cancellingOrder}
+                  onClick={handleCancelOrder}
+                  className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-destructive px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <X className="h-4 w-4" />
+                  {cancellingOrder ? 'Memproses...' : 'Batalkan Pesanan'}
+                </button>
+              )}
               {canConfirmReceipt && (
                 <button
                   type="button"

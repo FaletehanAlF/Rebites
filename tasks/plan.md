@@ -109,10 +109,6 @@ clean.
   confirmed with the user before implementation.
 
 ---
-<<<<<<< HEAD
----
-=======
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 
 # Implementation Plan: Cara Kerja Horizontal Scroll Redesign
 
@@ -148,8 +144,6 @@ Replace the vertical timeline in `HowItWorks` with a GSAP ScrollTrigger-scrubbed
 ## Open Questions
 - None
 
-<<<<<<< HEAD
-=======
 ---
 
 # Implementation Plan: Repository structure reorganization (buyer / seller / shared)
@@ -164,31 +158,31 @@ URLs, route groups and special files stay exactly where they are.
 ## Architecture decisions (from the verified import graph, 2026-10-14)
 
 1. **Components stay under `app/components/`** (imported as
-   `@/app/components/…`). No root-level `components/` is introduced — that
-   would compete with the existing location and touch every import for no
-   gain. `ui/`, `shared/`, `auth/`, `landing/` stay as the shared areas.
+    `@/app/components/…`). No root-level `components/` is introduced — that
+    would compete with the existing location and touch every import for no
+    gain. `ui/`, `shared/`, `auth/`, `landing/` stay as the shared areas.
 2. **Actor grouping by nesting**: `app/components/buyer/*` (checkout,
-   detail-product, detail-toko, home, makanan-category, order-history) and
-   `app/components/seller/*` (dashboard-penjual, tambahMenu, subscription).
-   Pure prefix insertion in import specifiers; export names unchanged.
+    detail-product, detail-toko, home, makanan-category, order-history) and
+    `app/components/seller/*` (dashboard-penjual, tambahMenu, subscription).
+    Pure prefix insertion in import specifiers; export names unchanged.
 3. **`lib/` stays flat** (plus `lib/server/`). File-name prefixes
-   (`order-*`, `store-*`, `notification-*`, `subscription-*`, `seller-*`)
-   already encode the domain; subdirectories would touch ~150 import sites
-   for no added information. The two React hooks misplaced in `lib/`
-   (`useCountdown`, `useOrderCalculation`) move to `hooks/buyer/`.
+    (`order-*`, `store-*`, `notification-*`, `subscription-*`, `seller-*`)
+    already encode the domain; subdirectories would touch ~150 import sites
+    for no added information. The two React hooks misplaced in `lib/`
+    (`useCountdown`, `useOrderCalculation`) move to `hooks/buyer/`.
 4. **Hooks split**: actor hooks → `hooks/buyer/` + `hooks/seller/`;
-   genuinely shared hooks (`use-notifications`, `use-profile`, `use-toast`)
-   stay at the `hooks/` root.
+    genuinely shared hooks (`use-notifications`, `use-profile`, `use-toast`)
+    stay at the `hooks/` root.
 5. **Shared consolidations**: `dashboard-penjual/decor.tsx` (DotPattern /
-   LeafSprig used by shared + buyer + seller) → `shared/decor.tsx`;
-   root `site-footer.tsx` → `shared/app-footer.tsx` (name collision with the
-   distinct `shared/site-footer.tsx`; the two footers are different
-   implementations and are NOT merged — that would be a UI change);
-   `notification/` → `shared/notification/` (serves both actors);
-   `preloader.tsx` / `smooth-scroll.tsx` → `landing/` (landing-only).
+    LeafSprig used by shared + buyer + seller) → `shared/decor.tsx`;
+    root `site-footer.tsx` → `shared/app-footer.tsx` (name collision with the
+    distinct `shared/site-footer.tsx`; the two footers are different
+    implementations and are NOT merged — that would be a UI change);
+    `notification/` → `shared/notification/` (serves both actors);
+    `preloader.tsx` / `smooth-scroll.tsx` → `landing/` (landing-only).
 6. **Orphans left in place** (not deleted): `ReBitesStepCard.tsx`,
-   `product-detail-panel.tsx`, `section-shell.tsx` — deletion needs owner
-   approval; reported instead.
+    `product-detail-panel.tsx`, `section-shell.tsx` — deletion needs owner
+    approval; reported instead.
 
 ## Task List
 
@@ -218,4 +212,3 @@ URLs, route groups and special files stay exactly where they are.
 ## Open Questions
 - None — destination structure derived from the verified import graph; user
   brief authorizes structure-only moves with import updates.
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34

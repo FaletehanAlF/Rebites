@@ -27,6 +27,9 @@ import { calculatePricing } from '@/lib/server/pricing';
 // Biteship tidak lagi dipakai: ongkir dihitung lokal dari koordinat.
 import { estimateOrderMinutes } from '@/lib/delivery-estimate';
 import { parseDistanceKm, sanitizeAddressSnapshot, buildAddressSnapshot } from '@/lib/location-validation';
+import { resolvePackageWeightGram } from '@/lib/package-weight';
+import { resolveOriginPoint } from '@/lib/store-origin-point';
+import { isMenuScheduleVisible } from '@/lib/menu-schedule';
 
 export const runtime = 'nodejs';
 
@@ -191,7 +194,7 @@ export async function POST(req: NextRequest) {
     const { data: product, error: prodErr } = await anon
       .from('products')
       // kolom shipping ikut dibaca (sumber kebenaran package).
-      .select('id, umkm_id, slug, name, surplus_price, original_price, stock, status, verification_status, flash_sale_price, flash_sale_start, flash_sale_end, image_url, distance_km, is_delivery, is_pickup, weight_gram, length_cm, width_cm, height_cm')
+      .select('id, umkm_id, slug, name, category, surplus_price, original_price, stock, status, verification_status, flash_sale_price, flash_sale_start, flash_sale_end, image_url, distance_km, is_delivery, is_pickup, weight_gram, length_cm, width_cm, height_cm, scheduled_start, scheduled_end')
       .eq('slug', body.productSlug)
       .maybeSingle();
 
@@ -229,6 +232,22 @@ export async function POST(req: NextRequest) {
     if ((product as Record<string, unknown>).verification_status !== 'approved') {
       return NextResponse.json(
         { error: 'Produk sedang tidak tersedia untuk dipesan.' },
+        { status: 400 }
+      );
+    }
+    // Jadwal menu ditegakkan di server, bukan hanya filter katalog: tautan
+    // langsung ke produk yang belum tayang / sudah berakhir tidak boleh
+    // menghasilkan pesanan.
+    if (
+      !isMenuScheduleVisible({
+        scheduledStart:
+          ((product as Record<string, unknown>).scheduled_start as string | null) ?? null,
+        scheduledEnd:
+          ((product as Record<string, unknown>).scheduled_end as string | null) ?? null,
+      })
+    ) {
+      return NextResponse.json(
+        { error: 'Menu ini belum tayang atau jadwalnya sudah berakhir.' },
         { status: 400 }
       );
     }
@@ -389,6 +408,21 @@ export async function POST(req: NextRequest) {
         vendorLongitude = toOriginCoordinate(vendorInfo.longitude, -180, 180);
       }
     }
+    /**
+     * Titik asal cadangan untuk toko yang belum menandai lokasi (10 dari 13
+     * toko di database). Tanpa ini checkout menolak semua produk toko
+     * tersebut, sehingga pembeli tidak punya cara memesan "Diantar".
+     * Titik dari penjual selalu diutamakan (lihat resolveOriginPoint).
+     */
+    let originEstimated = false;
+    if (vendorSlug && (!isValidCoordinatePairLocal(vendorLatitude, vendorLongitude))) {
+      const fallback = resolveOriginPoint(vendorLatitude, vendorLongitude, vendorCity);
+      if (fallback.point) {
+        vendorLatitude = fallback.point.latitude;
+        vendorLongitude = fallback.point.longitude;
+        originEstimated = fallback.source === 'city';
+      }
+    }
     // origin shipping internal (server-authoritative, dari DB saja).
     // Tidak ada nilai origin yang dibaca dari body client.
     const originShipping = {
@@ -400,6 +434,7 @@ export async function POST(req: NextRequest) {
       latitude: vendorLatitude,
       longitude: vendorLongitude,
       slug: vendorSlug,
+      estimated: originEstimated,
     };
     // PII (nama/alamat/telepon toko) hanya di-log di development.
     if (process.env.NODE_ENV !== 'production') {
@@ -466,8 +501,15 @@ export async function POST(req: NextRequest) {
     // weight_gram = BERAT PER UNIT (satu kemasan); maknanya tidak diubah.
     // totalPackageWeightGram = turunan jelas (per-unit x quantity) untuk
     // kebutuhan shipping nanti; dimensi diteruskan apa adanya (tanpa scaling).
+    //
+    // Produk tanpa berat memakai berat bawaan kategori (lib/package-weight.ts)
+    // agar pesanannya tetap tercatat dengan berat yang bisa dipakai kurir.
+    // Penanda `packageWeightEstimated` membedakan tebakan ini dari isian
+    // penjual, sehingga laporan bisa menunjuk produk yang belum ditimbang.
     const productRow = product as Record<string, unknown>;
-    const packageWeightGram = toPackageInt(productRow.weight_gram);
+    const rawPackageWeight = toPackageInt(productRow.weight_gram);
+    const packageWeightGram = rawPackageWeight ?? resolvePackageWeightGram(null, productRow.category as string | null);
+    const packageWeightEstimated = rawPackageWeight == null;
     const packageLengthCm = toPackageInt(productRow.length_cm);
     const packageWidthCm = toPackageInt(productRow.width_cm);
     const packageHeightCm = toPackageInt(productRow.height_cm);
@@ -479,6 +521,7 @@ export async function POST(req: NextRequest) {
         quantity,
         packageWeightGram,
         totalPackageWeightGram,
+        packageWeightEstimated,
         packageLengthCm,
         packageWidthCm,
         packageHeightCm,
@@ -494,6 +537,7 @@ export async function POST(req: NextRequest) {
         quantity,
         weightGram: packageWeightGram,
         totalWeightGram: totalPackageWeightGram,
+        weightEstimated: packageWeightEstimated,
         lengthCm: packageLengthCm,
         widthCm: packageWidthCm,
         heightCm: packageHeightCm,

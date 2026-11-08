@@ -27,6 +27,9 @@ interface SearchFilterBarProps {
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
+const GLASS_FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent";
+
 const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
   { key: "terdekat", label: "Terdekat" },
   { key: "diskon-terbesar", label: "Diskon Terbesar" },
@@ -60,6 +63,20 @@ function applySort(key: FilterKey) {
         return 0;
     }
   };
+}
+
+/**
+ * Urutan saran pencarian: yang paling dekat lebih dulu.
+ *
+ * Jarak null berarti tidak diketahui (kolom `distance_km` kosong) dan
+ * diletakkan paling belakang — bukan dianggap 0, yang akan menaruhnya di
+ * urutan teratas secara keliru.
+ */
+function byNearest(a: FoodItem, b: FoodItem): number {
+  return (
+    (a.distanceKm ?? Number.MAX_SAFE_INTEGER) -
+    (b.distanceKm ?? Number.MAX_SAFE_INTEGER)
+  );
 }
 
 function HighlightedText({ text, query }: { text: string; query: string }) {
@@ -127,7 +144,10 @@ export function SearchFilterBar({
       matches = matches.filter((item) => item.expiresAt);
     }
 
-    return [...matches].sort(applySort(activeFilter));
+    // Gunakan applySort untuk filter aktif agar kategori/urutan benar;
+    // fallback ke byNearest jika tidak ada filter khusus.
+    const comparator = applySort(activeFilter);
+    return [...matches].sort(comparator);
   }, [showInlineResults, trimmedQuery, activeFilter, searchPool]);
 
   const dropdownVisible =
@@ -211,7 +231,10 @@ export function SearchFilterBar({
               )}
             >
               <Search
-                className="h-5 w-5 shrink-0 text-muted-foreground"
+                className={cn(
+                  "h-5 w-5 shrink-0",
+                  isGlass ? "text-white/80" : "text-muted-foreground",
+                )}
               />
               <input
                 ref={inputRef}
@@ -227,7 +250,10 @@ export function SearchFilterBar({
                 role="combobox"
                 aria-controls="search-inline-results"
                 className={cn(
-                  "w-full bg-transparent font-sans text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none",
+                  "w-full bg-transparent font-sans text-sm focus:outline-none",
+                  isGlass
+                    ? "text-white placeholder:text-white/60"
+                    : "text-foreground placeholder:text-muted-foreground/70",
                   (showInlineResults || isLight) &&
                   "[&::-webkit-search-cancel-button]:hidden",
                 )}
@@ -239,7 +265,10 @@ export function SearchFilterBar({
                   aria-label="Hapus pencarian"
                   onClick={handleClear}
                   className={cn(
-                    "-ml-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground",
+                    "-ml-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors duration-150",
+                    isGlass
+                      ? "text-white/70 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <X className="h-4 w-4" />
@@ -264,7 +293,7 @@ export function SearchFilterBar({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[min(340px,60vh)] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-white p-1.5 shadow-[0_28px_60px_-36px_rgba(27,77,50,0.55)] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-track]:bg-transparent"
+                    className="absolute left-0 right-0 top-full z-[60] mt-2 max-h-[min(340px,60vh)] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-white p-1.5 shadow-[0_28px_60px_-36px_rgba(27,77,50,0.55)] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-track]:bg-transparent"
                   >
                     {results.length > 0 ? (
                       results.map((item) => (
@@ -334,73 +363,82 @@ export function SearchFilterBar({
           </div>
 
           {showLocation && (
-            <div className="relative hidden sm:block">
-            <button
-              type="button"
-              aria-label="Pilih lokasi"
-              aria-expanded={locationOpen}
-              onClick={() => setLocationOpen((v) => !v)}
-              className={cn(
-                "flex h-11 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:border-primary/40 hover:text-primary",
-                FOCUS_RING,
-              )}
-            >
-              <MapPin className="h-4 w-4 text-primary" />
-              <span className="max-w-[130px] truncate">{location}</span>
-              <ChevronDown
+            <div className="relative z-50 hidden sm:block">
+              <button
+                type="button"
+                aria-label="Pilih lokasi"
+                aria-expanded={locationOpen}
+                onClick={() => setLocationOpen((v) => !v)}
                 className={cn(
-                  "h-4 w-4 transition-transform duration-200",
-                  locationOpen && "rotate-180",
+                  "flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors duration-200",
+                  isGlass
+                    ? "border-white/30 bg-white/10 text-white hover:border-white/60 hover:text-white"
+                    : "border-border bg-white text-muted-foreground hover:border-primary/40 hover:text-primary",
+                  isGlass ? GLASS_FOCUS_RING : FOCUS_RING,
                 )}
-              />
-            </button>
+              >
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="max-w-[130px] truncate">{location}</span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 transition-transform duration-200",
+                    locationOpen && "rotate-180",
+                  )}
+                />
+              </button>
 
-            <AnimatePresence>
-              {locationOpen && (
-                <>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-40"
-                    onClick={() => setLocationOpen(false)}
-                  />
-                  <motion.ul
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.18 }}
-                    className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-1.5 shadow-[0_28px_60px_-36px_rgba(27,77,50,0.55)]"
-                  >
-                    {LOCATIONS.map((loc) => (
-                      <li key={loc}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setLocation(loc);
-                            setLocationOpen(false);
-                          }}
-                          className={cn(
-                            "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors duration-150",
-                            loc === location
-                              ? "bg-muted font-semibold text-primary"
-                              : "text-muted-foreground hover:bg-secondary hover:text-primary",
-                          )}
-                        >
-                          <MapPin className="h-3.5 w-3.5 shrink-0" />
-                          {loc}
-                        </button>
-                      </li>
-                    ))}
-                  </motion.ul>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
+              <AnimatePresence>
+                {locationOpen && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-40"
+                      onClick={() => setLocationOpen(false)}
+                    />
+                    <motion.ul
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.18 }}
+                      className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-1.5 shadow-[0_28px_60px_-36px_rgba(27,77,50,0.55)]"
+                    >
+                      {LOCATIONS.map((loc) => (
+                        <li key={loc}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLocation(loc);
+                              setLocationOpen(false);
+                            }}
+                            className={cn(
+                              "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors duration-150",
+                              loc === location
+                                ? "bg-muted font-semibold text-primary"
+                                : "text-muted-foreground hover:bg-secondary hover:text-primary",
+                            )}
+                          >
+                            <MapPin className="h-3.5 w-3.5 shrink-0" />
+                            {loc}
+                          </button>
+                        </li>
+                      ))}
+                    </motion.ul>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           )}
 
           {!isGlass && !isLight && (
-            <div className="flex items-center gap-2">
+            /*
+              Tombol Cari diberi `relative z-50` supaya berada DI ATAS lapisan
+              penangkap klik-di-luar milik daftar saran (z-40).
+              Kolom pencarian dan tombol juga sengaja tetap SATU BARIS di semua
+              ukuran layar supaya saran yang terbuka tidak menutupi tombol.
+            */
+            <div className="relative z-50 flex items-center gap-2">
               {/* Mobile filter button */}
               <button
                 type="button"

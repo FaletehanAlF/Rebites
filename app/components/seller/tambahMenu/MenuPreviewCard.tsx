@@ -3,6 +3,7 @@
 import { Clock, Leaf, Star } from 'lucide-react';
 import { Card } from '@/app/components/seller/dashboard-penjual/Card';
 import { SmartImage } from '@/app/components/shared/SmartImage';
+import { formatScheduleDate } from '@/lib/menu-schedule';
 import type { MenuFormState } from './types';
 
 const formatPrice = (value: number) => value.toLocaleString('id-ID');
@@ -63,7 +64,22 @@ export function MenuPreviewCard({ form }: { form: MenuFormState }) {
       <div className="mt-4 space-y-2.5 border-t border-border pt-4 text-xs text-foreground">
         <p className="flex items-center gap-2.5">
           <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-          Tersedia pukul {form.startTime}–{form.endTime}
+          {form.scheduledStart ? (
+            <>
+              Mulai <span className="font-semibold text-primary">{formatScheduleDate(form.scheduledStart)}</span>
+              {form.scheduledEnd && (
+                <>
+                  {' '}sampai{' '}
+                  <span className="font-semibold text-primary">{formatScheduleDate(form.scheduledEnd)}</span>
+                </>
+              )}
+              {form.startTime && form.endTime && (
+                <span className="text-muted-foreground"> · pukul {form.startTime}–{form.endTime}</span>
+              )}
+            </>
+          ) : (
+            <>Tersedia pukul {form.startTime}–{form.endTime}</>
+          )}
         </p>
         <p className="flex items-center gap-2.5">
           <Leaf className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -71,10 +87,9 @@ export function MenuPreviewCard({ form }: { form: MenuFormState }) {
         </p>
       </div>
 
-      {!form.isSurplusToday && (
+      {!form.isSurplusToday && !form.scheduledStart && (
         <p className="mt-4 rounded-xl bg-muted px-3 py-2.5 text-[11px] leading-relaxed text-muted-foreground">
-          Menu belum ditandai sebagai surplus. Aktifkan “Tampilkan hari ini” agar pembeli bisa
-          langsung menemukannya.
+          Menu belum ditandai sebagai surplus. Aktifkan “Tampilkan hari ini” atau jadwalkan tanggal agar pembeli bisa menemukannya.
         </p>
       )}
     </Card>

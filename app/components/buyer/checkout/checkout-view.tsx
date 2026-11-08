@@ -38,13 +38,8 @@ function buildOrderDraft(product: ProductDetail): OrderDraft {
     // kapabilitas fulfillment untuk gating UI (server validasi ulang).
     isDelivery: product.isDelivery ?? true,
     isPickup: product.isPickup ?? true,
-    // Berat NULL = ongkir pasti ditolak server (product_no_weight). Tandai di
-    // sini agar toggle Diantar tidak menawarkan janji yang gagal belakangan.
-    deliveryUnavailableReason:
-      (product.isDelivery ?? true) && !(product.weightGram != null)
-        ? 'weight_missing'
-        : null,
-    // package dari ProductDetail (NULL = belum diketahui).
+    // package dari ProductDetail (NULL = belum diketahui; server memakai
+    // berat perkiraan kategori sehingga Diantar tetap bisa dipilih).
     weightGram: product.weightGram ?? null,
     lengthCm: product.lengthCm ?? null,
     widthCm: product.widthCm ?? null,

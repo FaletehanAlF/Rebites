@@ -8,7 +8,14 @@ import {
   getUserOrders,
 } from '@/lib/order-storage';
 import { useCurrentUser } from '@/lib/current-user';
+import { subscribeOrdersRealtime } from '@/lib/orders-realtime';
 
+/**
+ * Polling hanya FALLBACK. Sebelumnya pembeli melihat perubahan status
+ * (mis. "Sedang Diantar") paling cepat 15 detik kemudian, padahal penjual
+ * sudah memindahkannya. Realtime menutup jeda itu; polling menjaga saat
+ * websocket putus tanpa memberi tahu.
+ */
 const SWEEP_INTERVAL_MS = 15_000;
 
 /** Status terminal yang tidak lagi dianggap "berlangsung". */
@@ -49,10 +56,18 @@ export function useOrders() {
     refresh();
 
     window.addEventListener(ORDERS_UPDATED_EVENT, refresh);
+    // Langganan TANPA filter kolom: filter postgres_changes memerlukan
+    // REPLICA IDENTITY FULL, yang tidak dipasang pada `orders` di repo ini.
+    // Tanpa filter, RLS tetap membatasi ke pesanan milik pembeli ini.
+    const unsubscribeRealtime = subscribeOrdersRealtime({
+      label: 'buyer',
+      onChange: refresh,
+    });
     const intervalId = window.setInterval(refresh, SWEEP_INTERVAL_MS);
 
     return () => {
       window.removeEventListener(ORDERS_UPDATED_EVENT, refresh);
+      unsubscribeRealtime();
       window.clearInterval(intervalId);
     };
   }, [userLoading, refresh]);

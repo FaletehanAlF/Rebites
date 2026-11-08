@@ -11,7 +11,7 @@ import { Reveal } from '@/app/components/shared/reveal';
 export const metadata: Metadata = {
   title: 'Tentang Kami - ReBites',
   description:
-    'Kenapa ReBites dibuat, masalah apa yang coba dipecahkan, dan bagaimana ReBites mempertemukan UMKM dengan pembeli di Kota Depok.',
+    'Mengenal ReBites: marketplace makanan surplus dari UMKM untuk mengurangi food loss dan food waste di Indonesia.',
 };
 
 const FOCUS_RING =

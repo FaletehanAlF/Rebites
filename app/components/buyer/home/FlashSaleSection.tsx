@@ -12,6 +12,8 @@ import { useLikedFoods } from "@/hooks/buyer/use-liked-foods";
 import type { UrgentItem, UrgentSlot } from "@/lib/types";
 import {
   getActiveFlashSaleProducts,
+  FLASH_SLOTS,
+  formatFlashScheduleLabel,
   type FlashSaleCardItem,
 } from "@/lib/flash-sale";
 import { PRODUCTS_UPDATED_EVENT } from "@/lib/product-storage";
@@ -151,7 +153,7 @@ function UrgentCard({
   endsAtIso,
   onViewDetail,
 }: {
-  item: UrgentItem;
+  item: FlashSaleCardItem;
   startsAtIso: string;
   endsAtIso: string;
   onViewDetail?: (id: string) => void;
@@ -235,7 +237,7 @@ function UrgentCard({
           <Heart
             className={cn(
               "h-4 w-4",
-              liked && isActive && "fill-sale text-sale",
+              liked && isActive && "text-sale",
             )}
           />
         </button>
@@ -272,10 +274,10 @@ function UrgentCard({
           ) : (
             <div className="mt-2.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-destructive">
+                <span className="font-extrabold text-red-600 drop-shadow-sm">
                   Sisa {stockCount}
                 </span>
-                <span className="text-destructive">Buru!</span>
+                <span className="font-extrabold text-red-600 drop-shadow-sm">Buru!</span>
               </div>
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 {/* Lebar statis dari data stok: cukup dirender, tidak dianimasikan. */}
@@ -286,6 +288,12 @@ function UrgentCard({
               </div>
             </div>
           ))}
+
+        {!isActive && item.startsAt && (
+          <div className="mt-1.5 rounded-md bg-secondary/80 px-2 py-0.5 text-[10px] font-extrabold text-foreground shadow-sm">
+            {formatFlashScheduleLabel(item.startsAt)}
+          </div>
+        )}
 
         <div className="mt-3 flex items-baseline gap-2">
           <span className="text-xs text-muted-foreground line-through">
@@ -332,6 +340,9 @@ export function FlashSaleSection({
 }) {
   const { realSlot, setSelectedSlot, activeSlot } = useSlotRotation();
   const reducedMotion = useReducedMotion();
+
+  type StatusFilter = 'Semua' | 'Berlangsung' | 'Akan Datang';
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('Semua');
 
   const activeSlotDef = activeSlot
     ? (SLOTS.find((s) => s.key === activeSlot) ?? null)
@@ -387,10 +398,22 @@ export function FlashSaleSection({
    * yang sama sudah ada di daftar flash sale.
    */
   const dynamicIds = new Set(dynamicSlotItems.map((item) => item.id));
-  const visibleItems: FlashSaleCardItem[] = [
+  let baseVisible: FlashSaleCardItem[] = [
     ...staticSlotItems.filter((item) => !dynamicIds.has(item.id)),
     ...dynamicSlotItems,
   ];
+
+  if (statusFilter !== 'Semua') {
+    baseVisible = baseVisible.filter((item) => {
+      const startMs = item.startsAt ? new Date(item.startsAt).getTime() : 0;
+      const endMs = item.endsAt ? new Date(item.endsAt).getTime() : Infinity;
+      const nowMs = Date.now();
+      const isActiveStatus = nowMs >= startMs && nowMs < endMs;
+      return statusFilter === 'Berlangsung' ? isActiveStatus : !isActiveStatus && startMs > nowMs;
+    });
+  }
+
+  const visibleItems: FlashSaleCardItem[] = baseVisible;
 
   return (
     <section
@@ -403,8 +426,12 @@ export function FlashSaleSection({
           <div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-sale" aria-hidden />
+              {/* "Diskon Kilat" — sama dengan label di sidebar, drawer, dan
+                  kartu pintasan hero. Sebelumnya bagian ini menulis
+                  "Flash sale", sehingga pengguna mengira keduanya fitur
+                  berbeda. */}
               <span className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-white sm:text-[11px]">
-                Flash sale
+                Diskon Kilat
               </span>
             </div>
 
@@ -480,6 +507,25 @@ export function FlashSaleSection({
               </button>
             );
           })}
+        </div>
+
+        {/* Filter status */}
+        <div className="mt-4 flex flex-wrap gap-1.5 sm:mt-5">
+          {(['Semua', 'Berlangsung', 'Akan Datang'] as StatusFilter[]).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setStatusFilter(f)}
+              className={cn(
+                'rounded-full border px-3 py-1 text-[11px] font-bold shadow-sm transition-colors',
+                statusFilter === f
+                  ? 'border-white bg-white text-primary shadow-white/20'
+                  : 'border-white/40 bg-white/15 text-white hover:border-white/80 hover:bg-white/25'
+              )}
+            >
+              {f}
+            </button>
+          ))}
         </div>
 
         <div className="mt-5 sm:mt-6">

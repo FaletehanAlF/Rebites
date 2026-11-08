@@ -1,69 +1,89 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
-/**
- * Gerbang muat halaman utama — bukan animasi.
- *
- * Sebelumnya komponen ini adalah preloader bermerek: lingkaran 200vmax, teks
- * masuk dari bawah, progress bar 1 detik, lalu keluar dengan `scale 0.5` +
- * `y: -160vh` selama 0.9 s. Akibatnya di sisi pengguna:
- *
- * - Seluruh halaman terkunci (body overflow hidden) sampai animasi selesai.
- * - Satu lapisan raksasa 200vmax di-scale setiap frame; inilah sumber
- *   "patah-patah" saat pertama membuka landing page di perangkat lemah.
- * - Ada tunda tetap meski halaman sudah siap.
- *
- * Sekarang tugasnya hanya menahan scroll sampai font siap. Tidak ada animasi
- * transform, tidak ada progress palsu, tidak ada tunda buatan — lapisan polos
- * dengan nama produk, hilang segera setelah font siap (atau paling lambat
- * 900 ms).
- */
+const STORAGE_KEY = 'rebits:landing-seen';
+
+// Curved ease-out (melengkung) untuk transisi slide ke atas.
+const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+
+type Phase = 'loading' | 'leaving' | 'done';
+
 export function Preloader({ onDone }: { onDone?: () => void }) {
-  const [ready, setReady] = useState(false);
+  const [firstVisit, setFirstVisit] = useState(false);
+  const [phase, setPhase] = useState<Phase>('loading');
   const finishedRef = useRef(false);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
 
-  const finish = useCallback(() => {
+  useEffect(() => {
+    try {
+      const seen = window.localStorage.getItem(STORAGE_KEY);
+      setFirstVisit(!seen);
+    } catch {
+      setFirstVisit(true);
+    }
+  }, []);
+
+  const complete = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    setReady(true);
+    setPhase('done');
+    try {
+      window.localStorage.setItem(STORAGE_KEY, '1');
+    } catch {
+      /* storage tidak tersedia */
+    }
     onDoneRef.current?.();
   }, []);
 
+  const finish = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    setPhase('leaving');
+  }, []);
+
   useEffect(() => {
-    // Hormati preferensi sistem: tidak perlu menahan apa pun.
+    if (phase !== 'loading' || !firstVisit) return;
+
+    // Hormati preferensi sistem: langsung selesai tanpa animasi.
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      finish();
-      return;
+      const t = window.setTimeout(complete, 0);
+      return () => window.clearTimeout(t);
     }
+  }, [phase, firstVisit, complete]);
 
-    // Batas atas: tanpa ini, font yang gagal dimuat akan mengunci halaman
-    // selamanya karena `document.fonts.ready` tidak pernah selesai.
-    const safety = window.setTimeout(finish, 900);
+  const handleAnimationComplete = useCallback(() => {
+    if (phase === 'leaving') complete();
+  }, [phase, complete]);
 
-    if (typeof document !== 'undefined' && document.fonts) {
-      void document.fonts.ready.then(finish).catch(finish);
-    } else {
-      finish();
-    }
-
-    return () => {
-      window.clearTimeout(safety);
-    };
-  }, [finish]);
-
-  if (ready) return null;
+  if (phase === 'done' || !firstVisit) return null;
 
   return (
-    <div
+    <motion.div
       aria-hidden
       className="fixed inset-0 z-[200] flex items-center justify-center bg-primary"
+      initial={false}
+      animate={phase === 'leaving' ? { y: '-100%' } : { y: 0 }}
+      transition={{ duration: 0.9, ease: easeOutCubic }}
+      onAnimationComplete={handleAnimationComplete}
     >
-      <span className="font-display text-2xl font-semibold tracking-tight text-cream/90">
-        ReBites
-      </span>
-    </div>
+      <div className="flex flex-col items-center gap-8">
+        <span className="font-display text-7xl sm:text-8xl font-bold tracking-tight text-cream">
+          Rebites
+        </span>
+        <div className="relative h-1.5 w-64 max-w-[80vw] overflow-hidden rounded-full bg-cream/20">
+          <motion.div
+            className="absolute top-0 left-0 h-full w-full rounded-full bg-cream"
+            style={{ transformOrigin: 'left bottom' }}
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1, ease: 'easeInOut' }}
+            onAnimationComplete={() => finish()}
+          />
+        </div>
+      </div>
+    </motion.div>
   );
 }

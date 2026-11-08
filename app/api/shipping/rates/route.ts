@@ -17,6 +17,12 @@ import {
   calculateDeliveryFee,
   isValidCoordinatePair,
 } from '@/lib/shipping-tariff';
+import {
+  resolvePackageWeightGram,
+  isDefaultPackageWeight,
+} from '@/lib/package-weight';
+import { resolveOriginPoint } from '@/lib/store-origin-point';
+import { isMenuScheduleVisible } from '@/lib/menu-schedule';
 
 export const runtime = 'nodejs';
 
@@ -59,9 +65,11 @@ export async function POST(req: NextRequest) {
     const anon = createAnonServerClient();
     const { data: product, error: prodErr } = await anon
       .from('products')
-      .select('id, umkm_id, slug, name, is_delivery')
-      .eq('slug', productSlug)
-      .maybeSingle();
+        .select(
+          'id, umkm_id, slug, name, category, is_delivery, weight_gram, scheduled_start, scheduled_end'
+        )
+        .eq('slug', productSlug)
+        .maybeSingle();
 
     if (prodErr) {
       console.error('[shipping/rates] fetch product error', prodErr.message);
@@ -71,8 +79,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Produk tidak tersedia.', code: 'product_unavailable' }, { status: 404 });
     }
     const productRow = product as Record<string, unknown>;
+    if (
+      !isMenuScheduleVisible({
+        scheduledStart: (productRow.scheduled_start as string | null) ?? null,
+        scheduledEnd: (productRow.scheduled_end as string | null) ?? null,
+      })
+    ) {
+      return NextResponse.json(
+        { error: 'Menu ini belum tayang atau jadwalnya sudah berakhir.', code: 'product_not_scheduled' },
+        { status: 400 }
+      );
+    }
     if (productRow.is_delivery !== true) {
       return NextResponse.json({ error: 'Produk ini tidak tersedia untuk diantar.', code: 'product_no_delivery' }, { status: 400 });
+    }
+    /**
+     * Berat paket dari DB, bukan dari klien.
+     *
+     * Produk yang beratnya belum diisi penjual TIDAK lagi ditolak: berat
+     * bawaannya diambil dari kategori (lihat lib/package-weight.ts), karena
+     * 38 dari 44 produk aktif belum punya berat sehingga fitur "Diantar"
+     * praktis mati untuk hampir seluruh katalog.
+     */
+    const weightGram = resolvePackageWeightGram(
+      productRow.weight_gram,
+      productRow.category as string | null
+    );
+    const weightIsEstimated = isDefaultPackageWeight(productRow.weight_gram);
+    if (weightGram == null) {
+      return NextResponse.json(
+        {
+          error: 'Berat produk tidak dapat ditentukan, jadi ongkir belum dapat dihitung.',
+          code: 'product_no_weight',
+        },
+        { status: 400 }
+      );
     }
     if (!productRow.umkm_id) {
       return NextResponse.json({ error: 'Data toko produk tidak lengkap.', code: 'vendor_incomplete' }, { status: 500 });
@@ -80,21 +121,32 @@ export async function POST(req: NextRequest) {
 
     const { data: vendor } = await anon
       .from('umkm_profiles')
-      .select('latitude, longitude')
+      .select('latitude, longitude, city')
       .eq('id', productRow.umkm_id)
       .maybeSingle();
     const vendorRow = vendor as Record<string, unknown> | null;
-    const vendorLat = vendorRow?.latitude;
-    const vendorLng = vendorRow?.longitude;
-    if (!isValidCoordinatePair(vendorLat, vendorLng)) {
+    /**
+     * Titik asal: koordinat toko bila sudah ditandai penjual, jika tidak
+     * pusat kecamatan/kota yang diisi penjual (lib/store-origin-point.ts).
+     * 10 dari 13 toko belum menandai titik, dan tanpa cadangan ini semua
+     * produknya tidak bisa diantar sama sekali.
+     */
+    const origin = resolveOriginPoint(
+      vendorRow?.latitude,
+      vendorRow?.longitude,
+      vendorRow?.city
+    );
+    if (!origin.point) {
       return NextResponse.json(
         {
-          error: 'Koordinat toko belum tersedia, ongkir belum dapat dihitung. Lengkapi lokasi toko dulu.',
+          error: 'Lokasi toko belum tersedia, ongkir belum dapat dihitung. Penjual perlu menandai titik lokasi toko.',
           code: 'origin_coordinates_missing',
         },
         { status: 400 }
       );
     }
+    const vendorLat = origin.point.latitude;
+    const vendorLng = origin.point.longitude;
 
     const service = createServiceClient();
     const { data: address } = await service
@@ -139,6 +191,10 @@ export async function POST(req: NextRequest) {
       distanceLabel: `${roadKm.toFixed(1)} km`,
       etaLabel: travelMinutes > 0 ? `±${travelMinutes} menit` : '',
       serviceType: 'standard',
+      // Pembeli berhak tahu ongkir ini perkiraan, bukan hasil titik toko
+      // yang ditandai penjual (atau berat yang benar-benar ditimbang).
+      originEstimated: origin.source === 'city',
+      weightEstimated: weightIsEstimated,
     };
 
     return NextResponse.json({ options: [option] });

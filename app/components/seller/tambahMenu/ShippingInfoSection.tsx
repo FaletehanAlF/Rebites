@@ -70,7 +70,8 @@ export function ShippingInfoSection({
             Informasi Pengiriman
           </h3>
           <p className={cn('mt-0.5 leading-relaxed text-sage-500', isEdit ? 'text-[11px]' : 'text-xs')}>
-            Tambahkan berat makanan agar kami dapat menghitung biaya pengiriman untuk pembeli.
+            Isi berat agar ongkir lebih akurat. Bila dikosongkan, kami memakai
+            perkiraan berat dari kategori menu.
           </p>
         </div>
       </div>
@@ -96,7 +97,7 @@ export function ShippingInfoSection({
         </div>
         <p className={cn('text-sage-500', isEdit ? 'mt-1 text-[11px]' : 'mt-1.5 text-[11px]')}>
           {isDelivery
-            ? 'Wajib diisi karena Diantar aktif: berat (angka bulat, gram) dipakai kurir untuk menghitung ongkir.'
+            ? 'Opsional. Tanpa berat, pembeli melihat ongkir perkiraan dan bisa memilih Diantar.'
             : 'Ambil sendiri aktif — berat belum dibutuhkan. Isi jika ingin mengaktifkan Diantar.'}
         </p>
       </div>

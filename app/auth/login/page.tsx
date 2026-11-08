@@ -1,36 +1,28 @@
 import type { Metadata } from "next";
-import AuthCenteredShell from "@/app/components/auth/auth-centered-shell";
+import AuthSplitShell from "@/app/components/auth/auth-split-shell";
 import AuthForm from "@/app/components/auth/auth-form";
 
 export const metadata: Metadata = {
-  title: "Masuk - ReBites",
+  title: "Masuk — ReBites",
   description:
     "Masuk ke akun ReBites untuk mengakses dasbor kurasi marketplace kuliner surplus.",
 };
 
 export default function LoginPage() {
   return (
-    <AuthCenteredShell
+    <AuthSplitShell
       imageSrc="/hero-makanan.avif"
+      imageAlt="Makanan surplus ReBites"
       variant="buyer"
-      title={
-        <>
-          Selamatkan
-          <br />
-          Pangan.
-        </>
-      }
-      description="Masuk untuk temukan makanan surplus enak dengan harga miring. Hemat enak, selamatkan bumi."
+      overlayText={{
+        headline: "Selamatkan Pangan.",
+        description:
+          "Masuk untuk menemukan makanan surplus enak dengan harga miring. Hemat, enak, berkelanjutan.",
+      }}
     >
       <AuthForm
         mode="signin"
-        title={
-          <>
-            Selamat Datang
-            <br />
-            Kembali
-          </>
-        }
+        title="Selamat Datang Kembali"
         subtitle="Masukkan kredensial Anda untuk melanjutkan."
         submitLabel="Masuk"
         redirectTo="/home"
@@ -40,6 +32,6 @@ export default function LoginPage() {
           href: "/auth/register",
         }}
       />
-    </AuthCenteredShell>
+    </AuthSplitShell>
   );
 }

@@ -67,7 +67,7 @@ function FieldBox({
       >
         {label}
       </label>
-      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
         <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]" />
         {children}
         {trailing}
@@ -312,9 +312,9 @@ export default function PenjualLoginForm() {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="flex h-full flex-col"
+      className="flex min-h-0 flex-col"
     >
-      <motion.div variants={itemVariants} className="mb-3 flex-shrink-0">
+      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
         <Link
           href="/auth/register/penjual"
           className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-[hsl(var(--primary))]"
@@ -326,7 +326,7 @@ export default function PenjualLoginForm() {
 
       <motion.div
         variants={itemVariants}
-        className="mb-5 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
+        className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0"
       >
         <Image
           src="/logo.avif"
@@ -342,13 +342,13 @@ export default function PenjualLoginForm() {
 
       <motion.h1
         variants={itemVariants}
-        className="font-display text-[22px] font-bold leading-[1.1] tracking-[-0.02em] text-foreground flex-shrink-0"
+        className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-foreground flex-shrink-0"
       >
         Masuk sebagai Penjual
       </motion.h1>
       <motion.p
         variants={itemVariants}
-        className="mt-1.5 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
+        className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0"
       >
         Sudah punya toko? Masukkan email, nama toko, dan password untuk
         melanjutkan ke dashboard penjual.
@@ -356,7 +356,7 @@ export default function PenjualLoginForm() {
 
       <motion.form
         variants={itemVariants}
-        className="mt-6 grid grid-cols-1 gap-4"
+        className="mt-5 grid grid-cols-1 gap-4"
         onSubmit={handleSubmit}
         noValidate
       >
@@ -418,7 +418,7 @@ export default function PenjualLoginForm() {
         {error && (
           <p
             role="alert"
-            className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 font-sans text-[12px] leading-relaxed text-destructive"
+            className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive"
           >
             {error}
           </p>
@@ -459,7 +459,7 @@ export default function PenjualLoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading ? "Memverifikasi..." : "Masuk"}
         </button>

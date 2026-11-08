@@ -46,6 +46,23 @@ const POLL_INTERVAL_MS = 10_000;
 /** Timer untuk memperbarui label "terlambat". 15 detik cukup. */
 const FRESHNESS_TICK_MS = 15_000;
 
+/**
+ * Penomoran langganan. Topik kanal WAJIB unik per langganan.
+ *
+ * `supabase.channel(topic)` TIDAK membuat kanal baru bila topiknya sudah
+ * terdaftar di client: kanal lama dikembalikan apa adanya. Pada halaman detail
+ * pesanan hook ini dipasang dua kali (halaman + `DeliveryStatusPanel`), jadi
+ * topik berbasis order id saja membuat pemanggilan `.on()` kedua berjalan pada
+ * kanal yang sudah `subscribe()` dan melempar:
+ *
+ *   cannot add `postgres_changes` callbacks for realtime:... after `subscribe()`.
+ *
+ * Hal yang sama terjadi di development saat StrictMode menjalankan effect dua
+ * kali: `removeChannel` selesai secara async, sehingga kanal lama masih
+ * terdaftar ketika effect kedua membuat kanal dengan topik yang sama.
+ */
+let channelCounter = 0;
+
 export function useCourierLocation(
   orderDbId: string | null | undefined,
   enabled = true
@@ -93,8 +110,9 @@ export function useCourierLocation(
     setLoading(true);
     void refresh();
 
+    channelCounter += 1;
     const channel = supabase
-      .channel(`rebites-courier-location-${orderDbId}`)
+      .channel(`rebites-courier-location-${orderDbId}-${channelCounter}`)
       .on(
         'postgres_changes',
         {

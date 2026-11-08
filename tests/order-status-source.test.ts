@@ -216,3 +216,50 @@ test('fase tidak dikenal tidak menghasilkan aksi', () => {
   const phase = resolveOrderPhase(input);
   assert.equal(getSellerAction(phase, 'delivery'), null);
 });
+
+test('pengiriman dengan toko bertitik lokasi: kurir berangkat tanpa tombol kedua', () => {
+  // Toko punya koordinat -> trigger penugasan kurir bisa jalan saat status
+  // berpindah ke out_for_delivery. Penjual tidak perlu menekan tombol kedua.
+  const action = getSellerAction('processing', 'delivery', {
+    autoAdvanceTo: 'out_for_delivery',
+  });
+  assert.ok(action);
+  assert.equal(action.targetStatus, 'out_for_delivery');
+  // Deskripsi menyebut penugasan otomatis, bukan "akan masuk status" yang samar.
+  assert.match(action.description, /otomatis/i);
+});
+
+test('pengiriman tanpa titik lokasi toko tetap dua langkah', () => {
+  // Tanpa koordinat toko, trigger sengaja TIDAK menugaskan kurir. Kalau tombol
+  // menjanjikan pengantaran otomatis, pesanan akan tertahan tanpa kurir dan
+  // pembeli melihat "menunggu" tanpa penjelasan.
+  const action = getSellerAction('processing', 'delivery', {
+    autoAdvanceTo: null,
+  });
+  assert.ok(action);
+  assert.equal(action.targetStatus, 'out_for_delivery');
+  assert.doesNotMatch(action.description, /otomatis/i);
+});
+
+test('auto dispatch tidak berlaku untuk pickup', () => {
+  // Pesanan ambil sendiri tidak punya kurir; penanda pengantaran otomatis
+  // tidak boleh mengubah labelnya.
+  const action = getSellerAction('processing', 'pickup', {
+    autoAdvanceTo: 'out_for_delivery',
+  });
+  assert.ok(action);
+  assert.equal(action.targetStatus, 'ready_for_pickup');
+});
+
+test('auto dispatch tidak mengubah fase lain', () => {
+  // paid tetap mulai menyiapkan; selesai tetap selesai.
+  const paid = getSellerAction('paid', 'delivery', { autoAdvanceTo: 'out_for_delivery' });
+  assert.ok(paid);
+  assert.equal(paid.targetStatus, 'processing');
+
+  const done = getSellerAction('out_for_delivery', 'delivery', {
+    autoAdvanceTo: 'out_for_delivery',
+  });
+  assert.ok(done);
+  assert.equal(done.targetStatus, 'completed');
+});

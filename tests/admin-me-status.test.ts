@@ -242,8 +242,11 @@ test('role requests: blok error akses dirender SEBELUM tabel', () => {
   assert.match(source, /role="alert"/);
 });
 
-test('sidebar penjual tetap hanya menautkan Panel Admin saat me terverifikasi', () => {
+test('sidebar penjual hanya menautkan Panel Admin untuk akun ber-role admin', () => {
   const source = readProjectFile('app/components/dashboard-penjual/Sidebar.tsx');
-  // `me` hanya terisi pada respons 200, jadi tautan tidak pernah muncul karena error.
-  assert.match(source, /\{me && \(/);
+  // Role dibaca dari profiles sendiri; bukan /api/admin/me yang selalu 403
+  // untuk penjual biasa dan memenuhi log dengan penolakan yang wajar.
+  assert.match(source, /useIsAdminAccount/);
+  assert.match(source, /\{isAdmin && \(/);
+  assert.doesNotMatch(source, /useAdminMe/);
 });

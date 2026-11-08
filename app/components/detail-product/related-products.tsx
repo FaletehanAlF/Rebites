@@ -31,7 +31,7 @@ export function RelatedProducts({
           </p>
         </div>
         <Link
-          href="/home"
+          href={seeAllHref}
           className="hidden items-center gap-1.5 font-secondary text-sm font-semibold text-primary transition-colors hover:text-primary sm:inline-flex"
         >
           Lihat Semua

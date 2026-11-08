@@ -899,8 +899,6 @@ export function UserProfile() {
   const { userId } = useCurrentUser();
   const router = useRouter();
   const [orders, setOrders] = useState<StoredOrder[] | null>(null);
-  const [isSukaiMakananDialogOpen, setIsSukaiMakananDialogOpen] =
-    useState(false);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -924,6 +922,7 @@ export function UserProfile() {
   const [savingPersonal, setSavingPersonal] = useState(false);
   
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const [isSukaiMakananDialogOpen, setIsSukaiMakananDialogOpen] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
@@ -969,7 +968,7 @@ export function UserProfile() {
     const syncHash = () => {
       const hash = window.location.hash.replace(/^#/, "");
       if (hash === "sukai-makanan") {
-        setIsSukaiMakananDialogOpen(true);
+        router.push("/sukai");
       } else if (hash === "toko-diikuti") {
         // Daftar toko yang diikuti kini punya halaman khusus: deep-link
         // hash lama dialihkan ke sana tanpa duplikasi dialog.
@@ -1307,6 +1306,7 @@ export function UserProfile() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
 
           {}
           <motion.section

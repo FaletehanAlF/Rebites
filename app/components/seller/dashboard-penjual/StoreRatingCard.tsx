@@ -100,8 +100,8 @@ export function StoreRatingCard() {
                 key={star}
                 className={
                   star <= Math.round(average)
-                    ? 'h-3.5 w-3.5 fill-primary text-primary'
-                    : 'h-3.5 w-3.5 text-border fill-border'
+                    ? 'h-3.5 w-3.5 fill-gold-600 text-gold-600'
+                    : 'h-3.5 w-3.5 text-muted-foreground/80'
                 }
               />
             ))}
@@ -120,7 +120,7 @@ export function StoreRatingCard() {
             <li key={star} className="flex items-center gap-2 text-[11px]">
               <span className="flex w-7 shrink-0 items-center gap-0.5 font-medium text-foreground">
                 {star}
-                <Star className="h-3 w-3 fill-primary text-primary" aria-hidden />
+                <Star className="h-3 w-3 fill-gold-600 text-gold-600" aria-hidden />
               </span>
               <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
                 <span

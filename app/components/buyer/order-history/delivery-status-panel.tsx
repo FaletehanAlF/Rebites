@@ -48,6 +48,7 @@ export function resolveDeliveryPhase(order: StoredOrder): DeliveryPhase {
   if (order.status === 'completed') return 'done';
   const os = order.orderStatus ?? 'processing';
   if (os === 'cancelled' || os === 'refunded' || os === 'failed') return 'cancelled';
+  if (os === 'completed') return 'done';
   if (os === 'out_for_delivery') return 'on-the-way';
   if (os === 'ready_for_pickup' || os === 'ready') return 'waiting-courier';
   return 'preparing';

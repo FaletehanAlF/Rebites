@@ -8,6 +8,7 @@ import {
   isSafeNextPath,
   mapCallbackError,
 } from "@/lib/auth-email";
+import { isOAuthCallback, mapOAuthError } from "@/lib/auth-oauth";
 
 function safeNextPath(raw: string | null): string {
   return isSafeNextPath(raw) ? (raw as string) : "/home";
@@ -15,12 +16,22 @@ function safeNextPath(raw: string | null): string {
 
 type CallbackState = "working" | "success" | "failed";
 
+/**
+ * Penjaga modul untuk pencatatan login Google: satu halaman callback hanya
+ * mencatat SATU login per user. Guard utama tetap `didRunRef` di komponen
+ * (effect dijalankan sekali, termasuk pada StrictMode). Penjaga ini menutup
+ * kemungkinan mount ulang komponen sebelum navigasi selesai.
+ */
+let oauthLoginRecordedFor: string | null = null;
+
 function CallbackStatus({
   state,
   detail,
+  isOAuth = false,
 }: {
   state: CallbackState;
   detail: string;
+  isOAuth?: boolean;
 }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary px-6">
@@ -29,11 +40,7 @@ function CallbackStatus({
           <span className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         )}
         <p className="font-sans text-sm leading-relaxed text-muted-foreground">
-          {state === "working"
-            ? "Memverifikasi email kamu…"
-            : state === "success"
-              ? "Email terverifikasi. Mengalihkan…"
-              : detail}
+          {detail}
         </p>
         {state === "failed" && (
           <div className="flex w-full flex-col gap-2">
@@ -44,9 +51,9 @@ function CallbackStatus({
               Ke Halaman Masuk
             </Link>
             <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
-              Belum menerima email? Masuk dengan email kamu — bila muncul
-              &ldquo;Email belum diverifikasi&rdquo;, gunakan tombol kirim ulang
-              di sana.
+              {isOAuth
+                ? "Kamu tetap bisa masuk dengan email dan kata sandi yang sudah terdaftar."
+                : "Belum menerima email? Masuk dengan email kamu — bila muncul \u201cEmail belum diverifikasi\u201d, gunakan tombol kirim ulang di sana."}
             </p>
           </div>
         )}
@@ -60,6 +67,7 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const [state, setState] = useState<CallbackState>("working");
   const [detail, setDetail] = useState("Memverifikasi email kamu…");
+  const [isOAuth, setIsOAuth] = useState(false);
   // Guard anti-double: StrictMode dev me-mount effect 2x, dan
   // penukaran code / verifikasi OTP hanya boleh jalan sekali
   // (code hanya valid 5 menit & sekali pakai).
@@ -81,6 +89,16 @@ function AuthCallbackContent() {
   useEffect(() => {
     if (didRunRef.current) return;
     didRunRef.current = true;
+
+    // Alur di bawah TIDAK berubah untuk verifikasi email/OTP. Hanya bila
+    // penanda `?oauth=google` ada, callback memakai jalur pasca-login
+    // berbasis role (sama dengan finishAuth di AuthForm).
+    const oauthFlow = isOAuthCallback(searchParams.toString());
+    const mapError = oauthFlow ? mapOAuthError : mapCallbackError;
+    if (oauthFlow && isMountedRef.current) {
+      setIsOAuth(true);
+      setDetail("Menghubungkan akun Google kamu…");
+    }
 
     const nextPath = safeNextPath(searchParams.get("next"));
     const code = searchParams.get("code");
@@ -105,20 +123,45 @@ function AuthCallbackContent() {
 
     function succeed() {
       if (!isMountedRef.current) return;
+      setDetail("Email terverifikasi. Mengalihkan…");
       setState("success");
       router.replace(nextPath);
+    }
+
+    /**
+     * Jalur OAuth: sesi sudah aktif, lalu baca role, catat activity log, dan
+     * redirect sesuai role (buyer → /home, umkm → /dashboard/penjual,
+     * admin → /dashboard/admin). `next` eksplisit tetap dihormati lewat
+     * helper bersama, dan divalidasi safe-path di sana.
+     */
+    async function succeedOAuth(authUserId: string | null) {
+      if (!isMountedRef.current) return;
+      const { completeAuthSession } = await import("@/lib/auth-post-login");
+      const result = await completeAuthSession(authUserId, {
+        redirectParam: searchParams.get("next"),
+        allowMissingProfile: true,
+        fallback: "/home",
+        // Cegah pencatatan login ganda bila callback di-mount ulang.
+        logLogin: !authUserId || authUserId !== oauthLoginRecordedFor,
+      });
+      if (!isMountedRef.current) return;
+      if (!result.ok) {
+        fail(result.message);
+        return;
+      }
+      if (authUserId) oauthLoginRecordedFor = authUserId;
+      setDetail("Masuk dengan Google berhasil. Mengalihkan…");
+      setState("success");
+      router.replace(result.destination);
     }
 
     (async () => {
       try {
         // 1. Supabase mengembalikan ?error= saat link ditolak di server
-        // (mis. expired/invalid). Jangan coba tukar code lagi.
+        // (mis. expired/invalid pada email, atau pembatalan pada OAuth).
+        // Jangan coba tukar code lagi.
         if (urlError || urlErrorDescription) {
-          fail(
-            mapCallbackError(
-              urlErrorDescription || urlError || "Link tidak valid."
-            )
-          );
+          fail(mapError(urlErrorDescription || urlError || "Link tidak valid."));
           return;
         }
 
@@ -127,10 +170,15 @@ function AuthCallbackContent() {
         // 2. Alur PKCE (?code=): tukar sekali. Wajib di browser/perangkat
         // yang sama dengan saat link diminta (code verifier di storage).
         if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          const { data: exchangeData, error } =
+            await supabase.auth.exchangeCodeForSession(code);
           if (!isMountedRef.current) return;
           if (error) {
-            fail(mapCallbackError(error.message));
+            fail(mapError(error.message));
+            return;
+          }
+          if (oauthFlow) {
+            await succeedOAuth(exchangeData.session?.user?.id ?? null);
             return;
           }
           succeed();
@@ -146,7 +194,14 @@ function AuthCallbackContent() {
           });
           if (!isMountedRef.current) return;
           if (error) {
-            fail(mapCallbackError(error.message));
+            fail(mapError(error.message));
+            return;
+          }
+          if (oauthFlow) {
+            const {
+              data: { session: oauthSession },
+            } = await supabase.auth.getSession();
+            await succeedOAuth(oauthSession?.user?.id ?? null);
             return;
           }
           succeed();
@@ -156,29 +211,35 @@ function AuthCallbackContent() {
         // 4. Alur implisit (#access_token di hash): supabase-js dengan
         // detectSessionInUrl sudah mem-parse otomatis. Cukup poll sesi
         // sebentar, tanpa memanggil exchange/verify apa pun.
-        let session: { user: unknown } | null = null;
-        for (let attempt = 0; attempt < 10 && !session; attempt += 1) {
+        let sessionUserId: string | null = null;
+        for (let attempt = 0; attempt < 10 && !sessionUserId; attempt += 1) {
           if (!isMountedRef.current) return;
           const {
             data: { session: current },
           } = await supabase.auth.getSession();
-          session = current;
-          if (!session) {
+          sessionUserId = current?.user?.id ?? null;
+          if (!sessionUserId) {
             await new Promise((resolve) => setTimeout(resolve, 300));
           }
         }
         if (!isMountedRef.current) return;
-        if (session) {
+        if (sessionUserId) {
+          if (oauthFlow) {
+            await succeedOAuth(sessionUserId);
+            return;
+          }
           succeed();
         } else {
           fail(
-            "Tautan tidak membawa kode verifikasi dan tidak ada sesi. Minta tautan baru atau masuk kembali."
+            oauthFlow
+              ? mapOAuthError("")
+              : "Tautan tidak membawa kode verifikasi dan tidak ada sesi. Minta tautan baru atau masuk kembali."
           );
         }
       } catch (err) {
         if (isMountedRef.current) {
           fail(
-            mapCallbackError(
+            mapError(
               err instanceof Error ? err.message : "Verifikasi gagal."
             )
           );
@@ -194,7 +255,7 @@ function AuthCallbackContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  return <CallbackStatus state={state} detail={detail} />;
+  return <CallbackStatus state={state} detail={detail} isOAuth={isOAuth} />;
 }
 
 export default function AuthCallbackPage() {

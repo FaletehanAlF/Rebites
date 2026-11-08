@@ -2,6 +2,7 @@
 
 import { supabase } from './supabase';
 import { resolveImageSrc } from './image-path';
+import { isMenuScheduleVisible } from './menu-schedule';
 
 export const SELLER_VENDOR_SLUG = 'dapur-ibu-tini';
 export const SELLER_VENDOR_NAME = 'Dapur Ibu Tini';
@@ -22,6 +23,8 @@ export interface SellerProduct {
   endTime: string;
   allDay?: boolean;
   isSurplusToday: boolean;
+  scheduledStart?: string | null;
+  scheduledEnd?: string | null;
   featured?: boolean;
   flashSale?: {
     price: number;
@@ -79,6 +82,8 @@ function rowToSellerProduct(row: ProductRow): SellerProduct {
     endTime: (row.sell_window_end ?? '21:00').slice(0, 5),
     allDay: row.all_day ?? false,
     isSurplusToday: row.is_surplus_today ?? true,
+    scheduledStart: row.scheduled_start ?? null,
+    scheduledEnd: row.scheduled_end ?? null,
     featured: row.featured ?? false,
     flashSale:
       row.flash_sale_price != null
@@ -127,6 +132,8 @@ function sellerProductToRow(product: Partial<SellerProduct>): Record<string, unk
   if (product.endTime !== undefined) payload.sell_window_end = product.endTime;
   if (product.allDay !== undefined) payload.all_day = product.allDay;
   if (product.isSurplusToday !== undefined) payload.is_surplus_today = product.isSurplusToday;
+  if (product.scheduledStart !== undefined) payload.scheduled_start = product.scheduledStart;
+  if (product.scheduledEnd !== undefined) payload.scheduled_end = product.scheduledEnd;
   if (product.featured !== undefined) payload.featured = product.featured;
   // kapabilitas fulfillment seller (boolean, bukan opsional di tipe).
   if (product.isDelivery !== undefined) payload.is_delivery = product.isDelivery;
@@ -291,7 +298,14 @@ export async function getStoreProductsBySlug(
     console.error('[product-storage] gagal memuat produk toko:', error.message);
     return { products: [], error: STORE_LOAD_ERROR };
   }
-  return { products: (data ?? []).map(rowToSellerProduct), error: null };
+  let products = (data ?? []).map(rowToSellerProduct);
+  // Jalur publik (pembeli/detail toko) menghormati jadwal: menu yang baru
+  // akan tayang atau sudah berakhir tidak boleh muncul. Jalur seller
+  // (`includeAll`) tetap melihat semuanya supaya bisa mengelola jadwalnya.
+  if (onlyApproved) {
+    products = products.filter((product) => isMenuScheduleVisible(product));
+  }
+  return { products, error: null };
 }
 
 export async function getSellerProductCount(): Promise<number> {
@@ -445,6 +459,9 @@ export async function uploadProductImage(
 
 export function isProductAvailable(product: SellerProduct): boolean {
   if (product.stock <= 0) return false;
+  // Menu yang dijadwalkan belum tayang / sudah berakhir tidak tersedia,
+  // walaupun stok masih ada dan jam jualnya cocok.
+  if (!isMenuScheduleVisible(product)) return false;
   if (product.allDay) return true;
   return isWithinSaleWindow(product.startTime, product.endTime);
 }

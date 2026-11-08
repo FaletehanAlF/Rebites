@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { resolveEffectiveUnitPrice } from '@/lib/flash-pricing';
 import { resolveImageSrc } from '@/lib/image-path';
+import { isMenuScheduleVisible } from '@/lib/menu-schedule';
 import type { ProductDetail, RelatedProduct } from './data';
 
 const UUID_RE =
@@ -113,6 +114,16 @@ export async function fetchProductDetail(
     // — perlakukan seperti produk yang tidak ditemukan.
     const linkedUmkm = (data as Record<string, any>).umkm;
     if (!linkedUmkm || typeof linkedUmkm !== 'object') return undefined;
+    // Menu yang dijadwalkan belum tayang / sudah berakhir tidak boleh dibuka
+    // lewat tautan langsung, sama seperti produk yang tidak ditemukan.
+    if (
+      !isMenuScheduleVisible({
+        scheduledStart: (data as Record<string, any>).scheduled_start ?? null,
+        scheduledEnd: (data as Record<string, any>).scheduled_end ?? null,
+      })
+    ) {
+      return undefined;
+    }
     return rowToProductDetail(data as Record<string, any>);
   } catch (error) {
     console.error('[detail] gagal memuat detail produk:', error);
@@ -129,7 +140,7 @@ export async function fetchRelatedProducts(
     const { data, error } = await supabase
       .from('products')
       .select(
-        'slug, name, image_url, original_price, surplus_price, umkm:umkm_profiles(business_name)'
+        'slug, name, image_url, original_price, surplus_price, scheduled_start, scheduled_end, umkm:umkm_profiles(business_name)'
       )
       .eq('category', category)
       .neq('slug', excludeSlug)
@@ -140,6 +151,12 @@ export async function fetchRelatedProducts(
     return data
       // Toko nonaktif tidak terbaca publik (RLS), sehingga relasi umkm kosong.
       .filter((row: Record<string, any>) => row.umkm && typeof row.umkm === 'object')
+      .filter((row: Record<string, any>) =>
+        isMenuScheduleVisible({
+          scheduledStart: row.scheduled_start ?? null,
+          scheduledEnd: row.scheduled_end ?? null,
+        })
+      )
       .map((row: Record<string, any>) => {
         const umkm = row.umkm as Record<string, any>;
         const slug: string = row.slug ?? row.id;

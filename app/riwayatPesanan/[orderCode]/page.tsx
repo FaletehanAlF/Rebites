@@ -120,7 +120,11 @@ function OrderDetailContent() {
    * langganan Realtime-nya sendiri, jadi tidak ada biaya langganan untuk
    * pesanan yang tidak diantar.
    */
-  const isDelivering = orderStatus === 'out_for_delivery';
+  const isDone = order
+    ? order.status === 'completed' || order.orderStatus === 'completed'
+    : false;
+
+  const isDelivering = !isDone && orderStatus === 'out_for_delivery';
   const { location: courierLocation, freshness: courierFreshness } = useCourierLocation(
     order?.dbId,
     isDelivering
@@ -176,9 +180,6 @@ function OrderDetailContent() {
   };
 
   const subStatus = order ? getOrderSubStatus(order) : 'diproses';
-  const isDone = order
-    ? order.status === 'completed' || order.orderStatus === 'completed'
-    : false;
 
   const metrics = useMemo(() => {
     if (!order) return null;
@@ -194,7 +195,10 @@ function OrderDetailContent() {
 
   if (state === 'loading') {
     return (
-      <RiwayatSidebarShell>
+      <RiwayatSidebarShell
+        title="Detail Pesanan"
+        description="Status pengantaran, posisi kurir, rincian biaya, dan tindakan yang bisa kamu lakukan untuk pesanan ini."
+      >
         <div className="space-y-4" aria-busy="true" aria-label="Memuat detail pesanan">
           <div className="h-24 animate-pulse rounded-2xl bg-white ring-1 ring-hairline" />
           <div className="h-64 animate-pulse rounded-2xl bg-white ring-1 ring-hairline" />
@@ -205,7 +209,10 @@ function OrderDetailContent() {
 
   if (state === 'notfound' || !order) {
     return (
-      <RiwayatSidebarShell>
+      <RiwayatSidebarShell
+        title="Detail Pesanan"
+        description="Status pengantaran, posisi kurir, rincian biaya, dan tindakan yang bisa kamu lakukan untuk pesanan ini."
+      >
         <div className="mx-auto max-w-md rounded-2xl border border-dashed border-hairline bg-white px-6 py-12 text-center">
           <h1 className="font-display text-lg font-semibold text-charcoal-900">
             Pesanan tidak ditemukan
@@ -240,7 +247,10 @@ function OrderDetailContent() {
   });
 
   return (
-    <RiwayatSidebarShell>
+    <RiwayatSidebarShell
+      title="Detail Pesanan"
+      description="Status pengantaran, posisi kurir, rincian biaya, dan tindakan yang bisa kamu lakukan untuk pesanan ini."
+    >
       <div className="space-y-5">
         {/* Navigasi kembali + refresh (bukan tombol dekoratif). */}
         <div className="flex items-center justify-between gap-3">
@@ -444,15 +454,25 @@ function OrderDetailContent() {
             </section>
           </div>
 
-          {/* Kolom kanan: pengiriman / pengambilan. */}
+          {/* Kolom kanan: pengiriman / pengambilan.
+              Urutan bloknya mengikuti pertanyaan pembeli saat menunggu:
+              "pesananku sedang apa" (status) lebih dulu, baru "di mana"
+              (peta), lalu alat bantu (chat) dan alamat. Urutan kolom TIDAK
+              dibalik di layar sempit: membaliknya menaruh tombol "Pesanan
+              Sudah Saya Terima" di paling bawah halaman. */}
           <aside className="space-y-5 lg:sticky lg:top-6">
             {isDelivery ? (
               <section id="pengantaran" aria-labelledby="kirim-heading" className="scroll-mt-24 space-y-3">
                 <h2 id="kirim-heading" className="font-display text-base font-semibold text-charcoal-900">
                   Pengantaran
                 </h2>
+                {/* Status dulu, peta kemudian: pertanyaan pertama pembeli
+                    adalah "pesananku sedang apa", dan jawabannya teks —
+                    peta melengkapinya dengan "di mana". */}
+                <DeliveryStatusPanel order={order} variant="full" />
                 <DeliveryMap
                   plan={mapPlan}
+                  completed={isDone}
                   // Animasi kendaraan hanya saat pengantaran benar-benar
                   // berjalan. Pada fase lain marker tetap di titik awal,
                   // sehingga peta tidak pernah berpura-pura ada pergerakan.
@@ -476,7 +496,6 @@ function OrderDetailContent() {
                     ? 'Ikon motor menunjukkan posisi kurir sebenarnya, diperbarui otomatis dari perangkatnya. Garis hijau adalah rute jalan dari toko ke alamat tujuan.'
                     : 'Garis hijau adalah rute jalan dari toko ke alamat tujuan. Kurir belum mengirim posisi, jadi ikon motor masih berupa ilustrasi perjalanan.'}
                 </p>
-                <DeliveryStatusPanel order={order} variant="full" />
                 <DemoCourierPanel
                   orderDbId={order.dbId}
                   orderStatus={orderStatus}
