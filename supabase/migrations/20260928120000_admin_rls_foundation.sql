@@ -1,21 +1,21 @@
--- ============================================================================
--- 0020: Admin RLS Foundation
---
--- Membuat fungsi public.is_admin() SECURITY DEFINER untuk menghindari
--- infinite recursion pada RLS policies (masalah yang terjadi di 0018
--- dan diperbaiki sementara di 0001 dengan menghapus admin checks).
---
--- Pola yang digunakan:
---   - fungsi is_admin() SECURITY DEFINER membaca profiles melewati RLS
---   - policy menggunakan public.is_admin() sebagai helper, bukan subquery
---     langsung ke tabel profiles (yang menyebabkan recursion)
---
--- Idempoten: aman dijalankan berulang.
--- ============================================================================
 
--- ---------------------------------------------------------------------------
--- 1. Fungsi helper is_admin() - SECURITY DEFINER (owner bypass RLS)
--- ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS boolean
 LANGUAGE sql
@@ -34,18 +34,18 @@ REVOKE EXECUTE ON FUNCTION public.is_admin() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.is_admin()
   TO anon, authenticated, service_role;
 
--- ---------------------------------------------------------------------------
--- 2. profiles - select own atau admin
--- ---------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "profiles_select_own" ON public.profiles;
 CREATE POLICY "profiles_select_own_or_admin"
 ON public.profiles FOR SELECT
 TO authenticated
 USING (auth.uid() = id OR public.is_admin());
 
--- ---------------------------------------------------------------------------
--- 3. products - update own atau admin
--- ---------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "products_update_own" ON public.products;
 CREATE POLICY "products_update_own_or_admin"
 ON public.products FOR UPDATE
@@ -77,9 +77,9 @@ USING (
   OR public.is_admin()
 );
 
--- ---------------------------------------------------------------------------
--- 4. umkm_profiles - update own atau admin
--- ---------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "umkm_update_own" ON public.umkm_profiles;
 CREATE POLICY "umkm_update_own_or_admin"
 ON public.umkm_profiles FOR UPDATE
@@ -87,9 +87,9 @@ TO authenticated
 USING (auth.uid() = user_id OR public.is_admin())
 WITH CHECK (auth.uid() = user_id OR public.is_admin());
 
--- ---------------------------------------------------------------------------
--- 5. subscriptions - select / update own atau admin
--- ---------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "subs_select_own" ON public.subscriptions;
 CREATE POLICY "subs_select_own_or_admin"
 ON public.subscriptions FOR SELECT
@@ -121,9 +121,9 @@ WITH CHECK (
   OR public.is_admin()
 );
 
--- ---------------------------------------------------------------------------
--- 6. orders - select / update participants (buyer / seller / admin)
--- ---------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "orders_select_participants" ON public.orders;
 CREATE POLICY "orders_select_participants"
 ON public.orders FOR SELECT
@@ -158,9 +158,9 @@ WITH CHECK (
   OR public.is_admin()
 );
 
--- ---------------------------------------------------------------------------
--- 7. plans - tulis hanya admin (baca tetap publik)
--- ---------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "plans_insert_admin" ON public.plans;
 CREATE POLICY "plans_insert_admin"
 ON public.plans FOR INSERT
@@ -180,9 +180,9 @@ ON public.plans FOR DELETE
 TO authenticated
 USING (public.is_admin());
 
--- ---------------------------------------------------------------------------
--- 8. promo_codes - tulis hanya admin
--- ---------------------------------------------------------------------------
+
+
+
 DROP POLICY IF EXISTS "promo_codes_admin_write" ON public.promo_codes;
 CREATE POLICY "promo_codes_admin_write"
 ON public.promo_codes FOR ALL

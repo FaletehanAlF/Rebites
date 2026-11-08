@@ -52,6 +52,7 @@ import { CourierChat } from '@/app/components/buyer/order-history/courier-chat';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { CourierPositionPanel } from '@/app/components/buyer/order-history/courier-position-panel';
 import { formatPrepRemaining } from '@/lib/prep-deadline';
+import { useCourierLocation } from '@/hooks/use-courier-location';
 
 type OrderTab = 'berlangsung' | 'butuh-aksi' | 'selesai' | 'semua';
 
@@ -264,6 +265,7 @@ function OrderRow({
    */
   const courierToolsActive =
     order.fulfillment === 'delivery' && phase === 'out_for_delivery';
+  const { location: courierLocation, freshness: courierFreshness } = useCourierLocation(order.dbId, courierToolsActive);
   const canChatWithCourier = courierToolsActive && Boolean(order.dbId);
 
   return (
@@ -424,7 +426,8 @@ function OrderRow({
       */}
       {courierToolsActive && (
         <CourierPositionPanel
-          orderDbId={order.dbId}
+          location={courierLocation}
+          freshness={courierFreshness}
           className="w-full border-t border-dashed border-border/70 sm:mt-1"
         />
       )}

@@ -1,30 +1,30 @@
--- ============================================================================
--- Perbaikan log_product_activity(): konkatenasi text[] yang salah tipe
---
--- GEJALA: setiap UPDATE pada public.products gagal dengan
---     malformed array literal: "stock"
--- sehingga POST /api/admin/products/:id/reject (tunda penayangan) menjawab
--- 500, dan reserve_stock_for_order() -- yang meng-UPDATE products.stock --
--- juga gagal sehingga POST /api/checkout/xendit menjawab 500.
---
--- PENYEBAB: `v_changed` bertipe text[], dan bentuk
---
---     v_changed := v_changed || 'stock';
---
--- tidak memilih operator array-append `anyarray || anyelement`. Literal
--- `'stock'` bertipe unknown, jadi Postgres memilih `anyarray || anyarray`
--- dan mencoba meng-cast 'stock' menjadi array literal. Cast itu gagal:
--- "malformed array literal".
---
--- PERBAIKAN: setiap elemen dibungkus ARRAY[...] sehingga tipe operand kanan
--- unambiguous. Perilaku log (kolom, metadata, urutan) tidak berubah.
---
--- Verifikasi: pada PostgreSQL, `text[] || 'x'` gagal sedangkan
--- `text[] || ARRAY['x']` berhasil. Lihat tests/activity-log-array-concat.test.ts.
---
--- Idempotent: CREATE OR REPLACE FUNCTION saja; nama fungsi, nama trigger, dan
--- struktur data TIDAK berubah.
--- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 CREATE OR REPLACE FUNCTION public.log_product_activity()
 RETURNS trigger
@@ -94,14 +94,14 @@ BEGIN
     IF NEW.width_cm IS DISTINCT FROM OLD.width_cm THEN v_changed := v_changed || ARRAY['width_cm']; END IF;
     IF NEW.height_cm IS DISTINCT FROM OLD.height_cm THEN v_changed := v_changed || ARRAY['height_cm']; END IF;
 
-    -- Perubahan murni reviewed_at (touch tanpa makna) tidak dicatat agar log tidak berisik.
+    
     IF v_changed = '{}' THEN
       RETURN NEW;
     END IF;
 
-    -- Keterangan eksplisit untuk perubahan status moderasi (tunda/aktifkan
-    -- kembali). Dipisah dari daftar kolom generik supaya feed admin langsung
-    -- menunjukkan tindakan, bukan sekadar "verification_status".
+    
+    
+    
     IF 'verification_status' = ANY (v_changed) THEN
       v_verification_note := 'Status moderasi: '
         || COALESCE(OLD.verification_status, '-')
@@ -133,7 +133,7 @@ BEGIN
         'new_status', NEW.status,
         'old_verification_status', OLD.verification_status,
         'new_verification_status', NEW.verification_status,
-        -- Alasan & pelaku moderasi (kalau ada). UUID admin, bukan kredensial.
+        
         'rejection_reason', NEW.rejection_reason,
         'old_rejection_reason', OLD.rejection_reason,
         'reviewed_by', NEW.reviewed_by,

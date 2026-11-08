@@ -1,18 +1,18 @@
--- ============================================================================
--- Stage 3A: Monitoring & case management enhancements
---
--- - reports.severity ('low'|'medium'|'high'|'critical', nullable; admin pilih
---   manual, TIDAK diisi otomatis)
--- - reports.assigned_to (nullable FK ke profiles) untuk assignment case
--- - public.report_notes: catatan internal admin (RLS: admin read/insert;
---   user biasa TIDAK bisa membaca; tidak pernah mengubah deskripsi report)
--- - public.warning_user_summary (view, security_invoker) untuk overview
---   peringatan per user tanpa menarik seluruh baris warning ke browser
---
--- Idempoten. Tidak merusak migration lama. Tidak mengubah trigger audit
--- yang sudah ada (resolusi/dismiss report, warning, sanction, status akun
--- tetap diaudit via trigger AFTER).
--- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ALTER TABLE public.reports
   ADD COLUMN IF NOT EXISTS severity text;
@@ -69,10 +69,10 @@ ON public.report_notes FOR INSERT
 TO authenticated
 WITH CHECK (public.is_admin() AND admin_id = auth.uid());
 
--- Tidak ada policy UPDATE/DELETE: notes append-only; deskripsi report
--- tidak pernah diubah oleh catatan.
 
--- Overview peringatan per user (group di database, bukan di browser).
+
+
+
 CREATE OR REPLACE VIEW public.warning_user_summary
 WITH (security_invoker = true) AS
 SELECT

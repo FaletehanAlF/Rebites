@@ -1,14 +1,14 @@
--- Guard payment_status orders: hanya server (service_role) dan admin yang
--- boleh mengubahnya. Buyer/seller tetap bisa update kolom operasional
--- (order_status, lifecycle, dsb.) via RLS participants, tetapi tidak bisa
--- memalsukan payment_status='paid' langsung dari client.
---
--- Alasan: policy orders_update_participants mengizinkan buyer/seller
--- meng-UPDATE baris order miliknya tanpa batasan kolom. Tanpa guard ini,
--- buyer bisa menandai ordernya sendiri lunas tanpa membayar (deposit UI
--- seller ikut tertipu). Settlement sah berjalan via service_role
--- (webhook/verify) dan admin via is_admin(), keduanya dikecualikan.
--- INSERT tidak dibatasi (free-order coin dibuat server via service_role).
+
+
+
+
+
+
+
+
+
+
+
 
 CREATE OR REPLACE FUNCTION public.guard_order_payment_status()
 RETURNS trigger
@@ -21,12 +21,12 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- service_role (webhook Xendit, verify, settlement) selalu boleh.
+  
   IF (auth.jwt() ->> 'role') = 'service_role' THEN
     RETURN NEW;
   END IF;
 
-  -- admin boleh (koreksi/refund via API admin yang memakai JWT admin).
+  
   IF public.is_admin() THEN
     RETURN NEW;
   END IF;

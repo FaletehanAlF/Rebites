@@ -1,20 +1,20 @@
--- ============================================================================
--- 0008: Restore table privileges + fix reserve_stock signature
---
--- Root cause 401/42501: cleanup-dev.sql melakukan DROP SCHEMA public CASCADE
--- lalu CREATE SCHEMA public. ALTER DEFAULT PRIVILEGES hanya berlaku untuk
--- objek yang dibuat oleh role pelaku statement, sehingga tabel yang dibuat
--- ulang lewat jalur lain tidak mewarisi grant -> anon kehilangan SELECT
--- (permission denied for table products).
---
--- Idempotent: aman dijalankan berulang.
--- ============================================================================
 
--- ----------------------------------------------------------------------------
--- 1. Restore grant standar Supabase pada schema & tabel eksisting
---    (RLS tetap menjadi gatekeeper sesungguhnya; table-level grant hanya
---    syarat necessary agar query bisa dieksekusi)
--- ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
@@ -30,10 +30,10 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT ALL ON SEQUENCES TO postgres, anon, authenticated, service_role;
 
--- ----------------------------------------------------------------------------
--- 2. reserve_stock berbasis slug (paritas lib/order-storage.ts yang memanggil
---    rpc('reserve_stock', { p_slug, p_quantity }))
--- ----------------------------------------------------------------------------
+
+
+
+
 DROP FUNCTION IF EXISTS public.reserve_stock(uuid, integer);
 DROP FUNCTION IF EXISTS public.reserve_stock(text, integer);
 

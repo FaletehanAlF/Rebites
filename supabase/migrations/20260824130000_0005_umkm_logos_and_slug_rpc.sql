@@ -1,7 +1,7 @@
--- ============================================================================
--- 0005: bucket logo UMKM + RPC reserve_stock berbasis slug produk
---   (frontend memakai id berbasis slug, bukan uuid)
--- ============================================================================
+
+
+
+
 
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('umkm-logos', 'umkm-logos', true)

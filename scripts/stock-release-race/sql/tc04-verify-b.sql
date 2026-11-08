@@ -1,21 +1,21 @@
--- ============================================================================
--- TC-04 W4 (harness) — Sesi B: statement terminal VERIFY asli.
---
--- Statement disalin dari app/api/checkout/xendit/verify/route.ts:143-148
--- (blok EXPIRED/FAILED/VOIDED; TANPA kolom xendit_invoice_id):
---   UPDATE orders SET payment_status='failed', order_status='cancelled',
---          invoice_state='failed'
---    WHERE order_code=<code> AND payment_status='unpaid'
---   RETURNING order_code
--- RETURNING diganti count(*) lewat CTE (efek trigger identik).
---
--- Ekspektasi (gate G1): B memblokir pada XID transaksi A → setelah A commit,
--- requalifikasi WHERE payment_status='unpaid' gagal → 0 baris. Pemenang harus
--- tepat satu (tidak boleh dua-duanya 1 atau dua-duanya 0), Δstok tepat +q
--- satu kali, marker terisi.
---
--- Status: BELUM DIJALANKAN. Pengaman sama dengan tc03-b.sql.
--- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \set ON_ERROR_STOP on
 

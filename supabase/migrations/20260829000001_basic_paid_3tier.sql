@@ -1,7 +1,7 @@
--- ============================================================================
--- 20260829: Basic berbayar 24.999/249.990 + tier 3/5/15 sinkron
--- Idempoten: ON CONFLICT slug DO UPDATE
--- ============================================================================
+
+
+
+
 
 INSERT INTO public.plans (slug, name, tagline, price_monthly, price_yearly, max_products, features, is_popular, cta)
 VALUES
@@ -18,7 +18,7 @@ ON CONFLICT (slug) DO UPDATE SET
   is_popular = EXCLUDED.is_popular,
   cta = EXCLUDED.cta;
 
--- Fallback idempoten untuk row legacy yang mungkin price 0
+
 UPDATE public.plans SET price_monthly = 24999, price_yearly = 249990, max_products = 3, tagline = 'Mulai berjualan, 3 produk, riwayat 30 hari.', features = ARRAY['Maksimal 3 produk','Riwayat penjualan 30 hari','Dashboard penjualan'], cta = 'Pilih Basic', is_popular = false WHERE slug = 'basic' AND price_monthly = 0;
 UPDATE public.plans SET max_products = 5 WHERE slug = 'standar' AND max_products <> 5;
 UPDATE public.plans SET max_products = 15 WHERE slug = 'premium' AND max_products <> 15;
