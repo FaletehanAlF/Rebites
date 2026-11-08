@@ -1,62 +1,77 @@
 <p align="center">
-  <img src="public/logo.avif" alt="ReBites Logo" width="120" />
+  <a href="https://github.com/kayy-eci/Rebitesss-GTNIC2026" aria-label="ReBites repository">
+    <img src="public/logo.avif" alt="ReBites logo" width="96" height="96" />
+  </a>
 </p>
 
 <h1 align="center">ReBites</h1>
 
 <p align="center">
-  Marketplace makanan surplus untuk UMKM kuliner — menghubungkan penjual sisa masakan yang masih layak konsumsi dengan pembeli yang mencari makanan terjangkau.
+  <em>Dari dapur UMKM, ke piring yang butuh.</em>
 </p>
 
 <p align="center">
-  <strong>Dari dapur UMKM, ke piring yang butuh.</strong>
+  Marketplace makanan surplus yang mempertemukan pelaku UMKM kuliner dengan pembeli<br/>
+  untuk menyelamatkan hidangan yang masih layak konsumsi — bukan yang terbuang.
 </p>
 
 <p align="center">
-  <a href="#-mulai-cepat"><strong>Mulai Cepat</strong></a> ·
-  <a href="#-fitur-utama"><strong>Fitur Utama</strong></a> ·
-  <a href="#-arsitektur-sistem"><strong>Arsitektur</strong></a> ·
-  <a href="#-teknologi"><strong>Teknologi</strong></a> ·
-  <a href="#-panduan-pengembangan"><strong>Pengembangan</strong></a> ·
-  <a href="https://github.com/kayy-eci/Rebitesss-GTNIC2026"><strong>Repositori</strong></a>
+  <a href="#panduan-pengembangan"><strong>Mulai Cepat</strong></a>
+  &nbsp;·&nbsp;
+  <a href="#fitur-utama"><strong>Fitur Utama</strong></a>
+  &nbsp;·&nbsp;
+  <a href="#arsitektur-sistem"><strong>Arsitektur</strong></a>
+  &nbsp;·&nbsp;
+  <a href="#teknologi"><strong>Teknologi</strong></a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-14.2.35-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js" />
-  <img src="https://img.shields.io/badge/React-18.2.0-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/TypeScript-5.2.2-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3.3.3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/Supabase-2.58-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
-  <img src="https://img.shields.io/badge/Xendit-Payment-gateway-1A1A2E?style=flat-square" alt="Xendit" />
-  <img src="https://img.shields.io/badge/Biteship-Logistics-FF6B35?style=flat-square" alt="Biteship" />
+  <img src="https://img.shields.io/badge/Next.js-14-000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5.2-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Supabase--3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Xendit--1A1A2E?style=flat-square" alt="Xendit" />
+  <img src="https://img.shields.io/badge/Biteship--FF6B35?style=flat-square" alt="Biteship" />
   <img src="https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/status-active%20development-brightgreen?style=flat-square" alt="Status" />
 </p>
 
 ---
 
-## 📋 Daftar Isi
+## Daftar Isi
 
-- [Tentang ReBites](#-tentang-rebites)
-- [Latar Belakang & Masalah](#-latar-belakang--masalah)
-- [Fitur Utama](#-fitur-utama)
-- [Peran Pengguna & Kontrol Akses](#-peran-pengguna--kontrol-akses)
-- [Alur Bisnis Utama](#-alur-bisnis-utama)
-- [Arsitektur Sistem](#-arsitektur-sistem)
-- [Database & Relasi Data](#-database--relasi-data)
-- [Teknologi](#-teknologi)
-- [Struktur Direktori](#-struktur-direktori)
-- [Panduan Pengembangan](#-panduan-pengembangan)
-- [Variabel Lingkungan](#-variabel-lingkungan)
-- [Keamanan & Keandalan](#-keamanan--keandalan)
-- [Testing & Quality Assurance](#-testing--quality-assurance)
-- [Status Proyek & Known Issues](#-status-proyek--known-issues)
+- [Tentang ReBites](#tentang-rebites)
+- [Fitur Utama](#fitur-utama)
+- [Peran Pengguna & Kontrol Akses](#peran-pengguna-and-kontrol-akses)
+- [Alur Bisnis Utama](#alur-bisnis-utama)
+- [Arsitektur Sistem](#arsitektur-sistem)
+- [Database & Relasi Data](#database-and-relasi-data)
+- [Teknologi](#teknologi)
+- [Struktur Direktori](#struktur-direktori)
+- [Panduan Pengembangan](#panduan-pengembangan)
+- [Variabel Lingkungan](#variabel-lingkungan)
+- [Keamanan & Keandalan](#keamanan-and-keandalan)
+- [Testing & Quality Assurance](#testing-and-quality-assurance)
+- [Status Proyek & Known Issues](#status-proyek-and-known-issues)
 
 ---
 
-## 🍽️ Tentang ReBites
+## Tentang ReBites
 
 **ReBites** adalah marketplace dua-sisi yang mempertemukan **pelaku UMKM kuliner** (penjual) dengan **pembeli** untuk menyelamatkan makanan surplus — makanan yang masih layak konsumsi namun tidak terjual pada akhir jam operasional.
+
+### Sorotan Produk
+
+| Kemampuan | Deskripsi |
+|-----------|-----------|
+| Temukan makanan surplus | Jelajahi 8 kategori dengan filter lokasi, jarak, status buka/tutup, rating, dan pencarian. |
+| Kelola produk & ketersediaan | UMKM menambah/edit menu, mengatur stok, harga surplus, jadwal tayang, dan promo flash sale. |
+| Proses pemesanan | Checkout dengan pilih ambil sendiri atau diantar, validasi alamat, dan hitung ongkir real-time. |
+| Kelola transaksi | Pembayaran via Xendit (invoice + webhook) dengan idempotensi, dukungan ReBites Coin & kode promo. |
+| Pantau riwayat & notifikasi | Timeline status pesanan, riwayat lengkap, ulasan, notifikasi realtime via Supabase. |
 
 ### Masalah yang Diselesaikan
 
