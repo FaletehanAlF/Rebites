@@ -1,0 +1,65 @@
+# Subscription Flow
+
+> **Source:** `lib/server/subscription-activation.ts`, `app/api/subscriptions/xendit/route.ts`
+
+```mermaid
+graph TD
+    A[Seller views plans] --> B[Selects plan]
+    B --> C[POST /api/subscriptions/xendit]
+    C --> D{Has active sub?}
+    D -->|No| E[Create invoice SUB-*]
+    D -->|Yes| F[Upgrade/Downgrade logic]
+    E --> G[Xendit invoice created]
+    G --> H[Payment page]
+    H --> I{Payment?}
+    I -->|Paid| J[Xendit webhook]
+    I -->|Failed/Expired| K[Subscription stays inactive]
+    J --> L{SUB-* prefix?}
+    L -->|Yes| M[activateSubscriptionPaid]
+    M --> N{Status check}
+    N -->|trial/active/expired| O[Set status=active]
+    N -->|cancelled| P[Reactivate]
+    O --> Q[Set period start/end]
+    Q --> R[Update umkm_profiles]
+    R --> S[Notification to seller]
+    K --> T{Retry?}
+    T -->|Yes| H
+    T -->|No| U[Cancel subscription]
+
+    style S fill:#4CAF50,color:#fff
+    style U fill:#F44336,color:#fff
+```
+
+---
+
+## Subscription Status
+
+```mermaid
+stateDiagram-v2
+    [*] --> trial: Free trial (7 days)
+    trial --> active: Payment successful
+    trial --> expired: Trial ends without payment
+    active --> active: Renewal (new period)
+    active --> cancelled: Seller cancels
+    active --> expired: Payment fails
+    cancelled --> active: Reactivation (new payment)
+    expired --> active: Renewal payment
+```
+
+---
+
+## Plan Tiers
+
+| Plan | Price/month | Price/year | Max Products | Features |
+|------|------------|-----------|-------------|----------|
+| Free | Rp 0 | Rp 0 | 5 | Basic |
+| Basic | Rp 50,000 | Rp 500,000 | 50 | + Analytics |
+| Pro | Rp 150,000 | Rp 1,500,000 | Unlimited | + Priority, API access |
+
+---
+
+## Related Docs
+
+- [Features: Subscriptions](../features/subscriptions.md) — Full flow
+- [API: Subscriptions](../api/overview.md) — Endpoints
+- [Database: Overview](../database/overview.md) — Schema

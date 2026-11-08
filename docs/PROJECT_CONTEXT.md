@@ -14,13 +14,20 @@ sellers and buyers, lets sellers list surplus menu items with price/stock/time
 windows, and lets buyers order with delivery or self-pickup. Service area is
 currently limited to **Kota Depok** (stated on the landing page).
 
-Two-sided product:
+Three-sided product:
 
 - **Buyer**: browse categories, search/filter, product detail, order, payment,
-  order tracking, history, reviews, favorites, notifications, store follows.
+  order tracking, history, reviews, favorites, notifications, store follows,
+  courier chat during delivery.
 - **Seller (UMKM)**: seller auth, store profile/hours, menu & stock management,
   incoming orders, reviews, sales performance, subscription plans (Basic /
-  Standar / Max) billed monthly.
+  Standar / Max) billed monthly/yearly, Flash Sale participation.
+- **Courier**: registration, assignment dashboard, live GPS position sharing,
+  order status progression, buyer chat.
+- **Admin**: full platform moderation, user/product/order management, monitoring,
+  analytics, reports, sanctions, role requests, chat support.
+
+---
 
 ## 2. Verified technology stack
 
@@ -36,14 +43,18 @@ Two-sided product:
 | Forms/validation | react-hook-form `^7.53`, zod `^3.23`, @hookform/resolvers | auth/profile forms |
 | Data | Supabase (`@supabase/supabase-js` `^2.58`) | client `lib/supabase.ts`, server `lib/server/supabase.ts`, SQL migrations in `supabase/migrations/` |
 | Payments | Xendit (invoices + webhooks) | `lib/server/xendit.ts`, `app/api/checkout/xendit`, `app/api/webhooks/xendit` |
+| Logistics | Biteship (rates + webhooks + tracking) | `lib/server/biteship.ts`, `app/api/shipping/rates`, `app/api/webhooks/biteship` |
+| AI | Custom provider via `VIBE_CODE_URL` / `VIBE_CODE_KEY` | `lib/server/ai-provider.ts`, `lib/chatbot/` |
 | Charts | recharts `^2.12` | seller analytics (`hooks/use-seller-analytics.ts`) |
 | Carousel | embla-carousel-react `^8.3` | shadcn carousel |
 | Fonts | next/font/google: **Plus Jakarta Sans** (`--font-sans`) + **Be Vietnam Pro** (`--font-secondary`) | `app/layout.tsx` — only two families allowed |
 | Images | next/image, remote hosts `images.pexels.com` and `*.supabase.co` | `next.config.js` |
-| Testing | **None configured** | no test script in `package.json` |
+| Testing | **Node test runner** (`node --test`, 96 suites, offline) | `tests/`, `package.json` scripts |
 
 Installed but not obviously used on the landing page: `gsap`, `recharts`
 (seller pages only), `embla-carousel-react` (carousel components).
+
+---
 
 ## 3. Repository structure
 
@@ -63,39 +74,60 @@ app/
                            #   notifikasi, langganan); halaman tanpa id mengalihkan
     riwayatPesanan/ notifikasi/ profile/ toko/ langganan/pembayaran
                            #   langganan/sukses
+    dashboard/penjual/     # seller dashboard (alt paths without storeId)
+    dashboard/kurir/       # courier dashboard
   auth/                    # login, register, seller login/register,
                            #   forgotPassword, buat-sandi-baru, callback
   api/                     # xendit checkout+verify, orders/[code], profile,
-                           #   subscriptions, webhooks/xendit
+                           #   subscriptions, webhooks/xendit, biteship, chat,
+                           #   shipping/rates, courier, admin, articles, reports
+  dashboard/admin/         # admin panel (see §5.1)
   components/              # shared components (not routes)
     landing/               # landing sections (see §5)
     detail-product/        # shell-injected product detail (see §5a)
-    dashboard-penjual/ home/ shared/ ui/
-hooks/                     # data hooks (orders, products, reviews, …)
+    dashboard-penjual/ home/ shared/ ui/ seller/ admin/ chatbot/
+hooks/                     # data hooks (orders, products, reviews, courier, …)
 lib/                       # categories, catalog, data, types, supabase, pricing,
-                           #   subscription plans, store settings/hours, xendit
-supabase/migrations/       # SQL schema + RLS
-public/                    # images (makanan*.jpg, *.avif, …)
+                           #   subscription plans, store settings/hours, xendit,
+                           #   biteship, flash-sale, shipping-tariff, chatbot
+supabase/migrations/       # 80+ SQL migrations: schema + RLS + functions
+public/                    # images (makanan*.avif, hero-makanan.avif, logo.avif)
+tests/                     # 96 offline test suites (node --test)
 ```
 
-Route groups `(landing)` / `(app)` do **not** affect URLs. There is
+Route groups `(landing)` / `(app)` / `(preview)` do **not** affect URLs. There is
 deliberately no `(app)/layout.tsx` and no `(landing)/layout.tsx`: app chrome
 (`BuyerShell` / `MobileNavbar`) is rendered per page today, so layouts would
 be dead structure.
+
+---
+
 ## 4. Routes (from `npm run build`)
 
 Static (○): `/`, `/home`, `/auth/*`, `/detail/*`, `/riwayatPesanan`,
 `/notifikasi/pembeli`, `/profile`, `/toko`, `/dashboard/penjual/*`
 (termasuk `/dashboard/penjual/[storeId]/**`),
-`/dashboard/admin/*`, `/langganan/pembayaran`, **`/preview/product`**
-(public product detail).
-SSG (●): `/makanan/[category]` (8 paths).
+`/dashboard/kurir/`, `/dashboard/admin/*`, `/langganan/pembayaran`,
+`/langganan/sukses`, **`/preview/product`** (public product detail),
+`/artikel`, `/artikel/[slug]`, `/toko-diikuti`, `/banding`, `/banding/status`,
+`/pengaturan`, `/pengaturan/coin`, `/terms`, `/privacy`.
+
+SSG (●): `/makanan/[category]` (8 paths: `makanan-berat`, `makanan-ringan`,
+`minuman`, `kue-dan-roti`, `makanan-sehat`, `makanan-jepang`, `makanan-korea`,
+`makanan-barat`).
+
 Dynamic (ƒ): `/langganan/sukses`, `/api/checkout/xendit(+verify)`,
 `/api/orders/[code]`, `/api/profile(+addresses|avatar)`,
 `/api/subscriptions/xendit(+verify)`, `/api/webhooks/xendit`,
-`/api/admin/**` (role-guarded helper routes).
+`/api/webhooks/biteship`, `/api/chat`, `/api/chat/actions`,
+`/api/shipping/rates`, `/api/courier/**`, `/api/admin/**`,
+`/api/articles/**`, `/api/seller/**`, `/api/reports/**`,
+`/api/support/**`, `/api/visitors/**`.
+
 Note: bare `/langganan` has never existed (404 by design — only
 `pembayaran`/`sukses` do).
+
+---
 
 ## 5.1 Admin panel (merged from `feature/admin-full-update`)
 
@@ -103,15 +135,32 @@ Area `/dashboard/admin/**` + `app/components/admin/**`, protected by RBAC:
 every admin route/row passes an admin-verification wrapper (see
 `lib/admin-*` helpers and cookie/session `me` status). Two roles only:
 `super_admin` (full) and `admin` (proposer/`super_admin` approval for role
-changes). Verified sub-areas: overview, artikel, langganan, moderasi,
-monitoring (+ aktivitas/audit/laporan/peringatan/sanksi), pengaturan,
-pengguna (+detail), permintaan-role, pesanan, produk, profile, riwayat,
-system, UMKM (+detail).
+changes). Verified sub-areas:
+
+- **Dashboard**: KPI grid, attention items, monitoring, analytics, visitors, activity, user/subscription summaries
+- **Artikel**: CRUD + publish workflow
+- **Langganan**: subscription overview
+- **Moderasi**: product/store moderation queue
+- **Monitoring**: aktivitas, audit logs, laporan (+ detail), peringatan, sanksi
+- **Pengaturan**: platform settings
+- **Pengguna**: user list, detail, role history, coin management, deletion (soft/hard), export
+- **Permintaan-role**: role change requests with super_admin approval
+- **Pesanan**: order management, status history, export
+- **Produk**: product list, approval/rejection/warning/deletion, export
+- **Profile**: admin profile management
+- **Riwayat**: activity history
+- **System**: health checks
+- **UMKM**: store list, detail, verification, activation, deletion, export
+- **Pengiriman**: shipment list, detail
+- **Koin**: coin economy management
+- **Chat**: admin chat threads with users
 
 Admin UX conventions (unittest-checked in `tests/`): localStorage-backed
 preferences (`lib/admin-preferences.ts`, `ADMIN_LOCAL_STORAGE_KEYS`), audit
 trail writes attempt best-effort inserts into `admin_audit_logs`, and shared
 fetch helpers in `lib/` get 401-retry with one refresh.
+
+---
 
 ## 5. Landing page architecture (`/`)
 
@@ -140,6 +189,8 @@ fetch helpers in `lib/` get 401-retry with one refresh.
 Live catalog row in `FoodDiscoverySection` lazy-imports `@/lib/catalog` on
 mount and renders nothing when empty (no placeholder products).
 
+---
+
 ## 5a. Landing vs application boundary (important)
 
 The public showcase and the application are separated **architecturally**, not
@@ -165,12 +216,14 @@ with pathname checks:
   (`/detail/pesanan`) redirects unauthenticated users to
   `/auth/login?redirect=…` only after an explicit "Pesan Sekarang" click.
 
+---
+
 ## 6. Design system
 
 - **Colors** (`app/globals.css`): white `--background` is the primary surface;
   brand green `--primary: 148 41% 23%` (+ `--primary-dark`); neutrals
-  `--secondary`, `--muted`, `--border`; semantic `--destructive/--warning/
-  --success`; `--radius: 0.25rem`. No cream/beige/caramel surfaces.
+  `--secondary`, `--muted`, `--border`; semantic `--destructive/--warning/--success`;
+  `--radius: 0.25rem`. No cream/beige/caramel surfaces.
 - **Tailwind** (`tailwind.config.ts`): `font-display`/`font-sans` → Plus Jakarta
   Sans, `font-secondary` → Be Vietnam Pro; `bg-sale` shares the destructive hue.
 - **Admin-only palette** (also in `tailwind.config.ts` + `.admin-root` overrides
@@ -188,11 +241,15 @@ with pathname checks:
 - **Section rhythm**: alternating white / `bg-secondary` / `bg-primary` bands;
   editorial two-column headers (eyebrow + heading + supporting paragraph).
 
+---
+
 ## 7. Data, integrations and assets
 
 - Supabase holds profiles, UMKM stores, products, orders, reviews, follows,
-  favorites, notifications, subscriptions (schema in `supabase/migrations/`).
+  favorites, notifications, subscriptions, couriers, articles, support tickets,
+  activity logs, sanctions, visitors (schema in `supabase/migrations/`).
 - Payments via Xendit (secret key + webhook callback token, server only).
+- Shipping via Biteship (API key + webhook secret, server only).
 - Category tile images come from `images.pexels.com` (`lib/categories.ts`).
 - Local photos in `public/`: **semuanya AVIF**. `hero-makanan.avif`, `logo.avif`,
   `makanan1–5` / `makanan8–10` / `makanan13–15`, `foods/ikansayur.avif`, dan foto
@@ -214,16 +271,32 @@ with pathname checks:
 - **Assumption**: footer social links (`instagram.com/rebites` etc.) and
   `halo@rebites.id` were not verified as real accounts.
 
+---
+
 ## 8. Environment variables (names only — see `.env.example`)
 
-`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-`SUPABASE_SERVICE_ROLE_KEY` (server only), `NEXT_PUBLIC_SITE_URL`,
-`XENDIT_SECRET_KEY`, `XENDIT_CALLBACK_TOKEN` / `XENDIT_WEBHOOK_TOKEN`,
-`BITESHIP_API_KEY`, `BITESHIP_COURIERS`, `BITESHIP_WEBHOOK_SECRET`,
-`DELIVERY_BASE_FEE_IDR` / `DELIVERY_PER_KM_FEE_IDR` / `DELIVERY_MIN_FEE_IDR` /
-`DELIVERY_MAX_FEE_IDR`, `SUPER_ADMIN_USER_ID` (admin bootstrap id).
+```
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY          # server only
+NEXT_PUBLIC_SITE_URL
+XENDIT_SECRET_KEY
+XENDIT_CALLBACK_TOKEN / XENDIT_WEBHOOK_TOKEN
+BITESHIP_API_KEY
+BITESHIP_COURIERS                  # comma-separated courier codes
+BITESHIP_WEBHOOK_SECRET
+DELIVERY_BASE_FEE_IDR
+DELIVERY_PER_KM_FEE_IDR
+DELIVERY_MIN_FEE_IDR
+DELIVERY_MAX_FEE_IDR
+SUPER_ADMIN_USER_ID                # admin bootstrap id
+VIBE_CODE_URL                      # AI provider endpoint
+VIBE_CODE_KEY                      # AI provider API key
+```
 
 Never prefix server secrets with `NEXT_PUBLIC_`.
+
+---
 
 ## 9. Commands
 
@@ -235,8 +308,10 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
 | `npm run lint` | `next lint` |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run typecheck:tests` | type-check `tests/` via `tsconfig.tests.json` |
-| `npm run test:<name>` | 20 focused suites (`node --test`, e.g. checkout price/failure, admin guard/health/analytics, stock release, shipping rates); see `package.json` |
+| `npm run test:<name>` | 80+ focused suites (`node --test`, e.g. checkout price/failure, admin guard/health/analytics, stock release, shipping rates); see `package.json` |
 | `npm start` | serve production build |
+
+---
 
 ## 10. Known issues / technical debt (verified)
 
@@ -271,6 +346,10 @@ Never prefix server secrets with `NEXT_PUBLIC_`.
   fail spuriously — restore the file to LF (`git cat-file blob
   :0:lib/admin-preferences.ts` → workdir) or add a `.gitattributes`
   `text=auto eol=lf` rule for `tests/` fixtures later.
+- Image path mismatch: DB stores `.jpeg/.webp` extensions, actual files are `.avif`.
+- No CI/CD pipeline configured; deployment is manual to Vercel.
+
+---
 
 ## 11. Conventions for future work
 

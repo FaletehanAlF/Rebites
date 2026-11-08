@@ -1,0 +1,122 @@
+# Data Flow
+
+> **Mermaid diagram:** Key data paths through the system
+
+```mermaid
+graph TD
+    subgraph "Read Paths"
+        A1[Catalog Page] --> A2[GET /api/products]
+        A2 --> A3[Supabase: products table]
+        A3 --> A4[RLS: public products]
+        
+        B1[Product Detail] --> B2[GET /api/products/[slug]]
+        B2 --> B3[Supabase: products + umkm]
+        
+        C1[Order Detail] --> C2[GET /api/orders/[code]]
+        C2 --> C3[Supabase: orders table]
+        C3 --> C4[RLS: buyer/seller/admin]
+        
+        D1[Seller Dashboard] --> D2[GET /api/seller/*]
+        D2 --> D3[Supabase: products, orders, umkm]
+        
+        E1[Admin Dashboard] --> E2[GET /api/admin/*]
+        E2 --> E3[Supabase: all tables]
+        E3 -.->|Service Role| E4[RLS Bypassed]
+    end
+
+    subgraph "Write Paths"
+        F1[Checkout] --> F2[POST /api/checkout/xendit]
+        F2 --> F3[Supabase: INSERT orders]
+        F3 --> F4[RPC: reserve_stock_for_order]
+        F2 --> F5[Xendit: Create Invoice]
+        
+        G1[Xendit Webhook] --> G2[POST /api/webhooks/xendit]
+        G2 --> G3[Supabase: UPDATE orders]
+        G3 --> G4[RPC: settle_order_paid]
+        G2 --> G5[Biteship: Create Shipment]
+        
+        H1[Biteship Webhook] --> H2[POST /api/webhooks/biteship]
+        H2 --> H3[Supabase: UPDATE orders]
+        H3 --> H4[RPC: settle_order_completed]
+        
+        I1[Seller Actions] --> I2[PATCH /api/seller/orders/[code]]
+        I2 --> I3[Supabase: UPDATE orders]
+        
+        J1[Admin Actions] --> J2[PATCH /api/admin/*]
+        J2 -.->|Service Role| J3[Supabase: UPDATE/DELETE any]
+    end
+
+    subgraph "Realtime"
+        K1[Orders Table] --> K2[Supabase Realtime]
+        K2 --> K3[Buyer: order updates]
+        K2 --> K4[Seller: order updates]
+        
+        L1[Chat Table] --> L2[Supabase Realtime]
+        L2 --> L3[Courier: messages]
+        L2 --> L4[Buyer/Seller: messages]
+        
+        M1[Courier Location] --> M2[Supabase Realtime]
+        M2 --> M3[Buyer: live tracking]
+    end
+
+    style F1 fill:#FFEB3B,color:#000
+    style G1 fill:#FF9800,color:#000
+    style H1 fill:#FF9800,color:#000
+    style E4 fill:#FF5252,color:#fff
+    style J3 fill:#FF5252,color:#fff
+```
+
+---
+
+## Data Flow: Checkout
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant DB
+    participant Xendit
+
+    Client->>API: POST /checkout/xendit {productSlug, qty, fulfillment}
+    API->>DB: SELECT product (stock, price, schedule)
+    DB-->>API: Product data
+    API->>DB: RPC reserve_stock_for_order
+    DB-->>API: { reserved: true, marker_id }
+    API->>Xendit: POST /v2/invoices
+    Xendit-->>API: { invoice_url, id }
+    API->>DB: INSERT order (payment=unpaid, invoice_state=pending)
+    DB-->>API: order_code
+    API-->>Client: { order_code, invoice_url }
+    Client->>Xendit: User pays
+    Xendit->>API: Webhook /api/webhooks/xendit
+    API->>DB: UPDATE order (payment=paid, invoice_state=paid)
+    API->>DB: RPC settle_order_paid
+    API->>Biteship: Create shipment (if delivery)
+```
+
+---
+
+## Data Flow: Courier Tracking
+
+```mermaid
+sequenceDiagram
+    participant Courier
+    participant App
+    participant DB
+    participant Buyer
+
+    Courier->>App: POST /api/courier/location {lat, lng}
+    App->>DB: UPDATE courier_locations (UPSERT)
+    App->>DB: Supabase Realtime broadcast
+    DB->>Buyer: Realtime subscription: courier-location
+    Buyer->>App: Live map update
+```
+
+---
+
+## Related Docs
+
+- [Architecture: Overview](../architecture/overview.md) — System view
+- [Architecture: Data Flow](../architecture/data-flow.md) — Text description
+- [API: Overview](../api/overview.md) — Endpoints
+- [Integrations: Supabase](../integrations/supabase.md) — Realtime details

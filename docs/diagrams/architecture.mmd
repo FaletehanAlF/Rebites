@@ -1,0 +1,151 @@
+# Architecture Diagram
+
+> **Mermaid diagram:** Full system architecture
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        A[Next.js App<br/>(Landing + Authenticated)]
+        B[React Components]
+        C[Custom Hooks]
+        D[Supabase Client]
+    end
+
+    subgraph "API Layer"
+        E[Route Handlers<br/>app/api/**]
+        F[Middleware<br/>(Auth + Rate Limit)]
+    end
+
+    subgraph "Domain Layer"
+        G[lib/ - Pure Logic<br/>pricing, state-machine,<br/>flash-sale, catalog]
+        H[lib/server/ - Server Only<br/>Supabase, Xendit, Biteship,<br/>AI, Idempotency]
+    end
+
+    subgraph "External Services"
+        I[Supabase<br/>Postgres + Auth +<br/>Realtime + Storage]
+        J[Xendit<br/>Payments]
+        K[Biteship<br/>Logistics]
+        L[Google Gemini<br/>AI]
+    end
+
+    subgraph "Webhooks"
+        M[Xendit Webhook]
+        N[Biteship Webhook]
+    end
+
+    subgraph "Dashboards"
+        O[Admin Dashboard]
+        P[Seller Dashboard]
+        Q[Courier Dashboard]
+    end
+
+    A --> B
+    B --> C
+    C --> D
+    A --> E
+    E --> F
+    F --> E
+    E --> G
+    E --> H
+    H --> I
+    H --> J
+    H --> K
+    H --> L
+    M --> E
+    N --> E
+    O --> E
+    P --> E
+    Q --> E
+
+    style A fill:#4A90D9,color:#fff
+    style E fill:#7B68EE,color:#fff
+    style H fill:#FF6347,color:#fff
+    style I fill:#3EC6A8,color:#fff
+    style J fill:#FFD700,color:#000
+    style K fill:#FF8C00,color:#fff
+    style L fill:#87CEEB,color:#000
+    style O fill:#DC143C,color:#fff
+    style P fill:#228B22,color:#fff
+    style Q fill:#4682B4,color:#fff
+```
+
+---
+
+## Component Descriptions
+
+| Component | Responsibility |
+|-----------|----------------|
+| **Client Layer** | UI rendering, user interactions, client state |
+| **API Layer** | Auth validation, input validation, request routing |
+| **Domain Layer** | Business logic, pricing, state machines, external integrations |
+| **External Services** | Data persistence, auth, payments, logistics, AI |
+| **Webhooks** | Asynchronous event processing (payment, delivery) |
+| **Dashboards** | Role-specific UI (admin, seller, courier) |
+
+---
+
+## Data Flow
+
+```mermaid
+sequenceDiagram
+    participant User as Buyer
+    participant App as Next.js App
+    participant API as API Route
+    participant DB as Supabase
+    participant Xendit as Xendit
+    participant Biteship as Biteship
+
+    User->>App: Browse catalog
+    App->>API: GET /api/products
+    API->>DB: SELECT products (RLS: public)
+    DB-->>API: Product list
+    API-->>App: JSON
+    App-->>User: Render products
+
+    User->>App: Add to cart + checkout
+    App->>API: POST /api/checkout/xendit
+    API->>DB: SELECT product (stock check)
+    DB-->>API: Product + stock
+    API->>DB: RPC reserve_stock_for_order
+    DB-->>API: reserved=true
+    API->>Xendit: POST /v2/invoices
+    Xendit-->>API: invoice_url
+    API->>DB: INSERT order (payment=unpaid)
+    DB-->>API: order_code
+    API-->>App: { order_code, invoice_url }
+    App-->>User: Payment page
+
+    User->>Xendit: Pay via VA/E-wallet
+    Xendit->>API: POST /api/webhooks/xendit
+    API->>DB: UPDATE order (payment=paid, status=processing)
+    API->>Biteship: POST /v1/shipments (if delivery)
+    Biteship-->>API: shipment_code
+    API->>DB: UPDATE order (shipment_code)
+    API-->>Xendit: 200 OK
+```
+
+---
+
+## Access Control
+
+```mermaid
+graph LR
+    A[Buyer] -->|RLS: own data| B[products, addresses]
+    C[Seller/UMKM] -->|RLS: own products| D[products, orders, subscription]
+    E[Admin] -->|RLS: all + admin check| F[all tables]
+    G[Service Role] -->|Bypasses RLS| H[all tables]
+    G -.->|Used only in| I[webhooks, admin API,<br/>server scripts]
+
+    style H fill:#FF6347,color:#fff
+    style G fill:#FF6347,color:#fff
+```
+
+---
+
+## Related Docs
+
+- [Architecture: Overview](../architecture/overview.md) — Text description
+- [Architecture: Route Groups](../architecture/route-groups.md) — URL structure
+- [Architecture: Data Flow](../architecture/data-flow.md) — Detailed flows
+- [Architecture: Auth Boundary](../architecture/auth-boundary.md) — Auth model
+- [Architecture: Components](../architecture/components.md) — Component tree
