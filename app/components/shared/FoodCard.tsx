@@ -83,17 +83,10 @@ export function FoodCard({
           handleOpen();
         }
       }}
-<<<<<<< HEAD
       className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-border bg-white outline-none transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_36px_-28px_rgba(27,77,50,0.5)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:hover:-translate-y-1"
     >
       {/* Gambar penuh di semua breakpoint supaya kartu tetap terbaca di rail mobile. */}
       <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-muted">
-=======
-      className="group cursor-pointer overflow-hidden rounded-2xl border border-border bg-white outline-none transition-colors duration-300 hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-col sm:h-full"
-    >
-      {/* Image: fixed 96x96 di mobile (horizontal), aspect 4/3 di desktop (vertical) */}
-      <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-muted">
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
         <SmartImage
           src={item.image}
           alt={`Foto ${item.name} dari ${item.vendorName}`}
@@ -105,13 +98,8 @@ export function FoodCard({
         />
         {isUnavailable && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-foreground/40 p-2 text-center">
-<<<<<<< HEAD
             <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold leading-none text-foreground shadow-lg sm:px-3 sm:py-1 sm:text-xs">
               {isOutOfStock ? "Stok Habis" : "Tidak Tersedia"}
-=======
-            <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold leading-none text-foreground shadow-sm sm:px-3 sm:py-1 sm:text-xs">
-              {item.stockLabel === "Habis" ? "Stok Habis" : "Tidak Tersedia"}
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
             </span>
           </div>
         )}
@@ -129,11 +117,7 @@ export function FoodCard({
             toggle(item.id);
           }}
           className={cn(
-<<<<<<< HEAD
             "absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-muted-foreground shadow-md backdrop-blur-sm transition-colors hover:bg-white hover:text-sale sm:right-3 sm:top-3 sm:h-8 sm:w-8",
-=======
-            "absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white text-muted-foreground shadow-sm transition-colors hover:text-sale sm:right-3 sm:top-3 sm:h-8 sm:w-8",
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
             liked && "bg-white text-sale",
             FOCUS_RING,
           )}
@@ -190,13 +174,8 @@ export function FoodCard({
           </div>
 
           {isUnavailable ? (
-<<<<<<< HEAD
             <div className="inline-flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2.5 text-sm font-semibold leading-none text-muted-foreground">
               {isOutOfStock ? "Habis" : "Tutup"}
-=======
-            <div className="inline-flex shrink-0 items-center justify-center rounded-full border border-border bg-muted px-3 py-1.5 text-[11px] font-semibold leading-none text-muted-foreground sm:mt-3 sm:w-full sm:px-4 sm:py-2.5 sm:text-sm">
-              {item.stockLabel === "Habis" ? "Habis" : "Tutup"}
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
             </div>
           ) : (
             <button

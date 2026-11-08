@@ -86,7 +86,7 @@ function TaskList({ items }: { items: Task[] }) {
 }
 
 
-function LottieIllustration({
+export function LottieIllustration({
   src,
   label,
 }: {

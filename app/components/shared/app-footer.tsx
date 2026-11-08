@@ -122,11 +122,7 @@ function BackToTop({ hasMobileBottomNav }: { hasMobileBottomNav: boolean }) {
       type="button"
       onClick={scrollTop}
       aria-label="Kembali ke atas"
-<<<<<<< HEAD:app/components/site-footer.tsx
       className={`fixed ${hasMobileBottomNav ? 'bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4' : 'bottom-6 right-6'} z-50 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-secondary text-primary shadow-[0_18px_38px_-18px_rgba(0,0,0,0.55)] transition-all duration-300 hover:bg-white active:scale-95 lg:bottom-6 lg:right-6 ${FOOTER_FOCUS} ${
-=======
-      className={`fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary shadow-sm transition-all duration-300 hover:bg-primary-dark hover:text-white ${
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/shared/app-footer.tsx
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
       }`}
     >
@@ -163,13 +159,8 @@ export function SiteFooter({
                 className="h-11 w-11 rounded-full object-cover ring-1 ring-white/20"
               />
               <span className="flex items-baseline gap-0.5 text-primary-foreground">
-<<<<<<< HEAD:app/components/site-footer.tsx
                 <span className="font-display text-2xl font-bold tracking-tight">Re</span>
                 <span className="font-display text-2xl font-light italic">Bites</span>
-=======
-                <span className="font-display text-3xl font-bold tracking-tight">Re</span>
-                <span className="font-display text-3xl font-light">Bites</span>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/shared/app-footer.tsx
               </span>
             </Link>
 

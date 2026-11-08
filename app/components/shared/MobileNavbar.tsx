@@ -27,13 +27,9 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
 import { useNotifications } from "@/hooks/use-notifications";
-<<<<<<< HEAD
-import { useSellerStatus } from "@/hooks/use-seller-status";
+import { useSellerStatus } from "@/hooks/seller/use-seller-status";
 import { CATEGORIES } from "@/lib/categories";
 import { scrollToId } from "@/lib/scroll";
-=======
-import { useSellerStatus } from "@/hooks/seller/use-seller-status";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white";
@@ -147,7 +143,6 @@ export function MobileNavbar() {
 
   return (
     <>
-<<<<<<< HEAD
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-white/95 backdrop-blur-xl">
         <div className="flex h-14 items-center gap-3 px-4">
           <Link
@@ -205,73 +200,6 @@ export function MobileNavbar() {
             >
               <Menu className="h-5 w-5" aria-hidden />
             </button>
-=======
-      {/* Mobile-only sticky header */}
-      <header className="fixed inset-x-0 top-0 z-50 lg:hidden">
-        <div className="bg-white border-b border-border">
-          <div className="flex items-center gap-3 px-4 py-2.5">
-            <Link href="/home" className="flex shrink-0 items-center gap-2">
-              <Image
-                src="/logo.png"
-                alt="ReBites"
-                width={32}
-                height={32}
-                className="h-8 w-8 rounded-full object-cover"
-              />
-              <span className="font-display text-lg font-bold tracking-tight text-primary">
-                ReBites
-              </span>
-            </Link>
-
-            <div className="ml-auto flex items-center gap-1">
-              <Link
-                href="/notifikasi/pembeli"
-                className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
-              >
-                <Bell className="h-5 w-5" />
-                {unreadNotifCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white">
-                    {unreadNotifCount}
-                  </span>
-                )}
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => setProfileOpen(true)}
-                aria-label="Profil"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
-              >
-                {avatarUrl ? (
-                  <span className="relative h-7 w-7 overflow-hidden rounded-full ring-1 ring-border">
-                    <Image
-                      src={avatarUrl}
-                      alt="Foto profil"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </span>
-                ) : initials ? (
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-                    {initials}
-                  </span>
-                ) : (
-                  <User className="h-5 w-5" />
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(true)}
-                aria-label="Buka menu navigasi"
-                aria-expanded={drawerOpen}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            </div>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
           </div>
         </div>
       </header>
@@ -288,15 +216,10 @@ export function MobileNavbar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-<<<<<<< HEAD
               transition={{ duration: 0.2, ease: "linear" }}
               onClick={closeDrawer}
               className="fixed inset-0 z-[60] bg-charcoal-900/45"
               aria-hidden
-=======
-              onClick={() => setDrawerOpen(false)}
-              className="fixed inset-0 z-[55] bg-foreground/40 lg:hidden"
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
             />
 
             <motion.aside
@@ -306,7 +229,6 @@ export function MobileNavbar() {
               aria-modal="true"
               aria-label="Navigasi pembeli"
               initial={{ x: "100%" }}
-<<<<<<< HEAD
               // Masuk 0.26s, keluar 0.18s. Hanya `transform` yang dianimasikan
               // supaya drawer digeser oleh compositor, bukan di-layout ulang
               // setiap frame — isi drawer berisi belasan tautan dan label.
@@ -314,12 +236,6 @@ export function MobileNavbar() {
               exit={{ x: "100%", transition: { duration: 0.18, ease: EASE } }}
               style={{ willChange: "transform" }}
               className="fixed right-0 top-0 z-[70] flex h-full w-[88vw] max-w-[340px] flex-col bg-white shadow-2xl"
-=======
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[60] flex h-full w-[85vw] max-w-[320px] flex-col bg-secondary lg:hidden"
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
             >
               {/* px-4 disamakan dengan <nav> di bawah. Sebelumnya header
                   memakai px-5 sementara isi memakai px-4, sehingga logo dan

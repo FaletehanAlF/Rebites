@@ -1,5 +1,6 @@
 ﻿'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Bell, Menu, Store } from 'lucide-react';
@@ -53,9 +54,12 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         { }
         <Link href="/dashboard/penjual" className="flex items-center gap-2">
           {storeImage && !imageLoadFailed ? (
-            <img
+            <Image
               src={storeImage}
               alt={storeName ? `Logo ${storeName}` : 'Logo toko'}
+              width={32}
+              height={32}
+              unoptimized
               className="h-8 w-8 shrink-0 rounded-xl object-cover ring-1 ring-black/5"
               onError={() => setImageLoadFailed(true)}
             />

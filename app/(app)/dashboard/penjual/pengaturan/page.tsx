@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, ImageIcon, LocateFixed, Store, Trash2 } from "lucide-react";
 import { SellerShell } from "@/app/components/seller/dashboard-penjual/SellerShell";
@@ -522,9 +523,12 @@ export default function PengaturanTokoPage() {
                   <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-secondary">
                     {logoPreview || imageUrl ? (
                       
-                      <img
-                        src={logoPreview ?? imageUrl}
+                      <Image
+                        src={logoPreview ?? imageUrl ?? ""}
                         alt="Logo toko"
+                        width={40}
+                        height={40}
+                        unoptimized
                         className="h-full w-full object-cover"
                       />
                     ) : (

@@ -302,11 +302,7 @@ export function OrderDetailModal({
                   </p>
                   <p className="text-xs text-muted-foreground">{order.vendorName}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-<<<<<<< HEAD:app/components/order-history/order-detail-modal.tsx
                     × {order.quantity}
-=======
-                    ×{order.quantity}
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/order-history/order-detail-modal.tsx
                     {typeof order.unitPrice === 'number'
                       ? ` · ${formatRupiah(order.unitPrice)} / porsi`
                       : ''}
@@ -593,7 +589,6 @@ function ShipmentTrackingSection({ order }: { order: StoredOrder }) {
   };
 
   return (
-<<<<<<< HEAD:app/components/order-history/order-detail-modal.tsx
     <div className="mt-2 space-y-2 rounded-xl ring-1 ring-hairline p-3.5 text-sm">
       {courierLabel && <Row label="Kurir" value={courierLabel} />}
       <div className="flex items-start justify-between gap-4">
@@ -619,32 +614,6 @@ function ShipmentTrackingSection({ order }: { order: StoredOrder }) {
         )}
       </div>
       <Row label="Status" value={statusLabel} />
-=======
-    <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
-      <div className="flex items-center gap-2">
-        <Truck className="h-4 w-4 text-primary" />
-        <p className="text-sm font-semibold text-primary">Pesanan Sedang Diantar</p>
-      </div>
-      <p className="mt-1 text-xs text-muted-foreground">Pesananmu sedang menuju alamatmu.</p>
-      {arrivalAt && (
-        <div className="mt-2 flex items-center gap-4">
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Estimasi tiba</p>
-            <p className="text-sm font-bold tabular-nums text-foreground">
-              {formatTime(rangeStart)} – {formatTime(rangeEnd)}
-            </p>
-          </div>
-          {typeof distance === 'number' && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Jarak</p>
-              <p className="text-sm font-bold tabular-nums text-foreground">
-                {distance.toLocaleString('id-ID', { maximumFractionDigits: 1 })} km
-              </p>
-            </div>
-          )}
-        </div>
-      )}
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/order-history/order-detail-modal.tsx
     </div>
   );
 }

@@ -117,18 +117,11 @@ export function OrderHistoryView() {
 
   if (loading) {
     return (
-<<<<<<< HEAD:app/components/order-history/order-history-view.tsx
       <div className="w-full space-y-4" aria-busy="true" aria-label="Memuat pesanan">
         <div className="h-[104px] animate-pulse rounded-2xl border border-hairline bg-white" />
         {[0, 1, 2].map((i) => (
           <div key={i} className="h-[152px] animate-pulse rounded-2xl border border-hairline bg-white" />
         ))}
-=======
-      <div className="w-full space-y-5">
-        <div className="h-10 w-56 animate-pulse rounded-xl bg-white ring-1 ring-border" />
-        <div className="h-24 animate-pulse rounded-xl border border-border bg-white" />
-        <div className="h-32 animate-pulse rounded-xl border border-border bg-white" />
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/order-history/order-history-view.tsx
       </div>
     );
   }
@@ -166,12 +159,7 @@ export function OrderHistoryView() {
   return (
     <>
       <div className="w-full space-y-4">
-<<<<<<< HEAD:app/components/order-history/order-history-view.tsx
         <div className="rounded-2xl border border-hairline bg-white p-3 shadow-sm sm:p-4">
-=======
-        {}
-        <div className="rounded-2xl border border-border bg-white p-4 shadow-sm sm:p-5">
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/order-history/order-history-view.tsx
           <OrderToolbar
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
@@ -224,7 +212,6 @@ function EmptyState({
 }) {
   if (variant === 'no-result') {
     return (
-<<<<<<< HEAD:app/components/order-history/order-history-view.tsx
       <div className="flex flex-col items-center rounded-2xl border border-dashed border-hairline bg-white px-6 py-10 text-center">
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-100 text-primary">
           <SearchX className="h-5 w-5" aria-hidden />
@@ -237,14 +224,6 @@ function EmptyState({
             ? 'Belum ada pesanan dibatalkan pada filter ini.'
             : 'Coba kata kunci lain atau hapus filter yang sedang aktif.'}
         </p>
-=======
-      <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-white px-6 py-10 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-          <SearchX className="h-5 w-5" />
-        </span>
-        <h3 className="mt-3 font-display text-base font-medium text-foreground">Pesanan tidak ditemukan</h3>
-        <p className="mt-1 max-w-xs text-sm text-muted-foreground">Coba cari dengan Order ID atau nama produk lain.</p>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/order-history/order-history-view.tsx
         <button
           type="button"
           onClick={onClear}
@@ -256,7 +235,6 @@ function EmptyState({
     );
   }
 
-<<<<<<< HEAD:app/components/order-history/order-history-view.tsx
   return (
     <div className="flex flex-col items-center rounded-2xl border border-dashed border-hairline bg-white px-6 py-12 text-center">
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-100 text-primary">
@@ -274,33 +252,6 @@ function EmptyState({
         className="mt-4 inline-flex h-10 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-caramel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         Mulai belanja
-=======
-  if (variant === 'tab') {
-    return (
-      <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-white px-6 py-10 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-          <PackageSearch className="h-5 w-5" />
-        </span>
-        <h3 className="mt-3 font-display text-base font-medium text-foreground">
-          {isCompletedTab ? 'Belum ada pesanan selesai' : 'Tidak ada pesanan'}
-        </h3>
-        <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-          {isCompletedTab ? 'Pesanan yang sudah selesai akan muncul di sini.' : 'Semua pesananmu sudah selesai.'}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-white px-6 py-10 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-primary">
-        <PackageSearch className="h-5 w-5" />
-      </span>
-      <h3 className="mt-3 font-display text-base font-medium text-foreground">Belum Ada Pesanan</h3>
-      <p className="mt-1 max-w-xs text-sm text-muted-foreground">Pesanan yang kamu lakukan akan muncul di sini.</p>
-      <Link href="/home" className="mt-4 inline-flex h-9 items-center rounded-full bg-primary px-5 text-xs font-semibold text-white hover:bg-primary-dark">
-        Mulai Belanja
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/order-history/order-history-view.tsx
       </Link>
     </div>
   );

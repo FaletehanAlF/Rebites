@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-<<<<<<< HEAD
   Flame,
   Heart,
   Home,
@@ -24,16 +23,7 @@ import { cn } from "@/lib/utils";
 import { scrollToId } from "@/lib/scroll";
 import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
-import { useSellerStatus } from "@/hooks/use-seller-status";
-=======
-  Bell,
-  Receipt,
-  User,
-  X,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
+import { useSellerStatus } from "@/hooks/seller/use-seller-status";
 
 /**
  * Lebar sidebar pembeli adalah satu-satunya sumber kebenaran. Topbar dan area
@@ -126,7 +116,6 @@ function GroupLabel({
         collapsed && "sr-only",
       )}
     >
-<<<<<<< HEAD
       {children}
     </p>
   );
@@ -186,13 +175,6 @@ function NavRow({
             collapsed && "sr-only",
           )}
           aria-label={`${badge} belum dibaca`}
-=======
-      <div className="relative flex items-center gap-2.5 px-6 pb-6 pt-7">
-        <Link
-          href="/home"
-          aria-label="Ke beranda ReBites"
-          className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full ring-1 ring-border transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
         >
           {badge > 99 ? "99+" : badge}
         </span>
@@ -538,49 +520,6 @@ export function BuyerSidebarNav({
           </button>
         </div>
       </div>
-<<<<<<< HEAD
     </aside>
-=======
-    </motion.div>
-  );
-}
-
-export function ProfileSidebarNav({ open, onClose }: SidebarProps) {
-  return (
-    <>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            key="overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 z-40 bg-foreground/40 lg:hidden"
-            aria-hidden
-          />
-        )}
-      </AnimatePresence>
-
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-[280px] border-r border-border bg-secondary lg:block">
-        <SidebarContent onClose={onClose} />
-      </aside>
-
-      <AnimatePresence>
-        {open && (
-          <motion.aside
-            key="drawer"
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
-            className="fixed inset-y-0 left-0 z-50 w-[300px] bg-secondary lg:hidden"
-          >
-            <SidebarContent onClose={onClose} />
-          </motion.aside>
-        )}
-      </AnimatePresence>
-    </>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
   );
 }

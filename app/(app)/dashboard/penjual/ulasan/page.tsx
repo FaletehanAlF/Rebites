@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { MessageSquare, Star, Store } from "lucide-react";
 import { SellerShell } from "@/app/components/seller/dashboard-penjual/SellerShell";
@@ -51,9 +52,12 @@ function ReviewItem({ review }: { review: SellerReview }) {
     <li className="flex gap-3 rounded-2xl border border-border bg-white p-4">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
         {review.authorAvatar ? (
-          <img
+          <Image
             src={review.authorAvatar}
             alt={review.authorName}
+            width={36}
+            height={36}
+            unoptimized
             className="h-full w-full object-cover"
           />
         ) : (

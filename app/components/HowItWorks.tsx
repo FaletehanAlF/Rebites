@@ -7,6 +7,7 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
@@ -478,12 +479,14 @@ export default function HowItWorks({
             className="mr-[2vw] flex h-[30vw] w-[200vw] items-center gap-[5vw] px-[5vw] max-[600px]:h-[80vh] max-[600px]:w-[600vw] max-[600px]:px-[7vw]"
           >
             {/* First image */}
-            <div className="h-full w-[30vw] overflow-hidden rounded-[1vw] max-[600px]:h-[65vw] max-[600px]:w-[85vw] max-[600px]:rounded-[5vw]">
-              <img
+            <div className="relative h-full w-[30vw] overflow-hidden rounded-[1vw] max-[600px]:h-[65vw] max-[600px]:w-[85vw] max-[600px]:rounded-[5vw]">
+              <Image
                 src={STEPS[0].image}
                 alt="Cara kerja ReBites"
+                fill
+                sizes="(max-width: 600px) 85vw, 30vw"
                 draggable={false}
-                className="h-full w-full object-cover"
+                className="object-cover"
               />
             </div>
 

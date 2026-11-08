@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Home, ReceiptText, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-<<<<<<< HEAD
 import { useCurrentUser } from "@/lib/current-user";
 import { useNotifications } from "@/hooks/use-notifications";
 
@@ -17,9 +16,6 @@ const ITEMS = [
   { href: "/notifikasi/pembeli", label: "Notifikasi", icon: Bell },
   { href: "/profile", label: "Profil", icon: User },
 ] as const;
-=======
-import { useSellerStatus } from "@/hooks/seller/use-seller-status";
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
 
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -34,11 +30,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-<<<<<<< HEAD
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
-=======
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white lg:hidden"
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
       aria-label="Navigasi bawah"
     >
       <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-1.5">

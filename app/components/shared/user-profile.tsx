@@ -1116,16 +1116,9 @@ export function UserProfile() {
 
             {}
             <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:w-auto lg:min-w-[520px] lg:max-w-[600px]">
-<<<<<<< HEAD
               <Link
                 href="/toko-diikuti"
                 className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-=======
-              <button
-                type="button"
-                onClick={() => setIsIkutiTokoDialogOpen(true)}
-                className="group flex flex-col items-start gap-2 rounded-2xl border border-border bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white"
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-border group-hover:bg-primary-dark group-hover:text-white">
                   <Store className="h-4 w-4" />
@@ -1160,16 +1153,11 @@ export function UserProfile() {
                 </span>
               </button>
 
-<<<<<<< HEAD
               <div
                 id="rebites-coin"
                 className="col-span-2 flex scroll-mt-24 flex-col items-start gap-2 rounded-2xl border border-warning/50 bg-primary/15 p-4 sm:col-span-1"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-warning/50">
-=======
-              <div className="col-span-2 flex flex-col items-start gap-2 rounded-2xl border border-border bg-secondary p-4 sm:col-span-1">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-border">
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
                   <Coins className="h-4 w-4" />
                 </span>
                 <span className="font-secondary text-sm font-semibold text-primary">
@@ -1294,40 +1282,7 @@ export function UserProfile() {
               </DialogContent>
             </Dialog>
 
-<<<<<<< HEAD
             <Dialog
-=======
-            {}
-          <Dialog
-            open={isIkutiTokoDialogOpen}
-            onOpenChange={setIsIkutiTokoDialogOpen}
-          >
-            <DialogContent className="bg-white p-6 sm:p-7">
-              <DialogHeader>
-                <DialogTitle className="font-display text-lg font-semibold text-primary">
-                  Toko Diikuti
-                </DialogTitle>
-                <DialogDescription className="font-secondary text-sm text-muted-foreground">
-                  Toko yang kamu ikuti lewat tombol &quot;Ikuti Toko&quot; di halaman
-                  detail toko.
-                </DialogDescription>
-              </DialogHeader>
-              <FollowedStoresSection />
-              <DialogFooter>
-                <button
-                  type="button"
-                  onClick={() => setIsIkutiTokoDialogOpen(false)}
-                  className="rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
-                >
-                  Tutup
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {}
-          <Dialog
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
             open={isSukaiMakananDialogOpen}
             onOpenChange={setIsSukaiMakananDialogOpen}
           >
@@ -1360,11 +1315,7 @@ export function UserProfile() {
             initial="hidden"
             whileInView="visible"
             viewport={VIEWPORT}
-<<<<<<< HEAD
             className="mt-6 scroll-mt-24 rounded-[20px] border border-zinc-100 bg-white p-6 shadow-sm sm:p-7"
-=======
-            className="mt-6 rounded-2xl border border-border bg-white p-6 shadow-sm sm:p-7"
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
           >
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-display text-base font-semibold text-primary">

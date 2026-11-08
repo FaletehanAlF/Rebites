@@ -286,7 +286,7 @@ export function Hero() {
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </article>
-      </div>
+      </motion.div>
     </section>
   );
 }

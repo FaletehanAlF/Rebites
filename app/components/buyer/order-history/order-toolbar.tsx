@@ -77,7 +77,6 @@ export function OrderToolbar({
               {p.label}
               <span
                 className={cn(
-<<<<<<< HEAD:app/components/order-history/order-toolbar.tsx
                   'rounded-full px-1.5 py-0.5 text-[10px] tabular-nums',
                   active ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
                 )}
@@ -87,44 +86,6 @@ export function OrderToolbar({
             </button>
           );
         })}
-=======
-                  'inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors',
-                  active
-                    ? 'border-primary bg-white text-primary shadow-sm'
-                    : 'border-border bg-white text-muted-foreground hover:border-border hover:text-primary'
-                )}
-              >
-                {p.label}
-                <span
-                  className={cn(
-                    'rounded-full px-1.5 py-0.5 text-[10px] tabular-nums',
-                    active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                  )}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {}
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <select
-              value={dateRange}
-              onChange={(e) => onDateRangeChange(e.target.value)}
-              className="h-8 appearance-none rounded-full bg-muted px-4 pr-7 text-xs font-medium text-foreground outline-none"
-            >
-              <option value="all">Pilih rentang tanggal</option>
-              <option value="7d">7 hari terakhir</option>
-              <option value="30d">30 hari terakhir</option>
-              <option value="90d">90 hari terakhir</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          </div>
-        </div>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/order-history/order-toolbar.tsx
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -166,19 +127,6 @@ export function OrderToolbar({
             </button>
           ))}
         </div>
-<<<<<<< HEAD:app/components/order-history/order-toolbar.tsx
-=======
-        <label className="relative w-full lg:ml-auto lg:max-w-[320px]">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => onQueryChange(e.target.value)}
-            placeholder="Cari Order ID / produk..."
-            className="h-9 w-full rounded-full border border-border bg-white pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:ring-offset-2"
-          />
-        </label>
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34:app/components/buyer/order-history/order-toolbar.tsx
       </div>
     </div>
   );

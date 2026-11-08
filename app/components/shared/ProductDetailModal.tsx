@@ -270,13 +270,8 @@ export function ProductDetailModal({
                     onClick={handleBuy}
                     disabled={added || isOutOfStock}
                     className={cn(
-<<<<<<< HEAD
                       "flex h-11 flex-1 items-center justify-center rounded-2xl text-sm font-semibold transition-all active:scale-[0.97]",
                       isOutOfStock
-=======
-                      "flex h-11 flex-1 items-center justify-center rounded-full text-sm font-semibold transition-all active:scale-[0.97]",
-                      product.stockRemaining === 0
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
                         ? "bg-foreground/10 text-muted-foreground cursor-not-allowed"
                         : added
                           ? "bg-primary text-white"

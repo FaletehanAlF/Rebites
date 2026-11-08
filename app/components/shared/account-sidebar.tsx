@@ -291,11 +291,7 @@ export function AccountSidebar({
                   type="button"
                   onClick={onLogout}
                   className={cn(
-<<<<<<< HEAD
                     'inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-destructive px-4 py-3 font-secondary text-sm font-semibold text-white transition-colors duration-200 hover:bg-destructive/90',
-=======
-                    'inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-destructive-foreground transition-colors duration-200 hover:bg-destructive/90',
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
                     FOCUS_RING,
                   )}
                 >
@@ -306,11 +302,7 @@ export function AccountSidebar({
                 <Link
                   href="/auth/login"
                   className={cn(
-<<<<<<< HEAD
                     'inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 font-secondary text-sm font-semibold text-white transition-colors duration-200 hover:bg-primary-dark active:scale-[0.98]',
-=======
-                    'inline-flex w-full items-center justify-center rounded-full bg-destructive px-4 py-3.5 font-secondary text-sm font-semibold text-destructive-foreground transition-all duration-200 hover:bg-destructive/90 active:scale-[0.98]',
->>>>>>> 03895fc453211ed3758e52102f472d46a9c4db34
                     FOCUS_RING,
                   )}
                 >
