@@ -9,11 +9,13 @@ export default function RegisterPage() {
     return (<AuthSplitShell imageSrc="/hero-makanan.avif" imageAlt="Makanan surplus ReBites" variant="buyer" overlayText={{
             headline: "Gabung, Temukan.",
             description: "Buat akun dan mulai berburu kuliner surplus favoritmu. Hemat, enak, berkelanjutan.",
-        }}>
+        }}>
+
       <AuthForm mode="signup" title="Buat Akun Baru" subtitle="Daftar untuk bergabung dengan marketplace kami." submitLabel="Buat Akun" redirectTo="/home" bottomHint={{
             text: "Sudah punya akun?",
             linkText: "Masuk",
             href: "/auth/login",
-        }}/>
+        }}/>
+
     </AuthSplitShell>);
 }

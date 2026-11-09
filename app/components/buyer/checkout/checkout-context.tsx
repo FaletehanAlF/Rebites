@@ -57,8 +57,8 @@ interface CheckoutContextValue {
   selectedAddress: DeliveryAddress | null;
   selectedAddressId: string | null;
   selectAddress: (id: string) => void;
-  addAddress: (values: AddressFormValues) => void;
-  updateAddress: (id: string, values: AddressFormValues) => void;
+  addAddress: (values: AddressFormValues) => Promise<DeliveryAddress | null>;
+  updateAddress: (id: string, values: AddressFormValues) => Promise<boolean>;
 
   selectedMethod: PaymentMethod | null;
   selectMethod: (id: string) => void;
@@ -72,6 +72,7 @@ interface CheckoutContextValue {
   summary: ReturnType<typeof useOrderCalculation>;
   canPay: boolean;
   missingRequirement: string | null;
+  promoError: string | null;
   submitting: boolean;
   submitOrder: () => void;
 
@@ -135,6 +136,10 @@ export function useCheckout() {
   const ctx = useContext(CheckoutContext);
   if (!ctx) throw new Error('useCheckout must be used within CheckoutProvider');
   return ctx;
+}
+
+export function useCheckoutOptional(): CheckoutContextValue | null {
+  return useContext(CheckoutContext);
 }
 
 export function usePromoInput() {
@@ -657,6 +662,7 @@ export function CheckoutProvider({
       summary,
       canPay,
       missingRequirement,
+      promoError,
       submitting,
       submitOrder,
       successOrder,
@@ -691,6 +697,7 @@ export function CheckoutProvider({
       summary,
       canPay,
       missingRequirement,
+      promoError,
       submitting,
       submitOrder,
       successOrder,

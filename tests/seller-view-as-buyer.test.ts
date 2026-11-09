@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 function readProjectFile(relativePath: string): string {
     return readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), 'utf8');
 }
-const SELLER_SIDEBAR = readProjectFile('app/components/dashboard-penjual/Sidebar.tsx');
+const SELLER_SIDEBAR = readProjectFile('app/components/seller/dashboard-penjual/Sidebar.tsx');
 const BUYER_SIDEBAR = readProjectFile('app/components/shared/profile-sidebar-nav.tsx');
 const BUYER_MOBILE_NAV = readProjectFile('app/components/shared/MobileNavbar.tsx');
 test('sidebar penjual punya satu jalan masuk ke beranda pembeli', () => {
@@ -22,7 +22,7 @@ test('tautan pratinjau memakai ikon sendiri, bukan ikon menu dashboard', () => {
     assert.match(SELLER_SIDEBAR, /from 'lucide-react'/);
 });
 test('tautan pratinjau tetap memenuhi syarat target sentuh dan fokus', () => {
-    assert.match(SELLER_SIDEBAR, /group flex min-h-11 items-center gap-3 rounded-xl/);
+    assert.match(SELLER_SIDEBAR, /group flex min-h-\[44px\] items-center gap-3 rounded-xl/);
 });
 test('sidebar penjual tetap hanya menautkan Panel Admin untuk admin', () => {
     const guards = SELLER_SIDEBAR.match(/\{isAdmin && \(/g) ?? [];

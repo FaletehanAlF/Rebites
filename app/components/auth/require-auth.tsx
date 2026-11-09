@@ -20,14 +20,22 @@ export function RequireAuth({ children }: {
         router.replace(loginTarget);
     }, [loading, user, router]);
     if (loading || !user) {
-        return (<div role="status" aria-label="Memeriksa sesi login" className="min-h-screen bg-secondary px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <Skeleton className="h-8 w-56 rounded-full"/>
-          <Skeleton className="mt-4 h-4 w-full max-w-md rounded-full"/>
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (<Skeleton key={index} className="h-40 rounded-2xl"/>))}
-          </div>
-        </div>
+        return (<div role="status" aria-label="Memeriksa sesi login" className="min-h-screen bg-secondary px-4 py-6 sm:px-6 lg:px-8">
+
+        <div className="mx-auto max-w-7xl">
+
+          <Skeleton className="h-8 w-56 rounded-full"/>
+
+          <Skeleton className="mt-4 h-4 w-full max-w-md rounded-full"/>
+
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+            {Array.from({ length: 3 }).map((_, index) => (<Skeleton key={index} className="h-40 rounded-2xl"/>))}
+
+          </div>
+
+        </div>
+
       </div>);
     }
     return <>{children}</>;

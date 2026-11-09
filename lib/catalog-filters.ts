@@ -41,7 +41,7 @@ export function filterAndSortFoods<T extends FilterableFood>(items: T[], filters
             return false;
         if (stock === 'tersedia' && isOutOfStockLabel(item.stockLabel))
             return false;
-        return matchesQuery([item.name, item.vendorName], query);
+        return matchesQuery([item.name], query);
     });
     const sorted = [...filtered];
     switch (sort) {

@@ -6,9 +6,10 @@ import { Loader2, MessageSquare, RefreshCw, Search } from 'lucide-react';
 import { AdminAvatar } from './admin-avatar';
 import { AdminSupportApiError, fetchAdminSupportThreads, type AdminSupportThread, } from '@/lib/admin-support';
 import { appealStatusMeta } from '@/lib/support';
-import { labelStatusAkun, waktuLalu } from './admin-format';
+import { labelPeran, labelStatusAkun, waktuLalu } from './admin-format';
 import { redirectIfSessionExpired } from './admin-session';
 import { SUPPORT_UPDATED_EVENT } from '@/hooks/use-support-badge';
+import { subscribeSupportRealtime } from '@/lib/support-realtime';
 import { cn } from '@/lib/utils';
 const PAGE_LIMIT = 20;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -36,17 +37,19 @@ export function SupportConversationList({ activeThreadId = null, className, }: {
     const [errorMsg, setErrorMsg] = useState('');
     const requestIdRef = useRef(0);
     const loadMoreRef = useRef(false);
+    const realtimeReloadRef = useRef<() => void>(() => { });
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), SEARCH_DEBOUNCE_MS);
         return () => clearTimeout(timer);
     }, [search]);
-    const load = useCallback(async (nextOffset: number, append = false) => {
+    const load = useCallback(async (nextOffset: number, append = false, silent = false) => {
         const requestId = requestIdRef.current + 1;
         requestIdRef.current = requestId;
         loadMoreRef.current = append;
-        if (!append)
+        if (!append && !silent)
             setStatus('loading');
-        setErrorMsg('');
+        if (!silent)
+            setErrorMsg('');
         try {
             const result = await fetchAdminSupportThreads({
                 limit: PAGE_LIMIT,
@@ -77,6 +80,8 @@ export function SupportConversationList({ activeThreadId = null, className, }: {
                 setStatus('forbidden');
                 return;
             }
+            if (silent)
+                return;
             setErrorMsg(err instanceof Error ? err.message : 'Gagal memuat daftar percakapan.');
             setStatus('error');
         }
@@ -92,6 +97,13 @@ export function SupportConversationList({ activeThreadId = null, className, }: {
         window.addEventListener(SUPPORT_UPDATED_EVENT, onUpdated);
         return () => window.removeEventListener(SUPPORT_UPDATED_EVENT, onUpdated);
     }, [load]);
+    useEffect(() => {
+        realtimeReloadRef.current = () => void load(0, false, true);
+    }, [load]);
+    useEffect(() => subscribeSupportRealtime({
+        label: 'admin-list',
+        onChange: () => realtimeReloadRef.current(),
+    }), []);
     const tampil = offset + threads.length;
     const adaLagi = threads.length > 0 && tampil < total;
     return (<section aria-label="Daftar percakapan" className={cn('flex min-h-0 flex-col overflow-hidden rounded-xl border border-admin-line bg-admin-panel shadow-admin-card', className)}>
@@ -170,6 +182,9 @@ export function SupportConversationList({ activeThreadId = null, className, }: {
                           {waktuLalu(thread.lastMessageAt)}
                         </span>
                       </div>
+                      {thread.userName?.trim() ? (<p className="truncate text-[11px] text-sage-500">
+                          {thread.email}
+                        </p>) : null}
                       <p className="mt-0.5 line-clamp-2 break-words text-xs leading-relaxed text-charcoal-700">
                         {thread.lastMessagePreview?.trim() || 'Belum ada isi pesan.'}
                       </p>
@@ -179,6 +194,9 @@ export function SupportConversationList({ activeThreadId = null, className, }: {
                           </span>)}
                         {appeal && (<span className="rounded-full bg-admin-surface px-2 py-0.5 text-[10px] font-semibold text-charcoal-700">
                             {appeal.label}
+                          </span>)}
+                        {thread.userRole && (<span className="rounded-full bg-admin-surface px-2 py-0.5 text-[10px] font-semibold text-charcoal-700">
+                            {labelPeran(thread.userRole)}
                           </span>)}
                         {thread.adminUnreadCount > 0 && (<span className="ml-auto inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-destructive px-1.5 text-[11px] font-bold text-white tabular-nums" aria-label={`${thread.adminUnreadCount} pesan belum dibaca`}>
                             {thread.adminUnreadCount > 99 ? '99+' : thread.adminUnreadCount}

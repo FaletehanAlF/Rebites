@@ -1,142 +1,107 @@
-﻿"use client";
-
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+"use client";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCatalog } from "@/lib/catalog";
 import { FoodCard } from "@/app/components/shared/FoodCard";
-import { SearchFilterBar } from "@/app/components/shared/SearchFilterBar";
+import { FoodCardSkeleton } from "@/app/components/shared/FoodCardSkeleton";
 import { cn } from "@/lib/utils";
-
-const MAX_ITEMS = 8;
-
-function hashStringToInt(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-function getDailySeed(): number {
-  const now = new Date();
-  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  return hashStringToInt(dateStr);
-}
-
-function getDailyOffset(seed: number, length: number, pageSize: number): number {
-  if (length <= pageSize) return 0;
-  const maxStart = length - pageSize;
-  return seed % (maxStart + 1);
-}
-
-// Grid rekomendasi harian (sebelumnya rail geser: lebih banyak menu tampil
-// tanpa geser, tanpa animasi yang dihitung ulang tiap daftar berubah).
-export function UrgentDealsSection({
-  onViewDetail,
-}: {
-  onViewDetail?: (id: string) => void;
-  from?: "landing" | "home";
+const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+const ITEMS_PER_PAGE = 4;
+// Grid rekomendasi dengan pagination; pencarian lengkap di halaman /makanan.
+export function UrgentDealsSection({ onViewDetail, }: {
+    onViewDetail?: (id: string) => void;
+    from?: "landing" | "home";
 }) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const { foodItems, loading } = useCatalog();
-  const router = useRouter();
-
-  // Beranda hanya menampilkan sebagian menu; pencarian diselesaikan di
-  // katalog /makanan (hasil lengkap + bisa disaring lebih lanjut).
-  const goToCatalog = () => {
-    const q = searchQuery.trim();
-    router.push(q ? `/makanan?q=${encodeURIComponent(q)}` : "/makanan");
-  };
-
-  const items = useMemo(() => {
-    const sorted = [...foodItems].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-    const dailySeed = getDailySeed();
-    const offset = getDailyOffset(dailySeed, sorted.length, MAX_ITEMS);
-    return sorted.slice(offset, offset + MAX_ITEMS);
-  }, [foodItems]);
-
-  return (
-    <section
-      id="rekomendasi"
-      data-nav="green"
-      className="relative flex min-h-screen scroll-mt-20 flex-col justify-center overflow-hidden bg-primary py-10 sm:py-16 lg:py-20"
-    >
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    const { foodItems, loading, error: catalogError, refresh: refreshCatalog } = useCatalog();
+    const reducedMotion = useReducedMotion();
+    const [page, setPage] = useState(1);
+    const [direction, setDirection] = useState<1 | -1>(1);
+    const items = useMemo(() => [...foodItems].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)), [foodItems]);
+    const pageCount = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
+    useEffect(() => {
+        setPage((current) => Math.min(Math.max(1, current), pageCount));
+    }, [pageCount]);
+    const pageItems = useMemo(() => items.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE), [items, page]);
+    const goToPage = (next: number) => {
+        const clamped = Math.min(Math.max(1, next), pageCount);
+        if (clamped === page)
+            return;
+        setDirection(clamped > page ? 1 : -1);
+        setPage(clamped);
+    };
+    return (<section id="rekomendasi" data-nav="neutral" className="scroll-mt-20 py-10 sm:py-12 lg:py-14">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sale" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-sale" />
-              </span>
-              <span className="font-sans text-xs font-bold uppercase tracking-[0.3em] text-white/90">
-                Rekomendasi Untukmu
-              </span>
-            </div>
-
-            <h2 className="mt-3 font-sans text-[22px] font-semibold tracking-tight text-white sm:text-[28px]">
-              Menu <span className="text-white">unggulan</span> hari ini
+            <h2 className="font-sans text-lg font-bold tracking-tight text-foreground sm:text-[22px] lg:text-[26px]">
+              Menu unggulan hari ini
             </h2>
-            <p className="mt-2 max-w-xl font-sans text-sm text-white/70">
-              Pilihan makanan surplus dengan rating terbaik dari UMKM terdekat.
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            {!loading && items.length > ITEMS_PER_PAGE && (<>
+                <button type="button" onClick={() => goToPage(page - 1)} disabled={page <= 1} aria-label="Halaman menu sebelumnya" className={cn("flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-primary transition-colors duration-150 hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-white", FOCUS_RING)}>
+                  <ChevronLeft className="h-5 w-5" aria-hidden/>
+                </button>
+                <button type="button" onClick={() => goToPage(page + 1)} disabled={page >= pageCount} aria-label="Halaman menu berikutnya" className={cn("flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-primary transition-colors duration-150 hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-white", FOCUS_RING)}>
+                  <ChevronRight className="h-5 w-5" aria-hidden/>
+                </button>
+              </>)}
+          </div>
+        </div>
+
+        {loading && (<div role="status" aria-label="Memuat menu" className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+            {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (<FoodCardSkeleton key={index}/>))}
+          </div>)}
+
+        {!loading && catalogError && (<div role="alert" className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/[0.06] px-6 py-10 text-center">
+            <p className="font-sans text-sm font-semibold text-foreground">
+              Gagal memuat daftar menu
             </p>
-          </div>
-        </div>
+            <p className="mt-1 font-sans text-xs text-muted-foreground">
+              {catalogError}
+            </p>
+            <button type="button" onClick={() => void refreshCatalog()} className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-full bg-primary px-6 font-sans text-sm font-semibold text-white transition-colors hover:bg-primary-dark">
+              Coba lagi
+            </button>
+          </div>)}
 
-        <div className="mt-5 sm:mt-6">
-          <SearchFilterBar
-            query={searchQuery}
-            onQueryChange={setSearchQuery}
-            onSearchSubmit={goToCatalog}
-            showLocation={false}
-            showInlineResults
-            onSelectResult={onViewDetail}
-          />
-        </div>
-
-        {loading && (
-          <div className="mt-8 flex h-40 items-center justify-center text-sm text-muted-foreground">
-            Memuat menu...
-          </div>
-        )}
-
-        {!loading && items.length === 0 && (
-          <div className="mt-6 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
+        {!loading && !catalogError && items.length === 0 && (<div className="mt-6 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
             <p className="font-sans text-sm font-semibold text-foreground">
               Belum ada menu tersedia
             </p>
             <p className="mt-1 font-sans text-xs text-muted-foreground">
               Menu surplus akan muncul di sini begitu penjual menambahkannya.
             </p>
-          </div>
-        )}
+          </div>)}
 
-        {!loading && items.length > 0 && (
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
-            {items.map((item) => (
-              <FoodCard key={item.id} item={item} onViewDetail={onViewDetail} />
-            ))}
-          </div>
-        )}
+        {!loading && !catalogError && items.length > 0 && (<>
+            <div className="relative mt-6 overflow-hidden">
+              <AnimatePresence initial={false} mode="popLayout" custom={direction}>
+                <motion.div key={page} custom={direction} variants={{
+                enter: (dir: number) => ({ opacity: 0, x: 40 * dir }),
+                center: { opacity: 1, x: 0 },
+                exit: (dir: number) => ({ opacity: 0, x: -40 * dir }),
+            }} initial="enter" animate="center" exit="exit" transition={reducedMotion
+                ? { duration: 0 }
+                : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+                  {pageItems.map((item) => (<FoodCard key={item.id} item={item} onViewDetail={onViewDetail}/>))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
 
-        {/* Beranda hanya menampilkan sekumpulan rekomendasi; katalog lengkap
-            berada di /makanan. Tombol ini selalu tampil (desktop & mobile). */}
-        <div className="mt-8 flex justify-center">
-          <Link
-            href="/makanan"
-            className={cn(
-              "inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-6 font-sans text-sm font-semibold text-white transition-colors hover:bg-primary-dark",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-            )}
-          >
-            Lihat Semua Makanan
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </div>
+            {pageCount > 1 && (<nav aria-label="Halaman menu" className="mt-6 flex flex-wrap items-center justify-start gap-2">
+                {Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => {
+                    const active = pageNumber === page;
+                    return (<button key={pageNumber} type="button" onClick={() => goToPage(pageNumber)} aria-current={active ? "page" : undefined} aria-label={`Ke halaman menu ${pageNumber}`} className={cn("flex h-11 w-11 items-center justify-center rounded-full font-sans text-sm font-semibold tabular-nums transition-colors duration-150", active
+                            ? "bg-primary text-white"
+                            : "border border-border bg-white text-muted-foreground hover:border-primary/40 hover:text-primary", FOCUS_RING)}>
+                        {pageNumber}
+                      </button>);
+                })}
+              </nav>)}
+          </>)}
       </div>
-    </section>
-  );
+    </section>);
 }

@@ -18,7 +18,9 @@ export function Reveal({ children, className, delay = 0, duration = 0.7, variant
     const ref = useRef(null);
     const inView = useInView(ref, { once, margin: '-12% 0px -12% 0px' });
     const MotionTag = motion[as as keyof typeof motion] as typeof motion.div;
-    return (<MotionTag ref={ref} className={className} variants={variants} initial="hidden" animate={start && inView ? 'visible' : 'hidden'} transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}>
-      {children}
+    return (<MotionTag ref={ref} className={className} variants={variants} initial="hidden" animate={start && inView ? 'visible' : 'hidden'} transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}>
+
+      {children}
+
     </MotionTag>);
 }

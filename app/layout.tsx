@@ -2,6 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from 'next/font/google';
 import { ChatbotMount } from '@/app/components/chatbot/chatbot-mount';
+import { VisitorTracker } from '@/app/components/analytics/visitor-tracker';
+import { Toaster } from '@/app/components/ui/toaster';
 
 // Dua font seluruh produk: `--font-sans` utama, `--font-secondary` pendukung.
 // Semua weight yang dideklarasikan dipakai kelas utility yang ada.
@@ -62,22 +64,7 @@ export default function RootLayout({
       lang="id"
       className={`${plusJakartaSans.variable} ${beVietnamPro.variable}`}
     >
-      <body className="font-sans antialiased">
-        {/*
-         * Fallback tanpa JS: animasi reveal memakai inline `opacity:0` yang baru
-         * dibersihkan saat hydrasi, jadi tanpa JS seluruh section harus tetap
-         * terbaca dan overlay disembunyikan. `dangerouslySetInnerHTML` wajib agar
-         * tanda kutip CSS selamat — <style> raw-text akan membiarkan `&quot;`
-         * ter-escape dan merusak aturan.
-         */}
-        <noscript>
-          <style dangerouslySetInnerHTML={{ __html: noJsCss }} />
-        </noscript>
-        {children}
-        {/* Asisten melayang untuk semua halaman; profil perilaku ditentukan
-            server dari status sesi, bukan dari klien. */}
-        <ChatbotMount />
-      </body>
+      <body className="font-sans antialiased"><noscript><style dangerouslySetInnerHTML={{ __html: noJsCss }} /></noscript>{children}<VisitorTracker /><ChatbotMount /><Toaster /></body>
     </html>
   );
 }

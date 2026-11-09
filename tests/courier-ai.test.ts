@@ -311,13 +311,13 @@ test('route: riwayat dimuat dengan filter order_id (tidak tercampur pesanan lain
     assert.ok(route.includes('loadCourierHistory(service, orderId)'));
 });
 test('client tidak bisa memalsukan ai_courier (tidak tulis sender_kind)', () => {
-    const chat = read('app/components/order-history/courier-chat.tsx');
+    const chat = read('app/components/buyer/order-history/courier-chat.tsx');
     assert.ok(!chat.includes('sender_kind'));
     const posts = chat.match(/method: 'POST'/g) ?? [];
     assert.equal(posts.length, 1);
 });
 test('komponen chat: hanya 2 fetch (GET refresh + POST kirim)', () => {
-    const chat = read('app/components/order-history/courier-chat.tsx');
+    const chat = read('app/components/buyer/order-history/courier-chat.tsx');
     const fetches = chat.match(/fetchWithAuth\(/g) ?? [];
     assert.equal(fetches.length, 2);
 });

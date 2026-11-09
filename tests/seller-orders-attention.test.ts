@@ -8,7 +8,7 @@ function readProjectFile(relativePath: string): string {
 }
 const PAGE = readProjectFile('app/(app)/dashboard/penjual/[storeId]/pesanan/page.tsx');
 const PAGE_CODE = PAGE.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\{\s*\}/g, '');
-const TOPBAR = readProjectFile('app/components/dashboard-penjual/Topbar.tsx');
+const TOPBAR = readProjectFile('app/components/seller/dashboard-penjual/Topbar.tsx');
 test('pesanan dibayar dan disiapkan dihitung butuh aksi penjual', () => {
     assert.equal(needsSellerAction('paid'), true);
     assert.equal(needsSellerAction('processing'), true);

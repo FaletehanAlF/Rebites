@@ -90,13 +90,18 @@ function ArticleThumbnail({ item, onPreview, className, }: {
     const src = item.cover_image ?? '';
     const alt = item.title ? `Foto artikel ${item.title}` : 'Foto artikel';
     if (!adaGambar) {
-        return (<div title="Artikel ini belum memiliki gambar" className={cn('relative flex aspect-[4/3] w-[4.5rem] shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[var(--radius)] border border-border bg-sage-100/60 text-sage-500', className)}>
-        <ImageOff aria-hidden className="h-4 w-4"/>
-        <span className="text-[10px] font-semibold leading-none">Tanpa foto</span>
+        return (<div title="Artikel ini belum memiliki gambar" className={cn('relative flex aspect-[4/3] w-[4.5rem] shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[var(--radius)] border border-border bg-sage-100/60 text-sage-500', className)}>
+
+        <ImageOff aria-hidden className="h-4 w-4"/>
+
+        <span className="text-[10px] font-semibold leading-none">Tanpa foto</span>
+
       </div>);
     }
-    return (<button type="button" onClick={() => onPreview?.(item)} title="Lihat detail artikel" aria-label={`Lihat detail artikel ${item.title ?? ''}`} className={cn('relative aspect-[4/3] w-[4.5rem] shrink-0 overflow-hidden rounded-[var(--radius)] border border-border bg-sage-100 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1', className)}>
-      <SmartImage src={src} alt={alt} sizes="72px"/>
+    return (<button type="button" onClick={() => onPreview?.(item)} title="Lihat detail artikel" aria-label={`Lihat detail artikel ${item.title ?? ''}`} className={cn('relative aspect-[4/3] w-[4.5rem] shrink-0 overflow-hidden rounded-[var(--radius)] border border-border bg-sage-100 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1', className)}>
+
+      <SmartImage src={src} alt={alt} sizes="72px"/>
+
     </button>);
 }
 function StatusTile({ icon: Icon, value, label, hint, tone, active, onClick, }: {
@@ -110,24 +115,42 @@ function StatusTile({ icon: Icon, value, label, hint, tone, active, onClick, }: 
 }) {
     return (<button type="button" onClick={onClick} aria-pressed={active} aria-label={`Saring: ${label}${value === null ? '' : ` (${value} artikel)`}`} className={cn('flex items-start gap-4 rounded-xl border p-3.5 text-left transition-colors sm:p-4', 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2', active
             ? 'border-primary/45 bg-primary/[0.05]'
-            : 'border-transparent bg-admin-panel shadow-admin-card hover:border-primary/25')}>
-      <span aria-hidden className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', tone)}>
-        <Icon className="h-4 w-4"/>
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5">
-          <span className="font-display text-xl font-bold leading-none tracking-tight text-charcoal-900 tabular-nums">
-            {value === null ? '—' : value}
-          </span>
-          {active && <Check aria-hidden className="h-3.5 w-3.5 shrink-0 text-primary"/>}
-        </span>
-        <span className={cn('mt-1 block truncate text-xs font-semibold', active ? 'text-primary' : 'text-charcoal-700')}>
-          {label}
-        </span>
-        <span className="mt-0.5 block text-[11px] leading-4 text-sage-500">
-          {hint}
-        </span>
-      </span>
+            : 'border-transparent bg-admin-panel shadow-admin-card hover:border-primary/25')}>
+
+      <span aria-hidden className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', tone)}>
+
+        <Icon className="h-4 w-4"/>
+
+      </span>
+
+      <span className="min-w-0 flex-1">
+
+        <span className="flex items-center gap-1.5">
+
+          <span className="font-display text-xl font-bold leading-none tracking-tight text-charcoal-900 tabular-nums">
+
+            {value === null ? '—' : value}
+
+          </span>
+
+          {active && <Check aria-hidden className="h-3.5 w-3.5 shrink-0 text-primary"/>}
+
+        </span>
+
+        <span className={cn('mt-1 block truncate text-xs font-semibold', active ? 'text-primary' : 'text-charcoal-700')}>
+
+          {label}
+
+        </span>
+
+        <span className="mt-0.5 block text-[11px] leading-4 text-sage-500">
+
+          {hint}
+
+        </span>
+
+      </span>
+
     </button>);
 }
 function ArticleRowMenu({ item, onPreview, onPublishToggle, onDelete, }: {
@@ -142,34 +165,62 @@ function ArticleRowMenu({ item, onPreview, onPublishToggle, onDelete, }: {
         window.requestAnimationFrame(run);
     };
     const sudahTerbit = item.status === 'published';
-    return (<DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button type="button" variant="ghost" size="icon" aria-label={`Aksi lain untuk artikel ${item.title ?? ''}`}>
-          <MoreHorizontal aria-hidden className="h-4 w-4"/>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem onSelect={() => afterMenuCloses(() => onPreview(item))}>
-          <Eye aria-hidden className="h-4 w-4"/>
-          Pratinjau isi
-        </DropdownMenuItem>
-        {sudahTerbit && (<DropdownMenuItem asChild>
-            <a href={urlPublik(item)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-              <ExternalLink aria-hidden className="h-4 w-4"/>
-              Lihat di website
-            </a>
-          </DropdownMenuItem>)}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => afterMenuCloses(() => onPublishToggle(item))}>
-          <Send aria-hidden className="h-4 w-4"/>
-          {sudahTerbit ? 'Batalkan terbit' : 'Terbitkan'}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => afterMenuCloses(() => onDelete(item))} className="text-destructive focus:text-destructive">
-          <Trash2 aria-hidden className="h-4 w-4"/>
-          Hapus artikel
-        </DropdownMenuItem>
-      </DropdownMenuContent>
+    return (<DropdownMenu>
+
+      <DropdownMenuTrigger asChild>
+
+        <Button type="button" variant="ghost" size="icon" aria-label={`Aksi lain untuk artikel ${item.title ?? ''}`}>
+
+          <MoreHorizontal aria-hidden className="h-4 w-4"/>
+
+        </Button>
+
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="w-56">
+
+        <DropdownMenuItem onSelect={() => afterMenuCloses(() => onPreview(item))}>
+
+          <Eye aria-hidden className="h-4 w-4"/>
+
+          Pratinjau isi
+
+        </DropdownMenuItem>
+
+        {sudahTerbit && (<DropdownMenuItem asChild>
+
+            <a href={urlPublik(item)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+
+              <ExternalLink aria-hidden className="h-4 w-4"/>
+
+              Lihat di website
+
+            </a>
+
+          </DropdownMenuItem>)}
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem onSelect={() => afterMenuCloses(() => onPublishToggle(item))}>
+
+          <Send aria-hidden className="h-4 w-4"/>
+
+          {sudahTerbit ? 'Batalkan terbit' : 'Terbitkan'}
+
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem onSelect={() => afterMenuCloses(() => onDelete(item))} className="text-destructive focus:text-destructive">
+
+          <Trash2 aria-hidden className="h-4 w-4"/>
+
+          Hapus artikel
+
+        </DropdownMenuItem>
+
+      </DropdownMenuContent>
+
     </DropdownMenu>);
 }
 export function ArticlesManagementView() {
@@ -454,309 +505,592 @@ export function ArticlesManagementView() {
         }
     };
     const page = Math.floor(offset / PAGE_LIMIT) + 1;
-    return (<div className={ADMIN_PAGE_WRAPPER}>
-      <AdminPageHeader title="Manajemen Artikel" description="Kelola artikel ReBites. Draf hanya terlihat oleh admin." actions={<>
-            <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">
-              {total} artikel
-            </Badge>
-            <Button type="button" variant="outline" size="sm" onClick={() => void handleReload()} disabled={status === 'loading' || refreshing}>
-              <RefreshCw aria-hidden className="h-3.5 w-3.5"/>
-              Muat ulang
-            </Button>
-            <Button type="button" size="sm" onClick={openCreate}>
-              <Plus aria-hidden className="h-4 w-4"/>
-              Tambah Artikel
-            </Button>
-          </>}/>
-
-      
-      <section aria-labelledby="judul-status-artikel" className="mb-4">
-        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <h2 id="judul-status-artikel" className="text-xs font-semibold uppercase tracking-[0.06em] text-sage-500">
-            Status artikel
-          </h2>
-          <p className="text-xs text-sage-500">Klik salah satu untuk menyaring daftar.</p>
-        </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {STATUS_TILES.map((tile) => (<StatusTile key={tile.value || 'all'} icon={tile.icon} value={counts[tile.value === '' ? 'all' : tile.value]} label={tile.label} hint={tile.hint} tone={tile.tone} active={statusFilter === tile.value} onClick={() => setStatusFilter(tile.value)}/>))}
-        </div>
-      </section>
-
-      <AdminToolbar>
-        <AdminSearchInput value={searchInput} onChange={setSearchInput} label="Cari artikel" labelVisible placeholder="Cari judul atau ringkasan artikel…"/>
-        {hasFilter && (<Button type="button" variant="outline" onClick={resetFilters}>
-            <RotateCcw aria-hidden className="h-4 w-4"/>
-            Atur ulang filter
-          </Button>)}
-      </AdminToolbar>
-
-      {refreshNote && (<p role="status" className="mb-4 flex items-center gap-1.5 text-xs font-semibold text-success">
-          <Check aria-hidden className="h-4 w-4 shrink-0"/>
-          {refreshNote}
-        </p>)}
-
-      {detailLoading && (<p role="status" className="mb-4 flex items-center gap-1.5 text-xs font-semibold text-sage-500">
-          <Loader2 aria-hidden className="h-4 w-4 animate-spin motion-reduce:animate-none"/>
-          Memuat isi artikel…
-        </p>)}
-
-      {status === 'loading' && <AdminLoadingState label="Memuat daftar artikel"/>}
-
-      {status === 'forbidden' && (<AdminForbiddenState message="Halaman ini hanya untuk admin. Akun kamu tidak memiliki hak mengelola artikel."/>)}
-
-      {status === 'error' && (<AdminErrorState title="Gagal memuat artikel" message={errorMsg} onRetry={() => void load(offset, search, statusFilter)}/>)}
-
+    return (<div className={ADMIN_PAGE_WRAPPER}>
+
+      <AdminPageHeader title="Manajemen Artikel" description="Kelola artikel ReBites. Draf hanya terlihat oleh admin." actions={<>
+
+            <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">
+
+              {total} artikel
+
+            </Badge>
+
+            <Button type="button" variant="outline" size="sm" onClick={() => void handleReload()} disabled={status === 'loading' || refreshing}>
+
+              <RefreshCw aria-hidden className="h-3.5 w-3.5"/>
+
+              Muat ulang
+
+            </Button>
+
+            <Button type="button" size="sm" onClick={openCreate}>
+
+              <Plus aria-hidden className="h-4 w-4"/>
+
+              Tambah Artikel
+
+            </Button>
+
+          </>}/>
+
+
+
+      
+
+      <section aria-labelledby="judul-status-artikel" className="mb-4">
+
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+
+          <h2 id="judul-status-artikel" className="text-xs font-semibold uppercase tracking-[0.06em] text-sage-500">
+
+            Status artikel
+
+          </h2>
+
+          <p className="text-xs text-sage-500">Klik salah satu untuk menyaring daftar.</p>
+
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+
+          {STATUS_TILES.map((tile) => (<StatusTile key={tile.value || 'all'} icon={tile.icon} value={counts[tile.value === '' ? 'all' : tile.value]} label={tile.label} hint={tile.hint} tone={tile.tone} active={statusFilter === tile.value} onClick={() => setStatusFilter(tile.value)}/>))}
+
+        </div>
+
+      </section>
+
+
+
+      <AdminToolbar>
+
+        <AdminSearchInput value={searchInput} onChange={setSearchInput} label="Cari artikel" labelVisible placeholder="Cari judul atau ringkasan artikel…"/>
+
+        {hasFilter && (<Button type="button" variant="outline" onClick={resetFilters}>
+
+            <RotateCcw aria-hidden className="h-4 w-4"/>
+
+            Atur ulang filter
+
+          </Button>)}
+
+      </AdminToolbar>
+
+
+
+      {refreshNote && (<p role="status" className="mb-4 flex items-center gap-1.5 text-xs font-semibold text-success">
+
+          <Check aria-hidden className="h-4 w-4 shrink-0"/>
+
+          {refreshNote}
+
+        </p>)}
+
+
+
+      {detailLoading && (<p role="status" className="mb-4 flex items-center gap-1.5 text-xs font-semibold text-sage-500">
+
+          <Loader2 aria-hidden className="h-4 w-4 animate-spin motion-reduce:animate-none"/>
+
+          Memuat isi artikel…
+
+        </p>)}
+
+
+
+      {status === 'loading' && <AdminLoadingState label="Memuat daftar artikel"/>}
+
+
+
+      {status === 'forbidden' && (<AdminForbiddenState message="Halaman ini hanya untuk admin. Akun kamu tidak memiliki hak mengelola artikel."/>)}
+
+
+
+      {status === 'error' && (<AdminErrorState title="Gagal memuat artikel" message={errorMsg} onRetry={() => void load(offset, search, statusFilter)}/>)}
+
+
+
       {status === 'ready' && items.length === 0 && (<AdminEmptyState icon={<Newspaper aria-hidden className="h-10 w-10 text-primary"/>} title={hasFilter ? 'Artikel tidak ditemukan' : 'Belum ada artikel'} description={hasFilter
                 ? 'Tidak ada artikel yang cocok dengan pencarian atau status yang dipilih. Coba atur ulang filter.'
-                : 'Buat draf artikel pertama dengan tombol Tambah Artikel. Artikel baru selalu tersimpan sebagai draf.'} action={hasFilter ? (<Button type="button" size="sm" variant="outline" onClick={resetFilters}>
-                <RotateCcw aria-hidden className="h-4 w-4"/>
-                Atur ulang filter
-              </Button>) : (<Button type="button" size="sm" onClick={openCreate}>
-                <Plus aria-hidden className="h-4 w-4"/>
-                Tambah Artikel
-              </Button>)}/>)}
-
-      {status === 'ready' && items.length > 0 && (<>
-          
-          {errorMsg && (<div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius)] border border-destructive/25 bg-destructive/[0.06] px-3 py-2 text-sm text-charcoal-900">
-              <span className="min-w-0">{errorMsg}</span>
-              <Button type="button" variant="outline" size="sm" onClick={() => void load(offset, search, statusFilter)}>
-                Coba lagi
-              </Button>
-            </div>)}
-
-          
-          {hasFilter && (<p className="mb-3 text-xs text-sage-500">
-              Menampilkan{' '}
-              <span className="font-semibold text-charcoal-900 tabular-nums">{total}</span>{' '}
-              artikel
-              {statusFilter ? ` berstatus ${statusLabel(statusFilter)}` : ''}
-              {search ? ` untuk pencarian “${search}”` : ''}.
-            </p>)}
-
-          {refreshing && (<p role="status" className="mb-3 inline-flex items-center gap-2 text-xs font-semibold text-sage-500">
-              <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"/>
-              Memperbarui daftar…
-            </p>)}
-
-          <div aria-busy={refreshing} className={cn('transition-opacity', refreshing && 'pointer-events-none opacity-60')}>
-            <AdminTableCard label="Daftar artikel" minWidth={760} className="hidden md:block">
-              <AdminTableHead>
-                <AdminTh>Artikel</AdminTh>
-                <AdminTh>Status</AdminTh>
-                <AdminTh>Kategori</AdminTh>
-                <AdminTh>Terakhir diubah</AdminTh>
-                <AdminTh className="text-right">Aksi</AdminTh>
-              </AdminTableHead>
-              <tbody>
-                {items.map((item) => (<AdminTr key={item.id}>
-                    <AdminTd className="max-w-[420px]">
-                      <div className="flex items-start gap-4">
-                        <ArticleThumbnail item={item} onPreview={openPreview}/>
-                        <div className="min-w-0">
-                          <p className="line-clamp-2 font-semibold leading-snug text-charcoal-900" title={item.title ?? undefined}>
-                            {item.title ?? '-'}
-                          </p>
-                          <p className="mt-0.5 truncate font-mono text-[11px] text-sage-500" title={urlPublik(item)}>
-                            {urlPublik(item)}
-                          </p>
-                          {item.excerpt && (<p className="mt-1 line-clamp-1 text-xs text-sage-500" title={item.excerpt}>
-                              {item.excerpt}
-                            </p>)}
-                        </div>
-                      </div>
-                    </AdminTd>
-                    <AdminTd className="whitespace-nowrap">
-                      <Badge variant={statusBadgeVariant(item.status)}>
-                        {statusLabel(item.status)}
-                      </Badge>
-                      <span className="mt-1 block text-xs text-sage-500">
+                : 'Buat draf artikel pertama dengan tombol Tambah Artikel. Artikel baru selalu tersimpan sebagai draf.'} action={hasFilter ? (<Button type="button" size="sm" variant="outline" onClick={resetFilters}>
+
+                <RotateCcw aria-hidden className="h-4 w-4"/>
+
+                Atur ulang filter
+
+              </Button>) : (<Button type="button" size="sm" onClick={openCreate}>
+
+                <Plus aria-hidden className="h-4 w-4"/>
+
+                Tambah Artikel
+
+              </Button>)}/>)}
+
+
+
+      {status === 'ready' && items.length > 0 && (<>
+
+          
+
+          {errorMsg && (<div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius)] border border-destructive/25 bg-destructive/[0.06] px-3 py-2 text-sm text-charcoal-900">
+
+              <span className="min-w-0">{errorMsg}</span>
+
+              <Button type="button" variant="outline" size="sm" onClick={() => void load(offset, search, statusFilter)}>
+
+                Coba lagi
+
+              </Button>
+
+            </div>)}
+
+
+
+          
+
+          {hasFilter && (<p className="mb-3 text-xs text-sage-500">
+
+              Menampilkan{' '}
+
+              <span className="font-semibold text-charcoal-900 tabular-nums">{total}</span>{' '}
+
+              artikel
+
+              {statusFilter ? ` berstatus ${statusLabel(statusFilter)}` : ''}
+
+              {search ? ` untuk pencarian “${search}”` : ''}.
+
+            </p>)}
+
+
+
+          {refreshing && (<p role="status" className="mb-3 inline-flex items-center gap-2 text-xs font-semibold text-sage-500">
+
+              <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"/>
+
+              Memperbarui daftar…
+
+            </p>)}
+
+
+
+          <div aria-busy={refreshing} className={cn('transition-opacity', refreshing && 'pointer-events-none opacity-60')}>
+
+            <AdminTableCard label="Daftar artikel" minWidth={760} className="hidden md:block">
+
+              <AdminTableHead>
+
+                <AdminTh>Artikel</AdminTh>
+
+                <AdminTh>Status</AdminTh>
+
+                <AdminTh>Kategori</AdminTh>
+
+                <AdminTh>Terakhir diubah</AdminTh>
+
+                <AdminTh className="text-right">Aksi</AdminTh>
+
+              </AdminTableHead>
+
+              <tbody>
+
+                {items.map((item) => (<AdminTr key={item.id}>
+
+                    <AdminTd className="max-w-[420px]">
+
+                      <div className="flex items-start gap-4">
+
+                        <ArticleThumbnail item={item} onPreview={openPreview}/>
+
+                        <div className="min-w-0">
+
+                          <p className="line-clamp-2 font-semibold leading-snug text-charcoal-900" title={item.title ?? undefined}>
+
+                            {item.title ?? '-'}
+
+                          </p>
+
+                          <p className="mt-0.5 truncate font-mono text-[11px] text-sage-500" title={urlPublik(item)}>
+
+                            {urlPublik(item)}
+
+                          </p>
+
+                          {item.excerpt && (<p className="mt-1 line-clamp-1 text-xs text-sage-500" title={item.excerpt}>
+
+                              {item.excerpt}
+
+                            </p>)}
+
+                        </div>
+
+                      </div>
+
+                    </AdminTd>
+
+                    <AdminTd className="whitespace-nowrap">
+
+                      <Badge variant={statusBadgeVariant(item.status)}>
+
+                        {statusLabel(item.status)}
+
+                      </Badge>
+
+                      <span className="mt-1 block text-xs text-sage-500">
+
                         {item.published_at
                     ? `Terbit ${formatTanggal(item.published_at)}`
-                    : 'Belum terbit'}
-                      </span>
-                    </AdminTd>
-                    <AdminTd className="max-w-[150px]">
-                      {item.category?.trim() ? (<span className="inline-block max-w-full truncate rounded-full bg-sage-100 px-2.5 py-0.5 text-[11px] font-semibold text-sage-600" title={item.category.trim()}>
-                          {item.category.trim()}
-                        </span>) : (<span className="text-xs text-sage-500">Tanpa kategori</span>)}
-                    </AdminTd>
-                    <AdminTd className="whitespace-nowrap text-xs text-sage-500">
-                      {formatTanggal(item.updated_at ?? item.created_at)}
-                      <span className="mt-1 block text-[11px]">
-                        Dibuat {formatTanggal(item.created_at)}
-                      </span>
-                    </AdminTd>
-                    <AdminTdActions>
-                      <Button type="button" variant="outline" size="sm" onClick={() => openEdit(item)}>
-                        <Pencil aria-hidden className="h-3.5 w-3.5"/>
-                        Ubah
-                      </Button>
-                      <ArticleRowMenu item={item} onPreview={openPreview} onPublishToggle={setConfirmPublish} onDelete={setConfirmDelete}/>
-                    </AdminTdActions>
-                  </AdminTr>))}
-              </tbody>
-            </AdminTableCard>
-
-            
-            <div className="space-y-3 md:hidden">
-              {items.map((item) => (<Card key={`artikel-card-${item.id}`}>
-                  <CardContent className="px-4 py-4">
-                    <div className="flex items-start gap-4">
-                      <ArticleThumbnail item={item} onPreview={openPreview} className="w-20"/>
-                      <div className="min-w-0 flex-1">
-                        <Badge variant={statusBadgeVariant(item.status)}>
-                          {statusLabel(item.status)}
-                        </Badge>
-                        <p className="mt-1.5 line-clamp-2 text-sm font-semibold leading-snug text-charcoal-900" title={item.title ?? undefined}>
-                          {item.title ?? '-'}
-                        </p>
-                        <p className="mt-1 truncate text-xs text-sage-500">
-                          {item.category?.trim() || 'Tanpa kategori'}
-                          {' · '}
+                    : 'Belum terbit'}
+
+                      </span>
+
+                    </AdminTd>
+
+                    <AdminTd className="max-w-[150px]">
+
+                      {item.category?.trim() ? (<span className="inline-block max-w-full truncate rounded-full bg-sage-100 px-2.5 py-0.5 text-[11px] font-semibold text-sage-600" title={item.category.trim()}>
+
+                          {item.category.trim()}
+
+                        </span>) : (<span className="text-xs text-sage-500">Tanpa kategori</span>)}
+
+                    </AdminTd>
+
+                    <AdminTd className="whitespace-nowrap text-xs text-sage-500">
+
+                      {formatTanggal(item.updated_at ?? item.created_at)}
+
+                      <span className="mt-1 block text-[11px]">
+
+                        Dibuat {formatTanggal(item.created_at)}
+
+                      </span>
+
+                    </AdminTd>
+
+                    <AdminTdActions>
+
+                      <Button type="button" variant="outline" size="sm" onClick={() => openEdit(item)}>
+
+                        <Pencil aria-hidden className="h-3.5 w-3.5"/>
+
+                        Ubah
+
+                      </Button>
+
+                      <ArticleRowMenu item={item} onPreview={openPreview} onPublishToggle={setConfirmPublish} onDelete={setConfirmDelete}/>
+
+                    </AdminTdActions>
+
+                  </AdminTr>))}
+
+              </tbody>
+
+            </AdminTableCard>
+
+
+
+            
+
+            <div className="space-y-3 md:hidden">
+
+              {items.map((item) => (<Card key={`artikel-card-${item.id}`}>
+
+                  <CardContent className="px-4 py-4">
+
+                    <div className="flex items-start gap-4">
+
+                      <ArticleThumbnail item={item} onPreview={openPreview} className="w-20"/>
+
+                      <div className="min-w-0 flex-1">
+
+                        <Badge variant={statusBadgeVariant(item.status)}>
+
+                          {statusLabel(item.status)}
+
+                        </Badge>
+
+                        <p className="mt-1.5 line-clamp-2 text-sm font-semibold leading-snug text-charcoal-900" title={item.title ?? undefined}>
+
+                          {item.title ?? '-'}
+
+                        </p>
+
+                        <p className="mt-1 truncate text-xs text-sage-500">
+
+                          {item.category?.trim() || 'Tanpa kategori'}
+
+                          {' · '}
+
                           {item.published_at
                     ? `Terbit ${formatTanggal(item.published_at)}`
-                    : `Diubah ${formatTanggal(item.updated_at ?? item.created_at)}`}
-                        </p>
-                      </div>
-                    </div>
-                    {item.excerpt && (<p className="mt-2 line-clamp-2 text-xs leading-relaxed text-sage-500">
-                        {item.excerpt}
-                      </p>)}
-                    <div className="mt-3 flex items-center gap-2">
-                      <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => openEdit(item)}>
-                        <Pencil aria-hidden className="h-3.5 w-3.5"/>
-                        Ubah artikel
-                      </Button>
-                      <ArticleRowMenu item={item} onPreview={openPreview} onPublishToggle={setConfirmPublish} onDelete={setConfirmDelete}/>
-                    </div>
-                  </CardContent>
-                </Card>))}
-            </div>
-          </div>
-
-          <AdminPagination total={total} page={page} pageSize={PAGE_LIMIT} noun="artikel" busy={refreshing} onPageChange={(next) => void load((next - 1) * PAGE_LIMIT, search, statusFilter)}/>
-        </>)}
-
-      <ArticleForm open={formOpen} onOpenChange={setFormOpen} editing={editing} umkms={umkms} saving={saving} formError={formError} onSubmit={handleSubmit}/>
-
-      <Dialog open={confirmPublish !== null} onOpenChange={(open) => !open && setConfirmPublish(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
+                    : `Diubah ${formatTanggal(item.updated_at ?? item.created_at)}`}
+
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                    {item.excerpt && (<p className="mt-2 line-clamp-2 text-xs leading-relaxed text-sage-500">
+
+                        {item.excerpt}
+
+                      </p>)}
+
+                    <div className="mt-3 flex items-center gap-2">
+
+                      <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => openEdit(item)}>
+
+                        <Pencil aria-hidden className="h-3.5 w-3.5"/>
+
+                        Ubah artikel
+
+                      </Button>
+
+                      <ArticleRowMenu item={item} onPreview={openPreview} onPublishToggle={setConfirmPublish} onDelete={setConfirmDelete}/>
+
+                    </div>
+
+                  </CardContent>
+
+                </Card>))}
+
+            </div>
+
+          </div>
+
+
+
+          <AdminPagination total={total} page={page} pageSize={PAGE_LIMIT} noun="artikel" busy={refreshing} onPageChange={(next) => void load((next - 1) * PAGE_LIMIT, search, statusFilter)}/>
+
+        </>)}
+
+
+
+      <ArticleForm open={formOpen} onOpenChange={setFormOpen} editing={editing} umkms={umkms} saving={saving} formError={formError} onSubmit={handleSubmit}/>
+
+
+
+      <Dialog open={confirmPublish !== null} onOpenChange={(open) => !open && setConfirmPublish(null)}>
+
+        <DialogContent className="sm:max-w-md">
+
+          <DialogHeader>
+
+            <DialogTitle>
+
               {confirmPublish?.status === 'published'
             ? 'Batalkan terbit artikel ini?'
-            : 'Terbitkan artikel ini?'}
-            </DialogTitle>
-            <DialogDescription>
+            : 'Terbitkan artikel ini?'}
+
+            </DialogTitle>
+
+            <DialogDescription>
+
               {confirmPublish?.status === 'published'
             ? `“${confirmPublish?.title}” akan kembali menjadi draf dan tidak tampil di website publik.`
-            : `“${confirmPublish?.title}” akan langsung tampil di halaman /artikel dan bisa dibaca siapa saja.`}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button type="button" variant="outline" disabled={acting} onClick={() => setConfirmPublish(null)}>
-              Batal
-            </Button>
-            <Button type="button" disabled={acting} onClick={() => void handlePublishToggle()}>
-              {acting ? 'Memproses…' : confirmPublish?.status === 'published' ? 'Batalkan Terbit' : 'Terbitkan'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={confirmDelete !== null} onOpenChange={(open) => !open && setConfirmDelete(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Hapus artikel ini?</DialogTitle>
-            <DialogDescription>
-              Yakin ingin menghapus artikel “{confirmDelete?.title}”? Tindakan ini tidak dapat
-              dibatalkan.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button type="button" variant="outline" disabled={acting} onClick={() => setConfirmDelete(null)}>
-              Batal
-            </Button>
-            <Button type="button" variant="destructive" disabled={acting} onClick={() => void handleDelete()}>
-              {acting ? 'Menghapus…' : 'Hapus Artikel'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      
-      <Dialog open={previewItem !== null} onOpenChange={(open) => !open && setPreviewItem(null)}>
-        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="pr-8">{previewItem?.title ?? 'Pratinjau artikel'}</DialogTitle>
-            <DialogDescription>
-              Pratinjau isi — perubahan hanya tersimpan lewat form Ubah.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Badge variant={statusBadgeVariant(previewItem?.status ?? null)}>
-              {statusLabel(previewItem?.status ?? null)}
-            </Badge>
-            {previewItem?.category?.trim() && (<span className="rounded-full bg-sage-100 px-2.5 py-0.5 text-[11px] font-semibold text-sage-600">
-                {previewItem.category.trim()}
-              </span>)}
-            {previewItem?.published_at && (<span className="text-xs text-sage-500">
-                Terbit {formatTanggal(previewItem.published_at)}
-              </span>)}
-          </div>
-
-          <div className="relative mt-3 aspect-[16/9] w-full overflow-hidden rounded-[var(--radius)] border border-border bg-sage-100/60">
-            <SmartImage src={previewItem?.cover_image ?? ''} alt={previewItem?.title ? `Foto artikel ${previewItem.title}` : 'Foto artikel'} sizes="(max-width: 640px) 100vw, 672px"/>
-          </div>
-
-          <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3">
+            : `“${confirmPublish?.title}” akan langsung tampil di halaman /artikel dan bisa dibaca siapa saja.`}
+
+            </DialogDescription>
+
+          </DialogHeader>
+
+          <DialogFooter>
+
+            <Button type="button" variant="outline" disabled={acting} onClick={() => setConfirmPublish(null)}>
+
+              Batal
+
+            </Button>
+
+            <Button type="button" disabled={acting} onClick={() => void handlePublishToggle()}>
+
+              {acting ? 'Memproses…' : confirmPublish?.status === 'published' ? 'Batalkan Terbit' : 'Terbitkan'}
+
+            </Button>
+
+          </DialogFooter>
+
+        </DialogContent>
+
+      </Dialog>
+
+
+
+      <Dialog open={confirmDelete !== null} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+
+        <DialogContent className="sm:max-w-md">
+
+          <DialogHeader>
+
+            <DialogTitle>Hapus artikel ini?</DialogTitle>
+
+            <DialogDescription>
+
+              Yakin ingin menghapus artikel “{confirmDelete?.title}”? Tindakan ini tidak dapat
+
+              dibatalkan.
+
+            </DialogDescription>
+
+          </DialogHeader>
+
+          <DialogFooter>
+
+            <Button type="button" variant="outline" disabled={acting} onClick={() => setConfirmDelete(null)}>
+
+              Batal
+
+            </Button>
+
+            <Button type="button" variant="destructive" disabled={acting} onClick={() => void handleDelete()}>
+
+              {acting ? 'Menghapus…' : 'Hapus Artikel'}
+
+            </Button>
+
+          </DialogFooter>
+
+        </DialogContent>
+
+      </Dialog>
+
+
+
+      
+
+      <Dialog open={previewItem !== null} onOpenChange={(open) => !open && setPreviewItem(null)}>
+
+        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+
+          <DialogHeader>
+
+            <DialogTitle className="pr-8">{previewItem?.title ?? 'Pratinjau artikel'}</DialogTitle>
+
+            <DialogDescription>
+
+              Pratinjau isi — perubahan hanya tersimpan lewat form Ubah.
+
+            </DialogDescription>
+
+          </DialogHeader>
+
+
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+
+            <Badge variant={statusBadgeVariant(previewItem?.status ?? null)}>
+
+              {statusLabel(previewItem?.status ?? null)}
+
+            </Badge>
+
+            {previewItem?.category?.trim() && (<span className="rounded-full bg-sage-100 px-2.5 py-0.5 text-[11px] font-semibold text-sage-600">
+
+                {previewItem.category.trim()}
+
+              </span>)}
+
+            {previewItem?.published_at && (<span className="text-xs text-sage-500">
+
+                Terbit {formatTanggal(previewItem.published_at)}
+
+              </span>)}
+
+          </div>
+
+
+
+          <div className="relative mt-3 aspect-[16/9] w-full overflow-hidden rounded-[var(--radius)] border border-border bg-sage-100/60">
+
+            <SmartImage src={previewItem?.cover_image ?? ''} alt={previewItem?.title ? `Foto artikel ${previewItem.title}` : 'Foto artikel'} sizes="(max-width: 640px) 100vw, 672px"/>
+
+          </div>
+
+
+
+          <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3">
+
             {[
             { label: 'Alamat', value: previewItem ? urlPublik(previewItem) : '-' },
             { label: 'Kategori', value: previewItem?.category?.trim() || 'Tanpa kategori' },
             { label: 'Jumlah kata', value: `${jumlahKata(previewItem?.content)} kata` },
             { label: 'Dibuat', value: formatTanggalWaktu(previewItem?.created_at) },
             { label: 'Diubah', value: formatTanggalWaktu(previewItem?.updated_at) },
-        ].map((row) => (<div key={row.label} className="min-w-0">
-                <dt className="text-xs font-semibold uppercase tracking-[0.06em] text-sage-500">
-                  {row.label}
-                </dt>
-                <dd className="mt-0.5 truncate text-sm text-charcoal-900" title={row.value}>
-                  {row.value}
-                </dd>
-              </div>))}
-          </dl>
-
-          {previewItem?.excerpt && (<p className="mt-4 rounded-[var(--radius)] bg-sage-100/50 px-4 py-3 text-sm leading-relaxed text-charcoal-700">
-              {previewItem.excerpt}
-            </p>)}
-
-          <div className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-charcoal-700">
-            {previewItem?.content ?? 'Konten artikel belum tersedia.'}
-          </div>
-
-          {previewItem?.tags && previewItem.tags.length > 0 && (<div className="mt-4 flex flex-wrap items-center gap-1.5">
-              {previewItem.tags.map((tag) => (<Badge key={tag} variant="secondary" className="text-xs">
-                  #{tag}
-                </Badge>))}
-            </div>)}
-
-          <DialogFooter className="mt-5 gap-2">
+        ].map((row) => (<div key={row.label} className="min-w-0">
+
+                <dt className="text-xs font-semibold uppercase tracking-[0.06em] text-sage-500">
+
+                  {row.label}
+
+                </dt>
+
+                <dd className="mt-0.5 truncate text-sm text-charcoal-900" title={row.value}>
+
+                  {row.value}
+
+                </dd>
+
+              </div>))}
+
+          </dl>
+
+
+
+          {previewItem?.excerpt && (<p className="mt-4 rounded-[var(--radius)] bg-sage-100/50 px-4 py-3 text-sm leading-relaxed text-charcoal-700">
+
+              {previewItem.excerpt}
+
+            </p>)}
+
+
+
+          <div className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-charcoal-700">
+
+            {previewItem?.content ?? 'Konten artikel belum tersedia.'}
+
+          </div>
+
+
+
+          {previewItem?.tags && previewItem.tags.length > 0 && (<div className="mt-4 flex flex-wrap items-center gap-1.5">
+
+              {previewItem.tags.map((tag) => (<Badge key={tag} variant="secondary" className="text-xs">
+
+                  #{tag}
+
+                </Badge>))}
+
+            </div>)}
+
+
+
+          <DialogFooter className="mt-5 gap-2">
+
             <Button type="button" variant="outline" onClick={() => {
             const target = previewItem;
             setPreviewItem(null);
             if (target)
                 openEdit(target);
-        }}>
-              <Pencil aria-hidden className="h-4 w-4"/>
-              Ubah artikel
-            </Button>
-            <Button type="button" onClick={() => setPreviewItem(null)}>
-              Tutup
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        }}>
+
+              <Pencil aria-hidden className="h-4 w-4"/>
+
+              Ubah artikel
+
+            </Button>
+
+            <Button type="button" onClick={() => setPreviewItem(null)}>
+
+              Tutup
+
+            </Button>
+
+          </DialogFooter>
+
+        </DialogContent>
+
+      </Dialog>
+
     </div>);
 }

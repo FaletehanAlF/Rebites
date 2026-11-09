@@ -160,57 +160,106 @@ export function UsersManagementView() {
         url: `/api/admin/users/export?${exportParams.toString()}`,
         noun: 'pengguna',
     });
-    return (<div className={ADMIN_PAGE_WRAPPER}>
-      <AdminPageHeader title="Manajemen Pengguna" description="Pantau pengguna terdaftar beserta peran dan status tokonya." actions={<>
-            <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">
-              {total} pengguna
-            </Badge>
-            <AdminExportButton onClick={startExport} busy={exporting} disabled={status === 'loading' || status === 'forbidden'} noun="pengguna"/>
-            <Button type="button" variant="outline" onClick={() => void handleReload()} disabled={status === 'loading'}>
-              <RefreshCw aria-hidden className="h-4 w-4"/>
-              Muat ulang
-            </Button>
-          </>}/>
-
-      {feedback && <AdminExportNotice feedback={feedback}/>}
-
-      <AdminToolbar className="mb-6">
-        <AdminSearchInput value={searchInput} onChange={setSearchInput} label="Cari pengguna" labelVisible placeholder="Cari nama atau email…" className="lg:w-52 lg:shrink lg:min-w-[7rem]"/>
-        <AdminSelect value={sellerFilter} onChange={(value) => setSellerFilter(value as '' | AdminSellerStatus)} label="Status penjual" options={SELLER_FILTER_OPTIONS}/>
-        <AdminSelect value={roleFilter} onChange={(value) => setRoleFilter(value as '' | AdminRoleFilter)} label="Peran" options={ROLE_FILTER_OPTIONS}/>
-        <AdminSelect value={accountStatusFilter} onChange={(value) => setAccountStatusFilter(value as '' | AdminAccountStatusFilter)} label="Status akun" options={ACCOUNT_STATUS_FILTER_OPTIONS}/>
-        <AdminSelect value={deletedFilter} onChange={(value) => setDeletedFilter(value as AdminDeletedFilter)} label="Akun dihapus" options={DELETED_FILTER_OPTIONS}/>
-      </AdminToolbar>
-
-      {refreshNote && (<p role="status" className="mb-6 flex items-center gap-1.5 text-xs font-semibold text-success">
-          <CheckCircle2 aria-hidden className="h-4 w-4 shrink-0"/>
-          {refreshNote}
-        </p>)}
-
-      {status === 'loading' && <AdminLoadingState label="Memuat daftar pengguna"/>}
-
-      {status === 'forbidden' && (<AdminForbiddenState message="Akun kamu tidak memiliki hak mengelola pengguna."/>)}
-
-      {status === 'error' && (<AdminErrorState title="Gagal memuat pengguna" message={errorMsg} onRetry={() => void load(offset, search, sellerFilter, deletedFilter, roleFilter, accountStatusFilter)}/>)}
-
+    return (<div className={ADMIN_PAGE_WRAPPER}>
+
+      <AdminPageHeader title="Manajemen Pengguna" description="Pantau pengguna terdaftar beserta peran dan status tokonya." actions={<>
+
+            <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">
+
+              {total} pengguna
+
+            </Badge>
+
+            <AdminExportButton onClick={startExport} busy={exporting} disabled={status === 'loading' || status === 'forbidden'} noun="pengguna"/>
+
+            <Button type="button" variant="outline" onClick={() => void handleReload()} disabled={status === 'loading'}>
+
+              <RefreshCw aria-hidden className="h-4 w-4"/>
+
+              Muat ulang
+
+            </Button>
+
+          </>}/>
+
+
+
+      {feedback && <AdminExportNotice feedback={feedback}/>}
+
+
+
+      <AdminToolbar className="mb-6">
+
+        <AdminSearchInput value={searchInput} onChange={setSearchInput} label="Cari pengguna" labelVisible placeholder="Cari nama atau email…" className="lg:w-52 lg:shrink lg:min-w-[7rem]"/>
+
+        <AdminSelect value={sellerFilter} onChange={(value) => setSellerFilter(value as '' | AdminSellerStatus)} label="Status penjual" options={SELLER_FILTER_OPTIONS}/>
+
+        <AdminSelect value={roleFilter} onChange={(value) => setRoleFilter(value as '' | AdminRoleFilter)} label="Peran" options={ROLE_FILTER_OPTIONS}/>
+
+        <AdminSelect value={accountStatusFilter} onChange={(value) => setAccountStatusFilter(value as '' | AdminAccountStatusFilter)} label="Status akun" options={ACCOUNT_STATUS_FILTER_OPTIONS}/>
+
+        <AdminSelect value={deletedFilter} onChange={(value) => setDeletedFilter(value as AdminDeletedFilter)} label="Akun dihapus" options={DELETED_FILTER_OPTIONS}/>
+
+      </AdminToolbar>
+
+
+
+      {refreshNote && (<p role="status" className="mb-6 flex items-center gap-1.5 text-xs font-semibold text-success">
+
+          <CheckCircle2 aria-hidden className="h-4 w-4 shrink-0"/>
+
+          {refreshNote}
+
+        </p>)}
+
+
+
+      {status === 'loading' && <AdminLoadingState label="Memuat daftar pengguna"/>}
+
+
+
+      {status === 'forbidden' && (<AdminForbiddenState message="Akun kamu tidak memiliki hak mengelola pengguna."/>)}
+
+
+
+      {status === 'error' && (<AdminErrorState title="Gagal memuat pengguna" message={errorMsg} onRetry={() => void load(offset, search, sellerFilter, deletedFilter, roleFilter, accountStatusFilter)}/>)}
+
+
+
       {status === 'ready' && items.length === 0 && (<AdminEmptyState icon={<Users aria-hidden className="h-10 w-10 text-primary"/>} title={hasActiveFilter ? 'Tidak ada pengguna yang cocok' : 'Belum ada pengguna'} description={hasActiveFilter
                 ? 'Tidak ada pengguna yang cocok dengan pencarian atau filter yang dipilih.'
-                : 'Pengguna yang terdaftar akan muncul di sini.'} action={hasActiveFilter ? (<Button type="button" variant="outline" onClick={resetFilters}>
-                <RefreshCw aria-hidden className="h-4 w-4"/>
-                Atur ulang filter
-              </Button>) : undefined}/>)}
-
-      {status === 'ready' && items.length > 0 && (<>
-          <AdminTableCard label="Daftar pengguna" minWidth={760} className="hidden md:block">
-            <AdminTableHead>
-              <AdminTh>Pengguna</AdminTh>
-              <AdminTh>Email</AdminTh>
-              <AdminTh>Peran</AdminTh>
-              <AdminTh>Status Penjual</AdminTh>
-              <AdminTh>Koin</AdminTh>
-              <AdminTh>Terdaftar</AdminTh>
-            </AdminTableHead>
-            <tbody>
+                : 'Pengguna yang terdaftar akan muncul di sini.'} action={hasActiveFilter ? (<Button type="button" variant="outline" onClick={resetFilters}>
+
+                <RefreshCw aria-hidden className="h-4 w-4"/>
+
+                Atur ulang filter
+
+              </Button>) : undefined}/>)}
+
+
+
+      {status === 'ready' && items.length > 0 && (<>
+
+          <AdminTableCard label="Daftar pengguna" minWidth={760} className="hidden md:block">
+
+            <AdminTableHead>
+
+              <AdminTh>Pengguna</AdminTh>
+
+              <AdminTh>Email</AdminTh>
+
+              <AdminTh>Peran</AdminTh>
+
+              <AdminTh>Status Penjual</AdminTh>
+
+              <AdminTh>Koin</AdminTh>
+
+              <AdminTh>Terdaftar</AdminTh>
+
+            </AdminTableHead>
+
+            <tbody>
+
               {items.map((item, index) => {
                 const nama = item.full_name?.trim() || item.email || '-';
                 const href = item.id ? `/dashboard/admin/pengguna/${item.id}` : null;
@@ -230,108 +279,205 @@ export function UsersManagementView() {
                             router.push(href);
                         },
                     }
-                    : {})}>
-                    
-                    <AdminTd className="max-w-[230px] font-medium text-charcoal-900">
-                      <div className="flex items-center gap-2.5">
-                        
-                        <AdminAvatar src={item.avatar_url} name={item.full_name} email={item.email} size="sm" className="shrink-0"/>
-                        <span className="min-w-0">
-                          <span className="block truncate" title={nama}>
-                            {nama}
-                          </span>
-                          
-                          {item.deleted_at && (<Badge variant="destructive" className="mt-1">
-                              Dihapus
-                            </Badge>)}
-                          
-                          {labelStatusAkun(item.account_status) && (<Badge variant={varianStatusAkun(item.account_status)} className="mt-1">
-                              {labelStatusAkun(item.account_status)}
-                            </Badge>)}
-                        </span>
-                      </div>
-                    </AdminTd>
-                    <AdminTd className="max-w-[220px] truncate" title={item.email ?? undefined}>
-                      {item.email ?? '-'}
-                    </AdminTd>
-                    <AdminTd className="whitespace-nowrap">
-                      
-                      {item.is_super_admin ? (<Badge variant="success">Super Admin</Badge>) : (<Badge variant={varianPeran(item.role)}>{labelPeran(item.role)}</Badge>)}
-                    </AdminTd>
-                    <AdminTd className="max-w-[220px]">
-                      <Badge variant={varianStatusPenjual(item.seller_status)}>
-                        {labelStatusPenjual(item.seller_status)}
-                      </Badge>
-                      {item.seller?.business_name && (<span className="mt-1 block truncate text-xs font-medium text-charcoal-900" title={item.seller.business_name}>
-                          {item.seller.business_name}
-                        </span>)}
-                    </AdminTd>
-                    
-                    <AdminTd className="whitespace-nowrap tabular-nums font-semibold text-charcoal-900">
-                      {(item.coin_balance ?? 0).toLocaleString('id-ID')}
-                    </AdminTd>
-                    <AdminTd className="whitespace-nowrap text-xs text-sage-500">
-                      {formatTanggal(item.created_at)}
-                    </AdminTd>
+                    : {})}>
+
+                    
+
+                    <AdminTd className="max-w-[230px] font-medium text-charcoal-900">
+
+                      <div className="flex items-center gap-2.5">
+
+                        
+
+                        <AdminAvatar src={item.avatar_url} name={item.full_name} email={item.email} size="sm" className="shrink-0"/>
+
+                        <span className="min-w-0">
+
+                          <span className="block truncate" title={nama}>
+
+                            {nama}
+
+                          </span>
+
+                          
+
+                          {item.deleted_at && (<Badge variant="destructive" className="mt-1">
+
+                              Dihapus
+
+                            </Badge>)}
+
+                          
+
+                          {labelStatusAkun(item.account_status) && (<Badge variant={varianStatusAkun(item.account_status)} className="mt-1">
+
+                              {labelStatusAkun(item.account_status)}
+
+                            </Badge>)}
+
+                        </span>
+
+                      </div>
+
+                    </AdminTd>
+
+                    <AdminTd className="max-w-[220px] truncate" title={item.email ?? undefined}>
+
+                      {item.email ?? '-'}
+
+                    </AdminTd>
+
+                    <AdminTd className="whitespace-nowrap">
+
+                      
+
+                      {item.is_super_admin ? (<Badge variant="success">Super Admin</Badge>) : (<Badge variant={varianPeran(item.role)}>{labelPeran(item.role)}</Badge>)}
+
+                    </AdminTd>
+
+                    <AdminTd className="max-w-[220px]">
+
+                      <Badge variant={varianStatusPenjual(item.seller_status)}>
+
+                        {labelStatusPenjual(item.seller_status)}
+
+                      </Badge>
+
+                      {item.seller?.business_name && (<span className="mt-1 block truncate text-xs font-medium text-charcoal-900" title={item.seller.business_name}>
+
+                          {item.seller.business_name}
+
+                        </span>)}
+
+                    </AdminTd>
+
+                    
+
+                    <AdminTd className="whitespace-nowrap tabular-nums font-semibold text-charcoal-900">
+
+                      {(item.coin_balance ?? 0).toLocaleString('id-ID')}
+
+                    </AdminTd>
+
+                    <AdminTd className="whitespace-nowrap text-xs text-sage-500">
+
+                      {formatTanggal(item.created_at)}
+
+                    </AdminTd>
+
                   </AdminTr>);
-            })}
-            </tbody>
-          </AdminTableCard>
-
-          <div className="space-y-3 md:hidden">
+            })}
+
+            </tbody>
+
+          </AdminTableCard>
+
+
+
+          <div className="space-y-3 md:hidden">
+
             {items.map((item, index) => {
                 const nama = item.full_name?.trim() || item.email || '-';
                 const href = item.id ? `/dashboard/admin/pengguna/${item.id}` : null;
-                const body = (<CardContent className="px-4 py-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    
-                    {item.is_super_admin ? (<Badge variant="success">Super Admin</Badge>) : (<Badge variant={varianPeran(item.role)}>{labelPeran(item.role)}</Badge>)}
-                    {item.deleted_at && <Badge variant="destructive">Dihapus</Badge>}
-                    {labelStatusAkun(item.account_status) && (<Badge variant={varianStatusAkun(item.account_status)}>
-                        {labelStatusAkun(item.account_status)}
-                      </Badge>)}
-                    <Badge variant={varianStatusPenjual(item.seller_status)}>
-                      {labelStatusPenjual(item.seller_status)}
-                    </Badge>
-                  </div>
-                  
-                  <div className="mt-2 flex items-center gap-2.5">
-                    <AdminAvatar src={item.avatar_url} name={item.full_name} email={item.email} size="sm" className="shrink-0"/>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-charcoal-900" title={nama}>
-                        {nama}
-                      </p>
-                      <p className="truncate text-sm text-sage-500" title={item.email ?? undefined}>
-                        {item.email ?? '-'}
-                      </p>
-                    </div>
-                  </div>
-                  {item.seller?.business_name && (<p className="mt-1 flex items-center gap-1.5 truncate text-xs font-medium text-charcoal-700">
-                      <Store aria-hidden className="h-3.5 w-3.5 shrink-0 text-sage-500"/>
-                      {item.seller.business_name}
-                    </p>)}
-                  <div className="mt-1.5 flex items-center justify-between gap-2">
-                    <p className="text-xs text-sage-500">
-                      Terdaftar {formatTanggal(item.created_at)}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs font-semibold tabular-nums text-charcoal-700">
-                        {(item.coin_balance ?? 0).toLocaleString('id-ID')} Koin
-                      </p>
-                      {href && (<span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                          Detail
-                          <ChevronRight aria-hidden className="h-3.5 w-3.5"/>
-                        </span>)}
-                    </div>
-                  </div>
+                const body = (<CardContent className="px-4 py-4">
+
+                  <div className="flex flex-wrap items-center gap-2">
+
+                    
+
+                    {item.is_super_admin ? (<Badge variant="success">Super Admin</Badge>) : (<Badge variant={varianPeran(item.role)}>{labelPeran(item.role)}</Badge>)}
+
+                    {item.deleted_at && <Badge variant="destructive">Dihapus</Badge>}
+
+                    {labelStatusAkun(item.account_status) && (<Badge variant={varianStatusAkun(item.account_status)}>
+
+                        {labelStatusAkun(item.account_status)}
+
+                      </Badge>)}
+
+                    <Badge variant={varianStatusPenjual(item.seller_status)}>
+
+                      {labelStatusPenjual(item.seller_status)}
+
+                    </Badge>
+
+                  </div>
+
+                  
+
+                  <div className="mt-2 flex items-center gap-2.5">
+
+                    <AdminAvatar src={item.avatar_url} name={item.full_name} email={item.email} size="sm" className="shrink-0"/>
+
+                    <div className="min-w-0">
+
+                      <p className="truncate text-sm font-semibold text-charcoal-900" title={nama}>
+
+                        {nama}
+
+                      </p>
+
+                      <p className="truncate text-sm text-sage-500" title={item.email ?? undefined}>
+
+                        {item.email ?? '-'}
+
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                  {item.seller?.business_name && (<p className="mt-1 flex items-center gap-1.5 truncate text-xs font-medium text-charcoal-700">
+
+                      <Store aria-hidden className="h-3.5 w-3.5 shrink-0 text-sage-500"/>
+
+                      {item.seller.business_name}
+
+                    </p>)}
+
+                  <div className="mt-1.5 flex items-center justify-between gap-2">
+
+                    <p className="text-xs text-sage-500">
+
+                      Terdaftar {formatTanggal(item.created_at)}
+
+                    </p>
+
+                    <div className="flex items-center gap-2">
+
+                      <p className="text-xs font-semibold tabular-nums text-charcoal-700">
+
+                        {(item.coin_balance ?? 0).toLocaleString('id-ID')} Koin
+
+                      </p>
+
+                      {href && (<span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+
+                          Detail
+
+                          <ChevronRight aria-hidden className="h-3.5 w-3.5"/>
+
+                        </span>)}
+
+                    </div>
+
+                  </div>
+
                 </CardContent>);
-                return href ? (<Link key={item.id ?? `user-card-${index}`} href={href} aria-label={`Buka detail pengguna ${nama}`} className="block rounded-xl transition-shadow hover:shadow-admin-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2">
-                  <Card>{body}</Card>
+                return href ? (<Link key={item.id ?? `user-card-${index}`} href={href} aria-label={`Buka detail pengguna ${nama}`} className="block rounded-xl transition-shadow hover:shadow-admin-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2">
+
+                  <Card>{body}</Card>
+
                 </Link>) : (<Card key={item.email ?? `user-card-${index}`}>{body}</Card>);
-            })}
-          </div>
-
-          <AdminPagination total={total} page={page} pageSize={PAGE_LIMIT} noun="pengguna" className="mt-6" onPageChange={(next) => void load((next - 1) * PAGE_LIMIT, search, sellerFilter, deletedFilter, roleFilter, accountStatusFilter)}/>
-        </>)}
+            })}
+
+          </div>
+
+
+
+          <AdminPagination total={total} page={page} pageSize={PAGE_LIMIT} noun="pengguna" className="mt-6" onPageChange={(next) => void load((next - 1) * PAGE_LIMIT, search, sellerFilter, deletedFilter, roleFilter, accountStatusFilter)}/>
+
+        </>)}
+
     </div>);
 }

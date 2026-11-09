@@ -46,8 +46,11 @@ export function AnimatedRupiah({ value, className, }: {
         };
 // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value, reducedMotion]);
-    return (<span className={className} aria-label={`Rp${value.toLocaleString("id-ID")}`}>
-      
-      <span aria-hidden>{formatRupiah(display)}</span>
+    return (<span className={className} aria-label={`Rp${value.toLocaleString("id-ID")}`}>
+
+      
+
+      <span aria-hidden>{formatRupiah(display)}</span>
+
     </span>);
 }

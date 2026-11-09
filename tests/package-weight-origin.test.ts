@@ -57,9 +57,9 @@ test('kota yang hanya mirip tidak dipakai (tanpa pencocokan awalan)', () => {
     assert.notDeepEqual(selatan.point, pusat.point);
 });
 test('checkout pembeli TIDAK memblokir Diantar hanya karena berat kosong', () => {
-    const checkoutView = read('app/components/checkout/checkout-view.tsx');
-    const checkoutContext = read('app/components/checkout/checkout-context.tsx');
-    const fulfillmentToggle = read('app/components/checkout/fulfillment-toggle.tsx');
+    const checkoutView = read('app/components/buyer/checkout/checkout-view.tsx');
+    const checkoutContext = read('app/components/buyer/checkout/checkout-context.tsx');
+    const fulfillmentToggle = read('app/components/buyer/checkout/fulfillment-toggle.tsx');
     for (const [name, source] of [
         ['checkout-view', checkoutView],
         ['checkout-context', checkoutContext],

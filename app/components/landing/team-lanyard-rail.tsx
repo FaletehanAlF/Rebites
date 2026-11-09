@@ -357,7 +357,7 @@ const BadgeFaces = React.memo(function BadgeFaces({ item, tone }: { item: Lanyar
         <span className="relative mt-[2.05em] block w-[5.3em] h-[5.3em] shrink-0 rounded-full bg-card p-[0.2em]" style={{ boxShadow: "0 0.15em 0.5em color-mix(in oklab, var(--color-foreground) 22%, transparent)" }}>
           <span className="relative block w-full h-full overflow-hidden rounded-full bg-muted">
             <Silhouette />
-            {!failed && <img src={item.image} alt="" draggable={false} decoding="async" onError={() => setFailed(true)} className="pointer-events-none absolute inset-0 block w-full h-full select-none object-cover" />}
+            {!failed && <img src={item.image} alt="" draggable={false} loading="lazy" decoding="async" onError={() => setFailed(true)} className="pointer-events-none absolute inset-0 block w-full h-full select-none object-cover" />}
           </span>
         </span>
         <span className="mt-[0.55em] block w-full truncate text-center text-[1.08em] font-semibold leading-tight tracking-tight">{item.name}</span>
@@ -394,7 +394,7 @@ const BadgeFaces = React.memo(function BadgeFaces({ item, tone }: { item: Lanyar
           </span>
         )}
         {item.qrSrc ? (
-          <img src={item.qrSrc} alt={`QR code ${item.name}`} draggable={false} decoding="async" className="absolute bottom-[0.8em] right-[0.8em] block w-[3.9em] h-[3.9em] select-none rounded-[0.3em] border border-black/10 bg-white p-[0.22em] object-contain" />
+          <img src={item.qrSrc} alt={`QR code ${item.name}`} draggable={false} loading="lazy" decoding="async" className="absolute bottom-[0.8em] right-[0.8em] block w-[3.9em] h-[3.9em] select-none rounded-[0.3em] border border-black/10 bg-white p-[0.22em] object-contain" />
         ) : (
           <svg aria-hidden="true" viewBox="-1 -1 23 23" className="absolute bottom-[0.8em] right-[0.8em] w-[3.9em] h-[3.9em] text-foreground">
             <path d={qr} fill="currentColor" />

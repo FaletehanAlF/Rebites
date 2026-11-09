@@ -9,7 +9,9 @@ export default function ForgotPasswordPage() {
     return (<AuthSplitShell imageSrc="/hero-makanan.avif" imageAlt="Makanan surplus ReBites" variant="buyer" overlayText={{
             headline: "Lupa Kata Sandi?",
             description: "Tidak apa-apa jika lupa. Kami kirimkan tautan reset ke emailmu agar kamu bisa segera kembali menikmati makanan surplus terbaik.",
-        }}>
-      <ForgotPasswordForm />
+        }}>
+
+      <ForgotPasswordForm />
+
     </AuthSplitShell>);
 }

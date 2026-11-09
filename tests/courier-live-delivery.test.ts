@@ -18,13 +18,13 @@ function normalize(source: string): string {
     return stripComments(source).toLowerCase().replace(/\s+/g, ' ');
 }
 const MIGRATION = normalize(readProjectFile('supabase/migrations/20261031010000_courier_live_delivery.sql'));
-const MAP = normalize(readProjectFile('app/components/order-history/delivery-map.tsx'));
+const MAP = normalize(readProjectFile('app/components/buyer/order-history/delivery-map.tsx'));
 const LOCATION_ROUTE = normalize(readProjectFile('app/api/courier/location/route.ts'));
 const MESSAGES_ROUTE = normalize(readProjectFile('app/api/courier/messages/route.ts'));
 const ASSIGNMENTS_ROUTE = normalize(readProjectFile('app/api/courier/assignments/route.ts'));
 const COURIER_DASHBOARD = normalize(readProjectFile('app/dashboard/kurir/page.tsx'));
-const CHAT = normalize(readProjectFile('app/components/order-history/courier-chat.tsx'));
-const POSITION_PANEL = normalize(readProjectFile('app/components/order-history/courier-position-panel.tsx'));
+const CHAT = normalize(readProjectFile('app/components/buyer/order-history/courier-chat.tsx'));
+const POSITION_PANEL = normalize(readProjectFile('app/components/buyer/order-history/courier-position-panel.tsx'));
 const LOCATION_HOOK = normalize(readProjectFile('hooks/use-courier-location.ts'));
 const SELLER_PAGE = normalize(readProjectFile('app/(app)/dashboard/penjual/[storeId]/pesanan/page.tsx'));
 const BUYER_PAGE = normalize(readProjectFile('app/riwayatPesanan/[orderCode]/page.tsx'));
@@ -81,7 +81,7 @@ test('penjual boleh melihat posisi kurir, tanpa percakapan pribadi', () => {
     assert.ok(POSITION_PANEL.includes('freshness'), 'panel posisi menerima kesegaran posisi dari induk');
     assert.ok(SELLER_PAGE.includes('courierpositionpanel'), 'dashboard penjual harus menampilkan panel posisi kurir');
     assert.ok(SELLER_PAGE.includes('deliverymap'), 'dashboard penjual harus menampilkan peta posisi kurir');
-    assert.ok(SELLER_PAGE.includes('components/order-history/delivery-map'), 'peta penjual memakai komponen yang sama dengan halaman pembeli');
+    assert.ok(SELLER_PAGE.includes('components/buyer/order-history/delivery-map'), 'peta penjual memakai komponen yang sama dengan halaman pembeli');
     assert.ok(SELLER_PAGE.includes('usecourierlocation'), 'peta penjual harus membaca posisi kurir live');
     assert.ok(!SELLER_PAGE.includes('courierchat') && !SELLER_PAGE.includes('chat kurir'), 'halaman penjual tidak menampilkan chat kurir');
 });

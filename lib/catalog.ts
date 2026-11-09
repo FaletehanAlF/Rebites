@@ -228,16 +228,27 @@ function fetchCatalogCached(): Promise<CatalogData> {
     });
     return run;
 }
+const CATALOG_ERROR_MESSAGE = 'Gagal memuat katalog. Periksa koneksi lalu coba lagi.';
 export function useCatalog() {
     const [data, setData] = useState<CatalogData>(EMPTY_CATALOG);
     const [loading, setLoading] = useState(true);
     const load = useCallback(async (isCancelled?: () => boolean) => {
         setLoading(true);
-        const result = await fetchCatalogCached();
-        if (isCancelled?.())
-            return;
-        setData(result);
-        setLoading(false);
+        try {
+            const result = await fetchCatalogCached();
+            if (isCancelled?.())
+                return;
+            setData(result);
+        }
+        catch (error) {
+            if (isCancelled?.())
+                return;
+            console.error('[catalog] gagal memuat katalog:', error);
+            setData({ ...EMPTY_CATALOG, error: CATALOG_ERROR_MESSAGE });
+        }
+        finally {
+            setLoading(false);
+        }
     }, []);
     const refresh = useCallback(() => {
         invalidateCatalogCache();

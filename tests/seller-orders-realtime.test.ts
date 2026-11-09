@@ -15,7 +15,7 @@ function stripComments(source: string): string {
         .join('\n');
 }
 const REALTIME = stripComments(readProjectFile('lib/orders-realtime.ts'));
-const SELLER_HOOK = stripComments(readProjectFile('hooks/use-seller-orders.ts'));
+const SELLER_HOOK = stripComments(readProjectFile('hooks/seller/use-seller-orders.ts'));
 test('ada langganan postgres_changes pada tabel orders', () => {
     assert.ok(REALTIME.includes("'postgres_changes'"), 'langganan harus memakai postgres_changes');
     assert.match(REALTIME, /table = 'orders'/, 'tabel langganan default harus orders');

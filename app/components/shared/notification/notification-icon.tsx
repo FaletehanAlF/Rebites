@@ -118,7 +118,9 @@ export function NotificationIcon({ type, className }: NotificationIconProps) {
         color: 'text-muted-foreground',
     };
     const Icon = config.icon;
-    return (<span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', config.bg, className)}>
-      <Icon className={cn('h-5 w-5', config.color)}/>
+    return (<span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', config.bg, className)}>
+
+      <Icon className={cn('h-5 w-5', config.color)}/>
+
     </span>);
 }

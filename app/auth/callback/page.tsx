@@ -16,27 +16,46 @@ function CallbackStatus({ state, detail, isOAuth = false, }: {
     detail: string;
     isOAuth?: boolean;
 }) {
-    return (<div className="flex min-h-screen items-center justify-center bg-secondary px-6">
-      <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
-        {state === "working" && (<span className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"/>)}
-        <p className="font-sans text-sm leading-relaxed text-muted-foreground">
-          {detail}
-        </p>
-        {state === "failed" && (<div className="flex w-full flex-col gap-2">
-            <Link href="/auth/login" className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[13px] font-semibold uppercase tracking-[0.14em] text-primary-foreground">
-              Ke Halaman Masuk
-            </Link>
-            
-            {isAccountBlockMessage(detail) && (<Link href="/banding" className="inline-flex h-11 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-5 font-sans text-[13px] font-semibold uppercase tracking-[0.14em] text-primary">
-                Ajukan Banding ke Admin
-              </Link>)}
-            <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
+    return (<div className="flex min-h-screen items-center justify-center bg-secondary px-6">
+
+      <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
+
+        {state === "working" && (<span className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"/>)}
+
+        <p className="font-sans text-sm leading-relaxed text-muted-foreground">
+
+          {detail}
+
+        </p>
+
+        {state === "failed" && (<div className="flex w-full flex-col gap-2">
+
+            <Link href="/auth/login" className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[13px] font-semibold uppercase tracking-[0.14em] text-primary-foreground">
+
+              Ke Halaman Masuk
+
+            </Link>
+
+            
+
+            {isAccountBlockMessage(detail) && (<Link href="/banding" className="inline-flex h-11 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-5 font-sans text-[13px] font-semibold uppercase tracking-[0.14em] text-primary">
+
+                Ajukan Banding ke Admin
+
+              </Link>)}
+
+            <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
+
               {isOAuth
                 ? "Kamu tetap bisa masuk dengan email dan kata sandi yang sudah terdaftar."
-                : "Belum menerima email? Masuk dengan email kamu — bila muncul \u201cEmail belum diverifikasi\u201d, gunakan tombol kirim ulang di sana."}
-            </p>
-          </div>)}
-      </div>
+                : "Belum menerima email? Masuk dengan email kamu — bila muncul \u201cEmail belum diverifikasi\u201d, gunakan tombol kirim ulang di sana."}
+
+            </p>
+
+          </div>)}
+
+      </div>
+
     </div>);
 }
 function AuthCallbackContent() {
@@ -218,7 +237,9 @@ function AuthCallbackContent() {
     return <CallbackStatus state={state} detail={detail} isOAuth={isOAuth}/>;
 }
 export default function AuthCallbackPage() {
-    return (<Suspense fallback={<CallbackStatus state="working" detail=""/>}>
-      <AuthCallbackContent />
+    return (<Suspense fallback={<CallbackStatus state="working" detail=""/>}>
+
+      <AuthCallbackContent />
+
     </Suspense>);
 }

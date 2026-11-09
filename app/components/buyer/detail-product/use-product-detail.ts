@@ -11,9 +11,15 @@ export function useProductDetail(selectedProductId: string | null): ProductDetai
         }
         let active = true;
         setProduct(null);
-        fetchProductDetail(selectedProductId).then((detail) => {
+        fetchProductDetail(selectedProductId)
+            .then((detail) => {
             if (active)
                 setProduct(detail ?? null);
+        })
+            .catch((error) => {
+            console.error('[detail] gagal memuat produk:', error);
+            if (active)
+                setProduct(null);
         });
         return () => {
             active = false;

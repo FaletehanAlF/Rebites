@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAnonServerClient } from '@/lib/server/supabase';
 import { sanitizeSearchTerm } from '@/lib/filter-search';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const ARTICLE_LIST_SELECT = [
     'id',
     'title',

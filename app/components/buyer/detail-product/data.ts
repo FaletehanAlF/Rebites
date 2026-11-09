@@ -31,6 +31,9 @@ export interface ProductDetail {
         from: string;
         to: string;
     };
+    storeOpenHours: string | null;
+    storeIsOpen: boolean;
+    storeIsActive: boolean;
     pickupLocation: string;
     consumeWindow: string;
     co2eSavedKg: number;

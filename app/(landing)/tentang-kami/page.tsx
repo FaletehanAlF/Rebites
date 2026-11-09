@@ -1,12 +1,11 @@
-import Image from 'next/image';
-import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowRight, Check } from 'lucide-react';
-import { PublicShell } from '@/app/components/landing/public-shell';
-import { PageIntro } from '@/app/components/landing/PageIntro';
-import { SectionHeading } from '@/app/components/landing/SectionHeading';
-import { ContactCTASection } from '@/app/components/landing/ContactCTASection';
+import { Check, Eye, ListChecks } from 'lucide-react';
+import { LandingNavbar } from '@/app/components/landing/LandingNavbar';
+import { LandingFooter } from '@/app/components/landing/LandingFooter';
+import TeamLanyardRail from '@/app/components/landing/team-lanyard-rail';
 import { Reveal } from '@/app/components/shared/reveal';
+import { LANYARD_DEMO_TEAM } from './lanyard-demo-team';
+import { FinalCTASection } from '@/app/components/landing/FinalCTASection';
 
 export const metadata: Metadata = {
   title: 'Tentang Kami - ReBites',
@@ -14,233 +13,126 @@ export const metadata: Metadata = {
     'Mengenal ReBites: marketplace makanan surplus dari UMKM untuk mengurangi food loss dan food waste di Indonesia.',
 };
 
-const FOCUS_RING =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
-
-const PROBLEMS = [
-  {
-    title: 'Makanan surplus tidak terserap',
-    description:
-      'Kelebihan produksi atau menu yang belum habis terjual sering berakhir jadi limbah dapur sebelum sempat dinikmati.',
-  },
-  {
-    title: 'UMKM kehilangan potensi pendapatan',
-    description:
-      'Menu yang tidak terjual lenyap bersama cuan yang seharusnya bisa didapat dari makanan yang sama.',
-  },
-  {
-    title: 'Pembeli mencari makanan terjangkau',
-    description:
-      'Kualitas jarang jadi masalah — harga yang membatasi. Padahal makanan yang sama masih layak disantap.',
-  },
-];
-
-const BUYER_POINTS = [
-  'Harga surplus yang jelas sebelum kamu memesan',
-  'Diantar ke tempatmu atau ambil sendiri di penjual',
-  'Tanpa biaya langganan untuk pembeli',
-];
-
-const SELLER_POINTS = [
-  'Unggah menu surplus dalam beberapa menit',
-  'Jangkau pembeli baru di sekitar Depok',
-  'Pantau pesanan dan performa penjualan',
+const MISSIONS = [
+  'Menghubungkan UMKM dan konsumen untuk menyalurkan makanan surplus berkualitas dengan harga terjangkau.',
+  'Membantu UMKM mengubah potensi limbah menjadi pendapatan.',
+  'Mengedukasi masyarakat tentang dampak food loss dan food waste bagi lingkungan dan ekonomi.',
+  'Membangun ekosistem pangan yang berkelanjutan dan inklusif di Indonesia.',
 ];
 
 // Halaman /tentang-kami: alur baca tunggal masalah → respons ReBites → manfaat tiap pihak.
 export default function TentangKamiPage() {
   return (
-    <PublicShell>
-
-      {/* Masalah */}
-      <section aria-labelledby="problem-heading" className="border-t border-border bg-white">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <SectionHeading
-            id="problem-heading"
-            heading="Makanan yang masih bagus berakhir sia-sia."
-            description="Setiap hari dapur UMKM menyiapkan lebih banyak makanan daripada yang bisa terjual. Menjelang tutup, porsi yang tersisa sering tidak punya pilihan selain dibuang — padahal tidak ada yang salah dengan makanan itu."
-          />
-
-          <ol className="mt-10 grid gap-x-10 gap-y-8 pt-8 sm:mt-12 sm:grid-cols-3">
-            {PROBLEMS.map((problem, index) => (
-              <Reveal
-                key={problem.title}
-                as="li"
-                delay={Math.min(index, 2) * 0.06}
+    <>
+      <LandingNavbar />
+      <main className="min-h-screen bg-white pt-16 sm:pt-[72px]">
+        <section
+          aria-labelledby="tentang-kami-heading"
+          className="grain-overlay bg-secondary"
+        >
+          <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+            <Reveal>
+              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
+                Tentang Kami
+              </p>
+              <h1
+                id="tentang-kami-heading"
+                className="mt-4 max-w-3xl text-balance font-display text-[clamp(2rem,4.2vw,3.25rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-primary"
               >
-                <span className="font-display text-xs font-semibold tabular-nums tracking-[0.16em] text-primary">
-                  0{index + 1}
-                </span>
-                <h3 className="mt-3 font-display text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-                  {problem.title}
-                </h3>
-                <p className="mt-2 text-sm leading-[1.75] text-muted-foreground">
-                  {problem.description}
-                </p>
+                Menyelamatkan makanan,{' '}
+                <span className="font-light italic">bersama-sama</span>.
+              </h1>
+              <p className="mt-5 max-w-2xl text-base leading-[1.8] text-muted-foreground">
+                ReBites adalah marketplace makanan surplus dari UMKM - lahir dari
+                satu keyakinan sederhana: makanan yang masih baik layak sampai ke
+                meja makan, bukan ke tempat sampah.
+              </p>
+            </Reveal>
+
+            <div id="visi-misi" className="mt-10 grid scroll-mt-24 gap-4 sm:mt-14 sm:gap-5 lg:grid-cols-5">
+              {/* Visi — kartu hijau menjadi titik fokus */}
+              <Reveal className="lg:col-span-2">
+                <div className="flex h-full flex-col justify-between gap-10 rounded-3xl bg-primary p-7 text-primary-foreground sm:p-9">
+                  <div>
+                    <span
+                      aria-hidden
+                      className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/20 bg-white/10"
+                    >
+                      <Eye className="h-5 w-5" strokeWidth={2} />
+                    </span>
+                    <h2 className="mt-6 font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/60">
+                      Visi
+                    </h2>
+                    <p className="mt-4 text-balance font-display text-[clamp(1.35rem,2vw,1.75rem)] font-medium leading-[1.3] tracking-[-0.02em] text-white">
+                      Menjadi platform penyelamat makanan terdepan di Indonesia -
+                      di mana setiap makanan surplus menemukan rumah barunya,
+                      dan food loss serta food waste ditekan sekecil mungkin.
+                    </p>
+                  </div>
+                  <p className="border-t border-white/15 pt-6 font-display text-sm italic leading-relaxed text-primary-foreground/70">
+                    Satu porsi yang diselamatkan hari ini adalah satu porsi yang
+                    tidak berakhir di tempat sampah.
+                  </p>
+                </div>
               </Reveal>
-            ))}
-          </ol>
-        </div>
-      </section>
 
-      {/* Pendekatan */}
-      <section
-        aria-labelledby="approach-heading"
-        className=" bg-white"
-      >
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <SectionHeading
-            id="approach-heading"
-            heading="ReBites menghubungkan keduanya."
-            description="ReBites tidak memasak, tidak menyimpan, dan tidak mengantar-sendiri. Perannya satu: mempertemukan makanan surplus dengan orang yang membutuhkannya, lalu memastikan informasinya jelas sebelum transaksi terjadi."
-          />
-
-          <div className="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[1fr_0.85fr] lg:items-center lg:gap-16">
-            <Reveal>
-              <div className="space-y-4 text-[15px] leading-[1.8] text-muted-foreground">
-                <p>
-                  Di satu sisi ada dapur UMKM yang setiap hari memproduksi
-                  makanan melebihi yang bisa habis terjual. Di sisi lain ada
-                  orang yang sedang mencari makanan dengan harga masuk akal.
-                  Keduanya berada di wilayah yang sama, tetapi tidak saling
-                  kenal.
-                </p>
-                <p>
-                  ReBites dibuat untuk menjadi jembatan itu: satu tempat di
-                  mana makanan surplus dilihat sebagai kesempatan, bukan sebagai
-                  sisa. Harga, sisa stok, dan cara penerimaan ditampilkan
-                  sebelum pembeli memutuskan.
-                </p>
-                <p className=" pt-5 text-sm leading-[1.75]">
-                  Satu pesanan menjaga makanan tetap berakhir di piring — bukan
-                  di tempat sampah.
-                </p>
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.08}>
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border/70 bg-muted sm:aspect-[3/2] lg:aspect-[4/5]">
-                <Image
-                  src="/penerimaan.jpg"
-                  alt="Paket makanan diserahkan dari penjual kepada pembeli"
-                  fill
-                  sizes="(min-width: 1024px) 26rem, calc(100vw - 2rem)"
-                  className="object-cover"
-                />
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* Manfaat */}
-      <section aria-labelledby="value-heading" className=" bg-white">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <SectionHeading
-            id="value-heading"
-            heading="Dua sisi, satu tujuan yang sama."
-            description="Pembeli dan UMKM memperoleh hal yang berbeda dari satu pesanan yang sama, dan lingkungan di sekitarnya ikut merasakan dampaknya."
-          />
-
-          <div className="mt-10 grid gap-x-10 gap-y-8 pt-8 sm:mt-12 lg:grid-cols-2">
-            <Reveal>
-              <div>
-                <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  Untuk pembeli
-                </p>
-                <h3 className="mt-3 font-display text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-                  Makanan berkualitas dengan harga lebih hemat.
-                </h3>
-                <ul className="mt-5 space-y-3">
-                  {BUYER_POINTS.map((point) => (
-                    <li
-                      key={point}
-                      className="flex items-start gap-2.5 text-sm leading-[1.7] text-muted-foreground"
-                    >
-                      <span
-                        aria-hidden
-                        className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-primary"
-                      >
-                        <Check className="h-3 w-3" strokeWidth={3.25} />
-                      </span>
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.06}>
-              <div>
-                <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  Untuk UMKM
-                </p>
-                <h3 className="mt-3 font-display text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-                  Ubah makanan surplus menjadi peluang pendapatan.
-                </h3>
-                <ul className="mt-5 space-y-3">
-                  {SELLER_POINTS.map((point) => (
-                    <li
-                      key={point}
-                      className="flex items-start gap-2.5 text-sm leading-[1.7] text-muted-foreground"
-                    >
-                      <span
-                        aria-hidden
-                        className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-primary"
-                      >
-                        <Check className="h-3 w-3" strokeWidth={3.25} />
-                      </span>
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Reveal>
-          </div>
-
-          <Reveal delay={0.05}>
-            <div className="mt-8 grid gap-3 pt-6 lg:grid-cols-[0.25fr_0.75fr] lg:gap-10">
-              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                Untuk lingkungan
-              </p>
-              <p className="max-w-3xl text-[15px] leading-[1.8] text-muted-foreground">
-                Setiap porsi yang berpindah tangan adalah satu porsi lebih
-                sedikit yang berakhir di tempat sampah. ReBites tidak menjanjikan
-                angka besar — yang kami kejar adalah kebiasaan kecil yang
-                berulang setiap hari di satu kota yang sama.
-              </p>
+              {/* Misi */}
+              <Reveal delay={0.08} className="lg:col-span-3">
+                <div className="flex h-full flex-col rounded-3xl border border-border bg-white p-7 sm:p-9">
+                  <span
+                    aria-hidden
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/15 bg-secondary text-primary"
+                  >
+                    <ListChecks className="h-5 w-5" strokeWidth={2} />
+                  </span>
+                  <h2 className="mt-6 font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
+                    Misi
+                  </h2>
+                  <ol className="mt-5 divide-y divide-border">
+                    {MISSIONS.map((mission, index) => (
+                      <li key={index} className="flex items-start gap-4 py-4 first:pt-1 last:pb-0">
+                        <span
+                          aria-hidden
+                          className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"
+                        >
+                          <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                        </span>
+                        <span className="text-sm leading-[1.8] text-muted-foreground sm:text-[15px]">
+                          {mission}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              </Reveal>
             </div>
-          </Reveal>
+          </div>
+        </section>
 
-          <Reveal delay={0.05}>
-            <div className="mt-8 flex flex-col gap-4 pt-8 sm:flex-row sm:items-center sm:gap-6">
-              <Link
-                href="/home"
-                className={`group inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full bg-primary px-7 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-dark sm:w-fit ${FOCUS_RING}`}
-              >
-                Temukan Makanan
-                <ArrowRight
-                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transform-none"
-                  aria-hidden
-                />
-              </Link>
-
-              <Link
-                href="/auth/register/penjual"
-                className={`group inline-flex min-h-[44px] items-center justify-center gap-1.5 font-secondary text-sm font-semibold text-primary sm:justify-start ${FOCUS_RING}`}
-              >
-                Gabung sebagai UMKM
-                <ArrowRight
-                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transform-none"
-                  aria-hidden
-                />
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <ContactCTASection />
-    </PublicShell>
+        <TeamLanyardRail
+          id="tim-leadership"
+          className="scroll-mt-24"
+          items={LANYARD_DEMO_TEAM.slice(0, 3)}
+          maxBadgeWidth={152}
+          eyebrow="Meet the team"
+          heading="A team wall you can flip through, right on the page."
+          caption="Brush along the rail to meet someone, pull a badge down, click to flip it."
+          autoplay
+          labels={{
+            flip: 'Klik atau tekan Enter untuk membalik lencana',
+            back: 'Klik lagi atau tekan Esc untuk mengembalikannya',
+            show: 'Tampilkan',
+          }}
+        />
+      <br />
+      <br />
+      <br />
+      <FinalCTASection />
+      <br />
+      <br />
+      <br />
+      </main>
+      <LandingFooter />
+    </>
   );
 }

@@ -6,8 +6,8 @@ import { isVendorReallyOpen, orderVendorsOpenFirst, } from '../lib/store-status.
 function readProjectFile(relativePath: string): string {
     return readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), 'utf8').replace(/\r\n/g, '\n');
 }
-const SECTION = readProjectFile('app/components/home/VendorSection.tsx');
-const CARD = readProjectFile('app/components/home/VendorCard.tsx');
+const SECTION = readProjectFile('app/components/buyer/home/VendorSection.tsx');
+const CARD = readProjectFile('app/components/buyer/home/VendorCard.tsx');
 const HOME_PAGE = readProjectFile('app/(app)/home/page.tsx');
 const FOOTER = readProjectFile('app/components/shared/app-footer.tsx');
 const CLOSED = { id: 'tutup', isOpen: false, openHours: null };
@@ -49,9 +49,8 @@ test('kartu toko menandai keadaan tutup di tengah foto', () => {
     assert.match(CARD, /bg-forest-900\/70/);
     assert.doesNotMatch(CARD, /'Tutup'/);
 });
-test('halaman beranda pembeli memakai footer terpadu', () => {
-    assert.match(HOME_PAGE, /import \{ AppFooter \} from "@\/app\/components\/shared\/app-footer"/);
-    assert.match(HOME_PAGE, /<AppFooter hasMobileBottomNav \/>/);
+test('halaman beranda pembeli tidak memasang footer terpadu', () => {
+    assert.doesNotMatch(HOME_PAGE, /AppFooter/);
 });
 test('footer menyisakan ruang agar tidak tertutup tombol asisten', () => {
     assert.match(FOOTER, /pb-\[calc\(4\.5rem\+env\(safe-area-inset-bottom\)\)\]/);

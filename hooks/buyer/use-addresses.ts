@@ -54,6 +54,9 @@ export function useAddresses() {
     const [addresses, setAddresses] = useState<DeliveryAddress[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [reloadToken, setReloadToken] = useState(0);
+    const reload = useCallback(() => setReloadToken((value) => value + 1), []);
     useEffect(() => {
         let mounted = true;
         if (userLoading)
@@ -67,6 +70,7 @@ export function useAddresses() {
         (async () => {
             setLoading(true);
             let list: DeliveryAddress[] = [];
+            let apiFailed = false;
             try {
                 const res = await fetchWithAuth('/api/profile/addresses');
                 if (res.ok) {
@@ -75,19 +79,33 @@ export function useAddresses() {
                     };
                     list = (json.addresses ?? []).map(rowToAddress);
                 }
+                else {
+                    apiFailed = true;
+                }
             }
             catch {
+                apiFailed = true;
             }
+            let loadError: string | null = null;
             if (list.length === 0) {
-                const { data, error } = await supabase
+                const fallback = await supabase
                     .from('addresses')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: true });
-                list = error ? [] : (data ?? []).map(rowToAddress);
+                if (fallback.error) {
+                    list = [];
+                    if (apiFailed) {
+                        loadError = 'Gagal memuat alamat. Periksa koneksi lalu coba lagi.';
+                    }
+                }
+                else {
+                    list = (fallback.data ?? []).map(rowToAddress);
+                }
             }
             if (!mounted)
                 return;
+            setError(loadError);
             setAddresses(list);
             const selected = list.find((item) => item.id) ?? null;
             setSelectedAddressId((prev) => prev && list.some((item) => item.id === prev) ? prev : selected?.id ?? null);
@@ -96,7 +114,7 @@ export function useAddresses() {
         return () => {
             mounted = false;
         };
-    }, [userId, userLoading]);
+    }, [userId, userLoading, reloadToken]);
     const selectAddress = useCallback((id: string) => {
         setSelectedAddressId(id);
         if (!userId)
@@ -144,9 +162,9 @@ export function useAddresses() {
             return null;
         }
     }, [userId, selectAddress]);
-    const updateAddress = useCallback(async (id: string, values: AddressFormValues): Promise<void> => {
+    const updateAddress = useCallback(async (id: string, values: AddressFormValues): Promise<boolean> => {
         if (!userId)
-            return;
+            return false;
         try {
             const res = await fetchWithAuth('/api/profile/addresses', {
                 method: 'PUT',
@@ -158,18 +176,20 @@ export function useAddresses() {
                     error?: string;
                 } | null;
                 console.error('[use-addresses] gagal memperbarui alamat:', json?.error ?? res.status);
-                return;
+                return false;
             }
             const json = (await res.json()) as {
                 address?: AddressRow;
             };
             if (!json.address)
-                return;
+                return false;
             const updated = rowToAddress(json.address);
             setAddresses((prev) => prev.map((item) => (item.id === id ? updated : item)));
+            return true;
         }
         catch (e) {
             console.error('[use-addresses] gagal memperbarui alamat:', e);
+            return false;
         }
     }, [userId]);
     const selectedAddress = useMemo(() => addresses.find((item) => item.id === selectedAddressId) ?? addresses[0] ?? null, [addresses, selectedAddressId]);
@@ -181,5 +201,7 @@ export function useAddresses() {
         addAddress,
         updateAddress,
         loading,
+        error,
+        reload,
     };
 }

@@ -16,7 +16,7 @@ const ORDERS_VIEW = readProjectFile('app/components/admin/orders-management-view
 const SANCTIONS_VIEW = readProjectFile('app/components/admin/sanctions-view.tsx');
 const SANCTIONS_CLIENT = readProjectFile('lib/admin-sanctions.ts');
 const NOTIFICATION_STORAGE = readProjectFile('lib/notification-storage.ts');
-const ALERT_POPUP = readProjectFile('app/components/notification/notification-alert-popup.tsx');
+const ALERT_POPUP = readProjectFile('app/components/shared/notification/notification-alert-popup.tsx');
 test('sanksi: PATCH berada di route [id], bukan route koleksi', () => {
     assert.doesNotMatch(SANCTIONS_ROUTE, /export async function PATCH/);
     assert.match(SANCTION_REVOKE_ROUTE, /export async function PATCH/);
@@ -69,7 +69,7 @@ test('alert akun: tipe bahaya terdaftar sebagai alert lintas peran', () => {
 });
 test('alert akun: dipasang di shell pembeli dan penjual', () => {
     assert.match(readProjectFile('app/components/shared/buyer-shell.tsx'), /NotificationAlertPopup/);
-    assert.match(readProjectFile('app/components/dashboard-penjual/SellerShell.tsx'), /NotificationAlertPopup/);
+    assert.match(readProjectFile('app/components/seller/dashboard-penjual/SellerShell.tsx'), /NotificationAlertPopup/);
 });
 test('halaman sanksi pengguna hanya membaca baris milik sendiri', () => {
     assert.ok(projectPathExists('app/(app)/akun/sanksi/page.tsx'));

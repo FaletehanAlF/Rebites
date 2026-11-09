@@ -20,7 +20,7 @@ const THREAD_DETAIL_COLUMNS = [
     'user_read_at',
     'created_at',
     'updated_at',
-    'profile:profiles(id, full_name, email, role, account_status, deleted_at, avatar_url)',
+    'profile:profiles(id, full_name, email, role, account_status, deleted_at, avatar_url, phone)',
 ].join(', ');
 const MESSAGE_COLUMNS = 'id, sender_kind, sender_user_id, channel, body, created_at';
 const APPEAL_DECISIONS = ['reviewing', 'approved', 'rejected'] as const;
@@ -128,6 +128,7 @@ export async function GET(req: NextRequest, { params }: {
                     accountStatus: profile.account_status ? String(profile.account_status) : null,
                     deletedAt: profile.deleted_at ? String(profile.deleted_at) : null,
                     avatarUrl: profile.avatar_url ? String(profile.avatar_url) : null,
+                    phone: profile.phone ? String(profile.phone) : null,
                 }
                 : null,
             messages: ((messagesResult.data ?? []) as Array<Record<string, unknown>>).map((row) => ({

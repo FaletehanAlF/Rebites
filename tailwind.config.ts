@@ -198,6 +198,10 @@ const config: Config = {
         },
       },
       keyframes: {
+        shimmer: {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(100%)' },
+        },
         marquee: {
           from: { transform: 'translateX(0%)' },
           to: { transform: 'translateX(-50%)' },
@@ -208,6 +212,7 @@ const config: Config = {
         },
       },
       animation: {
+        shimmer: 'shimmer 1.6s linear infinite',
         marquee: 'marquee 40s linear infinite',
         'marquee-reverse': 'marquee-reverse 40s linear infinite',
       },

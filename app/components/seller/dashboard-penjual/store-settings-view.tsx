@@ -425,7 +425,6 @@ export function StoreSettingsView() {
     const openTimeError = fieldErrors.openTime;
     const closeTimeError = fieldErrors.closeTime;
     const formLocked = !editing || saving;
-    const canSave = editing && !saving;
     return (<div className="mx-auto max-w-3xl pb-4">
       <header>
         <h1 className="font-display text-2xl font-semibold leading-tight tracking-[-0.01em] text-primary">
@@ -448,23 +447,20 @@ export function StoreSettingsView() {
             }} noValidate>
           
           <Section icon={Store} title="Identitas toko" description="Nama dan foto yang pertama kali dilihat pembeli." action={<div className="flex flex-wrap items-center justify-end gap-2">
-                {!editing ? (<button type="button" onClick={handleStartEdit} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-primary bg-white px-4 text-xs font-semibold text-primary transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] sm:min-h-11 sm:px-5 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
+                {!editing ? (<button type="button" onClick={handleStartEdit} className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-primary bg-white px-4 text-xs font-semibold text-primary transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] sm:min-h-[44px] sm:px-5 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
                     <PenLine aria-hidden className="h-4 w-4"/>
                     Edit
-                  </button>) : (<button type="button" onClick={handleCancelEdit} disabled={saving} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-white px-4 text-xs font-semibold text-charcoal-700 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:px-5 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
+                  </button>) : (<button type="button" onClick={handleCancelEdit} disabled={saving} className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-border bg-white px-4 text-xs font-semibold text-charcoal-700 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-[44px] sm:px-5 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
                     Batal
                   </button>)}
-                <button type="button" onClick={() => logoInputRef.current?.click()} disabled={formLocked} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-white px-3.5 text-xs font-semibold text-primary transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:px-4 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
+                <button type="button" onClick={() => logoInputRef.current?.click()} disabled={formLocked} className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-border bg-white px-3.5 text-xs font-semibold text-primary transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-[44px] sm:px-4 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
                   <ImagePlus aria-hidden className="h-4 w-4"/>
                   {logoPreview || values.imageUrl ? "Ganti foto" : "Unggah foto"}
-                </button>
-                <button type="submit" disabled={!canSave} title={!editing ? "Klik Edit dulu untuk mengubah" : undefined} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:px-5 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
-                  {saving ? "Menyimpan…" : "Simpan perubahan"}
                 </button>
               </div>}>
             <div className="flex items-center gap-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-secondary">
-                {logoPreview || values.imageUrl ? (<img src={logoPreview ?? values.imageUrl} alt="Logo toko saat ini" className="h-full w-full object-cover"/>) : (<ImageIcon className="h-6 w-6 text-muted-foreground/40"/>)}
+                {logoPreview || values.imageUrl ? (<img src={logoPreview ?? values.imageUrl} alt="Logo toko saat ini" decoding="async" loading="lazy" className="h-full w-full object-cover"/>) : (<ImageIcon className="h-6 w-6 text-muted-foreground/40"/>)}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-charcoal-900">
@@ -505,7 +501,7 @@ export function StoreSettingsView() {
                 return (<button key={`${example.open}-${example.close}`} type="button" disabled={formLocked} onClick={() => {
                         setValue("openTime", example.open);
                         setValue("closeTime", example.close);
-                    }} aria-label={`Pakai contoh buka ${example.open} tutup ${example.close}`} className={cn("min-h-9 rounded-full border px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50", active
+                    }} aria-label={`Pakai contoh buka ${example.open} tutup ${example.close}`} className={cn("min-h-[36px] rounded-full border px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50", active
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border bg-white text-charcoal-700 hover:bg-secondary")}>
                     {example.open}–{example.close}
@@ -543,7 +539,7 @@ export function StoreSettingsView() {
                     toko Anda di peta, atau pakai lokasi saat ini ketika Anda berada di toko.
                   </p>
                 </div>
-                <button type="button" onClick={() => void handleUseDeviceLocation()} disabled={formLocked || gpsStatus === "requesting"} className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100">
+                <button type="button" onClick={() => void handleUseDeviceLocation()} disabled={formLocked || gpsStatus === "requesting"} className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100">
                   <LocateFixed aria-hidden className="h-4 w-4"/>
                   {gpsStatus === "requesting" ? "Mencari…" : "Pakai lokasi saat ini"}
                 </button>
@@ -579,7 +575,7 @@ export function StoreSettingsView() {
                 : "Ketuk peta untuk menandai titik toko Anda."}
               </p>
 
-              <button type="button" onClick={() => setShowManualCoords((prev) => !prev)} disabled={formLocked} aria-expanded={showManualCoords} className="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-full text-xs font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" onClick={() => setShowManualCoords((prev) => !prev)} disabled={formLocked} aria-expanded={showManualCoords} className="mt-2 inline-flex min-h-[36px] items-center gap-1.5 rounded-full text-xs font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50">
                 {showManualCoords ? "Sembunyikan isian manual" : "Isi manual (khusus yang tahu angkanya)"}
               </button>
 
@@ -605,7 +601,7 @@ export function StoreSettingsView() {
             </div>)}
 
           
-          <div aria-hidden={!editing || (!isDirty && !saving)} className={cn("sticky bottom-20 z-20 mr-16 transition-[opacity,transform] duration-200 ease-smooth motion-reduce:transition-none lg:bottom-6 lg:mr-24", editing && (isDirty || saving)
+            <div aria-hidden={!editing || (!isDirty && !saving)} className={cn("sticky bottom-20 z-20 mr-16 transition-[opacity,transform] duration-200 ease-smooth motion-reduce:transition-none lg:bottom-6 lg:mr-24", editing && (isDirty || saving)
                 ? "translate-y-0 opacity-100"
                 : "pointer-events-none translate-y-3 opacity-0")}>
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-white/95 px-4 py-3 shadow-lg shadow-primary/5 backdrop-blur">
@@ -616,15 +612,16 @@ export function StoreSettingsView() {
                   </>)}
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={handleDiscard} disabled={saving} className="inline-flex min-h-11 items-center rounded-full border border-border bg-white px-4 text-sm font-semibold text-charcoal-700 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
+                <button type="button" onClick={handleDiscard} disabled={saving} className="inline-flex min-h-[44px] items-center rounded-full border border-border bg-white px-4 text-sm font-semibold text-charcoal-700 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
                   Batalkan
                 </button>
-                <button type="submit" disabled={saving || !editing} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
+                <button type="submit" disabled={saving || !editing} className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
                   {saving ? "Menyimpan…" : "Simpan perubahan"}
                 </button>
               </div>
             </div>
           </div>
+
         </form>)}
 
       
@@ -648,7 +645,7 @@ export function StoreSettingsView() {
               {!confirmingDelete ? (<button type="button" onClick={() => {
                     setDeleteError("");
                     setConfirmingDelete(true);
-                }} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-destructive/35 bg-white px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/30 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100">
+                }} className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-destructive/35 bg-white px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/30 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100">
                   <Trash2 aria-hidden className="h-4 w-4"/>
                   Hapus toko ini
                 </button>) : (<div className="mt-4 rounded-2xl border border-destructive/25 bg-destructive/10 p-4">
@@ -660,11 +657,11 @@ export function StoreSettingsView() {
                     Tindakan ini langsung berjalan dan tidak bisa dibatalkan.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <button type="button" disabled={deleting} onClick={() => void handleDeleteStore()} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-semibold text-white transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100">
+                    <button type="button" disabled={deleting} onClick={() => void handleDeleteStore()} className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-destructive px-4 text-sm font-semibold text-white transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100">
                       <Trash2 aria-hidden className="h-4 w-4"/>
                       {deleting ? "Menghapus…" : "Ya, hapus permanen"}
                     </button>
-                    <button type="button" disabled={deleting} onClick={() => setConfirmingDelete(false)} className="inline-flex min-h-11 items-center rounded-full border border-border bg-white px-4 text-sm font-semibold text-charcoal-700 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100">
+                    <button type="button" disabled={deleting} onClick={() => setConfirmingDelete(false)} className="inline-flex min-h-[44px] items-center rounded-full border border-border bg-white px-4 text-sm font-semibold text-charcoal-700 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100">
                       Batal
                     </button>
                   </div>

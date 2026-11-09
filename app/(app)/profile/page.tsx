@@ -6,7 +6,9 @@ export const metadata: Metadata = {
     description: 'Kelola profil, alamat pengiriman, langganan, dan riwayat pesanan Anda di ReBites.',
 };
 export default function ProfilePage() {
-    return (<RequireAuth>
-      <UserProfile />
+    return (<RequireAuth>
+
+      <UserProfile />
+
     </RequireAuth>);
 }

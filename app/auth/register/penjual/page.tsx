@@ -9,7 +9,9 @@ export default function RegisterPenjualPage() {
     return (<AuthSplitShell imageSrc="/hero-makanan.avif" imageAlt="ReBites — Makanan surplus" variant="buyer" overlayText={{
             headline: "Daftar sebagai Penjual",
             description: "Buat akun penjual dan mulai berjualan makanan surplus di ReBites.",
-        }}>
-      <PenjualRegisterForm />
+        }}>
+
+      <PenjualRegisterForm />
+
     </AuthSplitShell>);
 }

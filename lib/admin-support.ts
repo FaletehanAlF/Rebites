@@ -72,6 +72,7 @@ export interface AdminSupportThreadDetail {
         accountStatus: string | null;
         deletedAt: string | null;
         avatarUrl?: string | null;
+        phone?: string | null;
     } | null;
     messages: AdminSupportMessage[];
     appeals: AdminSupportAppeal[];

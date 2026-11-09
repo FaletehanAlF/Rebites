@@ -283,7 +283,7 @@ export function BlogIndex() {
             {featured && (
               <Reveal delay={0.08}>
                 <Link
-                  href={`/artikel/${featured.slug ?? featured.id}`}
+                  href={`/blog/${featured.slug ?? featured.id}`}
                   className="group mt-10 grid overflow-hidden rounded-3xl border border-border bg-white transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:mt-12 lg:grid-cols-2"
                 >
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-sage-100 lg:aspect-auto lg:min-h-[340px]">
@@ -339,7 +339,7 @@ export function BlogIndex() {
                 {gridItems.map((item) => (
                   <li key={item.id} className="h-full">
                     <Link
-                      href={`/artikel/${item.slug ?? item.id}`}
+                      href={`/blog/${item.slug ?? item.id}`}
                       className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-white transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     >
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-sage-100">

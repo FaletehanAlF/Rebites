@@ -192,17 +192,24 @@ function BiayaRow({ label, nominal, muted, strong, }: {
     muted?: boolean;
     strong?: boolean;
 }) {
-    return (<div className="flex items-baseline justify-between gap-4">
-      <span className={cn('text-[13px]', strong ? 'font-semibold text-charcoal-900' : 'text-sage-500')}>
-        {label}
-      </span>
+    return (<div className="flex items-baseline justify-between gap-4">
+
+      <span className={cn('text-[13px]', strong ? 'font-semibold text-charcoal-900' : 'text-sage-500')}>
+
+        {label}
+
+      </span>
+
       <span className={cn('shrink-0 text-right tabular-nums', strong
             ? 'text-[15px] font-bold text-charcoal-900'
             : muted
                 ? 'text-[13px] text-sage-500'
-                : 'text-[13px] font-medium text-charcoal-900')}>
-        {nominal}
-      </span>
+                : 'text-[13px] font-medium text-charcoal-900')}>
+
+        {nominal}
+
+      </span>
+
     </div>);
 }
 export function OrdersManagementView() {
@@ -404,439 +411,850 @@ export function OrdersManagementView() {
         event.preventDefault();
         setDetail(order);
     };
-    return (<div className={ADMIN_PAGE_WRAPPER}>
-      <AdminPageHeader title="Manajemen Pesanan" description="Pembayaran, status, dan pengiriman setiap pesanan." actions={<>
-            <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">
-              {total} pesanan
-            </Badge>
-            <AdminExportButton onClick={startExport} busy={exporting} disabled={status === 'loading' || status === 'forbidden'} noun="pesanan"/>
-            <Button type="button" variant="outline" size="sm" onClick={() => void handleReload()} disabled={status === 'loading' || refreshing}>
-              <RefreshCw aria-hidden className="h-3.5 w-3.5"/>
-              Muat ulang
-            </Button>
-          </>}/>
-
-      {feedback && <AdminExportNotice feedback={feedback}/>}
-
-      
-      <AdminToolbar className="mb-3">
-        <AdminSearchInput value={searchInput} onChange={setSearchInput} label="Cari pesanan" labelVisible placeholder="Cari nomor pesanan, pembeli, toko, atau produk…"/>
-        <Button type="button" variant="outline" onClick={resetFilters} disabled={!hasActiveFilter} className="self-start sm:self-end">
-          <RotateCcw aria-hidden className="h-4 w-4"/>
-          Reset filter
-          {jumlahFilterAktif > 0 && (<span className="ml-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-primary">
-              {jumlahFilterAktif}
-            </span>)}
-        </Button>
-      </AdminToolbar>
-
-      
-      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        <AdminSelect value={filters.orderStatus} onChange={(value) => setFilter('orderStatus', value as Filters['orderStatus'])} label="Status pesanan" options={ORDER_STATUS_OPTIONS} className="sm:w-full"/>
-        <AdminSelect value={filters.paymentStatus} onChange={(value) => setFilter('paymentStatus', value as Filters['paymentStatus'])} label="Pembayaran" options={PAYMENT_OPTIONS} className="sm:w-full"/>
-        <AdminSelect value={filters.deliveryOption} onChange={(value) => setFilter('deliveryOption', value as Filters['deliveryOption'])} label="Opsi kirim" options={DELIVERY_OPTIONS} className="sm:w-full"/>
-        <AdminSelect value={filters.shipment} onChange={(value) => setFilter('shipment', value as Filters['shipment'])} label="Data kurir" options={SHIPMENT_OPTIONS} className="sm:w-full"/>
-        <AdminSelect value={filters.lifecycle} onChange={(value) => setFilter('lifecycle', value as Filters['lifecycle'])} label="Siklus pesanan" options={LIFECYCLE_OPTIONS} className="sm:w-full"/>
-      </div>
-
-      {refreshNote && (<p role="status" className="mb-4 flex items-center gap-1.5 text-xs font-semibold text-success">
-          <Check aria-hidden className="h-4 w-4 shrink-0"/>
-          {refreshNote}
-        </p>)}
-
-      {status === 'loading' && <AdminLoadingState label="Memuat daftar pesanan"/>}
-
-      {status === 'forbidden' && (<AdminForbiddenState message="Halaman ini hanya untuk admin. Akun kamu tidak memiliki hak memantau pesanan."/>)}
-
-      {status === 'error' && (<AdminErrorState title="Gagal memuat pesanan" message={errorMsg} onRetry={() => void load(offset, filters)}/>)}
-
+    return (<div className={ADMIN_PAGE_WRAPPER}>
+
+      <AdminPageHeader title="Manajemen Pesanan" description="Pembayaran, status, dan pengiriman setiap pesanan." actions={<>
+
+            <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">
+
+              {total} pesanan
+
+            </Badge>
+
+            <AdminExportButton onClick={startExport} busy={exporting} disabled={status === 'loading' || status === 'forbidden'} noun="pesanan"/>
+
+            <Button type="button" variant="outline" size="sm" onClick={() => void handleReload()} disabled={status === 'loading' || refreshing}>
+
+              <RefreshCw aria-hidden className="h-3.5 w-3.5"/>
+
+              Muat ulang
+
+            </Button>
+
+          </>}/>
+
+
+
+      {feedback && <AdminExportNotice feedback={feedback}/>}
+
+
+
+      
+
+      <AdminToolbar className="mb-3">
+
+        <AdminSearchInput value={searchInput} onChange={setSearchInput} label="Cari pesanan" labelVisible placeholder="Cari nomor pesanan, pembeli, toko, atau produk…"/>
+
+        <Button type="button" variant="outline" onClick={resetFilters} disabled={!hasActiveFilter} className="self-start sm:self-end">
+
+          <RotateCcw aria-hidden className="h-4 w-4"/>
+
+          Reset filter
+
+          {jumlahFilterAktif > 0 && (<span className="ml-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-primary">
+
+              {jumlahFilterAktif}
+
+            </span>)}
+
+        </Button>
+
+      </AdminToolbar>
+
+
+
+      
+
+      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+
+        <AdminSelect value={filters.orderStatus} onChange={(value) => setFilter('orderStatus', value as Filters['orderStatus'])} label="Status pesanan" options={ORDER_STATUS_OPTIONS} className="sm:w-full"/>
+
+        <AdminSelect value={filters.paymentStatus} onChange={(value) => setFilter('paymentStatus', value as Filters['paymentStatus'])} label="Pembayaran" options={PAYMENT_OPTIONS} className="sm:w-full"/>
+
+        <AdminSelect value={filters.deliveryOption} onChange={(value) => setFilter('deliveryOption', value as Filters['deliveryOption'])} label="Opsi kirim" options={DELIVERY_OPTIONS} className="sm:w-full"/>
+
+        <AdminSelect value={filters.shipment} onChange={(value) => setFilter('shipment', value as Filters['shipment'])} label="Data kurir" options={SHIPMENT_OPTIONS} className="sm:w-full"/>
+
+        <AdminSelect value={filters.lifecycle} onChange={(value) => setFilter('lifecycle', value as Filters['lifecycle'])} label="Siklus pesanan" options={LIFECYCLE_OPTIONS} className="sm:w-full"/>
+
+      </div>
+
+
+
+      {refreshNote && (<p role="status" className="mb-4 flex items-center gap-1.5 text-xs font-semibold text-success">
+
+          <Check aria-hidden className="h-4 w-4 shrink-0"/>
+
+          {refreshNote}
+
+        </p>)}
+
+
+
+      {status === 'loading' && <AdminLoadingState label="Memuat daftar pesanan"/>}
+
+
+
+      {status === 'forbidden' && (<AdminForbiddenState message="Halaman ini hanya untuk admin. Akun kamu tidak memiliki hak memantau pesanan."/>)}
+
+
+
+      {status === 'error' && (<AdminErrorState title="Gagal memuat pesanan" message={errorMsg} onRetry={() => void load(offset, filters)}/>)}
+
+
+
       {status === 'ready' && items.length === 0 && (<AdminEmptyState icon={hasActiveFilter ? (<SearchX aria-hidden className="h-10 w-10 text-primary"/>) : (<ShoppingBag aria-hidden className="h-10 w-10 text-primary"/>)} title={hasActiveFilter ? 'Pesanan tidak ditemukan' : 'Belum ada pesanan'} description={hasActiveFilter
                 ? 'Tidak ada pesanan yang cocok dengan pencarian atau filter yang dipilih. Coba atur ulang filter.'
-                : 'Pesanan yang tercatat akan muncul di sini.'} action={hasActiveFilter ? (<Button type="button" variant="outline" size="sm" onClick={resetFilters}>
-                <RotateCcw aria-hidden className="h-4 w-4"/>
-                Atur ulang filter
-              </Button>) : undefined}/>)}
-
-      {status === 'ready' && items.length > 0 && (<>
-          
-          {errorMsg && (<div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius)] border border-destructive/25 bg-destructive/[0.06] px-3 py-2 text-sm text-charcoal-900">
-              <span className="min-w-0">{errorMsg}</span>
-              <Button type="button" variant="outline" size="sm" onClick={() => void load(offset, filters)}>
-                Coba lagi
-              </Button>
-            </div>)}
-
-          {refreshing && (<p role="status" className="mb-3 inline-flex items-center gap-2 text-xs font-semibold text-sage-500">
-              <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"/>
-              Memperbarui daftar…
-            </p>)}
-
-          <div aria-busy={refreshing} className={cn('transition-opacity', refreshing && 'pointer-events-none opacity-60')}>
-            
-            <AdminTableCard label="Daftar pesanan" minWidth={920} className="hidden md:block">
-              <AdminTableHead>
-                <AdminTh>Pesanan</AdminTh>
-                <AdminTh>Pembeli</AdminTh>
-                <AdminTh>Produk &amp; Toko</AdminTh>
-                <AdminTh className="text-right">Total</AdminTh>
-                <AdminTh>Status</AdminTh>
-                <AdminTh>Pengiriman</AdminTh>
-                <AdminTh className="text-right">Aksi</AdminTh>
-              </AdminTableHead>
-              <tbody>
-                {items.map((item) => (<AdminTr key={item.id} className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40" onClick={() => setDetail(item)} tabIndex={0} onKeyDown={(event) => onRowKeyDown(event, item)} aria-label={`Buka detail pesanan ${item.order_code ?? ''}`}>
-                    <AdminTd className="whitespace-nowrap">
-                      <span className="block font-mono text-[13px] font-semibold text-charcoal-900">
-                        {item.order_code ?? '-'}
-                      </span>
-                      <span className="mt-0.5 block text-[11px] text-sage-500">
-                        {formatTanggal(item.created_at)}
-                      </span>
-                    </AdminTd>
-
-                    <AdminTd className="max-w-[170px]">
-                      <span className="block break-words text-[13px] font-medium leading-snug text-charcoal-900" title={namaPembeli(item) || undefined}>
-                        {namaPembeli(item) || '-'}
-                      </span>
-                      {item.buyer?.email && (<span className="mt-0.5 block truncate text-[11px] leading-snug text-sage-500" title={item.buyer.email}>
-                          {item.buyer.email}
-                        </span>)}
-                    </AdminTd>
-
-                    <AdminTd className="max-w-[210px]">
-                      <span className="block break-words text-[13px] font-medium leading-snug text-charcoal-900" title={namaProduk(item)}>
-                        {namaProduk(item)}
-                      </span>
-                      <span className="mt-0.5 block break-words text-[11px] leading-snug text-sage-500">
-                        {item.quantity !== null ? `${item.quantity}× · ` : ''}
-                        {namaToko(item)}
-                      </span>
-                    </AdminTd>
-
-                    <AdminTd className="whitespace-nowrap text-right">
-                      <span className="block text-[13px] font-semibold tabular-nums text-charcoal-900">
-                        {formatRupiah(item.total_price)}
-                      </span>
-                      <Badge variant={paymentBadgeVariant(item.payment_status)} className="mt-1 whitespace-nowrap">
-                        {paymentStatusLabel(item.payment_status)}
-                      </Badge>
-                    </AdminTd>
-
-                    <AdminTd>
-                      <Badge variant={orderBadgeVariant(item.order_status)} className="whitespace-nowrap">
-                        {orderStatusLabel(item.order_status)}
-                      </Badge>
-                      <span className="mt-1 block break-words text-[11px] leading-snug text-sage-500">
-                        
+                : 'Pesanan yang tercatat akan muncul di sini.'} action={hasActiveFilter ? (<Button type="button" variant="outline" size="sm" onClick={resetFilters}>
+
+                <RotateCcw aria-hidden className="h-4 w-4"/>
+
+                Atur ulang filter
+
+              </Button>) : undefined}/>)}
+
+
+
+      {status === 'ready' && items.length > 0 && (<>
+
+          
+
+          {errorMsg && (<div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius)] border border-destructive/25 bg-destructive/[0.06] px-3 py-2 text-sm text-charcoal-900">
+
+              <span className="min-w-0">{errorMsg}</span>
+
+              <Button type="button" variant="outline" size="sm" onClick={() => void load(offset, filters)}>
+
+                Coba lagi
+
+              </Button>
+
+            </div>)}
+
+
+
+          {refreshing && (<p role="status" className="mb-3 inline-flex items-center gap-2 text-xs font-semibold text-sage-500">
+
+              <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"/>
+
+              Memperbarui daftar…
+
+            </p>)}
+
+
+
+          <div aria-busy={refreshing} className={cn('transition-opacity', refreshing && 'pointer-events-none opacity-60')}>
+
+            
+
+            <AdminTableCard label="Daftar pesanan" minWidth={920} className="hidden md:block">
+
+              <AdminTableHead>
+
+                <AdminTh>Pesanan</AdminTh>
+
+                <AdminTh>Pembeli</AdminTh>
+
+                <AdminTh>Produk &amp; Toko</AdminTh>
+
+                <AdminTh className="text-right">Total</AdminTh>
+
+                <AdminTh>Status</AdminTh>
+
+                <AdminTh>Pengiriman</AdminTh>
+
+                <AdminTh className="text-right">Aksi</AdminTh>
+
+              </AdminTableHead>
+
+              <tbody>
+
+                {items.map((item) => (<AdminTr key={item.id} className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40" onClick={() => setDetail(item)} tabIndex={0} onKeyDown={(event) => onRowKeyDown(event, item)} aria-label={`Buka detail pesanan ${item.order_code ?? ''}`}>
+
+                    <AdminTd className="whitespace-nowrap">
+
+                      <span className="block font-mono text-[13px] font-semibold text-charcoal-900">
+
+                        {item.order_code ?? '-'}
+
+                      </span>
+
+                      <span className="mt-0.5 block text-[11px] text-sage-500">
+
+                        {formatTanggal(item.created_at)}
+
+                      </span>
+
+                    </AdminTd>
+
+
+
+                    <AdminTd className="max-w-[170px]">
+
+                      <span className="block break-words text-[13px] font-medium leading-snug text-charcoal-900" title={namaPembeli(item) || undefined}>
+
+                        {namaPembeli(item) || '-'}
+
+                      </span>
+
+                      {item.buyer?.email && (<span className="mt-0.5 block truncate text-[11px] leading-snug text-sage-500" title={item.buyer.email}>
+
+                          {item.buyer.email}
+
+                        </span>)}
+
+                    </AdminTd>
+
+
+
+                    <AdminTd className="max-w-[210px]">
+
+                      <span className="block break-words text-[13px] font-medium leading-snug text-charcoal-900" title={namaProduk(item)}>
+
+                        {namaProduk(item)}
+
+                      </span>
+
+                      <span className="mt-0.5 block break-words text-[11px] leading-snug text-sage-500">
+
+                        {item.quantity !== null ? `${item.quantity}× · ` : ''}
+
+                        {namaToko(item)}
+
+                      </span>
+
+                    </AdminTd>
+
+
+
+                    <AdminTd className="whitespace-nowrap text-right">
+
+                      <span className="block text-[13px] font-semibold tabular-nums text-charcoal-900">
+
+                        {formatRupiah(item.total_price)}
+
+                      </span>
+
+                      <Badge variant={paymentBadgeVariant(item.payment_status)} className="mt-1 whitespace-nowrap">
+
+                        {paymentStatusLabel(item.payment_status)}
+
+                      </Badge>
+
+                    </AdminTd>
+
+
+
+                    <AdminTd>
+
+                      <Badge variant={orderBadgeVariant(item.order_status)} className="whitespace-nowrap">
+
+                        {orderStatusLabel(item.order_status)}
+
+                      </Badge>
+
+                      <span className="mt-1 block break-words text-[11px] leading-snug text-sage-500">
+
+                        
+
                         {progressLabel(item.progress_status) === orderStatusLabel(item.order_status)
                     ? null
-                    : progressLabel(item.progress_status)}
-                      </span>
-                      {orderNeedsAttention(item.flags) && (<Badge variant="warning" className="mt-1 whitespace-nowrap">
-                          Perlu dicek
-                        </Badge>)}
-                    </AdminTd>
-
-                    <AdminTd className="max-w-[170px]">
-                      <span className="flex items-center gap-1.5 break-words text-[13px] font-medium leading-snug text-charcoal-900">
-                        {item.delivery_option === 'delivery' ? (<Truck aria-hidden className="h-3.5 w-3.5 shrink-0 text-sage-500"/>) : null}
-                        {deliveryLabel(item.delivery_option)}
-                      </span>
-                      <span className="mt-0.5 block break-words text-[11px] leading-snug text-sage-500">
+                    : progressLabel(item.progress_status)}
+
+                      </span>
+
+                      {orderNeedsAttention(item.flags) && (<Badge variant="warning" className="mt-1 whitespace-nowrap">
+
+                          Perlu dicek
+
+                        </Badge>)}
+
+                    </AdminTd>
+
+
+
+                    <AdminTd className="max-w-[170px]">
+
+                      <span className="flex items-center gap-1.5 break-words text-[13px] font-medium leading-snug text-charcoal-900">
+
+                        {item.delivery_option === 'delivery' ? (<Truck aria-hidden className="h-3.5 w-3.5 shrink-0 text-sage-500"/>) : null}
+
+                        {deliveryLabel(item.delivery_option)}
+
+                      </span>
+
+                      <span className="mt-0.5 block break-words text-[11px] leading-snug text-sage-500">
+
                         {item.delivery_option === 'delivery' && item.courier_service_name
                     ? item.courier_service_name
                     : item.flags.has_shipment
                         ? (item.shipment_status ?? 'Pengiriman dibuat')
-                        : 'Tanpa kurir'}
-                      </span>
-                    </AdminTd>
-
-                    <AdminTdActions>
+                        : 'Tanpa kurir'}
+
+                      </span>
+
+                    </AdminTd>
+
+
+
+                    <AdminTdActions>
+
                       <Button type="button" variant="outline" size="sm" onClick={(event) => {
                     event.stopPropagation();
                     setDetail(item);
-                }} aria-label={`Lihat detail pesanan ${item.order_code ?? ''}`}>
-                        <Eye aria-hidden className="h-3.5 w-3.5"/>
-                        Detail
-                      </Button>
-                    </AdminTdActions>
-                  </AdminTr>))}
-              </tbody>
-            </AdminTableCard>
-
-            
-            <div className="space-y-3 md:hidden">
-              {items.map((item) => (<Card key={`order-card-${item.id}`}>
-                  <CardContent className="px-4 py-4">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <Badge variant={orderBadgeVariant(item.order_status)}>
-                        {orderStatusLabel(item.order_status)}
-                      </Badge>
-                      <Badge variant={paymentBadgeVariant(item.payment_status)}>
-                        {paymentStatusLabel(item.payment_status)}
-                      </Badge>
-                      {orderNeedsAttention(item.flags) && <Badge variant="warning">Perlu dicek</Badge>}
-                    </div>
-
-                    <p className="mt-2 break-all font-mono text-xs font-semibold text-charcoal-900">
-                      {item.order_code ?? '-'}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-sage-500">
-                      {formatTanggalWaktu(item.created_at)}
-                    </p>
-
-                    <p className="mt-2 break-words text-sm font-semibold leading-snug text-charcoal-900">
-                      {namaProduk(item)}
-                    </p>
-                    <p className="mt-0.5 break-words text-xs text-sage-500">
-                      {item.quantity !== null ? `${item.quantity}× · ` : ''}
-                      {namaToko(item)}
-                    </p>
-                    <p className="mt-1 break-words text-xs text-sage-500">
-                      Pembeli: {namaPembeli(item) || '-'}
-                    </p>
-
-                    <div className="mt-2.5 flex flex-wrap items-baseline justify-between gap-2 border-t border-border/70 pt-2.5">
-                      <span className="text-sm font-bold tabular-nums text-charcoal-900">
-                        {formatRupiah(item.total_price)}
-                      </span>
-                      <span className="text-xs text-sage-500">
-                        {deliveryLabel(item.delivery_option)}
-                      </span>
-                    </div>
-
-                    <Button type="button" variant="outline" size="sm" className="mt-3 w-full" onClick={() => setDetail(item)}>
-                      <Eye aria-hidden className="h-3.5 w-3.5"/>
-                      Lihat detail
-                    </Button>
-                  </CardContent>
-                </Card>))}
-            </div>
-          </div>
-
-          <AdminPagination total={total} page={page} pageSize={PAGE_LIMIT} noun="pesanan" busy={refreshing} onPageChange={(next) => void load((next - 1) * PAGE_LIMIT, filters)}/>
-        </>)}
-
+                }} aria-label={`Lihat detail pesanan ${item.order_code ?? ''}`}>
+
+                        <Eye aria-hidden className="h-3.5 w-3.5"/>
+
+                        Detail
+
+                      </Button>
+
+                    </AdminTdActions>
+
+                  </AdminTr>))}
+
+              </tbody>
+
+            </AdminTableCard>
+
+
+
+            
+
+            <div className="space-y-3 md:hidden">
+
+              {items.map((item) => (<Card key={`order-card-${item.id}`}>
+
+                  <CardContent className="px-4 py-4">
+
+                    <div className="flex flex-wrap items-center gap-1.5">
+
+                      <Badge variant={orderBadgeVariant(item.order_status)}>
+
+                        {orderStatusLabel(item.order_status)}
+
+                      </Badge>
+
+                      <Badge variant={paymentBadgeVariant(item.payment_status)}>
+
+                        {paymentStatusLabel(item.payment_status)}
+
+                      </Badge>
+
+                      {orderNeedsAttention(item.flags) && <Badge variant="warning">Perlu dicek</Badge>}
+
+                    </div>
+
+
+
+                    <p className="mt-2 break-all font-mono text-xs font-semibold text-charcoal-900">
+
+                      {item.order_code ?? '-'}
+
+                    </p>
+
+                    <p className="mt-0.5 text-[11px] text-sage-500">
+
+                      {formatTanggalWaktu(item.created_at)}
+
+                    </p>
+
+
+
+                    <p className="mt-2 break-words text-sm font-semibold leading-snug text-charcoal-900">
+
+                      {namaProduk(item)}
+
+                    </p>
+
+                    <p className="mt-0.5 break-words text-xs text-sage-500">
+
+                      {item.quantity !== null ? `${item.quantity}× · ` : ''}
+
+                      {namaToko(item)}
+
+                    </p>
+
+                    <p className="mt-1 break-words text-xs text-sage-500">
+
+                      Pembeli: {namaPembeli(item) || '-'}
+
+                    </p>
+
+
+
+                    <div className="mt-2.5 flex flex-wrap items-baseline justify-between gap-2 border-t border-border/70 pt-2.5">
+
+                      <span className="text-sm font-bold tabular-nums text-charcoal-900">
+
+                        {formatRupiah(item.total_price)}
+
+                      </span>
+
+                      <span className="text-xs text-sage-500">
+
+                        {deliveryLabel(item.delivery_option)}
+
+                      </span>
+
+                    </div>
+
+
+
+                    <Button type="button" variant="outline" size="sm" className="mt-3 w-full" onClick={() => setDetail(item)}>
+
+                      <Eye aria-hidden className="h-3.5 w-3.5"/>
+
+                      Lihat detail
+
+                    </Button>
+
+                  </CardContent>
+
+                </Card>))}
+
+            </div>
+
+          </div>
+
+
+
+          <AdminPagination total={total} page={page} pageSize={PAGE_LIMIT} noun="pesanan" busy={refreshing} onPageChange={(next) => void load((next - 1) * PAGE_LIMIT, filters)}/>
+
+        </>)}
+
+
+
       <Dialog open={detail !== null} onOpenChange={(open) => {
             if (!open)
                 setDetail(null);
-        }}>
-        {detail && (<DialogContent className="max-h-[90dvh] overflow-y-auto p-5 sm:max-w-2xl sm:p-6">
-            <DialogHeader className="space-y-1 pr-10 text-left">
-              <DialogDescription className="text-xs font-bold uppercase tracking-[0.16em] text-sage-500">
-                Detail pesanan
-              </DialogDescription>
-              <DialogTitle className="mt-1 break-all font-mono text-base font-bold text-charcoal-900">
-                {detail.order_code ?? '-'}
-              </DialogTitle>
-              <p className="text-xs text-sage-500">
-                Dibuat {formatTanggalWaktu(detail.created_at)}
-              </p>
-            </DialogHeader>
-
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              <Badge variant={paymentBadgeVariant(detail.payment_status)}>
-                {paymentStatusLabel(detail.payment_status)}
-              </Badge>
-              <Badge variant={orderBadgeVariant(detail.order_status)}>
-                {orderStatusLabel(detail.order_status)}
-              </Badge>
-              <Badge variant="secondary" className="font-medium">
-                {lifecycleLabel(detail.lifecycle_status)}
-              </Badge>
-              {daftarFlag(detail).map((flag) => (<Badge key={flag.label} variant={flag.variant}>
-                  {flag.label}
-                </Badge>))}
-            </div>
-
-            <div className="mt-5 space-y-5">
-              <AdminDetailSection title="Produk">
-                <div className="flex items-start gap-4">
-                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[var(--radius)] border border-border bg-sage-100/60">
-                    <SmartImage src={detail.product?.image_url ?? ''} alt={namaProduk(detail)} sizes="64px"/>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="break-words text-sm font-semibold leading-snug text-charcoal-900">
-                      {namaProduk(detail)}
-                    </p>
-                    <p className="mt-0.5 break-words text-xs text-sage-500">{namaToko(detail)}</p>
-                    <p className="mt-1 text-xs text-charcoal-700">
-                      {detail.quantity !== null ? `${detail.quantity} unit` : 'Jumlah tidak tercatat'}
-                      {detail.unit_price !== null && (<> · {formatRupiah(detail.unit_price)} / unit</>)}
-                    </p>
-                  </div>
-                </div>
-              </AdminDetailSection>
-
-              <AdminDetailSection title="Pembeli & toko">
-                <AdminDetailGrid>
-                  <AdminDetailField label="Nama pembeli">
-                    {namaPembeli(detail) || '-'}
-                  </AdminDetailField>
-                  <AdminDetailField label="Email pembeli">
-                    {detail.buyer?.email ?? '-'}
-                  </AdminDetailField>
-                  <AdminDetailField label="Toko">{namaToko(detail)}</AdminDetailField>
-                  <AdminDetailField label="Slug toko" mono>
-                    {detail.umkm?.slug ?? detail.vendor_slug ?? '-'}
-                  </AdminDetailField>
-                </AdminDetailGrid>
-              </AdminDetailSection>
-
-              
-              <AdminDetailSection title="Rincian biaya" description="Total = subtotal − diskon + biaya layanan + ongkir − koin.">
-                <div className="space-y-1.5 rounded-[var(--radius)] bg-sage-100/40 p-3.5">
-                  <BiayaRow label="Subtotal" nominal={formatRupiah(detail.subtotal)}/>
-                  {(detail.discount ?? 0) > 0 && (<BiayaRow label={detail.promo_code ? `Diskon (${detail.promo_code})` : 'Diskon'} nominal={`−${formatRupiah(detail.discount)}`}/>)}
-                  <BiayaRow label="Biaya layanan" nominal={formatRupiah(detail.service_fee)}/>
-                  <BiayaRow label={detail.delivery_option === 'delivery' ? 'Ongkos kirim' : 'Ongkos kirim (ambil sendiri)'} nominal={formatRupiah(detail.delivery_fee)}/>
-                  {(detail.coin_used ?? 0) > 0 && (<BiayaRow label="Koin dipakai" nominal={`−${formatRupiah(detail.coin_used)}`}/>)}
-                  <div className="mt-1.5 border-t border-border pt-2">
-                    <BiayaRow label="Total dibayar" nominal={formatRupiah(detail.total_price)} strong/>
-                  </div>
-                  {(detail.coin_earned ?? 0) > 0 && (<BiayaRow label="Koin didapat pembeli" nominal={formatRupiah(detail.coin_earned)} muted/>)}
-                </div>
-              </AdminDetailSection>
-
-              <AdminDetailSection title="Pembayaran">
-                <AdminDetailGrid>
-                  <AdminDetailField label="Status">
-                    {paymentStatusLabel(detail.payment_status)}
-                  </AdminDetailField>
-                  <AdminDetailField label="Metode" mono>
-                    {detail.payment_method_id ?? '-'}
-                  </AdminDetailField>
-                  <AdminDetailField label="ID invoice" mono className="sm:col-span-2">
-                    {detail.xendit_invoice_id ?? '-'}
-                  </AdminDetailField>
-                </AdminDetailGrid>
-              </AdminDetailSection>
-
-              <AdminDetailSection title="Pengiriman">
-                <AdminDetailGrid>
-                  <AdminDetailField label="Opsi">
-                    {deliveryLabel(detail.delivery_option)}
-                  </AdminDetailField>
-                  <AdminDetailField label="Status kirim">
+        }}>
+
+        {detail && (<DialogContent className="max-h-[90dvh] overflow-y-auto p-5 sm:max-w-2xl sm:p-6">
+
+            <DialogHeader className="space-y-1 pr-10 text-left">
+
+              <DialogDescription className="text-xs font-bold uppercase tracking-[0.16em] text-sage-500">
+
+                Detail pesanan
+
+              </DialogDescription>
+
+              <DialogTitle className="mt-1 break-all font-mono text-base font-bold text-charcoal-900">
+
+                {detail.order_code ?? '-'}
+
+              </DialogTitle>
+
+              <p className="text-xs text-sage-500">
+
+                Dibuat {formatTanggalWaktu(detail.created_at)}
+
+              </p>
+
+            </DialogHeader>
+
+
+
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+
+              <Badge variant={paymentBadgeVariant(detail.payment_status)}>
+
+                {paymentStatusLabel(detail.payment_status)}
+
+              </Badge>
+
+              <Badge variant={orderBadgeVariant(detail.order_status)}>
+
+                {orderStatusLabel(detail.order_status)}
+
+              </Badge>
+
+              <Badge variant="secondary" className="font-medium">
+
+                {lifecycleLabel(detail.lifecycle_status)}
+
+              </Badge>
+
+              {daftarFlag(detail).map((flag) => (<Badge key={flag.label} variant={flag.variant}>
+
+                  {flag.label}
+
+                </Badge>))}
+
+            </div>
+
+
+
+            <div className="mt-5 space-y-5">
+
+              <AdminDetailSection title="Produk">
+
+                <div className="flex items-start gap-4">
+
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[var(--radius)] border border-border bg-sage-100/60">
+
+                    <SmartImage src={detail.product?.image_url ?? ''} alt={namaProduk(detail)} sizes="64px"/>
+
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+
+                    <p className="break-words text-sm font-semibold leading-snug text-charcoal-900">
+
+                      {namaProduk(detail)}
+
+                    </p>
+
+                    <p className="mt-0.5 break-words text-xs text-sage-500">{namaToko(detail)}</p>
+
+                    <p className="mt-1 text-xs text-charcoal-700">
+
+                      {detail.quantity !== null ? `${detail.quantity} unit` : 'Jumlah tidak tercatat'}
+
+                      {detail.unit_price !== null && (<> · {formatRupiah(detail.unit_price)} / unit</>)}
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </AdminDetailSection>
+
+
+
+              <AdminDetailSection title="Pembeli & toko">
+
+                <AdminDetailGrid>
+
+                  <AdminDetailField label="Nama pembeli">
+
+                    {namaPembeli(detail) || '-'}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Email pembeli">
+
+                    {detail.buyer?.email ?? '-'}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Toko">{namaToko(detail)}</AdminDetailField>
+
+                  <AdminDetailField label="Slug toko" mono>
+
+                    {detail.umkm?.slug ?? detail.vendor_slug ?? '-'}
+
+                  </AdminDetailField>
+
+                </AdminDetailGrid>
+
+              </AdminDetailSection>
+
+
+
+              
+
+              <AdminDetailSection title="Rincian biaya" description="Total = subtotal − diskon + biaya layanan + ongkir − koin.">
+
+                <div className="space-y-1.5 rounded-[var(--radius)] bg-sage-100/40 p-3.5">
+
+                  <BiayaRow label="Subtotal" nominal={formatRupiah(detail.subtotal)}/>
+
+                  {(detail.discount ?? 0) > 0 && (<BiayaRow label={detail.promo_code ? `Diskon (${detail.promo_code})` : 'Diskon'} nominal={`−${formatRupiah(detail.discount)}`}/>)}
+
+                  <BiayaRow label="Biaya layanan" nominal={formatRupiah(detail.service_fee)}/>
+
+                  <BiayaRow label={detail.delivery_option === 'delivery' ? 'Ongkos kirim' : 'Ongkos kirim (ambil sendiri)'} nominal={formatRupiah(detail.delivery_fee)}/>
+
+                  {(detail.coin_used ?? 0) > 0 && (<BiayaRow label="Koin dipakai" nominal={`−${formatRupiah(detail.coin_used)}`}/>)}
+
+                  <div className="mt-1.5 border-t border-border pt-2">
+
+                    <BiayaRow label="Total dibayar" nominal={formatRupiah(detail.total_price)} strong/>
+
+                  </div>
+
+                  {(detail.coin_earned ?? 0) > 0 && (<BiayaRow label="Koin didapat pembeli" nominal={formatRupiah(detail.coin_earned)} muted/>)}
+
+                </div>
+
+              </AdminDetailSection>
+
+
+
+              <AdminDetailSection title="Pembayaran">
+
+                <AdminDetailGrid>
+
+                  <AdminDetailField label="Status">
+
+                    {paymentStatusLabel(detail.payment_status)}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Metode" mono>
+
+                    {detail.payment_method_id ?? '-'}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="ID invoice" mono className="sm:col-span-2">
+
+                    {detail.xendit_invoice_id ?? '-'}
+
+                  </AdminDetailField>
+
+                </AdminDetailGrid>
+
+              </AdminDetailSection>
+
+
+
+              <AdminDetailSection title="Pengiriman">
+
+                <AdminDetailGrid>
+
+                  <AdminDetailField label="Opsi">
+
+                    {deliveryLabel(detail.delivery_option)}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Status kirim">
+
                     {detail.shipment_status ??
-                (detail.flags.has_shipment ? 'Pengiriman dibuat' : 'Tanpa pengiriman')}
-                  </AdminDetailField>
-                  <AdminDetailField label="Kurir" mono>
-                    {detail.courier_code ?? '-'}
-                  </AdminDetailField>
-                  <AdminDetailField label="Layanan">
-                    {detail.courier_service_name ?? detail.courier_service_code ?? '-'}
-                  </AdminDetailField>
-                  <AdminDetailField label="Nomor tracking" mono>
-                    {detail.biteship_tracking_id ?? '-'}
-                  </AdminDetailField>
-                  <AdminDetailField label="Nomor resi" mono>
-                    {detail.biteship_waybill_id ?? '-'}
-                  </AdminDetailField>
-                  <AdminDetailField label="Jarak">
+                (detail.flags.has_shipment ? 'Pengiriman dibuat' : 'Tanpa pengiriman')}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Kurir" mono>
+
+                    {detail.courier_code ?? '-'}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Layanan">
+
+                    {detail.courier_service_name ?? detail.courier_service_code ?? '-'}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Nomor tracking" mono>
+
+                    {detail.biteship_tracking_id ?? '-'}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Nomor resi" mono>
+
+                    {detail.biteship_waybill_id ?? '-'}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Jarak">
+
                     {detail.delivery_distance_km !== null
                 ? `${detail.delivery_distance_km} km`
-                : '-'}
-                  </AdminDetailField>
-                  <AdminDetailField label="Estimasi tiba">
-                    {formatTanggalWaktu(detail.estimated_arrival_at)}
-                  </AdminDetailField>
-                </AdminDetailGrid>
-                {detail.shipment_error && (<p className="mt-3 flex items-start gap-2 rounded-[var(--radius)] border border-destructive/25 bg-destructive/[0.06] px-3 py-2 text-[13px] leading-relaxed text-charcoal-900">
-                    <CircleAlert aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-destructive"/>
-                    <span className="min-w-0 break-words">
-                      <span className="font-semibold">Galat pengiriman: </span>
-                      {detail.shipment_error}
-                    </span>
-                  </p>)}
-              </AdminDetailSection>
-
-              <AdminDetailSection title="Alamat pengiriman">
+                : '-'}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Estimasi tiba">
+
+                    {formatTanggalWaktu(detail.estimated_arrival_at)}
+
+                  </AdminDetailField>
+
+                </AdminDetailGrid>
+
+                {detail.shipment_error && (<p className="mt-3 flex items-start gap-2 rounded-[var(--radius)] border border-destructive/25 bg-destructive/[0.06] px-3 py-2 text-[13px] leading-relaxed text-charcoal-900">
+
+                    <CircleAlert aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-destructive"/>
+
+                    <span className="min-w-0 break-words">
+
+                      <span className="font-semibold">Galat pengiriman: </span>
+
+                      {detail.shipment_error}
+
+                    </span>
+
+                  </p>)}
+
+              </AdminDetailSection>
+
+
+
+              <AdminDetailSection title="Alamat pengiriman">
+
                 {(() => {
                 const baris = alamatFields(detail.address_snapshot ?? detail.delivery_address);
                 if (baris.length === 0) {
-                    return (<p className="text-sm text-sage-500">
-                        Alamat tidak tercatat pada pesanan ini.
+                    return (<p className="text-sm text-sage-500">
+
+                        Alamat tidak tercatat pada pesanan ini.
+
                       </p>);
                 }
-                return (<AdminDetailGrid>
-                      {baris.map((row) => (<AdminDetailField key={row.label} label={row.label} className={row.label === 'Alamat' ? 'sm:col-span-2' : undefined}>
-                          {row.value}
-                        </AdminDetailField>))}
+                return (<AdminDetailGrid>
+
+                      {baris.map((row) => (<AdminDetailField key={row.label} label={row.label} className={row.label === 'Alamat' ? 'sm:col-span-2' : undefined}>
+
+                          {row.value}
+
+                        </AdminDetailField>))}
+
                     </AdminDetailGrid>);
-            })()}
-              </AdminDetailSection>
-
-              <AdminDetailSection title="Waktu">
-                <AdminDetailGrid>
-                  <AdminDetailField label="Dibuat">
-                    {formatTanggalWaktu(detail.created_at)}
-                  </AdminDetailField>
-                  <AdminDetailField label="Pengiriman dibuat">
-                    {formatTanggalWaktu(detail.shipment_created_at)}
-                  </AdminDetailField>
-                  <AdminDetailField label="Mulai diantar">
-                    {formatTanggalWaktu(detail.delivery_started_at)}
-                  </AdminDetailField>
-                  <AdminDetailField label="Selesai">
-                    {formatTanggalWaktu(detail.completed_at)}
-                  </AdminDetailField>
-                </AdminDetailGrid>
-              </AdminDetailSection>
-
-              <AdminDetailSection title="Riwayat status">
-                {historyStatus === 'loading' && (<p role="status" className="flex items-center gap-2 text-sm text-sage-500">
-                    <Loader2 aria-hidden className="h-4 w-4 animate-spin motion-reduce:animate-none"/>
-                    Memuat riwayat status…
-                  </p>)}
-                {historyStatus === 'error' && (<div className="space-y-2">
-                    <p role="alert" className="text-sm text-charcoal-900">
-                      Gagal memuat riwayat status pesanan.
-                    </p>
-                    <Button type="button" variant="outline" size="sm" onClick={() => void loadStatusHistory(detail.id)}>
-                      Coba lagi
-                    </Button>
-                  </div>)}
-                {historyStatus === 'ready' && statusHistory.length === 0 && (<p className="text-sm text-sage-500">
-                    Belum ada catatan perubahan status untuk pesanan ini.
-                  </p>)}
-                {historyStatus === 'ready' && statusHistory.length > 0 && (<ol className="space-y-3">
-                    {statusHistory.map((row) => (<li key={row.id} className="flex gap-4">
-                        <span aria-hidden className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary"/>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium leading-snug text-charcoal-900">
-                            {orderStatusLabel(row.status)}
-                          </p>
-                          {row.note && (<p className="mt-0.5 break-words text-xs text-charcoal-700">
-                              {row.note}
-                            </p>)}
-                          <p className="mt-0.5 text-xs text-sage-500">
-                            {formatTanggalWaktu(row.createdAt)}
-                          </p>
-                        </div>
-                      </li>))}
-                  </ol>)}
-              </AdminDetailSection>
-            </div>
-
-            {detail.order_status !== 'completed' && detail.order_status !== 'cancelled' ? (<p className="mt-4 flex items-start gap-2 rounded-[var(--radius)] bg-sage-100/50 px-3 py-2 text-xs leading-relaxed text-sage-500">
-                <TriangleAlert aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0"/>
-                <span className="min-w-0">
-                  Pesanan ini belum selesai. Halaman admin hanya menampilkan data; perubahan status
-                  dilakukan oleh penjual atau lewat proses otomatis.
-                </span>
-              </p>) : null}
-
-            <p className="mt-3 text-center text-[11px] text-sage-500">
-              Riwayat transaksi dana (pencairan/refund) belum ditampilkan di halaman ini.
-            </p>
-
-            <DialogFooter className="mt-4">
-              <Button type="button" variant="outline" onClick={() => setDetail(null)}>
-                Tutup
-              </Button>
-            </DialogFooter>
-          </DialogContent>)}
-      </Dialog>
+            })()}
+
+              </AdminDetailSection>
+
+
+
+              <AdminDetailSection title="Waktu">
+
+                <AdminDetailGrid>
+
+                  <AdminDetailField label="Dibuat">
+
+                    {formatTanggalWaktu(detail.created_at)}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Pengiriman dibuat">
+
+                    {formatTanggalWaktu(detail.shipment_created_at)}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Mulai diantar">
+
+                    {formatTanggalWaktu(detail.delivery_started_at)}
+
+                  </AdminDetailField>
+
+                  <AdminDetailField label="Selesai">
+
+                    {formatTanggalWaktu(detail.completed_at)}
+
+                  </AdminDetailField>
+
+                </AdminDetailGrid>
+
+              </AdminDetailSection>
+
+
+
+              <AdminDetailSection title="Riwayat status">
+
+                {historyStatus === 'loading' && (<p role="status" className="flex items-center gap-2 text-sm text-sage-500">
+
+                    <Loader2 aria-hidden className="h-4 w-4 animate-spin motion-reduce:animate-none"/>
+
+                    Memuat riwayat status…
+
+                  </p>)}
+
+                {historyStatus === 'error' && (<div className="space-y-2">
+
+                    <p role="alert" className="text-sm text-charcoal-900">
+
+                      Gagal memuat riwayat status pesanan.
+
+                    </p>
+
+                    <Button type="button" variant="outline" size="sm" onClick={() => void loadStatusHistory(detail.id)}>
+
+                      Coba lagi
+
+                    </Button>
+
+                  </div>)}
+
+                {historyStatus === 'ready' && statusHistory.length === 0 && (<p className="text-sm text-sage-500">
+
+                    Belum ada catatan perubahan status untuk pesanan ini.
+
+                  </p>)}
+
+                {historyStatus === 'ready' && statusHistory.length > 0 && (<ol className="space-y-3">
+
+                    {statusHistory.map((row) => (<li key={row.id} className="flex gap-4">
+
+                        <span aria-hidden className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary"/>
+
+                        <div className="min-w-0">
+
+                          <p className="text-sm font-medium leading-snug text-charcoal-900">
+
+                            {orderStatusLabel(row.status)}
+
+                          </p>
+
+                          {row.note && (<p className="mt-0.5 break-words text-xs text-charcoal-700">
+
+                              {row.note}
+
+                            </p>)}
+
+                          <p className="mt-0.5 text-xs text-sage-500">
+
+                            {formatTanggalWaktu(row.createdAt)}
+
+                          </p>
+
+                        </div>
+
+                      </li>))}
+
+                  </ol>)}
+
+              </AdminDetailSection>
+
+            </div>
+
+
+
+            {detail.order_status !== 'completed' && detail.order_status !== 'cancelled' ? (<p className="mt-4 flex items-start gap-2 rounded-[var(--radius)] bg-sage-100/50 px-3 py-2 text-xs leading-relaxed text-sage-500">
+
+                <TriangleAlert aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0"/>
+
+                <span className="min-w-0">
+
+                  Pesanan ini belum selesai. Halaman admin hanya menampilkan data; perubahan status
+
+                  dilakukan oleh penjual atau lewat proses otomatis.
+
+                </span>
+
+              </p>) : null}
+
+
+
+            <p className="mt-3 text-center text-[11px] text-sage-500">
+
+              Riwayat transaksi dana (pencairan/refund) belum ditampilkan di halaman ini.
+
+            </p>
+
+
+
+            <DialogFooter className="mt-4">
+
+              <Button type="button" variant="outline" onClick={() => setDetail(null)}>
+
+                Tutup
+
+              </Button>
+
+            </DialogFooter>
+
+          </DialogContent>)}
+
+      </Dialog>
+
     </div>);
 }

@@ -113,37 +113,30 @@ export const BUYER_ROUTES: RouteDoc[] = [
     {
         path: '/home#rekomendasi',
         label: 'Rekomendasi hari ini',
-        detail: 'Bagian pada halaman Beranda. Untuk membukanya, klik Beranda lalu gulir ke bagian Rekomendasi, atau pilih Makanan di menu samping.',
+        detail: 'Bagian pada halaman Beranda. Untuk membukanya, klik Beranda lalu gulir ke bagian Rekomendasi.',
         group: 'Menu Utama',
         page: '(app)/home/page.tsx',
     },
     {
-        path: '/makanan',
-        label: 'Semua makanan',
-        detail: 'Katalog lengkap dengan pencarian, filter kategori/harga, urutan, dan paginasi. Dibuka dari menu samping: Makanan lalu "Semua makanan".',
-        group: 'Menu Utama',
-        page: '(app)/makanan/page.tsx',
-    },
-    {
         path: '/makanan/[category]',
         label: 'Kategori makanan',
-        detail: 'Satu kategori makanan. Kategori yang tersedia dapat dibuka dari submenu Makanan di sidebar: Makanan Berat, Jajanan, Japanese, Roti & Kue, Makanan Cepat Saji, Dessert, Buah & Sayur, Minuman.',
+        detail: 'Satu kategori makanan. Kategori yang tersedia dapat dibuka dari bagian Kategori di Beranda: Makanan Berat, Jajanan, Japanese, Roti & Kue, Makanan Cepat Saji, Dessert, Buah & Sayur, Minuman.',
         group: 'Menu Utama',
         page: '(app)/makanan/[category]/page.tsx',
     },
     {
         path: '/home#flashSale',
         label: 'Flash Sale',
-        detail: 'Bagian pada halaman Beranda yang menampilkan makanan dengan harga diskon terbatas. Dijangkau lewat menu samping Flash Sale.',
+        detail: 'Bagian pada halaman Beranda yang menampilkan makanan dengan harga diskon terbatas. Gulir ke bagian Flash Sale di Beranda.',
         group: 'Menu Utama',
         page: '(app)/home/page.tsx',
     },
     {
-        path: '/toko',
-        label: 'UMKM',
-        detail: 'Daftar seluruh UMKM penjual, lengkap dengan pencarian dan filter kota. Dibuka lewat menu samping UMKM.',
+        path: '/langganan',
+        label: 'Langganan',
+        detail: 'Halaman paket langganan penjual: paket Basic, Standar, dan Max beserta harga bulanan atau tahunan. Dibuka lewat menu samping Langganan.',
         group: 'Menu Utama',
-        page: '(app)/toko/page.tsx',
+        page: '(app)/langganan/page.tsx',
     },
     {
         path: '/detail/product',
@@ -190,14 +183,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     {
         path: '/profile',
         label: 'Profil',
-        detail: 'Profil pengguna: data akun, alamat, koin ReBites, makanan yang disukai, dan pengaturan. Tersedia di navigasi bawah pada ponsel.',
-        group: 'Lainnya',
-        page: '(app)/profile/page.tsx',
-    },
-    {
-        path: '/profile#sukai-makanan',
-        label: 'Makanan Disukai',
-        detail: 'Bagian pada halaman Profil yang menampilkan makanan yang pernah disukai. Dijangkau lewat menu samping Lainnya > Makanan Disukai.',
+        detail: 'Profil pengguna: data akun, alamat, koin ReBites, dan pengaturan. Tersedia di navigasi bawah pada ponsel.',
         group: 'Lainnya',
         page: '(app)/profile/page.tsx',
     },
@@ -218,7 +204,7 @@ export const BUYER_ROUTES: RouteDoc[] = [
     {
         path: '/notifikasi/pembeli',
         label: 'Notifikasi',
-        detail: 'Daftar pemberitahuan: status pesanan, balasan penjual, dan informasi lainnya. Tersedia di navigasi bawah pada ponsel.',
+        detail: 'Daftar pemberitahuan: status pesanan, balasan penjual, dan informasi lainnya. Dibuka lewat ikon lonceng di bilah atas.',
         group: 'Lainnya',
         page: '(app)/notifikasi/pembeli/page.tsx',
     },
@@ -571,7 +557,7 @@ PAKET LANGGANAN PENJUAL
 ${subscriptionFacts().join('\n')}
 
 CATATAN PENTING
-- Navigasi bawah pada ponsel berisi Beranda, Pesanan, Notifikasi, dan Profil.
+- Navigasi bawah pada ponsel berisi Beranda, Pesanan, dan Profil.
 - Penjual membuka dashboard lewat menu samping "Toko Saya" pada akun yang memiliki toko. Akun tanpa toko melihat "Mulai Jualan" menuju /auth/register/penjual.
 - Kamu tidak dapat melihat data akun, pesanan, atau pesan pribadi penanya. Bila ditanya soal pesanan tertentu, arahkan ke menu Pesanan (/riwayatPesanan) atau ke penjual terkait.
 

@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs';
 const MIGRATION = readFileSync(new URL('../supabase/migrations/20261021090000_report_notification_seller.sql', import.meta.url), 'utf8');
 const REPORTS_ROUTE = readFileSync(new URL('../app/api/reports/route.ts', import.meta.url), 'utf8');
 const NOTIFICATION_STORAGE = readFileSync(new URL('../lib/notification-storage.ts', import.meta.url), 'utf8');
-const NOTIFICATION_ICON = readFileSync(new URL('../app/components/notification/notification-icon.tsx', import.meta.url), 'utf8');
-const SELLER_VIEW = readFileSync(new URL('../app/components/notification/seller-notification-view.tsx', import.meta.url), 'utf8');
+const NOTIFICATION_ICON = readFileSync(new URL('../app/components/shared/notification/notification-icon.tsx', import.meta.url), 'utf8');
+const SELLER_VIEW = readFileSync(new URL('../app/components/shared/notification/seller-notification-view.tsx', import.meta.url), 'utf8');
 const USE_NOTIFICATIONS = readFileSync(new URL('../hooks/use-notifications.ts', import.meta.url), 'utf8');
 type ReportRow = {
     id: string;
