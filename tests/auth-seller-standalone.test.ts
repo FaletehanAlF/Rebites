@@ -48,6 +48,12 @@ test('perubahan peran dibatasi pada baris yang masih buyer (aman dari balapan)',
     assert.match(ROLE_ROUTE, /\.eq\('role', 'buyer'\)/);
 });
 
+test('placeholder kode tidak menghardcode jumlah digit (produksi mengirim 8, bukan 6)', () => {
+    assert.match(FORM, /placeholder="Kode verifikasi"/);
+    assert.doesNotMatch(FORM, /placeholder="[^"]*\d+ digit/);
+    assert.match(FORM, /maxLength=\{MAX_OTP_DIGITS\}/);
+});
+
 test('penjaga bisa gagal: tanpa panggilan naik-peran, toko dibuat tapi peran tetap buyer', () => {
     const rusak = FORM.split('await ensureSellerRole();').join('');
     assert.notEqual(rusak, FORM);
