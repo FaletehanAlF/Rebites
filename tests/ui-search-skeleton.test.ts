@@ -17,16 +17,17 @@ const HOME_DEALS = readProjectFile('app/components/home/UrgentDealsSection.tsx')
 const REQUIRE_AUTH = readProjectFile('app/components/auth/require-auth.tsx');
 const SELLER_SHELL = readProjectFile('app/components/dashboard-penjual/SellerShell.tsx');
 const SELLER_SKELETON = readProjectFile('app/components/dashboard-penjual/SellerShellSkeleton.tsx');
-test('kolom pencarian makanan punya tujuan nyata: katalog /makanan', () => {
+test('kolom pencarian membuka detail makanan tanpa pindah ke halaman katalog', () => {
     assert.match(SEARCH_BAR, /router\.push\(/);
-    assert.match(SEARCH_BAR, /\/makanan\?q=/);
-    assert.match(SEARCH_BAR, /: "\/makanan"/);
-    assert.match(SEARCH_BAR, /encodeURIComponent\(trimmed\)/);
+    assert.match(SEARCH_BAR, /\/detail\/product\?id=\$\{encodeURIComponent\(id\)\}/);
+    assert.match(SEARCH_BAR, /role="combobox"/);
+    assert.match(SEARCH_BAR, /aria-autocomplete="list"/);
 });
 test('kolom pencarian bisa dipakai keyboard dan dibaca pembaca layar', () => {
     assert.match(SEARCH_BAR, /role="search"/);
     assert.match(SEARCH_BAR, /type="search"/);
-    assert.match(SEARCH_BAR, /aria-label="Cari makanan atau toko"/);
+    assert.match(SEARCH_BAR, /aria-label="Cari nama makanan"/);
+    assert.match(SEARCH_BAR, /placeholder="Cari nama makanan"/);
     assert.match(SEARCH_BAR, /aria-label="Hapus pencarian"/);
     assert.match(SEARCH_BAR, /inputRef\.current\?\.focus\(\)/);
     assert.match(SEARCH_BAR, /focus-visible:ring-2/);
@@ -42,19 +43,16 @@ test('kolom pencarian di beranda sudah dihapus, bukan sekadar disembunyikan', ()
     assert.doesNotMatch(HOME_DEALS, /Cari makanan surplus/);
     assert.equal(projectFileExists('app/components/shared/SearchFilterBar.tsx'), false);
 });
-test('halaman katalog tidak punya kolom pencarian kedua', () => {
-    const catalog = readProjectFile('app/(app)/makanan/page.tsx');
-    assert.doesNotMatch(catalog, /placeholder="Cari nama makanan atau toko/);
-    assert.doesNotMatch(catalog, /searchRef/);
-    assert.match(catalog, /Filter/);
+test('halaman katalog /makanan sudah dihapus, bukan sekadar disembunyikan', () => {
+    assert.equal(projectFileExists('app/(app)/makanan/page.tsx'), false);
 });
-test('pencarian dari navbar menyaring katalog di tempat, tanpa memuat ulang', () => {
-    assert.match(SEARCH_BAR, /CATALOG_SEARCH_EVENT/);
-    assert.match(SEARCH_BAR, /pathname === "\/makanan"/);
-    assert.match(SEARCH_BAR, /window\.history\.replaceState/);
-    const catalog = readProjectFile('app/(app)/makanan/page.tsx');
-    assert.match(catalog, /addEventListener\(CATALOG_SEARCH_EVENT/);
-    assert.match(catalog, /setQuery\(typeof detail === "string" \? detail : ""\)/);
+test('pencarian menyaring saat mengetik, tanpa memuat ulang halaman', () => {
+    assert.match(SEARCH_BAR, /suggestFoods/);
+    assert.match(SEARCH_BAR, /useMemo/);
+    assert.doesNotMatch(SEARCH_BAR, /CATALOG_SEARCH_EVENT/);
+    assert.doesNotMatch(SEARCH_BAR, /window\.history\.replaceState/);
+    const helper = readProjectFile('lib/food-search.ts');
+    assert.match(helper, /export function suggestFoods/);
 });
 test('kerangka isi berkilau, bukan denyut opacity biasa', () => {
     assert.match(SKELETON, /animate-shimmer/);
@@ -87,11 +85,10 @@ test('pengalih alamat toko penjual memakai kerangka yang sama', () => {
     assert.match(redirect, /SellerShellSkeleton/);
     assert.doesNotMatch(redirect, /animate-spin/);
 });
-test('katalog makanan dan toko memuat dengan kerangka kartu', () => {
+test('katalog kategori memuat dengan kerangka kartu', () => {
     assert.match(projectFile('app/components/shared/FoodCardSkeleton.tsx'), /<Skeleton/);
     assert.match(projectFile('app/components/shared/VendorCardSkeleton.tsx'), /<Skeleton/);
-    assert.match(readProjectFile('app/(app)/makanan/page.tsx'), /<FoodCardSkeleton/);
-    assert.match(readProjectFile('app/(app)/toko/page.tsx'), /<VendorCardSkeleton/);
+    assert.match(readProjectFile('app/components/makanan-category/category-view.tsx'), /<FoodCardSkeleton/);
 });
 test('riwayat pesanan dan detail pesanan memuat dengan kerangka', () => {
     assert.match(readProjectFile('app/components/order-history/order-history-view.tsx'), /<Skeleton/);

@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,7 +13,7 @@ const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visibl
 const ITEMS_PER_PAGE = 4;
 export function VendorSection() {
     const { plan } = useSellerPlan();
-    const { vendors, loading } = useCatalog();
+    const { vendors, loading, error: catalogError, refresh: refreshCatalog } = useCatalog();
     const reducedMotion = useReducedMotion();
     const [page, setPage] = useState(1);
     const [direction, setDirection] = useState<1 | -1>(1);
@@ -54,9 +53,6 @@ export function VendorSection() {
                   <ChevronRight className="h-5 w-5" aria-hidden/>
                 </button>
               </>)}
-            <Link href="/toko" className={cn("hidden shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 font-sans text-[13px] font-semibold text-primary transition-colors duration-150 hover:border-primary/40 hover:bg-accent sm:inline-flex", FOCUS_RING)}>
-              Lihat semua toko
-            </Link>
           </div>
         </div>
 
@@ -64,7 +60,19 @@ export function VendorSection() {
             {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (<VendorCardSkeleton key={index}/>))}
           </div>)}
 
-        {!loading && sortedVendors.length === 0 && (<div className="mt-6 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
+        {!loading && catalogError && (<div role="alert" className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/[0.06] px-6 py-10 text-center">
+            <p className="font-sans text-sm font-semibold text-foreground">
+              Gagal memuat daftar toko
+            </p>
+            <p className="mt-1 font-sans text-xs text-muted-foreground">
+              {catalogError}
+            </p>
+            <button type="button" onClick={() => void refreshCatalog()} className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-full bg-primary px-6 font-sans text-sm font-semibold text-white transition-colors hover:bg-primary-dark">
+              Coba lagi
+            </button>
+          </div>)}
+
+        {!loading && !catalogError && sortedVendors.length === 0 && (<div className="mt-6 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
             <p className="font-sans text-sm font-semibold text-foreground">
               Belum ada toko
             </p>
@@ -73,7 +81,7 @@ export function VendorSection() {
             </p>
           </div>)}
 
-        {!loading && sortedVendors.length > 0 && (<>
+        {!loading && !catalogError && sortedVendors.length > 0 && (<>
             
             <div className="relative mt-6 overflow-hidden">
               <AnimatePresence initial={false} mode="popLayout" custom={direction}>
@@ -95,7 +103,7 @@ export function VendorSection() {
             {pageCount > 1 && (<nav aria-label="Halaman toko" className="mt-6 flex flex-wrap items-center justify-start gap-2">
                 {Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => {
                     const active = pageNumber === page;
-                    return (<button key={pageNumber} type="button" onClick={() => goToPage(pageNumber)} aria-current={active ? "page" : undefined} aria-label={`Ke halaman toko ${pageNumber}`} className={cn("flex h-10 w-10 items-center justify-center rounded-full font-sans text-sm font-semibold tabular-nums transition-colors duration-150", active
+                    return (<button key={pageNumber} type="button" onClick={() => goToPage(pageNumber)} aria-current={active ? "page" : undefined} aria-label={`Ke halaman toko ${pageNumber}`} className={cn("flex h-11 w-11 items-center justify-center rounded-full font-sans text-sm font-semibold tabular-nums transition-colors duration-150", active
                             ? "bg-primary text-white"
                             : "border border-border bg-white text-muted-foreground hover:border-primary/40 hover:text-primary", FOCUS_RING)}>
                         {pageNumber}

@@ -14,7 +14,7 @@ const EXPLORE_LINKS: FooterLink[] = [
   { label: 'Untuk UMKM', href: '/#umkm', sectionId: 'umkm' },
   { label: 'Untuk Pembeli', href: '/#pembeli', sectionId: 'pembeli' },
   { label: 'FAQ', href: '/#faq', sectionId: 'faq' },
-  { label: 'Paket Langganan', href: '/#langganan', sectionId: 'langganan' },
+  { label: 'Paket Langganan', href: '/langganan' },
 ];
 
 const BUYER_LINKS: FooterLink[] = [

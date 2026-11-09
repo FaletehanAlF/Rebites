@@ -9,7 +9,9 @@ export default function LoginPenjualPage() {
     return (<AuthSplitShell imageSrc="/hero-makanan.avif" imageAlt="ReBites — Makanan surplus" variant="buyer" overlayText={{
             headline: "Masuk sebagai Penjual",
             description: "Masuk untuk mengelola toko, mengatur menu, dan mulai berjualan makanan surplus.",
-        }}>
-      <PenjualLoginForm />
+        }}>
+
+      <PenjualLoginForm />
+
     </AuthSplitShell>);
 }

@@ -9,7 +9,9 @@ export default function BuatSandiBaruPage() {
     return (<AuthSplitShell imageSrc="/hero-makanan.avif" imageAlt="Makanan surplus ReBites" variant="buyer" overlayText={{
             headline: "Buat Kata Sandi Baru",
             description: "Tautanmu terverifikasi. Tentukan kata sandi baru untuk akun ReBites-mu.",
-        }}>
-      <BuatSandiBaruForm />
+        }}>
+
+      <BuatSandiBaruForm />
+
     </AuthSplitShell>);
 }

@@ -21,19 +21,32 @@ function StatCard({ icon: Icon, label, value, supporting, }: {
     value: string;
     supporting: string;
 }) {
-    return (<DashboardCard className="h-full">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-xs font-medium text-sage-500">{label}</p>
-          <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-charcoal-900">
-            {value}
-          </p>
-          <p className="mt-1.5 text-xs text-sage-500">{supporting}</p>
-        </div>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Icon aria-hidden className="h-4 w-4"/>
-        </span>
-      </div>
+    return (<DashboardCard className="h-full">
+
+      <div className="flex items-start justify-between gap-4">
+
+        <div className="min-w-0">
+
+          <p className="text-xs font-medium text-sage-500">{label}</p>
+
+          <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-charcoal-900">
+
+            {value}
+
+          </p>
+
+          <p className="mt-1.5 text-xs text-sage-500">{supporting}</p>
+
+        </div>
+
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+
+          <Icon aria-hidden className="h-4 w-4"/>
+
+        </span>
+
+      </div>
+
     </DashboardCard>);
 }
 function BreakdownRows({ rows, }: {
@@ -44,42 +57,66 @@ function BreakdownRows({ rows, }: {
     }[];
 }) {
     const total = rows.reduce((sum, row) => sum + row.value, 0);
-    return (<ul className="grid gap-2.5">
+    return (<ul className="grid gap-2.5">
+
       {rows.map((row) => {
             const percent = total > 0 ? Math.round((row.value / total) * 100) : 0;
-            return (<li key={row.label}>
-            <div className="flex items-center justify-between gap-4 text-sm">
-              <span className="min-w-0 truncate text-charcoal-700">{row.label}</span>
-              <span className="shrink-0 font-semibold tabular-nums text-charcoal-900">
-                {row.value.toLocaleString('id-ID')}
-              </span>
-            </div>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sage-100">
-              <span aria-hidden className={`block h-full rounded-full ${row.tone}`} style={{ width: `${percent}%` }}/>
-            </div>
+            return (<li key={row.label}>
+
+            <div className="flex items-center justify-between gap-4 text-sm">
+
+              <span className="min-w-0 truncate text-charcoal-700">{row.label}</span>
+
+              <span className="shrink-0 font-semibold tabular-nums text-charcoal-900">
+
+                {row.value.toLocaleString('id-ID')}
+
+              </span>
+
+            </div>
+
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sage-100">
+
+              <span aria-hidden className={`block h-full rounded-full ${row.tone}`} style={{ width: `${percent}%` }}/>
+
+            </div>
+
           </li>);
-        })}
+        })}
+
     </ul>);
 }
 function AnalyticsRangePicker({ rangeDays, onChange, }: {
     rangeDays: AnalyticsRangeDays;
     onChange: (days: AnalyticsRangeDays) => void;
 }) {
-    return (<div role="group" aria-label="Pilih rentang analytics" className="flex flex-wrap items-center gap-1.5">
-      {ANALYTICS_RANGE_DAYS.map((days) => (<AdminFilterChip key={days} active={rangeDays === days} onClick={() => onChange(days)}>
-          {RANGE_LABEL[days]}
-        </AdminFilterChip>))}
+    return (<div role="group" aria-label="Pilih rentang analytics" className="flex flex-wrap items-center gap-1.5">
+
+      {ANALYTICS_RANGE_DAYS.map((days) => (<AdminFilterChip key={days} active={rangeDays === days} onClick={() => onChange(days)}>
+
+          {RANGE_LABEL[days]}
+
+        </AdminFilterChip>))}
+
     </div>);
 }
 function AnalyticsSkeleton() {
-    return (<div role="status" aria-label="Memuat analytics periode" className="animate-pulse motion-reduce:animate-none">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (<div key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60"/>))}
-      </div>
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="h-64 rounded-[var(--radius)] bg-sage-100/60"/>
-        <div className="h-64 rounded-[var(--radius)] bg-sage-100/60"/>
-      </div>
+    return (<div role="status" aria-label="Memuat analytics periode" className="animate-pulse motion-reduce:animate-none">
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+        {Array.from({ length: 4 }).map((_, index) => (<div key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60"/>))}
+
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+
+        <div className="h-64 rounded-[var(--radius)] bg-sage-100/60"/>
+
+        <div className="h-64 rounded-[var(--radius)] bg-sage-100/60"/>
+
+      </div>
+
     </div>);
 }
 export function DashboardAnalytics() {
@@ -140,54 +177,99 @@ export function DashboardAnalytics() {
         return <AdminForbiddenState message="Analitik periode hanya untuk admin."/>;
     }
     if (status === 'error' || !data) {
-        return (<div className="min-w-0">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
-          <p className="text-sm font-medium text-charcoal-900">Rentang analytics</p>
-          <AnalyticsRangePicker rangeDays={rangeDays} onChange={setRangeDays}/>
-        </div>
-        <p className="mb-3 text-xs text-sage-500">
-          Bila periode ini terlalu besar, pilih rentang yang lebih pendek lalu coba lagi.
-        </p>
-        <AdminErrorState title="Gagal memuat analytics" message={errorMsg || 'Terjadi kesalahan saat menghitung data periode.'} onRetry={() => setReloadToken((value) => value + 1)}/>
+        return (<div className="min-w-0">
+
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
+
+          <p className="text-sm font-medium text-charcoal-900">Rentang analytics</p>
+
+          <AnalyticsRangePicker rangeDays={rangeDays} onChange={setRangeDays}/>
+
+        </div>
+
+        <p className="mb-3 text-xs text-sage-500">
+
+          Bila periode ini terlalu besar, pilih rentang yang lebih pendek lalu coba lagi.
+
+        </p>
+
+        <AdminErrorState title="Gagal memuat analytics" message={errorMsg || 'Terjadi kesalahan saat menghitung data periode.'} onRetry={() => setReloadToken((value) => value + 1)}/>
+
       </div>);
     }
     const hasAnyData = data.orders.total > 0 || data.reports.total > 0;
-    return (<div aria-busy={refreshing} className="min-w-0">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-charcoal-900">
-            {formatTanggal(data.from)} – {formatTanggal(data.to)}
-          </p>
-          <p className="mt-0.5 text-xs text-sage-500">
-            Zona waktu WIB · diperbarui {formatTanggalWaktu(data.generatedAt)}
-            {refreshing ? ' · memuat periode…' : ''}
-          </p>
-        </div>
-        <AnalyticsRangePicker rangeDays={rangeDays} onChange={setRangeDays}/>
-      </div>
-
-      {errorMsg && (<div className="mt-3">
-          <AdminInlineError message={errorMsg}/>
-        </div>)}
-
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={ShoppingBag} label="Pesanan dibuat" value={data.orders.total.toLocaleString('id-ID')} supporting={`${data.orders.paid.toLocaleString('id-ID')} sudah dibayar`}/>
-        <StatCard icon={Wallet} label="Pendapatan bruto pesanan dibayar" value={formatRupiah(data.orders.revenue)} supporting="Jumlah total_price pesanan paid; bukan laba bersih."/>
-        <StatCard icon={Flag} label="Laporan baru" value={data.reports.total.toLocaleString('id-ID')} supporting={`${(data.reports.byStatus.open + data.reports.byStatus.reviewing).toLocaleString('id-ID')} masih terbuka/ditinjau`}/>
-        <StatCard icon={XCircle} label="Pembayaran gagal" value={data.orders.failed.toLocaleString('id-ID')} supporting="Status pembayaran failed pada periode"/>
-      </div>
-
-      {!hasAnyData && (<p className="mt-4 rounded-[var(--radius)] border border-border bg-white px-4 py-3 text-sm text-sage-500">
-          Belum ada pesanan atau laporan pada periode ini. Angka nol di atas berasal dari data
-          yang berhasil dimuat, bukan kegagalan query.
-        </p>)}
-
-      <div className="mt-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-        <DashboardCard>
-          <h3 className="font-display text-sm font-semibold text-charcoal-900">
-            Status saat ini — laporan dibuat pada periode
-          </h3>
-          <div className="mt-3">
+    return (<div aria-busy={refreshing} className="min-w-0">
+
+      <div className="flex flex-wrap items-center justify-between gap-4">
+
+        <div className="min-w-0">
+
+          <p className="text-sm font-medium text-charcoal-900">
+
+            {formatTanggal(data.from)} – {formatTanggal(data.to)}
+
+          </p>
+
+          <p className="mt-0.5 text-xs text-sage-500">
+
+            Zona waktu WIB · diperbarui {formatTanggalWaktu(data.generatedAt)}
+
+            {refreshing ? ' · memuat periode…' : ''}
+
+          </p>
+
+        </div>
+
+        <AnalyticsRangePicker rangeDays={rangeDays} onChange={setRangeDays}/>
+
+      </div>
+
+
+
+      {errorMsg && (<div className="mt-3">
+
+          <AdminInlineError message={errorMsg}/>
+
+        </div>)}
+
+
+
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+        <StatCard icon={ShoppingBag} label="Pesanan dibuat" value={data.orders.total.toLocaleString('id-ID')} supporting={`${data.orders.paid.toLocaleString('id-ID')} sudah dibayar`}/>
+
+        <StatCard icon={Wallet} label="Pendapatan bruto pesanan dibayar" value={formatRupiah(data.orders.revenue)} supporting="Jumlah total_price pesanan paid; bukan laba bersih."/>
+
+        <StatCard icon={Flag} label="Laporan baru" value={data.reports.total.toLocaleString('id-ID')} supporting={`${(data.reports.byStatus.open + data.reports.byStatus.reviewing).toLocaleString('id-ID')} masih terbuka/ditinjau`}/>
+
+        <StatCard icon={XCircle} label="Pembayaran gagal" value={data.orders.failed.toLocaleString('id-ID')} supporting="Status pembayaran failed pada periode"/>
+
+      </div>
+
+
+
+      {!hasAnyData && (<p className="mt-4 rounded-[var(--radius)] border border-border bg-white px-4 py-3 text-sm text-sage-500">
+
+          Belum ada pesanan atau laporan pada periode ini. Angka nol di atas berasal dari data
+
+          yang berhasil dimuat, bukan kegagalan query.
+
+        </p>)}
+
+
+
+      <div className="mt-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+
+        <DashboardCard>
+
+          <h3 className="font-display text-sm font-semibold text-charcoal-900">
+
+            Status saat ini — laporan dibuat pada periode
+
+          </h3>
+
+          <div className="mt-3">
+
             <BreakdownRows rows={[
             {
                 label: 'Terbuka',
@@ -209,15 +291,24 @@ export function DashboardAnalytics() {
                 value: data.reports.byStatus.dismissed,
                 tone: 'bg-sage-500',
             },
-        ]}/>
-          </div>
-        </DashboardCard>
-
-        <DashboardCard>
-          <h3 className="font-display text-sm font-semibold text-charcoal-900">
-            Tingkat saat ini — laporan dibuat pada periode
-          </h3>
-          <div className="mt-3">
+        ]}/>
+
+          </div>
+
+        </DashboardCard>
+
+
+
+        <DashboardCard>
+
+          <h3 className="font-display text-sm font-semibold text-charcoal-900">
+
+            Tingkat saat ini — laporan dibuat pada periode
+
+          </h3>
+
+          <div className="mt-3">
+
             <BreakdownRows rows={[
             {
                 label: 'Kritis',
@@ -244,13 +335,21 @@ export function DashboardAnalytics() {
                 value: data.reports.bySeverity.unknown,
                 tone: 'bg-sage-500',
             },
-        ]}/>
-          </div>
-        </DashboardCard>
-      </div>
-
-      <div className="mt-4">
-        <DashboardTrends points={data.orders.byDay} rangeDays={data.rangeDays}/>
-      </div>
+        ]}/>
+
+          </div>
+
+        </DashboardCard>
+
+      </div>
+
+
+
+      <div className="mt-4">
+
+        <DashboardTrends points={data.orders.byDay} rangeDays={data.rangeDays}/>
+
+      </div>
+
     </div>);
 }

@@ -39,55 +39,105 @@ export default function VendorDashboardPage() {
             cancelled = true;
         };
     }, []);
-    return (<SellerShell>
-      
-      <header className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
-        <div className="min-w-0">
-          <h1 className="font-display text-2xl font-semibold leading-tight tracking-[-0.01em] text-primary">
-            Halo,{' '}
-            <span className="font-extralight italic">{firstName || 'Penjual'}</span>
-          </h1>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Pantau penjualan dan pesanan masuk tokomu.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-foreground">
-            <Crown className="h-3.5 w-3.5 text-primary" aria-hidden/>
-            Paket Aktif · {plan.label}
-          </span>
-          <Link href={sellerStorePath(storeId, 'langganan')} className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3.5 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-            Kelola Paket Langganan
-          </Link>
-        </div>
-      </header>
-
-      <div className="mt-7 grid grid-cols-1 gap-6 lg:grid-cols-12">
-        
-        <div className="order-1 space-y-6 lg:order-2 lg:col-span-4">
-          <Reveal delay={0.05}>
-            <StoreCard />
-          </Reveal>
-          <Reveal delay={0.1}>
-            <StoreRatingCard />
-          </Reveal>
-        </div>
-
-        
-        <div className="order-2 space-y-6 lg:order-1 lg:col-span-8">
-          <Reveal delay={0.05}>
-            <SalesStatsCard period={period} onPeriodChange={setPeriod}/>
-          </Reveal>
-
-          <Reveal delay={0.1}>
-            <StoreVisitorCard />
-          </Reveal>
-
-          <Reveal delay={0.1}>
-            
-            <DetailedReportCard />
-          </Reveal>
-        </div>
-      </div>
+    return (<SellerShell>
+
+      
+
+      <header className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+
+        <div className="min-w-0">
+
+          <h1 className="font-display text-2xl font-semibold leading-tight tracking-[-0.01em] text-primary">
+
+            Halo,{' '}
+
+            <span className="font-extralight italic">{firstName || 'Penjual'}</span>
+
+          </h1>
+
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+
+            Pantau penjualan dan pesanan masuk tokomu.
+
+          </p>
+
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-foreground">
+
+            <Crown className="h-3.5 w-3.5 text-primary" aria-hidden/>
+
+            Paket Aktif · {plan.label}
+
+          </span>
+
+          <Link href={sellerStorePath(storeId, 'langganan')} className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3.5 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+
+            Kelola Paket Langganan
+
+          </Link>
+
+        </div>
+
+      </header>
+
+
+
+      <div className="mt-7 grid grid-cols-1 gap-6 lg:grid-cols-12">
+
+        
+
+        <div className="order-1 space-y-6 lg:order-2 lg:col-span-4">
+
+          <Reveal delay={0.05}>
+
+            <StoreCard />
+
+          </Reveal>
+
+          <Reveal delay={0.1}>
+
+            <StoreRatingCard />
+
+          </Reveal>
+
+        </div>
+
+
+
+        
+
+        <div className="order-2 space-y-6 lg:order-1 lg:col-span-8">
+
+          <Reveal delay={0.05}>
+
+            <SalesStatsCard period={period} onPeriodChange={setPeriod}/>
+
+          </Reveal>
+
+
+
+          <Reveal delay={0.1}>
+
+            <StoreVisitorCard />
+
+          </Reveal>
+
+
+
+          <Reveal delay={0.1}>
+
+            
+
+            <DetailedReportCard />
+
+          </Reveal>
+
+        </div>
+
+      </div>
+
     </SellerShell>);
 }

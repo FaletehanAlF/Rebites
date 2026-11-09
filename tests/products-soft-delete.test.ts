@@ -168,7 +168,7 @@ test('penjual tetap melihat produk rejected, tetapi tidak yang sudah ia hapus', 
         await db.close();
     }
 });
-test('admin tetap melihat produk yang sudah dihapus penjual (BUG.md utama)', async () => {
+test('admin tetap melihat produk yang sudah dihapus penjual', async () => {
     const db = await setup();
     try {
         await applyMigration(db);

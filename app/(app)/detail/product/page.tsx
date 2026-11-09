@@ -6,11 +6,13 @@ export const metadata: Metadata = {
     description: 'Selamatkan porsi makanan surplus favoritmu langsung dari UMKM pilihan di Depok.',
 };
 export default function DetailProductPage() {
-    return (<Suspense fallback={<div className="min-h-screen bg-secondary"/>}>
+    return (<Suspense fallback={<div className="min-h-screen bg-secondary"/>}>
+
       <DetailProductContent shell={{
             buyerShell: true,
             productPath: '/detail/product',
             seeAllHref: '/home',
-        }}/>
+        }}/>
+
     </Suspense>);
 }

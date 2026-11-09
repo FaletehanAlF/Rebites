@@ -1,166 +1,238 @@
-# ReBites
+# ReBites: Marketplace Makanan Surplus dari UMKM
 
-Aplikasi marketplace makanan ReBites — Next.js App Router + Supabase.
+ReBites mempertemukan UMKM kuliner di Kota Depok dengan pembeli yang mencari makanan
+layak konsumsi berharga lebih murah. Penjual mengunggah sisa menu hari itu beserta
+harga, stok, dan jam jualnya. Pembeli memesan untuk diantar ke alamat atau diambil
+sendiri di toko. Setiap porsi yang terjual mengurangi makanan yang berakhir di tempat
+sampah, dan penjual mendapat pemasukan dari stok yang biasanya tidak terjual.
 
-## Stack
+Aplikasi ini dibangun untuk Garda Tech National Innovation Competition (GTNIC) 2026,
+kategori Web Development.
 
-| Komponen | Versi |
+## Masalah yang diselesaikan
+
+Warung dan usaha kuliner menyiapkan makanan berdasarkan perkiraan permintaan. Ketika
+pembeli lebih sedikit dari perkiraan, sisa makanan pada akhir hari tidak lagi dijual
+meski masih layak dikonsumsi. Pemilik usaha menanggung biaya bahan dan tenaga kerjanya,
+sementara pembeli kehilangan pilihan makanan berkualitas dengan harga lebih rendah.
+
+ReBites menyediakan kanal penjualan untuk sisa tersebut dengan dua batas yang jelas:
+produk hanya tayang pada jam yang ditentukan penjual, dan hanya toko yang aktif serta
+terverifikasi yang muncul ke pembeli.
+
+## Peran pengguna
+
+| Peran | Halaman awal | Yang dikerjakan |
+|---|---|---|
+| Pembeli | `/home` | Menjelajah katalog, memesan, membayar, melacak pesanan, memberi ulasan |
+| Penjual (UMKM) | `/dashboard/penjual/<id-toko>` | Mengelola menu, pesanan, jadwal jual, dan langganan |
+| Admin | `/dashboard/admin` | Moderasi, pemantauan, pengguna, pesanan, pengiriman, artikel |
+| Super Admin | `/dashboard/admin` | Tindakan yang tidak dapat dipulihkan, termasuk hapus permanen akun |
+
+Peran disimpan di `profiles.role`. Rute tujuan setelah login ditentukan dari peran
+tersebut, sehingga satu akun selalu mendarat di panel yang sesuai.
+
+## Fitur utama
+
+**Pembeli.** Katalog makanan surplus dengan pencarian dari bilah navigasi, kategori,
+diskon kilat yang mengikuti jam tayang, dan daftar UMKM. Halaman detail produk memuat
+sisa stok, jam jual, status buka toko, dan ulasan pembeli lain. Checkout memilih antara
+diantar dan ambil sendiri, memakai kode promo, dan dapat membelanjakan koin ReBites.
+Pembayaran diproses lewat invoice Xendit. Setelah pesanan dibuat, pembeli mengikuti
+status dan riwayat, menerima notifikasi, dan dapat melacak posisi kurir di peta saat
+pesanan sedang diantar.
+
+**Penjual.** Dashboard toko berisi pesanan masuk dengan aksi lanjut status, kelola menu
+dan stok, jadwal jual per produk, ulasan pembeli, laporan performa, pengaturan toko, dan
+pengelolaan langganan. Toko dapat mengajukan pengaktifan kembali setelah dinonaktifkan
+melalui alur permintaan yang ditinjau admin.
+
+**Admin.** Panel admin menangani moderasi produk dan toko, verifikasi produk, permintaan
+perubahan peran, sanksi dan peringatan, pusat laporan pengguna, kotak pesan dukungan
+beserta banding akun terblokir, pemantauan aktivitas dan audit, analitik, pengiriman,
+koin, langganan, artikel, dan ekspor data ke Excel.
+
+**Asisten.** ReBitess-Asisten menjawab pertanyaan pengunjung dan pengguna di dalam
+aplikasi. Pengetahuannya dibatasi pada fakta produk ReBites dan halaman yang boleh
+diakses sesuai peran, dan jawabannya tidak membuka data pribadi pengguna lain.
+
+## Alur pesanan
+
+Pesanan bergerak melalui satu sumber kebenaran status operasional: `order_status`.
+Transisinya dijaga trigger basis data, sehingga urutan yang tidak sah ditolak di lapisan
+data, bukan hanya di antarmuka.
+
+Urutan yang sah: `pending` ke `paid`, lalu `processing`, kemudian `out_for_delivery` atau
+`ready_for_pickup`, dan berakhir di `completed`. Pesanan yang masih `pending` juga dapat
+berpindah ke `cancelled`.
+
+Pesanan yang sudah mulai diantar atau menunggu diambil dapat selesai otomatis setelah
+estimasi tiba terlewati. Penyelesaian berjalan di server. Setiap perubahan status tercatat
+di `order_status_history` dan memicu notifikasi ke pihak terkait.
+
+## Arsitektur sistem
+
+Aplikasi berjalan sebagai satu proyek Next.js dengan App Router. Halaman dirender sebagai
+komponen React, sedangkan operasi yang butuh hak istimewa dikerjakan route handler di
+bawah `app/api`.
+
+- **Lapisan tampilan** mengelompokkan komponen per domain: pembeli, penjual, admin,
+  checkout, detail produk, dan primitif UI bersama.
+- **Lapisan API** menangani autentikasi Bearer, validasi masukan, aturan bisnis, dan
+  pemanggilan penyedia eksternal. Kunci rahasia hanya hidup di sisi server.
+- **Lapisan data** adalah Supabase Postgres dengan Row Level Security, fungsi
+  `SECURITY DEFINER` untuk operasi sensitif, dan trigger untuk invarian seperti stok,
+  transisi status, dan pencatatan aktivitas.
+- **Realtime** dipakai untuk pesanan dan posisi kurir, dengan polling sebagai jalur
+  cadangan ketika koneksi realtime tidak tersedia.
+
+Otorisasi berjalan berlapis. Pemeriksaan pertama ada di route handler melalui
+`lib/admin-access.ts`, dilanjutkan fungsi database, lalu dijaga trigger pada tabel
+`profiles`. Perubahan peran hanya sah dari konteks `service_role`, sehingga pemanggilan
+langsung ke PostgREST tidak bisa melewati aturan aplikasi.
+
+## Teknologi
+
+| Bagian | Pilihan |
 |---|---|
-| Next.js (App Router) | 14.2.35 |
-| React | 18.2.0 |
-| TypeScript | 5.2.2 |
-| Supabase JS | 2.x (V1 — jangan migrasi ke V2) |
-| Tailwind CSS | 3.3.3 |
+| Framework | Next.js 14 App Router, React 18, TypeScript 5 |
+| Gaya | Tailwind CSS 3, primitif UI berbasis Radix, animasi Framer Motion |
+| Basis data dan auth | Supabase Postgres, Supabase Auth, Storage, Realtime |
+| Pembayaran | Xendit (invoice dan webhook) |
+| Pengiriman | Biteship (tarif dan pembuatan kiriman) serta tarif lokal Kurir ReBites |
+| Asisten | Layanan model bahasa melalui `VIBE_CODE_*` atau Gemini |
+| Peta | MapLibre GL |
 
-## Struktur folder
+Proyek memakai klien `@supabase/supabase-js` 2.x dengan pola V1: token Bearer per
+permintaan, tanpa `@supabase/ssr` dan tanpa `middleware.ts`. Jangan menambahkan
+konfigurasi V2.
 
-```text
-app/                 Route Next.js (App Router)
-├── api/             Route handler HTTP
-│   ├── admin/       Endpoint panel admin (Bearer token wajib)
-│   ├── articles/    Artikel publik
-│   ├── checkout/    Alur checkout + Xendit
-│   ├── orders/      Pesanan pembeli
-│   ├── profile/     Profil pengguna
-│   ├── reports/     Pelaporan pengguna
-│   ├── shipping/    Tarif ongkir (Biteship)
-│   ├── subscriptions/ Langganan penjual
-│   └── webhooks/    Callback Xendit
-├── components/      Komponen UI, dikelompokkan per domain
-│   ├── admin/       Panel admin (22 halaman)
-│   ├── auth/        Login & registrasi
-│   ├── checkout/    Keranjang & pembayaran
-│   ├── dashboard-penjual/  Dashboard penjual
-│   ├── detail-product/     Detail produk
-│   ├── detail-toko/        Detail toko
-│   ├── home/        Beranda pembeli
-│   ├── landing/     Halaman pemasaran
-│   ├── notification/       Notifikasi
-│   ├── order-history/      Riwayat pesanan
-│   ├── shared/      Dipakai lintas domain
-│   ├── subscription/       Langganan
-│   ├── tambahMenu/  Kelola menu penjual
-│   └── ui/          Primitif UI (button, dialog, dropdown, dst.)
-├── dashboard/
-│   ├── admin/       Panel admin (guard: useRequireAdmin)
-│   └── penjual/     Panel penjual (guard: useRequireSeller)
-├── auth/            Halaman login/registrasi
-├── home/            Beranda pembeli
-├── artikel/         Artikel publik
-├── detail/          Detail produk/toko
-├── makanan/         Kategori makanan
-├── notifikasi/      Pusat notifikasi
-├── profile/         Profil pengguna
-├── riwayatPesanan/  Riwayat pesanan
-├── toko/            Halaman toko
-└── langganan/       Langganan
+## Model data
 
-hooks/               Custom React hook (use-require-admin, use-admin-me, dst.)
-lib/                 Logika non-UI
-├── server/          HANYA server: klien Supabase, auth Bearer, health probe
-├── admin-*.ts       Klien data panel admin (satu file per domain)
-└── *.ts             Helper bersama (auth-token, current-user, csv, dst.)
+Delapan puluh migrasi di `supabase/migrations` adalah satu-satunya cara skema berubah.
+Kelompok tabel utama:
 
-supabase/migrations/ Migrasi SQL — sumber kebenaran schema database
-tests/               Tes offline (node --test). 401 tes, tanpa browser/DB.
-types/               Deklarasi tipe global
-scripts/             Skrip sekali-jalan (bukan bagian runtime)
-docs/                Catatan desain & rencana fitur
-public/              Aset statis
-```
+| Kelompok | Tabel |
+|---|---|
+| Akun dan peran | `profiles`, `user_preferences`, `role_change_requests`, `role_change_logs` |
+| Usaha | `umkm_profiles`, `store_follows`, `store_activation_requests`, `store_visitors` |
+| Katalog | `products`, `product_favorites`, `reviews`, `moderation_logs` |
+| Transaksi | `orders`, `order_status_history`, `seller_transactions`, `promo_codes`, `coin_transactions` |
+| Langganan | `plans`, `subscriptions` |
+| Logistik | `couriers`, `delivery_assignments`, `delivery_locations`, `courier_messages` |
+| Dukungan | `support_threads`, `support_messages`, `support_appeals` |
+| Pemantauan | `activity_logs`, `admin_audit_logs`, `reports`, `report_notes`, `warnings`, `sanctions` |
+| Konten | `articles` |
+| Asisten | `chat_sessions`, `chat_messages` |
+| Analitik | `site_visitors`, `site_visitor_days` |
 
-## Menjalankan
+## Integrasi eksternal
+
+- **Xendit** membuat invoice checkout dan langganan penjual. Callback masuk lewat
+  `app/api/webhooks/xendit` dengan verifikasi token, lalu status pesanan dan langganan
+  disesuaikan.
+- **Biteship** menyediakan tarif kurir dan identitas kiriman. Webhook
+  `app/api/webhooks/biteship` memperbarui status kiriman dan nomor resi.
+- **Kurir ReBites** adalah tarif lokal berbasis jarak yang dipakai ketika penjual tidak
+  memakai kurir pihak ketiga. Tarifnya dibaca dari variabel lingkungan dan dibatasi nilai
+  minimum serta maksimum.
+- **Posisi kurir** disimpan di `delivery_locations` dengan RLS dan disiarkan lewat Realtime
+  Postgres Changes. Kanal Broadcast publik tidak dipakai karena siapa pun yang tahu kode
+  pesanan bisa menerimanya.
+
+## Keamanan dan kontrol akses
+
+- Semua endpoint `app/api/admin/*` menerima `Authorization: Bearer <access_token>`.
+  Tidak ada `middleware.ts` dan tidak ada `@supabase/ssr`, jadi cookie tidak pernah dipakai
+  untuk otorisasi. Memanggil endpoint admin tanpa header selalu dijawab 401.
+- Akun yang diblokir ditahan di semua pintu masuk. Jalur pasca-autentikasi membaca
+  `profiles.account_status`, sanksi juga menyinkronkan `ban_duration` Supabase Auth dan
+  menonaktifkan toko miliknya. Akun tersebut melihat pesan blokir di form login dan dapat
+  memantau bandingnya lewat halaman publik `/banding`.
+- Penghapusan permanen akun hanya untuk Super Admin, wajib sandi dari `PASSWORD_DELETE_USER`
+  beserta alasan, dan ditolak selama masih ada pesanan berjalan atau artikel atas nama akun
+  itu. Bila variabel tersebut kosong, fitur mati. Ini berbeda dari penghapusan biasa yang
+  masih dapat dipulihkan.
+- Ekspor Excel dibatasi 5.000 baris. Permintaan yang melebihi batas ditolak dengan pesan
+  yang menyebut jumlah dan batasnya, bukan dipotong tanpa penjelasan.
+- Rahasia sisi server, termasuk `SUPABASE_SERVICE_ROLE_KEY`, `XENDIT_SECRET_KEY`,
+  `BITESHIP_API_KEY`, dan kunci asisten, tidak pernah dikirim ke peramban.
+
+## Langganan penjual
+
+| Paket | Bulanan | Tahunan | Batas produk |
+|---|---|---|---|
+| Basic | Rp24.999 | Rp249.990 | 3 produk |
+| Standar | Rp49.000 | Rp490.000 | 5 produk |
+| Max | Rp99.000 | Rp990.000 | 15 produk |
+
+Paket menentukan batas jumlah produk, akses riwayat penjualan, penempatan prioritas di
+marketplace, laporan penjualan, dan dukungan. Aktivasi dilakukan setelah pembayaran
+terverifikasi, dan halaman sukses menyediakan jalan kembali manual bila verifikasi belum
+selesai.
+
+## Operasi dan pemantauan
+
+Kiriman yang menunggu dikirim lebih dari 24 jam disorot di halaman Pengiriman dan muncul
+sebagai item perhatian di dashboard. Ambang dan daftar statusnya ditetapkan di satu modul
+`lib/shipment-state.ts`. Sanksi lama yang dibuat sebelum blokir tersambung ke Supabase Auth
+dapat disusulkan sekali jalan lewat `npm run sync:account-bans`, dengan mode uji coba lebih
+dulu sebelum `--apply`.
+
+## Menjalankan proyek
+
+Prasyarat: Node.js, npm, dan proyek Supabase.
+
+1. `npm install`
+2. Salin `.env.example` menjadi `.env.local`, lalu isi kredensial Supabase, Xendit, Biteship,
+   dan asisten. Berkas `.env` dan `.env.local` tidak boleh di-commit.
+3. Terapkan migrasi dengan `npx supabase migration list` untuk memeriksa status, lalu
+   terapkan berkas yang belum jalan. Jangan mengubah migrasi yang sudah diterapkan.
+4. `npm run dev` menjalankan server di `http://localhost:3000`.
+
+Jalankan satu server dev saja. Port dikunci ke 3000: bila port itu masih dipakai,
+`npm run dev` berhenti dengan `EADDRINUSE` alih-alih diam-diam pindah ke 3001. Dua server
+yang berbagi folder build membuat chunk hilang dan halaman menjawab 500. Urutan yang benar
+adalah `npm run dev:reset` lalu `npm run dev`. Perintah `npm run dev:reset` hanya
+mematikan proses milik proyek ini, sedangkan proses lain yang memakai port tersebut
+dilaporkan dan dibiarkan hidup.
+
+## Pengujian dan pemeriksaan
 
 ```bash
-npm install          # sekali saja
-npm run dev          # http://localhost:3000 (turbopack)
-npm run dev:webpack  # fallback bila turbo bermasalah
-```
-
-Salin `.env.example` menjadi `.env.local` lalu isi kredensial Supabase.
-**Jangan pernah commit `.env` atau `.env.local`.**
-
-## Pemeriksaan sebelum commit
-
-```bash
-npm run typecheck        # tsc --noEmit
-npm run typecheck:tests  # tsc untuk file tes
+npm run typecheck        # tsc --noEmit untuk kode aplikasi
+npm run typecheck:tests  # tsc untuk berkas tes
 npm run lint             # eslint
-node --test tests/*.test.ts   # seluruh tes offline (401 tes)
+node --test tests/*.test.ts
 ```
 
-Tes memakai `node --test` dan `readProjectFile` — tidak butuh browser,
-database, atau jaringan. Kegagalan tes **selalu** berarti ada yang salah;
-jangan diabaikan.
+Suite berisi 1254 tes dan berjalan sepenuhnya offline: tanpa peramban, basis data, atau
+jaringan. Tes membaca berkas proyek dan memeriksa kontrak yang mudah rusak diam-diam,
+seperti urutan cabang galat sebelum cabang kosong, atribut aksesibilitas, alur status
+pesanan, dan pemasangan komponen global. Kegagalan tes selalu berarti ada yang salah dan
+tidak boleh diabaikan.
 
-## Konvensi penting
+## Batasan saat ini
 
-**Autentikasi API.** Semua endpoint `app/api/admin/*` menerima
-`Authorization: Bearer <access_token Supabase>`. Tidak ada `middleware.ts`
-dan tidak ada `@supabase/ssr`, jadi **cookie tidak pernah dipakai** untuk
-otorisasi. Memanggil endpoint admin lewat `curl` tanpa header akan selalu
-401 — itu perilaku benar, bukan bug.
+- Area layanan terbatas di Kota Depok.
+- Ongkir dihitung dari jarak dan berat perkiraan ketika penjual belum mengisi data berat
+  atau titik lokasi toko. Antarmuka menandai nilai yang masih perkiraan.
+- Pembayaran bergantung pada Xendit dan pengiriman pada Biteship. Bila penyedia tidak
+  tersedia, alur terkait berhenti dengan pesan yang jelas, bukan dengan status palsu.
+- Verifikasi email, login Google, dan pembayaran memerlukan kredensial milik pemilik
+  proyek, sehingga tidak dapat diuji penuh di lingkungan tanpa kredensial.
 
-**Tiga lapis otorisasi role.** Route server (`lib/admin-access.ts`) →
-RPC database (`SECURITY DEFINER`) → trigger `profiles.role`. Perubahan role
-hanya sah dari konteks `service_role`; admin tim tidak bisa melewati API
-lewat PostgREST.
+## Tim
 
-**Peran & beranda.** `admin → /dashboard/admin`, `umkm → /dashboard/penjual/<id-toko>`,
-`buyer → /home` (lihat `lib/current-user.ts` dan `lib/seller-store-path.ts`). Alamat
-`/dashboard/penjual` tanpa id tetap hidup sebagai pengalih: ia mencari toko milik penjual
-yang login lalu mengalihkan ke alamat ber-id, sehingga tautan lama tidak perlu diubah.
+Dikembangkan oleh Team Tony Stark Inc. untuk GTNIC 2026.
 
-**Migrasi.** File di `supabase/migrations/` adalah satu-satunya cara schema
-berubah. Selalu periksa status dengan `npx supabase migration list` sebelum
-dan sesudah menerapkan. Jangan mengubah file migrasi yang sudah diterapkan.
+| Nama | Peran |
+|---|---|
+| Faletehan Al Farabi | Backend Developer |
+| Aburahman Kayysan | Fullstack Developer |
+| Jona Alfaros | Frontend Developer |
 
-**Preferensi admin** dibaca dari `localStorage` sebagai cache dan disinkronkan
-ke akun lewat tabel `user_preferences` (`lib/admin-preferences.ts`), sehingga
-pilihan yang sama tetap terpakai saat admin masuk dari perangkat lain.
-Pengecualiannya lebar sidebar: itu sengaja per perangkat karena besar layar
-berbeda-beda.
+## Tautan
 
-## Status yang perlu diketahui
-
-- Live GPS kurir aktif lewat tabel `delivery_locations` ber-RLS + Realtime
-  Postgres Changes (`hooks/use-courier-location.ts`, peta
-  `app/components/order-history/delivery-map.tsx`). Jangan menghidupkan
-  kembali kanal Broadcast publik — siapa pun yang tahu kode pesanan bisa
-  menerimanya.
-- Suspend/ban menahan login di SEMUA pintu: jalur pasca-auth membaca
-  `profiles.account_status` (`lib/account-block.ts`), sanksi juga menyinkronkan
-  `ban_duration` Supabase Auth (`lib/server/account-ban.ts`) dan menonaktifkan
-  toko pemiliknya. Akun yang diblokir melihat pesan di form login.
-- Kotak pesan admin + banding akun terblokir (`20261109000000_support_inbox`):
-  satu percakapan per akun (`support_threads`), isi pesan (`support_messages`),
-  dan banding (`support_appeals`). Satu-satunya jalur dari sisi pengguna adalah
-  halaman banding PUBLIK `/banding`: akun yang diblokir tidak bisa login, dan
-  pengguna memegang kode untuk memantau statusnya di `/banding/status`.
-  Halaman/menu chat pembeli dan penjual sengaja tidak ada — percakapan dibaca
-  dan dibalas admin di menu **Chat** panel admin (`/dashboard/admin/chat`).
-  Tombol "Setujui & buka blokir" mencabut sanksi lewat jalur yang sama dengan
-  panel blokir (`revokeAllActiveBlocks`). Klien hanya memegang `SELECT`; semua
-  penulisan lewat server.
-- Hapus PERMANEN akun (`app/api/admin/users/[id]/hard-deletion/route.ts`)
-  hanya untuk Super Admin, wajib sandi dari env `PASSWORD_DELETE_USER`
-  (+ alasan), dan menolak bila masih ada pesanan berjalan atau artikel penulis.
-  Variabel kosong = fitur mati. Beda dari hapus biasa yang dapat dipulihkan.
-- Ekspor Excel daftar admin: Pengguna, Pesanan, Produk, dan UMKM punya tombol
-  "Ekspor Excel" dengan filter yang sama seperti tabel. Berkas dibuat di server
-  (`lib/server/admin-export.ts` + `lib/admin-export-rules.ts`), dibatasi 5.000
-  baris, dan permintaan yang melebihi batas DITOLAK dengan pesan — bukan
-  dipotong diam-diam. Halaman Laporan memakai pengunduh bersama yang sama.
-- Foto profil memakai bucket `avatars` + kolom `profiles.avatar_url`
-  (`app/api/profile/avatar/route.ts`, `POST` unggah / `DELETE` hapus), sama
-  untuk pembeli, penjual, dan admin. Aturan ukuran dan formatnya satu tempat:
-  `lib/admin-avatar.ts`, dipakai klien dan server sekaligus.
-- Kiriman "Menunggu dikirim" yang lewat 24 jam disorot di halaman Pengiriman
-  (kartu ringkasan + badge umur) dan muncul sebagai item perhatian di
-  Dashboard. Tautannya membuka `/dashboard/admin/pengiriman?state=to_ship`.
-  Ambang dan definisi statusnya satu tempat: `lib/shipment-state.ts`
-  (`TO_SHIP_STALE_HOURS`, `TO_SHIP_STATUSES`).
-- Sanksi yang sudah lama (sebelum blokir disambungkan ke Supabase Auth) bisa
-  disusulkan sekali jalan dengan `npm run sync:account-bans` (uji coba) lalu
-  `npm run sync:account-bans -- --apply`.
-- Proyek memakai **Supabase V1**. Jangan membuat konfigurasi V2.
+- Repositori: https://github.com/kayy-eci/Rebitesss-GTNIC2026
+- Naskah demo video: `docs/naskah-demo-video.md`

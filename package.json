@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "dev:webpack": "next dev",
+    "dev": "next dev --turbo --port 3000",
+    "dev:webpack": "next dev --port 3000",
+    "dev:reset": "node scripts/dev-reset.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

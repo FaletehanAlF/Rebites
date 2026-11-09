@@ -31,10 +31,9 @@ function getSellerOnboardingTarget(plan: string | null | undefined, billing: str
     return `/auth/register/penjual?plan=${planParam}&billing=${billingParam}`;
 }
 export async function completeAuthSession(userId: string | null, context: PostLoginContext): Promise<PostLoginResult> {
-    const safeRedirect = isSafeInternalPath(context.redirectParam)
+    const safeRedirectCandidate = isSafeInternalPath(context.redirectParam)
         ? context.redirectParam
         : null;
-    const penjualRegisterTarget = getSellerOnboardingTarget(context.plan, context.billing);
     let role: UserRole | null = null;
     try {
         role = await fetchCurrentUserRole(userId);
@@ -52,6 +51,11 @@ export async function completeAuthSession(userId: string | null, context: PostLo
         }
         return { ok: false, message: 'Gagal membaca peran akun. Silakan coba lagi.' };
     }
+    // Peran admin selalu mendarat di dashboard admin: `next` hasil guard halaman pembeli
+    // (mis. /riwayatPesanan/...) tidak boleh menimpa beranda peran admin.
+    const isAdminLanding = role === 'admin';
+    const safeRedirect = isAdminLanding ? null : safeRedirectCandidate;
+    const penjualRegisterTarget = isAdminLanding ? null : getSellerOnboardingTarget(context.plan, context.billing);
     if (!context.allowMissingProfile && role === null) {
         return {
             ok: false,

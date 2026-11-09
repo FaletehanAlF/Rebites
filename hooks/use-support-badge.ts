@@ -1,8 +1,16 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { subscribeSupportRealtime } from '@/lib/support-realtime';
 const POLL_INTERVAL_MS = 20000;
 export const SUPPORT_UPDATED_EVENT = 'rebites-support-updated';
+function useSupportRealtime(enabled: boolean, load: () => void) {
+    useEffect(() => {
+        if (!enabled)
+            return;
+        return subscribeSupportRealtime({ label: 'admin-badge', onChange: load });
+    }, [enabled, load]);
+}
 function useVisibilityPolling(enabled: boolean, load: () => void) {
     useEffect(() => {
         if (!enabled)
@@ -62,5 +70,6 @@ export function useAdminSupportBadge(enabled: boolean): {
         void load();
     }, [enabled, load]);
     useVisibilityPolling(enabled, load);
+    useSupportRealtime(enabled, load);
     return { count };
 }

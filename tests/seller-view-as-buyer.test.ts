@@ -22,7 +22,7 @@ test('tautan pratinjau memakai ikon sendiri, bukan ikon menu dashboard', () => {
     assert.match(SELLER_SIDEBAR, /from 'lucide-react'/);
 });
 test('tautan pratinjau tetap memenuhi syarat target sentuh dan fokus', () => {
-    assert.match(SELLER_SIDEBAR, /group flex min-h-11 items-center gap-3 rounded-xl/);
+    assert.match(SELLER_SIDEBAR, /group flex min-h-\[44px\] items-center gap-3 rounded-xl/);
 });
 test('sidebar penjual tetap hanya menautkan Panel Admin untuk admin', () => {
     const guards = SELLER_SIDEBAR.match(/\{isAdmin && \(/g) ?? [];

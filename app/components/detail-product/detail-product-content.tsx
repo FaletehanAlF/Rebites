@@ -13,7 +13,7 @@ export function DetailProductContent({ shell, }: {
     const [product, setProduct] = useState<ProductDetail | null>(null);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
-    const [status, setStatus] = useState<"loading" | "ready" | "not-found">("loading");
+    const [status, setStatus] = useState<"loading" | "ready" | "not-found" | "error">("loading");
     useEffect(() => {
         if (!productId) {
             setStatus("not-found");
@@ -21,7 +21,8 @@ export function DetailProductContent({ shell, }: {
         }
         let active = true;
         setStatus("loading");
-        fetchProductDetail(productId).then((detail) => {
+        fetchProductDetail(productId)
+            .then((detail) => {
             if (!active)
                 return;
             if (!detail) {
@@ -30,6 +31,11 @@ export function DetailProductContent({ shell, }: {
             }
             setProduct(detail);
             setStatus("ready");
+        })
+            .catch((error) => {
+            console.error('[detail] gagal memuat produk:', error);
+            if (active)
+                setStatus("error");
         });
         return () => {
             active = false;
@@ -54,17 +60,50 @@ export function DetailProductContent({ shell, }: {
     if (status === "loading") {
         return <div className="min-h-screen bg-secondary"/>;
     }
+    if (status === "error") {
+        return (<div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-secondary px-6 text-center">
+
+        <p className="font-sans text-lg font-bold text-foreground">
+
+          Gagal memuat produk
+
+        </p>
+
+        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+
+          Periksa koneksi internet lalu coba lagi.
+
+        </p>
+
+        <a href="/home" className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark">
+
+          Kembali ke Beranda
+
+        </a>
+
+      </div>);
+    }
     if (status === "not-found" || !product) {
-        return (<div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-secondary px-6 text-center">
-        <p className="font-sans text-lg font-bold text-foreground">
-          Produk tidak ditemukan
-        </p>
-        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-          Menu yang kamu cari mungkin sudah habis atau dihapus penjualnya.
-        </p>
-        <a href="/" className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark">
-          Kembali ke Beranda
-        </a>
+        return (<div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-secondary px-6 text-center">
+
+        <p className="font-sans text-lg font-bold text-foreground">
+
+          Produk tidak ditemukan
+
+        </p>
+
+        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+
+          Menu yang kamu cari mungkin sudah habis atau dihapus penjualnya.
+
+        </p>
+
+        <a href="/" className="mt-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark">
+
+          Kembali ke Beranda
+
+        </a>
+
       </div>);
     }
     return (<DetailPage product={product} reviews={reviews} relatedProducts={relatedProducts} shell={shell}/>);

@@ -33,9 +33,10 @@ const FOODS = [
         stockLabel: 'Stok 12',
     },
 ];
-test('search mencocokkan nama makanan dan nama toko, tanpa regex', () => {
+test('search hanya mencocokkan nama makanan, bukan nama toko, tanpa regex', () => {
     assert.deepEqual(filterAndSortFoods(FOODS, { query: 'goreng' }).map((f) => f.id), ['a']);
-    assert.deepEqual(filterAndSortFoods(FOODS, { query: 'sinar' }).map((f) => f.id), ['b']);
+    assert.deepEqual(filterAndSortFoods(FOODS, { query: 'sinar' }), []);
+    assert.deepEqual(filterAndSortFoods(FOODS, { query: 'nasi goreng' }).map((f) => f.id), ['a']);
     assert.deepEqual(filterAndSortFoods(FOODS, { query: 'Nasi.*Goreng' }), []);
     assert.deepEqual(filterAndSortFoods(FOODS, { query: '   ' }).map((f) => f.id), ['a', 'b', 'c']);
 });

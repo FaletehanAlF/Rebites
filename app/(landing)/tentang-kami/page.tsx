@@ -52,7 +52,7 @@ export default function TentangKamiPage() {
               </p>
             </Reveal>
 
-            <div className="mt-10 grid gap-4 sm:mt-14 sm:gap-5 lg:grid-cols-5">
+            <div id="visi-misi" className="mt-10 grid scroll-mt-24 gap-4 sm:mt-14 sm:gap-5 lg:grid-cols-5">
               {/* Visi — kartu hijau menjadi titik fokus */}
               <Reveal className="lg:col-span-2">
                 <div className="flex h-full flex-col justify-between gap-10 rounded-3xl bg-primary p-7 text-primary-foreground sm:p-9">
@@ -113,6 +113,8 @@ export default function TentangKamiPage() {
         </section>
 
         <TeamLanyardRail
+          id="tim-leadership"
+          className="scroll-mt-24"
           items={LANYARD_DEMO_TEAM.slice(0, 3)}
           maxBadgeWidth={152}
           eyebrow="Meet the team"

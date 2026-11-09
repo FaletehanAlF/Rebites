@@ -123,145 +123,279 @@ export function ProductsManagementView() {
         url: `/api/admin/products/export?${exportParams.toString()}`,
         noun: 'produk',
     });
-    return (<div className={ADMIN_PAGE_WRAPPER}>
-      <AdminPageHeader title="Produk" description="Semua produk UMKM." actions={<>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs font-bold">
-              {total} produk
-            </Badge>
-            <AdminExportButton onClick={startExport} busy={exporting} disabled={status === 'loading' || status === 'forbidden'} noun="produk"/>
+    return (<div className={ADMIN_PAGE_WRAPPER}>
+
+      <AdminPageHeader title="Produk" description="Semua produk UMKM." actions={<>
+
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs font-bold">
+
+              {total} produk
+
+            </Badge>
+
+            <AdminExportButton onClick={startExport} busy={exporting} disabled={status === 'loading' || status === 'forbidden'} noun="produk"/>
+
             <Button type="button" variant="outline" size="sm" onClick={() => {
                 resetRealtime();
                 load(offset);
-            }} disabled={status === 'loading'}>
-              <RefreshCw aria-hidden className="mr-1.5 h-3.5 w-3.5"/>
-              Muat ulang
-            </Button>
-          </>}/>
-
-      {feedback && <AdminExportNotice feedback={feedback}/>}
-
+            }} disabled={status === 'loading'}>
+
+              <RefreshCw aria-hidden className="mr-1.5 h-3.5 w-3.5"/>
+
+              Muat ulang
+
+            </Button>
+
+          </>}/>
+
+
+
+      {feedback && <AdminExportNotice feedback={feedback}/>}
+
+
+
       {newCount > 0 && status === 'ready' && (<button type="button" onClick={() => {
                 resetRealtime();
                 load(0);
-            }} className="mb-4 inline-flex items-center gap-2 rounded-[var(--radius)] bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-          {newCount} perubahan terbaru — muat untuk melihat
-        </button>)}
-
-      <AdminToolbar>
-        <AdminSearchInput value={search} onChange={setSearch} label="Cari produk" placeholder="Cari nama atau kategori produk…"/>
-        <AdminSelect value={verificationStatus} onChange={setVerificationStatus} label="Status moderasi" options={VERIFICATION_OPTIONS}/>
-        <AdminSelect value={operationalStatus} onChange={setOperationalStatus} label="Status operasional" options={OPERATIONAL_OPTIONS}/>
-      </AdminToolbar>
-
-      {status === 'loading' && <AdminLoadingState label="Memuat daftar produk"/>}
-
-      {status === 'forbidden' && (<AdminForbiddenState message="Halaman ini hanya untuk admin. Akun kamu tidak memiliki hak melihat daftar produk."/>)}
-
-      {status === 'error' && (<AdminErrorState title="Gagal memuat daftar produk" message={errorMsg} onRetry={() => load(offset)}/>)}
-
-      {status === 'ready' && items.length === 0 && (<AdminEmptyState icon={<Package aria-hidden className="h-10 w-10 text-primary"/>} title="Tidak ada produk" description="Tidak ada produk yang cocok dengan filter saat ini."/>)}
-
-      {status === 'ready' && items.length > 0 && (<>
-          <AdminTableCard label="Daftar produk" minWidth={820} className="hidden sm:block">
-            <AdminTableHead>
-              <AdminTh>Produk</AdminTh>
-              <AdminTh>Harga</AdminTh>
-              <AdminTh className="text-right">Stok</AdminTh>
-              <AdminTh>Status</AdminTh>
-              <AdminTh>Dibuat</AdminTh>
-              <AdminTh className="text-right">Aksi</AdminTh>
-            </AdminTableHead>
-            <tbody>
-              {items.map((item) => (<AdminTr key={item.id}>
-                  <AdminTd className="max-w-[300px]">
-                    <p className="break-words text-[13px] font-semibold leading-snug text-charcoal-900" title={item.name}>
-                      {item.name}
-                    </p>
-                    
-                    <p className="mt-0.5 break-words text-[11px] leading-snug text-sage-500">
-                      {item.store?.businessName ?? 'Toko tidak diketahui'}
-                      {item.category ? ` · ${item.category}` : ''}
-                    </p>
-                    {item.store?.city && (<p className="mt-0.5 text-[11px] leading-snug text-sage-500">
-                        {item.store.city}
-                      </p>)}
-                  </AdminTd>
-                  <AdminTd className="whitespace-nowrap">
-                    <span className="block text-[13px] font-semibold tabular-nums text-charcoal-900">
-                      {formatRupiah(item.surplusPrice)}
-                    </span>
-                    {item.originalPrice != null && (<span className="block text-[11px] tabular-nums text-sage-500 line-through">
-                        {formatRupiah(item.originalPrice)}
-                      </span>)}
-                  </AdminTd>
-                  <AdminTd className="whitespace-nowrap text-right text-[13px] font-medium tabular-nums text-charcoal-900">
-                    {item.stock ?? '-'}
-                  </AdminTd>
-                  <AdminTd className="max-w-[220px]">
-                    <div className="flex flex-wrap items-center gap-1">
-                      {item.deletedAt && (<Badge variant="destructive">
-                          {item.deletedBy ? 'Dihapus admin' : 'Dihapus penjual'}
-                        </Badge>)}
-                      <Badge variant={varianVerifikasiProduk(item.verificationStatus)}>
-                        {labelVerifikasiProduk(item.verificationStatus)}
-                      </Badge>
-                      <Badge variant="secondary">{labelStatusOperasional(item.status)}</Badge>
-                    </div>
-                    {item.verificationStatus === 'rejected' && item.rejectionReason && (<p className="mt-1 line-clamp-2 break-words text-[11px] leading-snug text-sage-500" title={item.rejectionReason}>
-                        {item.rejectionReason}
-                      </p>)}
-                  </AdminTd>
-                  <AdminTd className="whitespace-nowrap text-xs text-sage-500">
-                    {formatTanggal(item.createdAt)}
-                  </AdminTd>
-                  <AdminTdActions>
-                    <Button type="button" size="sm" variant="outline" onClick={() => setSelectedProductId(item.id)}>
-                      Kelola
-                    </Button>
-                  </AdminTdActions>
-                </AdminTr>))}
-            </tbody>
-          </AdminTableCard>
-
-          <div className="space-y-3 sm:hidden">
-            {items.map((item) => (<Card key={item.id}>
-                <CardContent className="px-4 py-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="break-words font-semibold text-charcoal-900">{item.name}</p>
-                      <p className="truncate text-xs text-sage-500">
-                        {item.store?.businessName ?? '-'}
-                      </p>
-                    </div>
-                    <Badge variant={varianVerifikasiProduk(item.verificationStatus)} className="shrink-0">
-                      {labelVerifikasiProduk(item.verificationStatus)}
-                    </Badge>
-                  </div>
-                  {item.deletedAt && (<p className="mt-2 inline-flex items-center rounded-full bg-destructive px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-white">
-                      {item.deletedBy ? 'Dihapus admin' : 'Dihapus penjual'}
-                    </p>)}
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-sage-500">
-                    <span className="font-semibold text-primary">
-                      {formatRupiah(item.surplusPrice)}
-                    </span>
-                    <span>Stok {item.stock ?? '-'}</span>
-                    <span>{labelStatusOperasional(item.status)}</span>
-                    <span>{formatTanggalWaktu(item.createdAt)}</span>
-                  </div>
-                  {item.verificationStatus === 'rejected' && item.rejectionReason && (<p className="mt-2 break-words rounded-[var(--radius)] bg-destructive/5 px-3 py-2 text-xs text-charcoal-700">
-                      <span className="font-bold">Alasan: </span>
-                      {item.rejectionReason}
-                    </p>)}
-                  <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => setSelectedProductId(item.id)}>
-                    Kelola produk
-                  </Button>
-                </CardContent>
-              </Card>))}
-          </div>
-
-          <AdminPagination total={total} page={Math.floor(offset / PAGE_LIMIT) + 1} pageSize={PAGE_LIMIT} noun="produk" onPageChange={(next) => load((next - 1) * PAGE_LIMIT)}/>
-        </>)}
-
-      <ProductDetailDrawer productId={selectedProductId} onClose={() => setSelectedProductId(null)} onChanged={() => load(offset)}/>
+            }} className="mb-4 inline-flex items-center gap-2 rounded-[var(--radius)] bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+
+          {newCount} perubahan terbaru — muat untuk melihat
+
+        </button>)}
+
+
+
+      <AdminToolbar>
+
+        <AdminSearchInput value={search} onChange={setSearch} label="Cari produk" placeholder="Cari nama atau kategori produk…"/>
+
+        <AdminSelect value={verificationStatus} onChange={setVerificationStatus} label="Status moderasi" options={VERIFICATION_OPTIONS}/>
+
+        <AdminSelect value={operationalStatus} onChange={setOperationalStatus} label="Status operasional" options={OPERATIONAL_OPTIONS}/>
+
+      </AdminToolbar>
+
+
+
+      {status === 'loading' && <AdminLoadingState label="Memuat daftar produk"/>}
+
+
+
+      {status === 'forbidden' && (<AdminForbiddenState message="Halaman ini hanya untuk admin. Akun kamu tidak memiliki hak melihat daftar produk."/>)}
+
+
+
+      {status === 'error' && (<AdminErrorState title="Gagal memuat daftar produk" message={errorMsg} onRetry={() => load(offset)}/>)}
+
+
+
+      {status === 'ready' && items.length === 0 && (<AdminEmptyState icon={<Package aria-hidden className="h-10 w-10 text-primary"/>} title="Tidak ada produk" description="Tidak ada produk yang cocok dengan filter saat ini."/>)}
+
+
+
+      {status === 'ready' && items.length > 0 && (<>
+
+          <AdminTableCard label="Daftar produk" minWidth={820} className="hidden sm:block">
+
+            <AdminTableHead>
+
+              <AdminTh>Produk</AdminTh>
+
+              <AdminTh>Harga</AdminTh>
+
+              <AdminTh className="text-right">Stok</AdminTh>
+
+              <AdminTh>Status</AdminTh>
+
+              <AdminTh>Dibuat</AdminTh>
+
+              <AdminTh className="text-right">Aksi</AdminTh>
+
+            </AdminTableHead>
+
+            <tbody>
+
+              {items.map((item) => (<AdminTr key={item.id}>
+
+                  <AdminTd className="max-w-[300px]">
+
+                    <p className="break-words text-[13px] font-semibold leading-snug text-charcoal-900" title={item.name}>
+
+                      {item.name}
+
+                    </p>
+
+                    
+
+                    <p className="mt-0.5 break-words text-[11px] leading-snug text-sage-500">
+
+                      {item.store?.businessName ?? 'Toko tidak diketahui'}
+
+                      {item.category ? ` · ${item.category}` : ''}
+
+                    </p>
+
+                    {item.store?.city && (<p className="mt-0.5 text-[11px] leading-snug text-sage-500">
+
+                        {item.store.city}
+
+                      </p>)}
+
+                  </AdminTd>
+
+                  <AdminTd className="whitespace-nowrap">
+
+                    <span className="block text-[13px] font-semibold tabular-nums text-charcoal-900">
+
+                      {formatRupiah(item.surplusPrice)}
+
+                    </span>
+
+                    {item.originalPrice != null && (<span className="block text-[11px] tabular-nums text-sage-500 line-through">
+
+                        {formatRupiah(item.originalPrice)}
+
+                      </span>)}
+
+                  </AdminTd>
+
+                  <AdminTd className="whitespace-nowrap text-right text-[13px] font-medium tabular-nums text-charcoal-900">
+
+                    {item.stock ?? '-'}
+
+                  </AdminTd>
+
+                  <AdminTd className="max-w-[220px]">
+
+                    <div className="flex flex-wrap items-center gap-1">
+
+                      {item.deletedAt && (<Badge variant="destructive">
+
+                          {item.deletedBy ? 'Dihapus admin' : 'Dihapus penjual'}
+
+                        </Badge>)}
+
+                      <Badge variant={varianVerifikasiProduk(item.verificationStatus)}>
+
+                        {labelVerifikasiProduk(item.verificationStatus)}
+
+                      </Badge>
+
+                      <Badge variant="secondary">{labelStatusOperasional(item.status)}</Badge>
+
+                    </div>
+
+                    {item.verificationStatus === 'rejected' && item.rejectionReason && (<p className="mt-1 line-clamp-2 break-words text-[11px] leading-snug text-sage-500" title={item.rejectionReason}>
+
+                        {item.rejectionReason}
+
+                      </p>)}
+
+                  </AdminTd>
+
+                  <AdminTd className="whitespace-nowrap text-xs text-sage-500">
+
+                    {formatTanggal(item.createdAt)}
+
+                  </AdminTd>
+
+                  <AdminTdActions>
+
+                    <Button type="button" size="sm" variant="outline" onClick={() => setSelectedProductId(item.id)}>
+
+                      Kelola
+
+                    </Button>
+
+                  </AdminTdActions>
+
+                </AdminTr>))}
+
+            </tbody>
+
+          </AdminTableCard>
+
+
+
+          <div className="space-y-3 sm:hidden">
+
+            {items.map((item) => (<Card key={item.id}>
+
+                <CardContent className="px-4 py-4">
+
+                  <div className="flex items-start justify-between gap-2">
+
+                    <div className="min-w-0">
+
+                      <p className="break-words font-semibold text-charcoal-900">{item.name}</p>
+
+                      <p className="truncate text-xs text-sage-500">
+
+                        {item.store?.businessName ?? '-'}
+
+                      </p>
+
+                    </div>
+
+                    <Badge variant={varianVerifikasiProduk(item.verificationStatus)} className="shrink-0">
+
+                      {labelVerifikasiProduk(item.verificationStatus)}
+
+                    </Badge>
+
+                  </div>
+
+                  {item.deletedAt && (<p className="mt-2 inline-flex items-center rounded-full bg-destructive px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-white">
+
+                      {item.deletedBy ? 'Dihapus admin' : 'Dihapus penjual'}
+
+                    </p>)}
+
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-sage-500">
+
+                    <span className="font-semibold text-primary">
+
+                      {formatRupiah(item.surplusPrice)}
+
+                    </span>
+
+                    <span>Stok {item.stock ?? '-'}</span>
+
+                    <span>{labelStatusOperasional(item.status)}</span>
+
+                    <span>{formatTanggalWaktu(item.createdAt)}</span>
+
+                  </div>
+
+                  {item.verificationStatus === 'rejected' && item.rejectionReason && (<p className="mt-2 break-words rounded-[var(--radius)] bg-destructive/5 px-3 py-2 text-xs text-charcoal-700">
+
+                      <span className="font-bold">Alasan: </span>
+
+                      {item.rejectionReason}
+
+                    </p>)}
+
+                  <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => setSelectedProductId(item.id)}>
+
+                    Kelola produk
+
+                  </Button>
+
+                </CardContent>
+
+              </Card>))}
+
+          </div>
+
+
+
+          <AdminPagination total={total} page={Math.floor(offset / PAGE_LIMIT) + 1} pageSize={PAGE_LIMIT} noun="produk" onPageChange={(next) => load((next - 1) * PAGE_LIMIT)}/>
+
+        </>)}
+
+
+
+      <ProductDetailDrawer productId={selectedProductId} onClose={() => setSelectedProductId(null)} onChanged={() => load(offset)}/>
+
     </div>);
 }

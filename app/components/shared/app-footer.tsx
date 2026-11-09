@@ -9,8 +9,7 @@ interface AppFooterLink {
 }
 
 const DEFAULT_LINKS: AppFooterLink[] = [
-    { label: "Jelajahi toko", href: "/toko" },
-    { label: "Kategori makanan", href: "/makanan" },
+    { label: "Kategori makanan", href: "/home#kategori" },
     { label: "Riwayat pesanan", href: "/riwayatPesanan" },
     { label: "Kebijakan privasi", href: "/privacy" },
     { label: "Syarat penggunaan", href: "/terms" },
@@ -62,11 +61,7 @@ interface AppFooterProps {
 }
 
 export function AppFooter({ role = "buyer", hasMobileBottomNav = false }: AppFooterProps) {
-    const links = role === "seller"
-        ? SELLER_LINKS
-        : role === "admin"
-            ? ADMIN_LINKS
-            : DEFAULT_LINKS;
+    const links = DEFAULT_LINKS;
     return (<footer data-nav="neutral" className={hasMobileBottomNav ? "border-t border-border pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0" : "border-t border-border"}>
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8 lg:px-8">
         <Link href={role === "seller" ? "/dashboard/penjual" : role === "admin" ? "/dashboard/admin" : "/home"} aria-label="ReBites, kembali ke beranda" className={`inline-flex w-fit items-center gap-2.5 rounded-lg ${FOOTER_FOCUS}`}>
@@ -77,7 +72,7 @@ export function AppFooter({ role = "buyer", hasMobileBottomNav = false }: AppFoo
         </Link>
 
         <nav aria-label="Tautan footer" className="flex flex-wrap items-center gap-x-5 gap-y-0.5">
-          {links.map((link) => (<Link key={link.href} href={link.href} className={`inline-flex min-h-11 items-center font-sans text-[13px] text-muted-foreground transition-colors duration-150 hover:text-primary ${FOOTER_FOCUS}`}>
+          {links.map((link) => (<Link key={link.href} href={link.href} className={`inline-flex min-h-[44px] items-center font-sans text-[13px] text-muted-foreground transition-colors duration-150 hover:text-primary ${FOOTER_FOCUS}`}>
               {link.label}
             </Link>))}
         </nav>

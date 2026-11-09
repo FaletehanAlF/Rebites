@@ -11,16 +11,27 @@ const DialogOverlay = React.forwardRef<React.ElementRef<typeof DialogPrimitive.O
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Content>, React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     handle?: boolean;
-}>(({ className, children, handle = false, ...props }, ref) => (<DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content ref={ref} className={cn('dialog-panel z-[95] rounded-t-3xl border-t border-x-0 border-b-0 border-border bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-12px_40px_rgba(30,42,34,0.16)] sm:rounded-3xl sm:border sm:p-6 sm:shadow-[0_24px_60px_rgba(30,42,34,0.2)]', className)} {...props}>
-      {handle && <div aria-hidden className="dialog-panel-handle"/>}
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white text-muted-foreground shadow-sm ring-1 ring-border transition-colors duration-200 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40">
-        <X className="h-4 w-4"/>
-        <span className="sr-only">Tutup</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
+    overlayClassName?: string;
+}>(({ className, children, handle = false, overlayClassName, ...props }, ref) => (<DialogPortal>
+
+    <DialogOverlay className={overlayClassName} />
+
+    <DialogPrimitive.Content ref={ref} className={cn('dialog-panel z-[95] rounded-t-3xl border-t border-x-0 border-b-0 border-border bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-12px_40px_rgba(30,42,34,0.16)] sm:rounded-3xl sm:border sm:p-6 sm:shadow-[0_24px_60px_rgba(30,42,34,0.2)]', className)} {...props}>
+
+      {handle && <div aria-hidden className="dialog-panel-handle"/>}
+
+      {children}
+
+      <DialogPrimitive.Close className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white text-muted-foreground shadow-sm ring-1 ring-border transition-colors duration-200 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40">
+
+        <X className="h-4 w-4"/>
+
+        <span className="sr-only">Tutup</span>
+
+      </DialogPrimitive.Close>
+
+    </DialogPrimitive.Content>
+
   </DialogPortal>));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (<div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props}/>);

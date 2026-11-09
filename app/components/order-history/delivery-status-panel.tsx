@@ -173,125 +173,239 @@ export function DeliveryStatusPanel({ order, variant = 'compact', }: {
             : phase === 'cancelled'
                 ? 'Dibatalkan'
                 : 'Menunggu pengantaran';
-    return (<div className={cn('overflow-hidden rounded-2xl bg-white ring-1 ring-hairline', !isFull && 'mt-2')}>
-      
-      <div className={cn('flex items-start gap-3', isFull ? 'p-4 sm:p-5' : 'p-3.5')}>
-        <span className={cn('flex shrink-0 items-center justify-center rounded-full ring-1', tone.icon, tone.ring, isFull ? 'h-10 w-10' : 'h-8 w-8')}>
-          <PhaseIcon phase={phase} className={isFull ? 'h-5 w-5' : 'h-4 w-4'}/>
-        </span>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <p className={cn('font-semibold leading-snug text-charcoal-900', isFull ? 'text-[15px]' : 'text-[13px]')}>
-              {copy.title}
-            </p>
-            <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold', tone.chip)}>
-              <span className={cn('h-1.5 w-1.5 rounded-full', phase === 'on-the-way' ? 'bg-primary animate-pulse motion-reduce:animate-none' : 'bg-current')} aria-hidden/>
-              {chipLabel}
-            </span>
-          </div>
-          <p className={cn('mt-1 leading-relaxed text-charcoal-500', isFull ? 'text-[13px]' : 'text-xs')}>
-            {copy.body}
-          </p>
-        </div>
-      </div>
-
-      
-      {isFull && phase !== 'cancelled' && (<div className="px-4 pb-4 sm:px-5" aria-hidden>
-          <div className="flex items-center">
+    return (<div className={cn('overflow-hidden rounded-2xl bg-white ring-1 ring-hairline', !isFull && 'mt-2')}>
+
+      
+
+      <div className={cn('flex items-start gap-3', isFull ? 'p-4 sm:p-5' : 'p-3.5')}>
+
+        <span className={cn('flex shrink-0 items-center justify-center rounded-full ring-1', tone.icon, tone.ring, isFull ? 'h-10 w-10' : 'h-8 w-8')}>
+
+          <PhaseIcon phase={phase} className={isFull ? 'h-5 w-5' : 'h-4 w-4'}/>
+
+        </span>
+
+
+
+        <div className="min-w-0 flex-1">
+
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+
+            <p className={cn('font-semibold leading-snug text-charcoal-900', isFull ? 'text-[15px]' : 'text-[13px]')}>
+
+              {copy.title}
+
+            </p>
+
+            <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold', tone.chip)}>
+
+              <span className={cn('h-1.5 w-1.5 rounded-full', phase === 'on-the-way' ? 'bg-primary animate-pulse motion-reduce:animate-none' : 'bg-current')} aria-hidden/>
+
+              {chipLabel}
+
+            </span>
+
+          </div>
+
+          <p className={cn('mt-1 leading-relaxed text-charcoal-500', isFull ? 'text-[13px]' : 'text-xs')}>
+
+            {copy.body}
+
+          </p>
+
+        </div>
+
+      </div>
+
+
+
+      
+
+      {isFull && phase !== 'cancelled' && (<div className="px-4 pb-4 sm:px-5" aria-hidden>
+
+          <div className="flex items-center">
+
             {PHASE_STEPS.map((step, index) => {
                 const reached = index <= activeIndex;
                 const isLast = index === PHASE_STEPS.length - 1;
-                return (<div key={step.phase} className={cn('flex items-center', !isLast && 'flex-1')}>
-                  <div className="flex flex-col items-center gap-1.5">
+                return (<div key={step.phase} className={cn('flex items-center', !isLast && 'flex-1')}>
+
+                  <div className="flex flex-col items-center gap-1.5">
+
                     <span className={cn('flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-bold transition-colors', reached
                         ? cn('border-transparent text-white', tone.bar)
-                        : 'border-hairline bg-white text-sage-500')}>
-                      {reached ? '✓' : index + 1}
-                    </span>
-                    <span className={cn('whitespace-nowrap text-[10px] font-medium', reached ? 'text-charcoal-900' : 'text-sage-500')}>
-                      {step.label}
-                    </span>
-                  </div>
-                  {!isLast && (<span className={cn('mx-1 mb-4 h-0.5 flex-1 rounded-full', index < activeIndex ? tone.bar : 'bg-hairline')}/>)}
+                        : 'border-hairline bg-white text-sage-500')}>
+
+                      {reached ? '✓' : index + 1}
+
+                    </span>
+
+                    <span className={cn('whitespace-nowrap text-[10px] font-medium', reached ? 'text-charcoal-900' : 'text-sage-500')}>
+
+                      {step.label}
+
+                    </span>
+
+                  </div>
+
+                  {!isLast && (<span className={cn('mx-1 mb-4 h-0.5 flex-1 rounded-full', index < activeIndex ? tone.bar : 'bg-hairline')}/>)}
+
                 </div>);
-            })}
-          </div>
-        </div>)}
-
-      <dl className="divide-y divide-hairline border-t border-hairline">
-        {waited && (<div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
-            <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
-              <Hourglass className="h-3.5 w-3.5 shrink-0" aria-hidden/>
-              Sudah menunggu
-            </dt>
-            <dd className="font-semibold tabular-nums text-charcoal-900 text-right">
-              {waited}
-            </dd>
-          </div>)}
-
-        {estimateValid && (<div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
-            <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
-              <Clock3 className="h-3.5 w-3.5 shrink-0" aria-hidden/>
-              {estimateIsArrival ? 'Estimasi tiba' : 'Estimasi siap'}
-            </dt>
-            <dd className={cn('text-right', isFull ? 'text-sm' : 'text-xs')}>
-              <span className="block font-semibold tabular-nums text-charcoal-900">
-                {formatClock(estimateAt as Date)}
-              </span>
-              
-              {eta && (<span className={cn('block text-[10px] font-medium', eta.overdue ? 'text-caramel-dark' : 'text-charcoal-500')}>
-                  {eta.text}
-                </span>)}
-            </dd>
-          </div>)}
-
-        {distanceKm != null && (<div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
-            <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
-              <Navigation className="h-3.5 w-3.5 shrink-0" aria-hidden/>
-              Jarak estimasi
-            </dt>
-            <dd className={cn('font-semibold tabular-nums text-charcoal-900', isFull ? 'text-sm' : 'text-xs')}>
-              {distanceKm.toLocaleString('id-ID', { maximumFractionDigits: 1 })} km
-            </dd>
-          </div>)}
-
-        {dest?.fullAddress && (<div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
-            <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
-              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden/>
-              Tujuan
-            </dt>
-            <dd className="max-w-[62%] text-right text-xs font-medium leading-relaxed text-charcoal-900">
-              {dest.fullAddress}
-            </dd>
-          </div>)}
-      </dl>
-
-      {liveUnavailable && (<div role="status" className="flex items-start gap-2 border-t border-hairline bg-cream-50 px-4 py-2.5 sm:px-5">
-          {courierFreshness === 'aktif' ? (<Navigation className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden/>) : (<TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" aria-hidden/>)}
-          <p className="text-xs leading-relaxed text-charcoal-500">
-            {courierFreshness === 'aktif' ? (<>
-                <span className="font-semibold text-charcoal-900">
-                  Posisi kurir diperbarui otomatis.
-                </span>{' '}
-                Kurir mengirim posisi dari perangkatnya
-                {courierAge ? ` (${courierAge})` : ''}. Ikon motor di peta mengikuti
-                posisi itu.
-              </>) : courierFreshness === 'terlambat' ? (<>
-                <span className="font-semibold text-charcoal-900">
-                  Posisi kurir terlambat.
-                </span>{' '}
-                Data posisi terakhir diterima{' '}
-                {courierAge ?? 'beberapa waktu lalu'}, jadi posisinya mungkin sudah tidak
-                akurat. Status pengantaran di atas tetap diperbarui dari sistem pesanan.
-              </>) : (<>
-                <span className="font-semibold text-charcoal-900">
-                  Posisi kurir belum tersedia.
-                </span>{' '}
-                Kurir belum mengirim posisi untuk pesanan ini. Status pengantaran di atas
-                tetap diperbarui dari sistem pesanan.
-              </>)}
-          </p>
-        </div>)}
+            })}
+
+          </div>
+
+        </div>)}
+
+
+
+      <dl className="divide-y divide-hairline border-t border-hairline">
+
+        {waited && (<div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
+
+            <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
+
+              <Hourglass className="h-3.5 w-3.5 shrink-0" aria-hidden/>
+
+              Sudah menunggu
+
+            </dt>
+
+            <dd className="font-semibold tabular-nums text-charcoal-900 text-right">
+
+              {waited}
+
+            </dd>
+
+          </div>)}
+
+
+
+        {estimateValid && (<div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
+
+            <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
+
+              <Clock3 className="h-3.5 w-3.5 shrink-0" aria-hidden/>
+
+              {estimateIsArrival ? 'Estimasi tiba' : 'Estimasi siap'}
+
+            </dt>
+
+            <dd className={cn('text-right', isFull ? 'text-sm' : 'text-xs')}>
+
+              <span className="block font-semibold tabular-nums text-charcoal-900">
+
+                {formatClock(estimateAt as Date)}
+
+              </span>
+
+              
+
+              {eta && (<span className={cn('block text-[10px] font-medium', eta.overdue ? 'text-caramel-dark' : 'text-charcoal-500')}>
+
+                  {eta.text}
+
+                </span>)}
+
+            </dd>
+
+          </div>)}
+
+
+
+        {distanceKm != null && (<div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
+
+            <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
+
+              <Navigation className="h-3.5 w-3.5 shrink-0" aria-hidden/>
+
+              Jarak estimasi
+
+            </dt>
+
+            <dd className={cn('font-semibold tabular-nums text-charcoal-900', isFull ? 'text-sm' : 'text-xs')}>
+
+              {distanceKm.toLocaleString('id-ID', { maximumFractionDigits: 1 })} km
+
+            </dd>
+
+          </div>)}
+
+
+
+        {dest?.fullAddress && (<div className={cn('flex items-start justify-between gap-3', isFull ? 'px-4 py-3 sm:px-5' : 'px-3.5 py-2.5')}>
+
+            <dt className="flex items-center gap-1.5 text-xs text-charcoal-500">
+
+              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden/>
+
+              Tujuan
+
+            </dt>
+
+            <dd className="max-w-[62%] text-right text-xs font-medium leading-relaxed text-charcoal-900">
+
+              {dest.fullAddress}
+
+            </dd>
+
+          </div>)}
+
+      </dl>
+
+
+
+      {liveUnavailable && (<div role="status" className="flex items-start gap-2 border-t border-hairline bg-cream-50 px-4 py-2.5 sm:px-5">
+
+          {courierFreshness === 'aktif' ? (<Navigation className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden/>) : (<TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" aria-hidden/>)}
+
+          <p className="text-xs leading-relaxed text-charcoal-500">
+
+            {courierFreshness === 'aktif' ? (<>
+
+                <span className="font-semibold text-charcoal-900">
+
+                  Posisi kurir diperbarui otomatis.
+
+                </span>{' '}
+
+                Kurir mengirim posisi dari perangkatnya
+
+                {courierAge ? ` (${courierAge})` : ''}. Ikon motor di peta mengikuti
+
+                posisi itu.
+
+              </>) : courierFreshness === 'terlambat' ? (<>
+
+                <span className="font-semibold text-charcoal-900">
+
+                  Posisi kurir terlambat.
+
+                </span>{' '}
+
+                Data posisi terakhir diterima{' '}
+
+                {courierAge ?? 'beberapa waktu lalu'}, jadi posisinya mungkin sudah tidak
+
+                akurat. Status pengantaran di atas tetap diperbarui dari sistem pesanan.
+
+              </>) : (<>
+
+                <span className="font-semibold text-charcoal-900">
+
+                  Posisi kurir belum tersedia.
+
+                </span>{' '}
+
+                Kurir belum mengirim posisi untuk pesanan ini. Status pengantaran di atas
+
+                tetap diperbarui dari sistem pesanan.
+
+              </>)}
+
+          </p>
+
+        </div>)}
+
     </div>);
 }

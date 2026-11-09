@@ -54,24 +54,40 @@ export function FilterDropdown({ value, onChange, options, ariaLabel, className,
             setOpen(false);
         }
     };
-    return (<div ref={containerRef} className={cn('relative', className)}>
-      <button type="button" onClick={() => setOpen((v) => !v)} onKeyDown={handleKeyDown} aria-haspopup="listbox" aria-expanded={open} aria-label={ariaLabel} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-        {current?.label}
-        <ChevronDown className={cn('h-3.5 w-3.5 text-muted-foreground transition-transform', open && 'rotate-180')}/>
-      </button>
-
-      <AnimatePresence>
-        {open && (<motion.ul role="listbox" aria-label={ariaLabel} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15 }} className="absolute right-0 z-30 mt-1.5 min-w-[9rem] overflow-hidden rounded-xl border border-border bg-white py-1 shadow-lg">
-            {options.map((option, index) => (<li key={option.value} role="option" aria-selected={option.value === value}>
+    return (<div ref={containerRef} className={cn('relative', className)}>
+
+      <button type="button" onClick={() => setOpen((v) => !v)} onKeyDown={handleKeyDown} aria-haspopup="listbox" aria-expanded={open} aria-label={ariaLabel} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+
+        {current?.label}
+
+        <ChevronDown className={cn('h-3.5 w-3.5 text-muted-foreground transition-transform', open && 'rotate-180')}/>
+
+      </button>
+
+
+
+      <AnimatePresence>
+
+        {open && (<motion.ul role="listbox" aria-label={ariaLabel} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15 }} className="absolute right-0 z-30 mt-1.5 min-w-[9rem] overflow-hidden rounded-xl border border-border bg-white py-1 shadow-lg">
+
+            {options.map((option, index) => (<li key={option.value} role="option" aria-selected={option.value === value}>
+
                 <button type="button" onClick={() => {
                     onChange(option.value);
                     setOpen(false);
-                }} onMouseEnter={() => setActiveIndex(index)} className={cn('flex w-full items-center justify-between gap-2 px-3.5 py-2 text-left text-xs font-medium text-foreground transition-colors hover:bg-muted/60', index === activeIndex && 'bg-muted/50')}>
-                  {option.label}
-                  {option.value === value && (<Check className="h-3.5 w-3.5 text-primary"/>)}
-                </button>
-              </li>))}
-          </motion.ul>)}
-      </AnimatePresence>
+                }} onMouseEnter={() => setActiveIndex(index)} className={cn('flex w-full items-center justify-between gap-2 px-3.5 py-2 text-left text-xs font-medium text-foreground transition-colors hover:bg-muted/60', index === activeIndex && 'bg-muted/50')}>
+
+                  {option.label}
+
+                  {option.value === value && (<Check className="h-3.5 w-3.5 text-primary"/>)}
+
+                </button>
+
+              </li>))}
+
+          </motion.ul>)}
+
+      </AnimatePresence>
+
     </div>);
 }

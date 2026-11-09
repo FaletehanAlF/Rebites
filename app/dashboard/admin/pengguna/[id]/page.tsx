@@ -50,35 +50,51 @@ export default function AdminUserDetailPage({ params }: {
         load();
     }, [load]);
     if (status === 'loading' || (status === 'ready' && !user)) {
-        return (<div className={ADMIN_PAGE_WRAPPER}>
-        <AdminLoadingState label="Memuat detail pengguna"/>
+        return (<div className={ADMIN_PAGE_WRAPPER}>
+
+        <AdminLoadingState label="Memuat detail pengguna"/>
+
       </div>);
     }
     if (status === 'forbidden') {
-        return (<div className={ADMIN_PAGE_WRAPPER}>
-        <AdminForbiddenState />
+        return (<div className={ADMIN_PAGE_WRAPPER}>
+
+        <AdminForbiddenState />
+
       </div>);
     }
     if (status === 'not-found') {
-        return (<div className={ADMIN_PAGE_WRAPPER}>
-        <AdminEmptyState icon={<UserRoundX aria-hidden className="h-10 w-10 text-primary"/>} title="Pengguna tidak ditemukan" description="ID pengguna tidak cocok dengan data terdaftar." action={<Link href="/dashboard/admin/pengguna">
-              <Button type="button" variant="outline" size="sm">
-                Kembali ke daftar pengguna
-              </Button>
-            </Link>}/>
+        return (<div className={ADMIN_PAGE_WRAPPER}>
+
+        <AdminEmptyState icon={<UserRoundX aria-hidden className="h-10 w-10 text-primary"/>} title="Pengguna tidak ditemukan" description="ID pengguna tidak cocok dengan data terdaftar." action={<Link href="/dashboard/admin/pengguna">
+
+              <Button type="button" variant="outline" size="sm">
+
+                Kembali ke daftar pengguna
+
+              </Button>
+
+            </Link>}/>
+
       </div>);
     }
     if (status === 'error') {
-        return (<div className={ADMIN_PAGE_WRAPPER}>
-        <AdminErrorState title="Gagal memuat pengguna" message={errorMsg} onRetry={() => void load()}/>
+        return (<div className={ADMIN_PAGE_WRAPPER}>
+
+        <AdminErrorState title="Gagal memuat pengguna" message={errorMsg} onRetry={() => void load()}/>
+
       </div>);
     }
-    return (<div className={ADMIN_PAGE_WRAPPER}>
+    return (<div className={ADMIN_PAGE_WRAPPER}>
+
       <UserDetailView user={user!} onRoleChanged={() => {
             void load();
             setHistoryKey((k) => k + 1);
-        }} onDeleted={() => router.replace('/dashboard/admin/pengguna')}/>
-      <ModerationHistory userId={user!.id}/>
-      <UserRoleHistory userId={user!.id} refreshKey={historyKey}/>
+        }} onDeleted={() => router.replace('/dashboard/admin/pengguna')}/>
+
+      <ModerationHistory userId={user!.id}/>
+
+      <UserRoleHistory userId={user!.id} refreshKey={historyKey}/>
+
     </div>);
 }

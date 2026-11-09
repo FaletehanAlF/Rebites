@@ -52,23 +52,39 @@ export function BuyerShell({ children, showBottomNav = true, }: BuyerShellProps)
             return next;
         });
     };
-    return (<MotionConfig reducedMotion="user">
-      <div className="min-h-screen bg-secondary">
-        <div className="lg:hidden">
-          <MobileNavbar />
-        </div>
-
-        <BuyerTopbar collapsed={collapsed}/>
-        <BuyerSidebarNav collapsed={collapsed} onToggleCollapsed={toggleCollapsed}/>
-
+    return (<MotionConfig reducedMotion="user">
+
+      <div className="min-h-screen bg-white">
+
+        <div className="lg:hidden">
+
+          <MobileNavbar />
+
+        </div>
+
+
+
+        <BuyerTopbar collapsed={collapsed}/>
+
+        <BuyerSidebarNav collapsed={collapsed} onToggleCollapsed={toggleCollapsed}/>
+
+
+
         <div className={cn("min-w-0 pt-14 transition-[padding] duration-200 ease-out lg:pt-16", collapsed
             ? BUYER_CONTENT_OFFSET_CLASS.collapsed
-            : BUYER_CONTENT_OFFSET_CLASS.expanded)}>
-          {children}
-          {showBottomNav && <MobileBottomNav />}
-        </div>
-        
-        <NotificationAlertPopup />
-      </div>
+            : BUYER_CONTENT_OFFSET_CLASS.expanded)}>
+
+          {children}
+
+          {showBottomNav && <MobileBottomNav />}
+
+        </div>
+
+        
+
+        <NotificationAlertPopup />
+
+      </div>
+
     </MotionConfig>);
 }

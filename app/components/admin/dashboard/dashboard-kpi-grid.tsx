@@ -27,10 +27,14 @@ function DeltaBadge({ delta }: {
 }) {
     if (!delta)
         return null;
-    return (<span className="inline-flex items-center gap-1">
-      {delta.trend === 'up' && <TrendingUp aria-hidden className="h-3 w-3 text-success"/>}
-      {delta.trend === 'down' && <TrendingDown aria-hidden className="h-3 w-3 text-destructive"/>}
-      {delta.text}
+    return (<span className="inline-flex items-center gap-1">
+
+      {delta.trend === 'up' && <TrendingUp aria-hidden className="h-3 w-3 text-success"/>}
+
+      {delta.trend === 'down' && <TrendingDown aria-hidden className="h-3 w-3 text-destructive"/>}
+
+      {delta.text}
+
     </span>);
 }
 function KpiCard({ icon: Icon, label, value, supporting, href, emphasis, }: {
@@ -41,27 +45,43 @@ function KpiCard({ icon: Icon, label, value, supporting, href, emphasis, }: {
     href?: string;
     emphasis?: 'attention';
 }) {
-    const body = (<DashboardCard className="h-full">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-[13px] font-medium leading-snug text-sage-500">{label}</p>
-          
-          <p className="mt-1 text-[28px] font-semibold leading-none tabular-nums tracking-tight text-charcoal-900">
-            {value}
-          </p>
-          {supporting && <div className="mt-2 text-xs text-sage-500">{supporting}</div>}
-        </div>
+    const body = (<DashboardCard className="h-full">
+
+      <div className="flex items-start justify-between gap-4">
+
+        <div className="min-w-0">
+
+          <p className="text-[13px] font-medium leading-snug text-sage-500">{label}</p>
+
+          
+
+          <p className="mt-1 text-[28px] font-semibold leading-none tabular-nums tracking-tight text-charcoal-900">
+
+            {value}
+
+          </p>
+
+          {supporting && <div className="mt-2 text-xs text-sage-500">{supporting}</div>}
+
+        </div>
+
         <span className={emphasis === 'attention'
             ? 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning'
-            : 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary'}>
-          <Icon aria-hidden className="h-5 w-5"/>
-        </span>
-      </div>
+            : 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary'}>
+
+          <Icon aria-hidden className="h-5 w-5"/>
+
+        </span>
+
+      </div>
+
     </DashboardCard>);
     if (!href)
         return <div>{body}</div>;
-    return (<Link href={href} className="block rounded-[var(--radius)] transition-shadow hover:shadow-admin-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-      {body}
+    return (<Link href={href} className="block rounded-[var(--radius)] transition-shadow hover:shadow-admin-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+
+      {body}
+
     </Link>);
 }
 export function DashboardKpiGrid({ data }: {
@@ -69,24 +89,41 @@ export function DashboardKpiGrid({ data }: {
 }) {
     const ordersDelta = deltaText(data.orders.today, data.orders.yesterday);
     const revenueDelta = deltaText(data.revenue.today, data.revenue.yesterday);
-    return (<>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard icon={Users} label="Total pengguna" value={data.users.total.toLocaleString('id-ID')} supporting={`${data.users.suspended} ditangguhkan · ${data.users.banned} diblokir`} href="/dashboard/admin/pengguna"/>
-        <KpiCard icon={Store} label="UMKM aktif" value={data.umkm.active.toLocaleString('id-ID')} supporting={`dari ${data.umkm.total} terdaftar`} href="/dashboard/admin/umkm"/>
-        <KpiCard icon={ShoppingBag} label="Pesanan hari ini" value={data.orders.today.toLocaleString('id-ID')} supporting={<DeltaBadge delta={ordersDelta}/>} href="/dashboard/admin/pesanan"/>
-        <KpiCard icon={Wallet} label="Pendapatan kotor hari ini" value={formatRupiah(data.revenue.today)} supporting={<>
-              <DeltaBadge delta={revenueDelta}/>
-              <span className="mt-0.5 block">Nilai bruto pesanan paid; bukan laba bersih.</span>
-            </>} href="/dashboard/admin/pesanan"/>
-      </div>
-
-      <div className="mt-3 grid grid-cols-2 gap-4 xl:grid-cols-4">
+    return (<>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+        <KpiCard icon={Users} label="Total pengguna" value={data.users.total.toLocaleString('id-ID')} supporting={`${data.users.suspended} ditangguhkan · ${data.users.banned} diblokir`} href="/dashboard/admin/pengguna"/>
+
+        <KpiCard icon={Store} label="UMKM aktif" value={data.umkm.active.toLocaleString('id-ID')} supporting={`dari ${data.umkm.total} terdaftar`} href="/dashboard/admin/umkm"/>
+
+        <KpiCard icon={ShoppingBag} label="Pesanan hari ini" value={data.orders.today.toLocaleString('id-ID')} supporting={<DeltaBadge delta={ordersDelta}/>} href="/dashboard/admin/pesanan"/>
+
+        <KpiCard icon={Wallet} label="Pendapatan kotor hari ini" value={formatRupiah(data.revenue.today)} supporting={<>
+
+              <DeltaBadge delta={revenueDelta}/>
+
+              <span className="mt-0.5 block">Nilai bruto pesanan paid; bukan laba bersih.</span>
+
+            </>} href="/dashboard/admin/pesanan"/>
+
+      </div>
+
+
+
+      <div className="mt-3 grid grid-cols-2 gap-4 xl:grid-cols-4">
+
         <KpiCard icon={ShieldAlert} label="Laporan terbuka" value={String(data.reports.open)} supporting={data.reports.staleOpen > 0
             ? `${data.reports.staleOpen} sudah lebih dari 24 jam`
-            : 'Tidak ada yang lama'} emphasis={data.reports.open > 0 ? 'attention' : undefined} href="/dashboard/admin/monitoring/laporan"/>
-        <KpiCard icon={CreditCard} label="Langganan aktif" value={String(data.subscriptions.active)} supporting={`${data.subscriptions.expiringSoon} kedaluwarsa 7 hari`} href="/dashboard/admin/langganan"/>
-        <KpiCard icon={AlertTriangle} label="Peringatan 3/3" value={String(data.warnings.usersAtThree)} supporting="Peringatan maksimum" emphasis={data.warnings.usersAtThree > 0 ? 'attention' : undefined} href="/dashboard/admin/monitoring/peringatan"/>
-        <KpiCard icon={Gavel} label="Sanksi aktif" value={String(data.sanctions.active)} supporting="Tangguhkan, blokir, atau hapus akun" href="/dashboard/admin/monitoring/sanksi"/>
-      </div>
+            : 'Tidak ada yang lama'} emphasis={data.reports.open > 0 ? 'attention' : undefined} href="/dashboard/admin/monitoring/laporan"/>
+
+        <KpiCard icon={CreditCard} label="Langganan aktif" value={String(data.subscriptions.active)} supporting={`${data.subscriptions.expiringSoon} kedaluwarsa 7 hari`} href="/dashboard/admin/langganan"/>
+
+        <KpiCard icon={AlertTriangle} label="Peringatan 3/3" value={String(data.warnings.usersAtThree)} supporting="Peringatan maksimum" emphasis={data.warnings.usersAtThree > 0 ? 'attention' : undefined} href="/dashboard/admin/monitoring/peringatan"/>
+
+        <KpiCard icon={Gavel} label="Sanksi aktif" value={String(data.sanctions.active)} supporting="Tangguhkan, blokir, atau hapus akun" href="/dashboard/admin/monitoring/sanksi"/>
+
+      </div>
+
     </>);
 }

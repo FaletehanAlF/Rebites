@@ -30,8 +30,8 @@ interface CheckoutContextValue {
     selectedAddress: DeliveryAddress | null;
     selectedAddressId: string | null;
     selectAddress: (id: string) => void;
-    addAddress: (values: AddressFormValues) => void;
-    updateAddress: (id: string, values: AddressFormValues) => void;
+    addAddress: (values: AddressFormValues) => Promise<DeliveryAddress | null>;
+    updateAddress: (id: string, values: AddressFormValues) => Promise<boolean>;
     selectedMethod: PaymentMethod | null;
     selectMethod: (id: string) => void;
     promo: PromoCode | null;
@@ -59,6 +59,7 @@ interface CheckoutContextValue {
     shippingLoading: boolean;
     shippingError: string | null;
     shippingErrorCode: string | null;
+    promoError: string | null;
 }
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 const SHIPPING_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -88,6 +89,9 @@ export function useCheckout() {
     if (!ctx)
         throw new Error('useCheckout must be used within CheckoutProvider');
     return ctx;
+}
+export function useCheckoutOptional(): CheckoutContextValue | null {
+    return useContext(CheckoutContext);
 }
 export function usePromoInput() {
     const ctx = useContext(PromoInputContext);
@@ -498,6 +502,7 @@ export function CheckoutProvider({ draft, initialQuantity = 1, children, }: {
         shippingLoading,
         shippingError,
         shippingErrorCode,
+        promoError,
     }), [
         draft,
         quantity,
@@ -530,10 +535,15 @@ export function CheckoutProvider({ draft, initialQuantity = 1, children, }: {
         shippingLoading,
         shippingError,
         shippingErrorCode,
+        promoError,
     ]);
-    return (<CheckoutContext.Provider value={value}>
-      <PromoInputContext.Provider value={promoInputValue}>
-        {children}
-      </PromoInputContext.Provider>
+    return (<CheckoutContext.Provider value={value}>
+
+      <PromoInputContext.Provider value={promoInputValue}>
+
+        {children}
+
+      </PromoInputContext.Provider>
+
     </CheckoutContext.Provider>);
 }

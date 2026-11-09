@@ -7,9 +7,13 @@ export const metadata: Metadata = {
     description: 'Selesaikan pesanan makanan surplus kamu, pilih ambil sendiri atau diantar.',
 };
 export default function DetailPesananPage() {
-    return (<BuyerShell showBottomNav={false}>
-      <Suspense fallback={<main className="min-h-screen bg-secondary"/>}>
-        <CheckoutView />
-      </Suspense>
+    return (<BuyerShell showBottomNav={false}>
+
+      <Suspense fallback={<main className="min-h-screen bg-secondary"/>}>
+
+        <CheckoutView />
+
+      </Suspense>
+
     </BuyerShell>);
 }

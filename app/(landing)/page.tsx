@@ -12,22 +12,39 @@ import { FAQSection } from '@/app/components/landing/FAQSection';
 import { FinalCTASection } from '@/app/components/landing/FinalCTASection';
 import { LandingFooter } from '@/app/components/landing/LandingFooter';
 export default function Home() {
-    return (<LandingShell>
-      <LandingNavbar />
-
-      <main>
-        <HeroSection />
-        <TrustSection />
-        <HowItWorksSection />
-        <FoodDiscoverySection />
-        <SellerSection />
-        <BuyerSection />
-        <FeaturesSection />
-        <BenefitsSection />
-        <FAQSection />
-        <FinalCTASection />
-      </main>
-
-      <LandingFooter />
+    return (<LandingShell>
+
+      <LandingNavbar />
+
+
+
+      <main>
+
+        <HeroSection />
+
+        <TrustSection />
+
+        <HowItWorksSection />
+
+        <FoodDiscoverySection />
+
+        <SellerSection />
+
+        <BuyerSection />
+
+        <FeaturesSection />
+
+        <BenefitsSection />
+
+        <FAQSection />
+
+        <FinalCTASection />
+
+      </main>
+
+
+
+      <LandingFooter />
+
     </LandingShell>);
 }

@@ -40,29 +40,53 @@ export function Topbar({ onMenuClick, storeId }: TopbarProps) {
             window.removeEventListener(STORE_SETTINGS_UPDATED_EVENT, refresh);
         };
     }, []);
-    return (<header className="sticky top-0 z-30 border-b border-border bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-4 py-2 sm:gap-3 sm:py-2.5 sm:px-6 lg:px-10">
-        <button type="button" onClick={onMenuClick} aria-label="Buka menu navigasi" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:hidden">
-          <Menu className="h-5 w-5"/>
-        </button>
-
-        <Link href={sellerStorePath(storeId)} className="flex min-w-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-          {storeImage && !imageLoadFailed ? (<img src={storeImage} alt={storeName ? `Logo ${storeName}` : 'Logo toko'} className="h-8 w-8 shrink-0 rounded-lg object-cover ring-1 ring-black/5" onError={() => setImageLoadFailed(true)}/>) : (<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-              <Store className="h-4 w-4"/>
-            </div>)}
-          <span className="max-w-[45vw] truncate text-sm font-bold text-foreground sm:max-w-xs">
-            {storeName || 'Toko Saya'}
-          </span>
-        </Link>
-
-        <div className="ml-auto flex items-center gap-1.5">
-          <Link href={sellerStorePath(storeId, 'notifikasi')} aria-label={`Notifikasi${unreadCount > 0 ? ` (${unreadCount} belum dibaca)` : ''}`} className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-primary shadow-sm transition-colors duration-200 hover:border-primary hover:bg-primary-dark hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-            <Bell className="h-[18px] w-[18px]"/>
-            {unreadCount > 0 && (<span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>)}
-          </Link>
-        </div>
-      </div>
+    return (<header className="sticky top-0 z-30 border-b border-border bg-white/90 backdrop-blur-md">
+
+      <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-4 py-2 sm:gap-3 sm:py-2.5 sm:px-6 lg:px-10">
+
+        <button type="button" onClick={onMenuClick} aria-label="Buka menu navigasi" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:hidden">
+
+          <Menu className="h-5 w-5"/>
+
+        </button>
+
+
+
+        <Link href={sellerStorePath(storeId)} className="flex min-w-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+
+          {storeImage && !imageLoadFailed ? (<img src={storeImage} alt={storeName ? `Logo ${storeName}` : 'Logo toko'} loading="eager" decoding="async" className="h-8 w-8 shrink-0 rounded-lg object-cover ring-1 ring-black/5" onError={() => setImageLoadFailed(true)}/>) : (<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
+
+              <Store className="h-4 w-4"/>
+
+            </div>)}
+
+          <span className="max-w-[45vw] truncate text-sm font-bold text-foreground sm:max-w-xs">
+
+            {storeName || 'Toko Saya'}
+
+          </span>
+
+        </Link>
+
+
+
+        <div className="ml-auto flex items-center gap-1.5">
+
+          <Link href={sellerStorePath(storeId, 'notifikasi')} aria-label={`Notifikasi${unreadCount > 0 ? ` (${unreadCount} belum dibaca)` : ''}`} className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-primary shadow-sm transition-colors duration-200 hover:border-primary hover:bg-primary-dark hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+
+            <Bell className="h-[18px] w-[18px]"/>
+
+            {unreadCount > 0 && (<span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white">
+
+                {unreadCount > 99 ? '99+' : unreadCount}
+
+              </span>)}
+
+          </Link>
+
+        </div>
+
+      </div>
+
     </header>);
 }

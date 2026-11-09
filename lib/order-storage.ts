@@ -131,10 +131,15 @@ export async function getUserOrders(userId: string | null | undefined): Promise<
     }
     return (data ?? []).map(rowToStoredOrder);
 }
-export async function getSellerOrders(): Promise<StoredOrder[]> {
+export interface SellerOrdersResult {
+    orders: StoredOrder[];
+    error: string | null;
+}
+export async function getSellerOrdersResult(): Promise<SellerOrdersResult> {
     const umkm = await getSellerUmkm();
-    if (!umkm)
-        return [];
+    if (!umkm) {
+        return { orders: [], error: 'Profil toko belum terbaca. Muat ulang halaman atau masuk ulang.' };
+    }
     const conditions = [umkm.slug, umkm.id]
         .filter((value): value is string => Boolean(value))
         .map((value) => `vendor_slug.eq.${value}`);
@@ -147,9 +152,12 @@ export async function getSellerOrders(): Promise<StoredOrder[]> {
         .order('created_at', { ascending: false });
     if (error) {
         console.error('[order-storage] gagal memuat pesanan penjual:', error.message);
-        return [];
+        return { orders: [], error: 'Gagal memuat pesanan. Periksa koneksi lalu coba lagi.' };
     }
-    return (data ?? []).map(rowToStoredOrder);
+    return { orders: (data ?? []).map(rowToStoredOrder), error: null };
+}
+export async function getSellerOrders(): Promise<StoredOrder[]> {
+    return (await getSellerOrdersResult()).orders;
 }
 export async function getOrderById(orderId: string): Promise<StoredOrder | undefined> {
     await supabase.auth.getSession();

@@ -9,7 +9,6 @@ import { useCurrentUser } from '@/lib/current-user';
 import { useOrders } from '@/hooks/use-orders';
 import { OrderToolbar, type StatusFilter, type FulfillmentFilter } from './order-toolbar';
 import { OrderCard } from './order-card';
-import { Toaster } from '@/app/components/ui/toaster';
 import { Skeleton } from '@/app/components/ui/skeleton';
 const EMPTY_LIST: StoredOrder[] = [];
 export function OrderHistoryView() {
@@ -94,41 +93,68 @@ export function OrderHistoryView() {
         setStatusFilter('all');
     };
     if (loading) {
-        return (<div role="status" aria-label="Memuat pesanan" className="w-full space-y-4">
-        <Skeleton className="h-[104px] rounded-2xl"/>
-        {[0, 1, 2].map((i) => (<Skeleton key={i} className="h-[152px] rounded-2xl"/>))}
+        return (<div role="status" aria-label="Memuat pesanan" className="w-full space-y-4">
+
+        <Skeleton className="h-[104px] rounded-2xl"/>
+
+        {[0, 1, 2].map((i) => (<Skeleton key={i} className="h-[152px] rounded-2xl"/>))}
+
       </div>);
     }
     if (error) {
-        return (<div role="alert" className="flex flex-col items-center rounded-2xl border border-caramel/30 bg-caramel/[0.07] px-6 py-10 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-caramel-700">
-          <TriangleAlert className="h-5 w-5" aria-hidden/>
-        </span>
-        <h2 className="mt-3 font-display text-base font-semibold text-charcoal-900">
-          Pesanan gagal dimuat
-        </h2>
-        <p className="mt-1 max-w-sm text-sm leading-relaxed text-charcoal-700">
-          Data pesananmu tidak bisa diambil saat ini. Ini bukan berarti kamu belum punya
-          pesanan — periksa koneksi lalu coba lagi.
-        </p>
-        <button type="button" onClick={() => refetch()} className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-caramel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-          <RefreshCw className="h-4 w-4" aria-hidden/>
-          Coba lagi
-        </button>
+        return (<div role="alert" className="flex flex-col items-center rounded-2xl border border-caramel/30 bg-caramel/[0.07] px-6 py-10 text-center">
+
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-caramel-700">
+
+          <TriangleAlert className="h-5 w-5" aria-hidden/>
+
+        </span>
+
+        <h2 className="mt-3 font-display text-base font-semibold text-charcoal-900">
+
+          Pesanan gagal dimuat
+
+        </h2>
+
+        <p className="mt-1 max-w-sm text-sm leading-relaxed text-charcoal-700">
+
+          Data pesananmu tidak bisa diambil saat ini. Ini bukan berarti kamu belum punya
+
+          pesanan — periksa koneksi lalu coba lagi.
+
+        </p>
+
+        <button type="button" onClick={() => refetch()} className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-caramel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+
+          <RefreshCw className="h-4 w-4" aria-hidden/>
+
+          Coba lagi
+
+        </button>
+
       </div>);
     }
     const isFiltering = query.trim() !== '' || fulfillment !== 'all' || statusFilter !== 'all';
-    return (<>
-      <div className="w-full space-y-4">
-        <div className="rounded-2xl border border-hairline bg-white p-3 shadow-sm sm:p-4">
-          <OrderToolbar statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} counts={counts} query={query} onQueryChange={setQuery} fulfillment={fulfillment} onFulfillmentChange={setFulfillment}/>
-        </div>
-
-        {filteredList.length > 0 ? (<div className="space-y-3">
-            {filteredList.map((order) => (<OrderCard key={order.orderId} order={order} reviewed={reviewedMap.has(order.orderId)} onViewDetail={(o) => router.push(`/riwayatPesanan/${encodeURIComponent(o.orderId)}`)} onTrack={(o) => router.push(`/riwayatPesanan/${encodeURIComponent(o.orderId)}#pengantaran`)} highlighted={order.orderId === highlightOrderId}/>))}
-          </div>) : (<EmptyState variant={isFiltering ? 'no-result' : 'empty'} statusFilter={statusFilter} onClear={clearFilters}/>)}
-      </div>
-      <Toaster />
+    return (<>
+
+      <div className="w-full space-y-4">
+
+        <div className="rounded-2xl border border-hairline bg-white p-3 shadow-sm sm:p-4">
+
+          <OrderToolbar statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} counts={counts} query={query} onQueryChange={setQuery} fulfillment={fulfillment} onFulfillmentChange={setFulfillment}/>
+
+        </div>
+
+
+
+        {filteredList.length > 0 ? (<div className="space-y-3">
+
+            {filteredList.map((order) => (<OrderCard key={order.orderId} order={order} reviewed={reviewedMap.has(order.orderId)} onViewDetail={(o) => router.push(`/riwayatPesanan/${encodeURIComponent(o.orderId)}`)} onTrack={(o) => router.push(`/riwayatPesanan/${encodeURIComponent(o.orderId)}#pengantaran`)} highlighted={order.orderId === highlightOrderId}/>))}
+
+          </div>) : (<EmptyState variant={isFiltering ? 'no-result' : 'empty'} statusFilter={statusFilter} onClear={clearFilters}/>)}
+
+      </div>
+
     </>);
 }
 function EmptyState({ variant, statusFilter, onClear, }: {
@@ -137,36 +163,63 @@ function EmptyState({ variant, statusFilter, onClear, }: {
     onClear: () => void;
 }) {
     if (variant === 'no-result') {
-        return (<div className="flex flex-col items-center rounded-2xl border border-dashed border-hairline bg-white px-6 py-10 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-100 text-primary">
-          <SearchX className="h-5 w-5" aria-hidden/>
-        </span>
-        <h2 className="mt-3 font-display text-base font-semibold text-charcoal-900">
-          Tidak ada pesanan yang cocok
-        </h2>
-        <p className="mt-1 max-w-sm text-sm text-charcoal-500">
+        return (<div className="flex flex-col items-center rounded-2xl border border-dashed border-hairline bg-white px-6 py-10 text-center">
+
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-100 text-primary">
+
+          <SearchX className="h-5 w-5" aria-hidden/>
+
+        </span>
+
+        <h2 className="mt-3 font-display text-base font-semibold text-charcoal-900">
+
+          Tidak ada pesanan yang cocok
+
+        </h2>
+
+        <p className="mt-1 max-w-sm text-sm text-charcoal-500">
+
           {statusFilter === 'cancelled'
                 ? 'Belum ada pesanan dibatalkan pada filter ini.'
-                : 'Coba kata kunci lain atau hapus filter yang sedang aktif.'}
-        </p>
-        <button type="button" onClick={onClear} className="mt-4 inline-flex h-10 items-center rounded-full border border-hairline px-5 text-sm font-semibold text-charcoal-900 transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-          Hapus filter
-        </button>
+                : 'Coba kata kunci lain atau hapus filter yang sedang aktif.'}
+
+        </p>
+
+        <button type="button" onClick={onClear} className="mt-4 inline-flex h-10 items-center rounded-full border border-hairline px-5 text-sm font-semibold text-charcoal-900 transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+
+          Hapus filter
+
+        </button>
+
       </div>);
     }
-    return (<div className="flex flex-col items-center rounded-2xl border border-dashed border-hairline bg-white px-6 py-12 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-100 text-primary">
-        <PackageSearch className="h-5 w-5" aria-hidden/>
-      </span>
-      <h2 className="mt-3 font-display text-base font-semibold text-charcoal-900">
-        Belum ada pesanan
-      </h2>
-      <p className="mt-1 max-w-sm text-sm leading-relaxed text-charcoal-500">
-        Pesanan yang kamu buat akan muncul di sini lengkap dengan status dan detail
-        pengantarannya.
-      </p>
-      <Link href="/home" className="mt-4 inline-flex h-10 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-caramel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-        Mulai belanja
-      </Link>
+    return (<div className="flex flex-col items-center rounded-2xl border border-dashed border-hairline bg-white px-6 py-12 text-center">
+
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-100 text-primary">
+
+        <PackageSearch className="h-5 w-5" aria-hidden/>
+
+      </span>
+
+      <h2 className="mt-3 font-display text-base font-semibold text-charcoal-900">
+
+        Belum ada pesanan
+
+      </h2>
+
+      <p className="mt-1 max-w-sm text-sm leading-relaxed text-charcoal-500">
+
+        Pesanan yang kamu buat akan muncul di sini lengkap dengan status dan detail
+
+        pengantarannya.
+
+      </p>
+
+      <Link href="/home" className="mt-4 inline-flex h-10 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-caramel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+
+        Mulai belanja
+
+      </Link>
+
     </div>);
 }

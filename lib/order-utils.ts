@@ -1,6 +1,7 @@
 import type { StoredOrder } from './types';
 import { paymentMethods } from '@/app/components/checkout/payment-methods';
 import { resolveOrderPhase } from './order-status-source';
+import { subStatusForPhase, type OrderSubStatus } from './order-substatus';
 export function paymentMethodName(id?: string): string {
     if (!id)
         return '-';
@@ -43,38 +44,11 @@ export function getOrderProgress(order: StoredOrder): number {
     const ratio = (Date.now() - start) / (end - start);
     return Math.min(1, Math.max(0, ratio));
 }
-export type OrderSubStatus = 'diproses' | 'diantar' | 'disiapkan' | 'siap-diambil' | 'selesai';
-export function getOrderSubStatus(order: StoredOrder, progress = getOrderProgress(order)): OrderSubStatus {
-    const phase = resolveOrderPhase(order);
-    switch (phase) {
-        case 'completed':
-        case 'cancelled':
-            return 'selesai';
-        case 'out_for_delivery':
-            return 'diantar';
-        case 'ready_for_pickup':
-            return 'siap-diambil';
-        case 'paid':
-            return 'disiapkan';
-        case 'processing':
-            return 'disiapkan';
-        case 'pending':
-            return progress >= 0.6
-                ? order.fulfillment === 'delivery'
-                    ? 'diantar'
-                    : 'siap-diambil'
-                : 'disiapkan';
-        default:
-            return 'disiapkan';
-    }
+export function getOrderSubStatus(order: StoredOrder): OrderSubStatus {
+    return subStatusForPhase(resolveOrderPhase(order));
 }
-export const SUB_STATUS_LABEL: Record<OrderSubStatus, string> = {
-    diproses: 'Sedang diproses',
-    diantar: 'Sedang diantar',
-    disiapkan: 'Sedang disiapkan',
-    'siap-diambil': 'Siap diambil',
-    selesai: 'Selesai',
-};
+export { SUB_STATUS_LABEL } from './order-substatus';
+export type { OrderSubStatus };
 export function mapsUrl(address: string): string {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 }

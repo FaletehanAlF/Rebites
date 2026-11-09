@@ -115,48 +115,87 @@ export default function LocationPickerMap({ latitude, longitude, onPick, initial
     const canRevert = initialLatitude != null &&
         initialLongitude != null &&
         (latitude !== initialLatitude || longitude !== initialLongitude);
-    return (<div className={cn('space-y-2', className)}>
-      <div className="relative h-[220px] overflow-hidden rounded-xl border border-hairline bg-cream-50 sm:h-[260px]">
-        <div ref={containerRef} className="h-full w-full"/>
-
-        {status === 'loading' && (<div className="absolute inset-0 flex items-center justify-center bg-cream-50/90">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden/>
-            <span className="sr-only">Memuat peta</span>
-          </div>)}
-
-        {status === 'error' && (<div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-cream-50 px-5 text-center">
-            <TriangleAlert className="h-4 w-4 text-caramel-dark" aria-hidden/>
-            <p className="text-xs leading-relaxed text-charcoal-500">
-              Peta tidak dapat dimuat. Isi latitude dan longitude secara manual di
-              bawah.
-            </p>
-            {process.env.NODE_ENV !== 'production' && errorDetail && (<p className="max-w-full break-words text-[10px] text-charcoal-500/70">
-                {errorDetail}
-              </p>)}
-          </div>)}
-
-        {status === 'ready' && !hasPoint && (<div className="pointer-events-none absolute inset-x-2 bottom-2 rounded-lg bg-white/95 px-3 py-2 text-[11px] leading-relaxed text-charcoal-500 shadow-sm ring-1 ring-hairline">
-            <MapPinOff className="mr-1 inline h-3 w-3 align-[-2px] text-sage-500" aria-hidden/>
-            Belum ada titik. Klik pada peta untuk menandai lokasi.
-          </div>)}
-
-        <p className="pointer-events-none absolute bottom-1 left-2 z-10 text-[10px] leading-tight text-charcoal-500">
-          © OpenStreetMap contributors · tiles by OpenFreeMap
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[11px] text-charcoal-500" aria-live="polite">
+    return (<div className={cn('space-y-2', className)}>
+
+      <div className="relative h-[220px] overflow-hidden rounded-xl border border-hairline bg-cream-50 sm:h-[260px]">
+
+        <div ref={containerRef} className="h-full w-full"/>
+
+
+
+        {status === 'loading' && (<div className="absolute inset-0 flex items-center justify-center bg-cream-50/90">
+
+            <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden/>
+
+            <span className="sr-only">Memuat peta</span>
+
+          </div>)}
+
+
+
+        {status === 'error' && (<div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-cream-50 px-5 text-center">
+
+            <TriangleAlert className="h-4 w-4 text-caramel-dark" aria-hidden/>
+
+            <p className="text-xs leading-relaxed text-charcoal-500">
+
+              Peta tidak dapat dimuat. Isi latitude dan longitude secara manual di
+
+              bawah.
+
+            </p>
+
+            {process.env.NODE_ENV !== 'production' && errorDetail && (<p className="max-w-full break-words text-[10px] text-charcoal-500/70">
+
+                {errorDetail}
+
+              </p>)}
+
+          </div>)}
+
+
+
+        {status === 'ready' && !hasPoint && (<div className="pointer-events-none absolute inset-x-2 bottom-2 rounded-lg bg-white/95 px-3 py-2 text-[11px] leading-relaxed text-charcoal-500 shadow-sm ring-1 ring-hairline">
+
+            <MapPinOff className="mr-1 inline h-3 w-3 align-[-2px] text-sage-500" aria-hidden/>
+
+            Belum ada titik. Klik pada peta untuk menandai lokasi.
+
+          </div>)}
+
+
+
+        <p className="pointer-events-none absolute bottom-1 left-2 z-10 text-[10px] leading-tight text-charcoal-500">
+
+          © OpenStreetMap contributors · tiles by OpenFreeMap
+
+        </p>
+
+      </div>
+
+
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+
+        <p className="text-[11px] text-charcoal-500" aria-live="polite">
+
           {hasPoint
             ? `Titik dipilih: ${latitude!.toFixed(6)}, ${longitude!.toFixed(6)}`
-            : 'Klik peta atau geser marker untuk memilih titik.'}
-        </p>
+            : 'Klik peta atau geser marker untuk memilih titik.'}
+
+        </p>
+
         {canRevert && (<button type="button" onClick={() => {
                 onPick(initialLatitude as number, initialLongitude as number);
-            }} className="inline-flex items-center gap-1 rounded-full border border-hairline px-2.5 py-1 text-[11px] font-semibold text-charcoal-700 transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-            <RotateCcw className="h-3 w-3" aria-hidden/>
-            Kembalikan
-          </button>)}
-      </div>
+            }} className="inline-flex items-center gap-1 rounded-full border border-hairline px-2.5 py-1 text-[11px] font-semibold text-charcoal-700 transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+
+            <RotateCcw className="h-3 w-3" aria-hidden/>
+
+            Kembalikan
+
+          </button>)}
+
+      </div>
+
     </div>);
 }

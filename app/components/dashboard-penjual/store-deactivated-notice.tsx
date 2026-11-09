@@ -64,7 +64,7 @@ export function StoreDeactivatedNotice() {
       </div>
 
       <Dialog open={!dismissed} onOpenChange={(open) => !open && setDismissed(true)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg" overlayClassName="bg-transparent">
           <DialogHeader className="space-y-1 pr-10 text-left">
             <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-destructive">
               <Store aria-hidden className="h-3.5 w-3.5"/>

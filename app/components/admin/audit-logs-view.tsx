@@ -124,201 +124,383 @@ export function AuditLogsView() {
         SEMUA_TARGET,
         ...knownTargetTypes.map((type) => ({ value: type, label: labelTarget(type) })),
     ];
-    return (<div className={ADMIN_PAGE_WRAPPER}>
-      <AdminPageHeader title="Log Audit" description="Jejak audit tindakan admin." actions={<>
-            <Badge variant="secondary" className="text-xs">
-              {total} entri
-            </Badge>
-            <Button type="button" variant="outline" size="sm" onClick={() => load(offset, actionFilter, targetTypeFilter)} disabled={loading}>
-              <RefreshCw aria-hidden className="h-3.5 w-3.5"/>
-              Muat ulang
-            </Button>
-          </>}/>
-
-      
-      <AdminToolbar>
-        <AdminSearchInput value={userQuery} onChange={setUserQuery} label="Cari log audit" placeholder="Cari admin, tindakan, target, alasan…" labelVisible className="sm:max-w-sm lg:w-56 lg:min-w-[7rem] lg:shrink"/>
+    return (<div className={ADMIN_PAGE_WRAPPER}>
+
+      <AdminPageHeader title="Log Audit" description="Jejak audit tindakan admin." actions={<>
+
+            <Badge variant="secondary" className="text-xs">
+
+              {total} entri
+
+            </Badge>
+
+            <Button type="button" variant="outline" size="sm" onClick={() => load(offset, actionFilter, targetTypeFilter)} disabled={loading}>
+
+              <RefreshCw aria-hidden className="h-3.5 w-3.5"/>
+
+              Muat ulang
+
+            </Button>
+
+          </>}/>
+
+
+
+      
+
+      <AdminToolbar>
+
+        <AdminSearchInput value={userQuery} onChange={setUserQuery} label="Cari log audit" placeholder="Cari admin, tindakan, target, alasan…" labelVisible className="sm:max-w-sm lg:w-56 lg:min-w-[7rem] lg:shrink"/>
+
         <AdminSelect value={actionFilter} onChange={(value) => {
             setActionFilter(value);
             setOffset(0);
-        }} label="Tindakan" options={actionOptions}/>
+        }} label="Tindakan" options={actionOptions}/>
+
         <AdminSelect value={targetTypeFilter} onChange={(value) => {
             setTargetTypeFilter(value);
             setOffset(0);
-        }} label="Jenis target" options={targetTypeOptions}/>
-        <AdminDateRange from={from} to={to} onFromChange={setFrom} onToChange={setTo}/>
-        {hasActiveFilter && (<Button type="button" variant="outline" size="sm" onClick={resetFilters} className="sm:mb-0.5">
-            <RefreshCw aria-hidden className="h-3.5 w-3.5"/>
-            Atur ulang
-          </Button>)}
-      </AdminToolbar>
-
-      {status === 'loading' && <AdminLoadingState label="Memuat log audit"/>}
-
-      {status === 'forbidden' && (<AdminForbiddenState message="Halaman ini hanya untuk admin. Akun kamu tidak memiliki hak melihat log audit."/>)}
-
-      {status === 'error' && (<AdminErrorState title="Gagal memuat log audit" message={errorMsg} onRetry={() => load(offset, actionFilter, targetTypeFilter)}/>)}
-
+        }} label="Jenis target" options={targetTypeOptions}/>
+
+        <AdminDateRange from={from} to={to} onFromChange={setFrom} onToChange={setTo}/>
+
+        {hasActiveFilter && (<Button type="button" variant="outline" size="sm" onClick={resetFilters} className="sm:mb-0.5">
+
+            <RefreshCw aria-hidden className="h-3.5 w-3.5"/>
+
+            Atur ulang
+
+          </Button>)}
+
+      </AdminToolbar>
+
+
+
+      {status === 'loading' && <AdminLoadingState label="Memuat log audit"/>}
+
+
+
+      {status === 'forbidden' && (<AdminForbiddenState message="Halaman ini hanya untuk admin. Akun kamu tidak memiliki hak melihat log audit."/>)}
+
+
+
+      {status === 'error' && (<AdminErrorState title="Gagal memuat log audit" message={errorMsg} onRetry={() => load(offset, actionFilter, targetTypeFilter)}/>)}
+
+
+
       {status === 'ready' && items.length === 0 && (<AdminEmptyState icon={<ClipboardList aria-hidden className="h-10 w-10 text-primary"/>} title={hasActiveFilter ? 'Tidak ada entri yang cocok' : 'Belum ada log audit'} description={hasActiveFilter
                 ? 'Tidak ada tindakan admin yang cocok dengan filter saat ini. Ubah atau atur ulang filter.'
-                : 'Tindakan admin yang tercatat akan muncul di sini.'}/>)}
-
-      {status === 'ready' && items.length > 0 && visible.length === 0 && (<AdminEmptyState icon={<ClipboardList aria-hidden className="h-10 w-10 text-primary"/>} title="Tidak ada entri yang cocok di halaman ini" description="Pencarian teks hanya menyaring baris pada halaman yang sedang ditampilkan. Atur ulang pencarian atau pindah halaman." action={<Button type="button" variant="outline" size="sm" onClick={() => setUserQuery('')}>
-              Atur ulang pencarian
-            </Button>}/>)}
-
-      {status === 'ready' && visible.length > 0 && (<>
-          <AdminTableCard label="Log audit admin" minWidth={900} className="hidden sm:block">
-            
-            <AdminTableHead>
-              <AdminTh>Waktu</AdminTh>
-              <AdminTh>Admin</AdminTh>
-              <AdminTh>Tindakan</AdminTh>
-              <AdminTh>Hasil</AdminTh>
-              <AdminTh>Objek Terdampak</AdminTh>
-              <AdminTh className="w-12 text-right">
-                <span className="sr-only">Detail</span>
-              </AdminTh>
-            </AdminTableHead>
-            <tbody>
+                : 'Tindakan admin yang tercatat akan muncul di sini.'}/>)}
+
+
+
+      {status === 'ready' && items.length > 0 && visible.length === 0 && (<AdminEmptyState icon={<ClipboardList aria-hidden className="h-10 w-10 text-primary"/>} title="Tidak ada entri yang cocok di halaman ini" description="Pencarian teks hanya menyaring baris pada halaman yang sedang ditampilkan. Atur ulang pencarian atau pindah halaman." action={<Button type="button" variant="outline" size="sm" onClick={() => setUserQuery('')}>
+
+              Atur ulang pencarian
+
+            </Button>}/>)}
+
+
+
+      {status === 'ready' && visible.length > 0 && (<>
+
+          <AdminTableCard label="Log audit admin" minWidth={900} className="hidden sm:block">
+
+            
+
+            <AdminTableHead>
+
+              <AdminTh>Waktu</AdminTh>
+
+              <AdminTh>Admin</AdminTh>
+
+              <AdminTh>Tindakan</AdminTh>
+
+              <AdminTh>Hasil</AdminTh>
+
+              <AdminTh>Objek Terdampak</AdminTh>
+
+              <AdminTh className="w-12 text-right">
+
+                <span className="sr-only">Detail</span>
+
+              </AdminTh>
+
+            </AdminTableHead>
+
+            <tbody>
+
               {visible.map((item) => {
                 const outcome = auditOutcome(item);
-                return (<Fragment key={item.id}>
-                    <AdminTr className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40" onClick={() => toggleExpanded(item.id)} tabIndex={0} aria-expanded={expandedId === item.id} aria-controls={expandedId === item.id ? `audit-detail-${item.id}` : undefined} onKeyDown={(event) => onRowKeyDown(event, item.id)}>
-                      <AdminTd className="whitespace-nowrap">
-                        <span className="block text-xs text-charcoal-700">
-                          {formatTanggalWaktu(item.createdAt)}
-                        </span>
-                        <span className="mt-0.5 block text-xs text-sage-500">
-                          {waktuLalu(item.createdAt)}
-                        </span>
-                      </AdminTd>
-                      <AdminTd className="max-w-[200px]">
-                        <p className="truncate text-sm font-medium text-charcoal-900" title={item.adminName}>
-                          {item.adminName}
-                        </p>
-                        {item.adminEmail && (<p className="truncate text-xs text-sage-500" title={item.adminEmail}>
-                            {item.adminEmail}
-                          </p>)}
-                      </AdminTd>
-                      <AdminTd className="max-w-[320px]">
-                        <Badge variant="outline" className="text-xs">
-                          {labelAudit(item.action)}
-                        </Badge>
-                        
-                        {describeAuditAction(item) !== labelAudit(item.action) && (<p className="mt-1 line-clamp-2 break-words text-xs leading-snug text-charcoal-700">
-                            {describeAuditAction(item)}
-                          </p>)}
-                      </AdminTd>
-                      <AdminTd className="whitespace-nowrap">
-                        {outcome ? (<Badge variant={outcome.tone} className="text-xs">
-                            {outcome.label}
-                          </Badge>) : (<span className="text-xs text-sage-500">—</span>)}
-                      </AdminTd>
-                      <AdminTd className="max-w-[180px] whitespace-nowrap">
-                        <span className="block truncate text-sm text-charcoal-700" title={describeAuditTarget(item)}>
-                          {describeAuditTarget(item)}
-                        </span>
-                      </AdminTd>
-                      <AdminTd className="text-right" aria-hidden>
-                        <ChevronDown className={cn('ml-auto h-4 w-4 text-sage-500 transition-transform', expandedId === item.id && 'rotate-180')}/>
-                      </AdminTd>
-                    </AdminTr>
-                    {expandedId === item.id && (<AdminTrDetail colSpan={6} id={`audit-detail-${item.id}`}>
-                        <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-                          <div className="min-w-0">
-                            <dt className={ADMIN_DETAIL_LABEL}>Tindakan</dt>
-                            <dd className="mt-1 text-sm text-charcoal-900">
-                              {labelAudit(item.action)}{' '}
-                              <span className="font-mono text-xs text-sage-500">({item.action})</span>
-                            </dd>
-                          </div>
-                          <div className="min-w-0">
-                            <dt className={ADMIN_DETAIL_LABEL}>Hasil</dt>
-                            <dd className="mt-1 text-sm text-charcoal-900">
-                              {outcome ? (<Badge variant={outcome.tone} className="text-xs">
-                                  {outcome.label}
-                                </Badge>) : ('—')}
-                            </dd>
-                          </div>
-                          <div className="min-w-0">
-                            <dt className={ADMIN_DETAIL_LABEL}>Objek terdampak</dt>
-                            <dd className="mt-1 break-all font-mono text-xs text-charcoal-700">
-                              {labelTarget(item.targetType)}
-                              {item.targetId ? ` · ${item.targetId}` : ''}
-                            </dd>
-                          </div>
-                          <div className="min-w-0">
-                            <dt className={ADMIN_DETAIL_LABEL}>Alasan</dt>
-                            <dd className="mt-1 break-words text-sm text-charcoal-700">
-                              {item.reason || '—'}
-                            </dd>
-                          </div>
-                          <div className="min-w-0 sm:col-span-2">
-                            <dt className={ADMIN_DETAIL_LABEL}>Metadata (aman)</dt>
-                            <dd className="mt-1">
-                              <pre className="max-h-64 overflow-auto rounded-[var(--radius)] bg-sage-100/40 p-3 text-xs leading-relaxed text-charcoal-700">
-                                {formatMetadataSafe(item.metadata)}
-                              </pre>
-                            </dd>
-                          </div>
-                        </dl>
-                      </AdminTrDetail>)}
+                return (<Fragment key={item.id}>
+
+                    <AdminTr className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40" onClick={() => toggleExpanded(item.id)} tabIndex={0} aria-expanded={expandedId === item.id} aria-controls={expandedId === item.id ? `audit-detail-${item.id}` : undefined} onKeyDown={(event) => onRowKeyDown(event, item.id)}>
+
+                      <AdminTd className="whitespace-nowrap">
+
+                        <span className="block text-xs text-charcoal-700">
+
+                          {formatTanggalWaktu(item.createdAt)}
+
+                        </span>
+
+                        <span className="mt-0.5 block text-xs text-sage-500">
+
+                          {waktuLalu(item.createdAt)}
+
+                        </span>
+
+                      </AdminTd>
+
+                      <AdminTd className="max-w-[200px]">
+
+                        <p className="truncate text-sm font-medium text-charcoal-900" title={item.adminName}>
+
+                          {item.adminName}
+
+                        </p>
+
+                        {item.adminEmail && (<p className="truncate text-xs text-sage-500" title={item.adminEmail}>
+
+                            {item.adminEmail}
+
+                          </p>)}
+
+                      </AdminTd>
+
+                      <AdminTd className="max-w-[320px]">
+
+                        <Badge variant="outline" className="text-xs">
+
+                          {labelAudit(item.action)}
+
+                        </Badge>
+
+                        
+
+                        {describeAuditAction(item) !== labelAudit(item.action) && (<p className="mt-1 line-clamp-2 break-words text-xs leading-snug text-charcoal-700">
+
+                            {describeAuditAction(item)}
+
+                          </p>)}
+
+                      </AdminTd>
+
+                      <AdminTd className="whitespace-nowrap">
+
+                        {outcome ? (<Badge variant={outcome.tone} className="text-xs">
+
+                            {outcome.label}
+
+                          </Badge>) : (<span className="text-xs text-sage-500">—</span>)}
+
+                      </AdminTd>
+
+                      <AdminTd className="max-w-[180px] whitespace-nowrap">
+
+                        <span className="block truncate text-sm text-charcoal-700" title={describeAuditTarget(item)}>
+
+                          {describeAuditTarget(item)}
+
+                        </span>
+
+                      </AdminTd>
+
+                      <AdminTd className="text-right" aria-hidden>
+
+                        <ChevronDown className={cn('ml-auto h-4 w-4 text-sage-500 transition-transform', expandedId === item.id && 'rotate-180')}/>
+
+                      </AdminTd>
+
+                    </AdminTr>
+
+                    {expandedId === item.id && (<AdminTrDetail colSpan={6} id={`audit-detail-${item.id}`}>
+
+                        <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+
+                          <div className="min-w-0">
+
+                            <dt className={ADMIN_DETAIL_LABEL}>Tindakan</dt>
+
+                            <dd className="mt-1 text-sm text-charcoal-900">
+
+                              {labelAudit(item.action)}{' '}
+
+                              <span className="font-mono text-xs text-sage-500">({item.action})</span>
+
+                            </dd>
+
+                          </div>
+
+                          <div className="min-w-0">
+
+                            <dt className={ADMIN_DETAIL_LABEL}>Hasil</dt>
+
+                            <dd className="mt-1 text-sm text-charcoal-900">
+
+                              {outcome ? (<Badge variant={outcome.tone} className="text-xs">
+
+                                  {outcome.label}
+
+                                </Badge>) : ('—')}
+
+                            </dd>
+
+                          </div>
+
+                          <div className="min-w-0">
+
+                            <dt className={ADMIN_DETAIL_LABEL}>Objek terdampak</dt>
+
+                            <dd className="mt-1 break-all font-mono text-xs text-charcoal-700">
+
+                              {labelTarget(item.targetType)}
+
+                              {item.targetId ? ` · ${item.targetId}` : ''}
+
+                            </dd>
+
+                          </div>
+
+                          <div className="min-w-0">
+
+                            <dt className={ADMIN_DETAIL_LABEL}>Alasan</dt>
+
+                            <dd className="mt-1 break-words text-sm text-charcoal-700">
+
+                              {item.reason || '—'}
+
+                            </dd>
+
+                          </div>
+
+                          <div className="min-w-0 sm:col-span-2">
+
+                            <dt className={ADMIN_DETAIL_LABEL}>Metadata (aman)</dt>
+
+                            <dd className="mt-1">
+
+                              <pre className="max-h-64 overflow-auto rounded-[var(--radius)] bg-sage-100/40 p-3 text-xs leading-relaxed text-charcoal-700">
+
+                                {formatMetadataSafe(item.metadata)}
+
+                              </pre>
+
+                            </dd>
+
+                          </div>
+
+                        </dl>
+
+                      </AdminTrDetail>)}
+
                   </Fragment>);
-            })}
-            </tbody>
-          </AdminTableCard>
-
-          <div className="space-y-3 sm:hidden">
+            })}
+
+            </tbody>
+
+          </AdminTableCard>
+
+
+
+          <div className="space-y-3 sm:hidden">
+
             {visible.map((item) => {
                 const outcome = auditOutcome(item);
-                return (<Card key={item.id}>
-                  <CardContent className="px-4 py-4">
-                    <button type="button" onClick={() => toggleExpanded(item.id)} aria-label={`Buka detail log audit ${item.adminName} — ${labelAudit(item.action)}`} aria-expanded={expandedId === item.id} aria-controls={expandedId === item.id ? `audit-mobile-detail-${item.id}` : undefined} className="block w-full rounded-[var(--radius)] text-left transition-colors hover:bg-sage-100/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-                      <div className="flex items-center justify-between gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {labelAudit(item.action)}
-                        </Badge>
-                        {outcome ? (<Badge variant={outcome.tone} className="text-xs">
-                            {outcome.label}
-                          </Badge>) : (<span className="text-xs text-sage-500">—</span>)}
-                      </div>
-                      <p className="mt-2 line-clamp-3 break-words text-sm text-charcoal-700">
-                        {describeAuditAction(item)}
-                      </p>
-                      <p className="mt-2 text-xs text-charcoal-700">
-                        <span className="text-sage-500">Objek: </span>
-                        {describeAuditTarget(item)}
-                      </p>
-                      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-sage-500">
-                        <span className="truncate" title={item.adminName}>
-                          {item.adminName}
-                        </span>
-                        <span className="flex shrink-0 items-center gap-1.5">
-                          {formatTanggalWaktu(item.createdAt)}
-                          <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', expandedId === item.id && 'rotate-180')}/>
-                        </span>
-                      </div>
-                    </button>
-                    {expandedId === item.id && (<div id={`audit-mobile-detail-${item.id}`} className="mt-3 space-y-2 border-t border-border/60 pt-3">
-                        {item.adminEmail && (<p className="truncate text-xs text-sage-500" title={item.adminEmail}>
-                            {item.adminEmail}
-                          </p>)}
-                        <p className="break-all font-mono text-xs text-charcoal-700">
-                          {labelTarget(item.targetType)}
-                          {item.targetId ? ` · ${item.targetId}` : ''}
-                        </p>
-                        {item.reason && (<p className="break-words text-sm text-charcoal-700">{item.reason}</p>)}
-                        <pre className="max-h-52 overflow-auto rounded-[var(--radius)] bg-sage-100/40 p-3 text-xs text-charcoal-700">
-                          {formatMetadataSafe(item.metadata)}
-                        </pre>
-                      </div>)}
-                  </CardContent>
+                return (<Card key={item.id}>
+
+                  <CardContent className="px-4 py-4">
+
+                    <button type="button" onClick={() => toggleExpanded(item.id)} aria-label={`Buka detail log audit ${item.adminName} — ${labelAudit(item.action)}`} aria-expanded={expandedId === item.id} aria-controls={expandedId === item.id ? `audit-mobile-detail-${item.id}` : undefined} className="block w-full rounded-[var(--radius)] text-left transition-colors hover:bg-sage-100/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+
+                      <div className="flex items-center justify-between gap-2">
+
+                        <Badge variant="outline" className="text-xs">
+
+                          {labelAudit(item.action)}
+
+                        </Badge>
+
+                        {outcome ? (<Badge variant={outcome.tone} className="text-xs">
+
+                            {outcome.label}
+
+                          </Badge>) : (<span className="text-xs text-sage-500">—</span>)}
+
+                      </div>
+
+                      <p className="mt-2 line-clamp-3 break-words text-sm text-charcoal-700">
+
+                        {describeAuditAction(item)}
+
+                      </p>
+
+                      <p className="mt-2 text-xs text-charcoal-700">
+
+                        <span className="text-sage-500">Objek: </span>
+
+                        {describeAuditTarget(item)}
+
+                      </p>
+
+                      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-sage-500">
+
+                        <span className="truncate" title={item.adminName}>
+
+                          {item.adminName}
+
+                        </span>
+
+                        <span className="flex shrink-0 items-center gap-1.5">
+
+                          {formatTanggalWaktu(item.createdAt)}
+
+                          <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', expandedId === item.id && 'rotate-180')}/>
+
+                        </span>
+
+                      </div>
+
+                    </button>
+
+                    {expandedId === item.id && (<div id={`audit-mobile-detail-${item.id}`} className="mt-3 space-y-2 border-t border-border/60 pt-3">
+
+                        {item.adminEmail && (<p className="truncate text-xs text-sage-500" title={item.adminEmail}>
+
+                            {item.adminEmail}
+
+                          </p>)}
+
+                        <p className="break-all font-mono text-xs text-charcoal-700">
+
+                          {labelTarget(item.targetType)}
+
+                          {item.targetId ? ` · ${item.targetId}` : ''}
+
+                        </p>
+
+                        {item.reason && (<p className="break-words text-sm text-charcoal-700">{item.reason}</p>)}
+
+                        <pre className="max-h-52 overflow-auto rounded-[var(--radius)] bg-sage-100/40 p-3 text-xs text-charcoal-700">
+
+                          {formatMetadataSafe(item.metadata)}
+
+                        </pre>
+
+                      </div>)}
+
+                  </CardContent>
+
                 </Card>);
-            })}
-          </div>
-        </>)}
-
-      {status === 'ready' && items.length > 0 && (<AdminPagination total={total} page={Math.floor(offset / PAGE_LIMIT) + 1} pageSize={PAGE_LIMIT} noun="entri" onPageChange={(next) => load((next - 1) * PAGE_LIMIT, actionFilter, targetTypeFilter)}/>)}
+            })}
+
+          </div>
+
+        </>)}
+
+
+
+      {status === 'ready' && items.length > 0 && (<AdminPagination total={total} page={Math.floor(offset / PAGE_LIMIT) + 1} pageSize={PAGE_LIMIT} noun="entri" onPageChange={(next) => load((next - 1) * PAGE_LIMIT, actionFilter, targetTypeFilter)}/>)}
+
     </div>);
 }

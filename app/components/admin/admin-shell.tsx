@@ -6,8 +6,6 @@ import { Skeleton } from '@/app/components/ui/skeleton';
 import { AdminSidebar } from './admin-sidebar';
 import { AdminTopbar } from './admin-topbar';
 import { AdminErrorState } from './admin-state';
-import { AppFooter } from '@/app/components/shared/app-footer';
-import { Toaster } from '@/app/components/ui/toaster';
 import { ADMIN_SIDEBAR_COLLAPSED_KEY, syncAdminPreferencesFromServer } from '@/lib/admin-preferences';
 import { useRequireAdmin } from '@/hooks/use-require-admin';
 import { cn } from '@/lib/utils';
@@ -105,12 +103,8 @@ export function AdminShell({ children }: AdminShellProps) {
         <main className="min-h-0 flex-1">{children}</main>
 
         
-        <AppFooter role="admin" />
       </div>
 
       <ScrollToTopButton />
-
-      
-      <Toaster />
     </div>);
 }

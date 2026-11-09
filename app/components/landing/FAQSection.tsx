@@ -60,115 +60,213 @@ export function FAQSection() {
             setStatus('error');
         }
     };
-    return (<section id="faq" aria-labelledby="faq-heading" className="grain-overlay bg-white">
-      <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        <Reveal>
-          <div className="max-w-2xl">
-            <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
-              Pertanyaan umum
-            </p>
-            <h2 id="faq-heading" className="mt-4 text-balance font-display text-[clamp(1.8rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary">
-              Hal yang paling sering{' '}
-              <span className="font-light italic">ditanyakan</span>.
-            </h2>
-          </div>
-        </Reveal>
-
-        <div className="mt-10 grid items-start gap-8 sm:mt-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
-          <Reveal>
-            <div className="border-t border-border">
+    return (<section id="faq" aria-labelledby="faq-heading" className="grain-overlay bg-white">
+
+      <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+
+        <Reveal>
+
+          <div className="max-w-2xl">
+
+            <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
+
+              Pertanyaan umum
+
+            </p>
+
+            <h2 id="faq-heading" className="mt-4 text-balance font-display text-[clamp(1.8rem,3.4vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-primary">
+
+              Hal yang paling sering{' '}
+
+              <span className="font-light italic">ditanyakan</span>.
+
+            </h2>
+
+          </div>
+
+        </Reveal>
+
+
+
+        <div className="mt-10 grid items-start gap-8 sm:mt-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
+
+          <Reveal>
+
+            <div className="border-t border-border">
+
               {FAQS.map((faq, index) => {
             const isOpen = open === index;
             const panelId = `faq-panel-${index}`;
             const buttonId = `faq-button-${index}`;
-            return (<div key={faq.q} className="border-b border-border">
-                    <h3>
-                      <button type="button" id={buttonId} aria-expanded={isOpen} aria-controls={panelId} onClick={() => setOpen(isOpen ? null : index)} className={cn('flex w-full items-start justify-between gap-5 py-5 text-left transition-colors duration-200', FOCUS_RING)}>
+            return (<div key={faq.q} className="border-b border-border">
+
+                    <h3>
+
+                      <button type="button" id={buttonId} aria-expanded={isOpen} aria-controls={panelId} onClick={() => setOpen(isOpen ? null : index)} className={cn('flex w-full items-start justify-between gap-5 py-5 text-left transition-colors duration-200', FOCUS_RING)}>
+
                         <span className={cn('font-display text-[15px] font-semibold leading-snug tracking-tight transition-colors duration-200 sm:text-base', isOpen
                     ? 'text-primary'
-                    : 'text-foreground hover:text-primary')}>
-                          {faq.q}
-                        </span>
-
+                    : 'text-foreground hover:text-primary')}>
+
+                          {faq.q}
+
+                        </span>
+
+
+
                         <span aria-hidden className={cn('mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all duration-300', isOpen
                     ? 'border-primary bg-primary text-white'
-                    : 'border-border text-primary hover:border-primary')}>
-                          <Plus className={cn('h-4 w-4 transition-transform duration-300', isOpen && 'rotate-45')}/>
-                        </span>
-                      </button>
-                    </h3>
-
-                    <AnimatePresence initial={false}>
+                    : 'border-border text-primary hover:border-primary')}>
+
+                          <Plus className={cn('h-4 w-4 transition-transform duration-300', isOpen && 'rotate-45')}/>
+
+                        </span>
+
+                      </button>
+
+                    </h3>
+
+
+
+                    <AnimatePresence initial={false}>
+
                       {isOpen && (<motion.div id={panelId} role="region" aria-labelledby={buttonId} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{
                         duration: 0.3,
                         ease: [0.22, 1, 0.36, 1],
-                    }} className="overflow-hidden">
-                          <p className="max-w-2xl pb-5 pr-10 text-sm leading-[1.8] text-muted-foreground">
-                            {faq.a}
-                          </p>
-                        </motion.div>)}
-                    </AnimatePresence>
+                    }} className="overflow-hidden">
+
+                          <p className="max-w-2xl pb-5 pr-10 text-sm leading-[1.8] text-muted-foreground">
+
+                            {faq.a}
+
+                          </p>
+
+                        </motion.div>)}
+
+                    </AnimatePresence>
+
                   </div>);
-        })}
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.08}>
-            <div className="rounded-3xl border border-border bg-secondary p-6 sm:p-8">
-              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-                Hubungi kami
-              </p>
-              <h3 className="mt-3 font-display text-xl font-semibold tracking-tight text-primary sm:text-2xl">
-                Masih ada pertanyaan?
-              </h3>
-              <p className="mt-2 text-sm leading-[1.75] text-muted-foreground">
-                Kirim pesan lewat formulir ini, tim kami akan membalas ke email
-                kamu. Atau langsung saja ke{' '}
-                <a href="mailto:halo@rebites.id" className="font-medium text-primary underline underline-offset-4 hover:text-primary-dark">
-                  halo@rebites.id
-                </a>
-                .
-              </p>
-
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                <label className="block">
-                  <span className="font-secondary text-xs font-semibold text-primary">
-                    Nama
-                  </span>
-                  <input type="text" name="nama" required placeholder="Nama Anda" className="mt-1.5 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25"/>
-                </label>
-
-                <label className="block">
-                  <span className="font-secondary text-xs font-semibold text-primary">
-                    Email
-                  </span>
-                  <input type="email" name="email" required placeholder="nama@email.com" className="mt-1.5 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25"/>
-                </label>
-
-                <label className="block">
-                  <span className="font-secondary text-xs font-semibold text-primary">
-                    Pesan
-                  </span>
-                  <textarea name="pesan" required rows={4} placeholder="Tulis pertanyaan atau pesan Anda di sini…" className="mt-1.5 w-full resize-none rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25"/>
-                </label>
-
-                <button type="submit" disabled={status === 'sending'} className={cn('inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-70', FOCUS_RING)}>
-                  <Mail className="h-4 w-4" aria-hidden/>
-                  {status === 'sending' ? 'Mengirim…' : 'Kirim Pesan'}
-                </button>
-
-                <AnimatePresence>
-                  {status === 'success' && (<motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-sm font-medium text-primary">
-                      Terima kasih! Pesan Anda sudah terkirim.
-                    </motion.p>)}
-                  {status === 'error' && (<motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-sm font-medium text-sale">
-                      Gagal mengirim pesan. Silakan coba lagi.
-                    </motion.p>)}
-                </AnimatePresence>
-              </form>
-            </div>
-          </Reveal>
-        </div>
-      </div>
+        })}
+
+            </div>
+
+          </Reveal>
+
+
+
+          <Reveal delay={0.08}>
+
+            <div className="rounded-3xl border border-border bg-secondary p-6 sm:p-8">
+
+              <p className="font-secondary text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
+
+                Hubungi kami
+
+              </p>
+
+              <h3 className="mt-3 font-display text-xl font-semibold tracking-tight text-primary sm:text-2xl">
+
+                Masih ada pertanyaan?
+
+              </h3>
+
+              <p className="mt-2 text-sm leading-[1.75] text-muted-foreground">
+
+                Kirim pesan lewat formulir ini, tim kami akan membalas ke email
+
+                kamu. Atau langsung saja ke{' '}
+
+                <a href="mailto:halo@rebites.id" className="font-medium text-primary underline underline-offset-4 hover:text-primary-dark">
+
+                  halo@rebites.id
+
+                </a>
+
+                .
+
+              </p>
+
+
+
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+
+                <label className="block">
+
+                  <span className="font-secondary text-xs font-semibold text-primary">
+
+                    Nama
+
+                  </span>
+
+                  <input type="text" name="nama" required placeholder="Nama Anda" className="mt-1.5 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25"/>
+
+                </label>
+
+
+
+                <label className="block">
+
+                  <span className="font-secondary text-xs font-semibold text-primary">
+
+                    Email
+
+                  </span>
+
+                  <input type="email" name="email" required placeholder="nama@email.com" className="mt-1.5 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25"/>
+
+                </label>
+
+
+
+                <label className="block">
+
+                  <span className="font-secondary text-xs font-semibold text-primary">
+
+                    Pesan
+
+                  </span>
+
+                  <textarea name="pesan" required rows={4} placeholder="Tulis pertanyaan atau pesan Anda di sini…" className="mt-1.5 w-full resize-none rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25"/>
+
+                </label>
+
+
+
+                <button type="submit" disabled={status === 'sending'} className={cn('inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-secondary text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-70', FOCUS_RING)}>
+
+                  <Mail className="h-4 w-4" aria-hidden/>
+
+                  {status === 'sending' ? 'Mengirim…' : 'Kirim Pesan'}
+
+                </button>
+
+
+
+                <AnimatePresence>
+
+                  {status === 'success' && (<motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-sm font-medium text-primary">
+
+                      Terima kasih! Pesan Anda sudah terkirim.
+
+                    </motion.p>)}
+
+                  {status === 'error' && (<motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-sm font-medium text-sale">
+
+                      Gagal mengirim pesan. Silakan coba lagi.
+
+                    </motion.p>)}
+
+                </AnimatePresence>
+
+              </form>
+
+            </div>
+
+          </Reveal>
+
+        </div>
+
+      </div>
+
     </section>);
 }

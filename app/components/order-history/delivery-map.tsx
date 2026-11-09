@@ -386,51 +386,89 @@ export default function DeliveryMap({ plan, className, animateRoute = false, cou
         };
     }, [animateRoute, courierPosition, status, route, completed]);
     if (plan.availability !== 'ready' || lat == null || lng == null) {
-        return (<div className={cn('flex h-[260px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-hairline bg-cream-50 px-6 text-center sm:h-[320px]', className)} aria-live="polite">
-        <MapPinOff className="h-5 w-5 text-sage-500" aria-hidden/>
-        <p className="max-w-xs text-sm leading-relaxed text-charcoal-500">
-          {plan.message ?? 'Peta belum dapat ditampilkan.'}
-        </p>
+        return (<div className={cn('flex h-[260px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-hairline bg-cream-50 px-6 text-center sm:h-[320px]', className)} aria-live="polite">
+
+        <MapPinOff className="h-5 w-5 text-sage-500" aria-hidden/>
+
+        <p className="max-w-xs text-sm leading-relaxed text-charcoal-500">
+
+          {plan.message ?? 'Peta belum dapat ditampilkan.'}
+
+        </p>
+
       </div>);
     }
-    return (<div className={cn('relative h-[260px] overflow-hidden rounded-2xl border border-hairline bg-cream-50 sm:h-[320px] lg:h-[380px]', className)}>
-      <div ref={containerRef} className="h-full w-full"/>
-
-      {status === 'loading' && (<div className="absolute inset-0 flex items-center justify-center bg-cream-50/90">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" aria-hidden/>
-          <span className="sr-only">Memuat peta</span>
-        </div>)}
-
-      {status === 'error' && (<div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-cream-50 px-6 text-center">
-          <TriangleAlert className="h-5 w-5 text-caramel-dark" aria-hidden/>
-          <p className="max-w-xs text-sm leading-relaxed text-charcoal-500">
-            Peta tidak dapat dimuat. Informasi alamat dan status pengantaran tetap
-            tersedia di bawah ini.
-          </p>
-          {process.env.NODE_ENV !== 'production' && errorDetail && (<p className="max-w-xs break-words text-[10px] text-charcoal-500/70">{errorDetail}</p>)}
-        </div>)}
-
-      
-      {status === 'ready' && routeSource && (<p className="pointer-events-none absolute left-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-charcoal-700 shadow-sm">
-          <span aria-hidden className="inline-block h-0.5 w-4 rounded-full" style={{ backgroundColor: ROUTE_COLOR }}/>
-          {routeSource === 'road' ? 'Rute jalan' : 'Rute perkiraan'}
-        </p>)}
-
-      
-      {status === 'ready' && (<p className="pointer-events-none absolute bottom-8 left-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-charcoal-700 shadow-sm">
-          <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: ROUTE_COLOR }}/>
+    return (<div className={cn('relative h-[260px] overflow-hidden rounded-2xl border border-hairline bg-cream-50 sm:h-[320px] lg:h-[380px]', className)}>
+
+      <div ref={containerRef} className="h-full w-full"/>
+
+
+
+      {status === 'loading' && (<div className="absolute inset-0 flex items-center justify-center bg-cream-50/90">
+
+          <Loader2 className="h-5 w-5 animate-spin text-primary" aria-hidden/>
+
+          <span className="sr-only">Memuat peta</span>
+
+        </div>)}
+
+
+
+      {status === 'error' && (<div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-cream-50 px-6 text-center">
+
+          <TriangleAlert className="h-5 w-5 text-caramel-dark" aria-hidden/>
+
+          <p className="max-w-xs text-sm leading-relaxed text-charcoal-500">
+
+            Peta tidak dapat dimuat. Informasi alamat dan status pengantaran tetap
+
+            tersedia di bawah ini.
+
+          </p>
+
+          {process.env.NODE_ENV !== 'production' && errorDetail && (<p className="max-w-xs break-words text-[10px] text-charcoal-500/70">{errorDetail}</p>)}
+
+        </div>)}
+
+
+
+      
+
+      {status === 'ready' && routeSource && (<p className="pointer-events-none absolute left-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-charcoal-700 shadow-sm">
+
+          <span aria-hidden className="inline-block h-0.5 w-4 rounded-full" style={{ backgroundColor: ROUTE_COLOR }}/>
+
+          {routeSource === 'road' ? 'Rute jalan' : 'Rute perkiraan'}
+
+        </p>)}
+
+
+
+      
+
+      {status === 'ready' && (<p className="pointer-events-none absolute bottom-8 left-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-charcoal-700 shadow-sm">
+
+          <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: ROUTE_COLOR }}/>
+
           {VEHICLE_LEGEND[completed
                 ? 'completed'
                 : courierPosition
                     ? 'live'
                     : tripFinished
                         ? 'illustration-done'
-                        : 'illustration']}
-        </p>)}
-
-      
-      <p className="pointer-events-none absolute bottom-1 left-2 z-10 text-[10px] leading-tight text-charcoal-500">
-        © OpenStreetMap contributors · tiles by OpenFreeMap
-      </p>
+                        : 'illustration']}
+
+        </p>)}
+
+
+
+      
+
+      <p className="pointer-events-none absolute bottom-1 left-2 z-10 text-[10px] leading-tight text-charcoal-500">
+
+        © OpenStreetMap contributors · tiles by OpenFreeMap
+
+      </p>
+
     </div>);
 }

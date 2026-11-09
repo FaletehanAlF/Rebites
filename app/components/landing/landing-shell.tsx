@@ -6,10 +6,15 @@ import { Preloader } from '@/app/components/preloader';
 export function LandingShell({ children }: {
     children: ReactNode;
 }) {
-    return (<MotionConfig reducedMotion="user">
-      <SmoothScroll>
-        <Preloader />
-        {children}
-      </SmoothScroll>
+    return (<MotionConfig reducedMotion="user">
+
+      <SmoothScroll>
+
+        <Preloader />
+
+        {children}
+
+      </SmoothScroll>
+
     </MotionConfig>);
 }

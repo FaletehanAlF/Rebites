@@ -292,7 +292,7 @@ export function AdminProfileView({ state, errorMessage, fullName, email, avatarU
             </div>
 
             <div className="mt-5 flex flex-wrap items-center gap-4 border-t border-border pt-4">
-              <Button type="button" onClick={simpanProfil} disabled={!bisaSimpan} className="min-h-11">
+              <Button type="button" onClick={simpanProfil} disabled={!bisaSimpan} className="min-h-[44px]">
                 {saving ? (<Loader2 aria-hidden className="h-4 w-4 animate-spin motion-reduce:animate-none"/>) : (<Check aria-hidden className="h-4 w-4"/>)}
                 {saving ? 'Menyimpan…' : 'Simpan perubahan'}
               </Button>
@@ -306,7 +306,7 @@ export function AdminProfileView({ state, errorMessage, fullName, email, avatarU
                   Batalkan
                 </Button>)}
 
-              <p className="min-h-5 text-sm" role="status" aria-live="polite">
+              <p className="min-h-[20px] text-sm" role="status" aria-live="polite">
                 {saveError && <span className="font-medium text-destructive">{saveError}</span>}
                 {!saveError && savedAt && !adaPerubahan && (<span className="font-medium text-success">Perubahan tersimpan di akun.</span>)}
               </p>

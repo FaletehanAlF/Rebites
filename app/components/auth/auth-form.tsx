@@ -70,20 +70,34 @@ interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
 function Field({ id, label, icon: Icon, hint, className, type = "text", ...inputProps }: FieldProps) {
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === "password";
-    return (<div>
-      <div className="mb-1.5 flex items-baseline justify-between gap-4">
-        <label htmlFor={id} className="block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          {label}
-        </label>
-        {hint}
-      </div>
-      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/15">
-        <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-primary"/>
-        <input id={id} type={isPassword && showPassword ? "text" : type} {...inputProps} className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-primary outline-none placeholder:text-muted-foreground"/>
-        {isPassword && (<button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"} aria-pressed={showPassword} className="shrink-0 rounded-sm p-0.5 text-muted-foreground/55 transition-colors duration-200 hover:text-primary focus-visible:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
-            {showPassword ? (<EyeOff className="h-4 w-4"/>) : (<Eye className="h-4 w-4"/>)}
-          </button>)}
-      </div>
+    return (<div>
+
+      <div className="mb-1.5 flex items-baseline justify-between gap-4">
+
+        <label htmlFor={id} className="block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+
+          {label}
+
+        </label>
+
+        {hint}
+
+      </div>
+
+      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/15">
+
+        <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-primary"/>
+
+        <input id={id} type={isPassword && showPassword ? "text" : type} {...inputProps} className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-primary outline-none placeholder:text-muted-foreground"/>
+
+        {isPassword && (<button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"} aria-pressed={showPassword} className="shrink-0 rounded-sm p-0.5 text-muted-foreground/55 transition-colors duration-200 hover:text-primary focus-visible:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+
+            {showPassword ? (<EyeOff className="h-4 w-4"/>) : (<Eye className="h-4 w-4"/>)}
+
+          </button>)}
+
+      </div>
+
     </div>);
 }
 interface AuthFormProps {
@@ -393,174 +407,335 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
         }
     }
     const strengthMeta = PASSWORD_STRENGTH_META[checkPasswordStrength(password).strength];
-    return (<motion.div variants={containerVariants} initial="hidden" animate="show" className="flex min-h-0 flex-col">
-      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
-        <Link href="/" className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-primary">
-          <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5"/>
-          Kembali
-        </Link>
-      </motion.div>
-
-      <motion.div variants={itemVariants} className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0">
-        <Image src="/logo.avif" alt="ReBites" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-black/5"/>
-        <span className="font-display text-lg font-semibold tracking-tight text-primary">
-          ReBites
-        </span>
-      </motion.div>
-
-      <motion.h1 variants={itemVariants} className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-primary flex-shrink-0">
-        {title}
-      </motion.h1>
-      <motion.p variants={itemVariants} className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0">
-        {subtitle}
-      </motion.p>
-
-      <motion.div variants={itemVariants} className="mt-5 flex flex-col gap-4 flex-shrink-0">
-        <button type="button" onClick={handleGoogleAuth} disabled={oauthLoading || loading} aria-busy={oauthLoading} className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-border bg-white px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-primary shadow-sm transition-colors duration-200 hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70">
-          {oauthLoading ? (<span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"/>) : (<svg aria-hidden="true" focusable="false" viewBox="0 0 48 48" className="h-[18px] w-[18px] shrink-0">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-            </svg>)}
-          Lanjutkan dengan Google
-        </button>
-
-        <div className="flex items-center gap-3" aria-hidden="true">
-          <span className="h-px flex-1 bg-border"/>
-          <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            atau
-          </span>
-          <span className="h-px flex-1 bg-border"/>
-        </div>
-      </motion.div>
-
-      <motion.form variants={itemVariants} className="mt-5 flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
-        <div className="grid gap-4">
-        {isSignup && (<Field id="fullName" label="Nama Lengkap" icon={User} name="fullName" type="text" autoComplete="name" placeholder="Nama Lengkap" value={fullName} onChange={(e) => setFullName(e.target.value)}/>)}
-
-        <Field id="email" label="Alamat Email" icon={Mail} name="email" type="email" autoComplete="email" placeholder="editorial@example.com" value={email} onChange={(e) => setEmail(e.target.value)}/>
-
-        <Field id="password" label="Kata Sandi" icon={Lock} name="password" type="password" autoComplete={isSignup ? "new-password" : "current-password"} placeholder="............" value={password} onChange={(e) => setPassword(e.target.value)}/>
-
-        <AnimatePresence initial={false}>
-          {isSignup && password.length > 0 && (<motion.div key="password-strength" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.28, ease: EASE }} className="overflow-hidden">
-              <div className="flex items-center justify-between pb-1.5">
-                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Kekuatan Kata Sandi
-                </span>
-                <span className={`font-sans text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors duration-300 ${strengthMeta.text}`}>
-                  {strengthMeta.label}
-                </span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-border/70">
-                <div className={`h-full rounded-full transition-all duration-500 ease-out ${strengthMeta.bar} ${strengthMeta.width}`}/>
-              </div>
-            </motion.div>)}
-        </AnimatePresence>
-
-        {!isSignup && (<>
-            <div className="flex items-center justify-between -mt-1">
-              <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-3.5 w-3.5 rounded border-border text-primary accent-primary focus:ring-primary/30"/>
-                <span className="font-sans text-[11px] text-muted-foreground">Ingat saya</span>
-              </label>
-              <Link href="/auth/forgotPassword" className="font-sans text-[11px] text-muted-foreground underline underline-offset-4 transition-colors hover:text-primary">
-                Lupa password?
-              </Link>
-            </div>
-          </>)}
-
-        {error && (<div role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
-            <p>{error}</p>
-            
-            {isAccountBlockMessage(error) && (<p className="mt-1.5">
-                <Link href="/banding" className="font-semibold text-destructive underline underline-offset-2 transition-opacity hover:opacity-80">
-                  Ajukan banding ke admin
-                </Link>
-              </p>)}
-          </div>)}
-
-        {needsVerification && !isSignup && (<div className="rounded-lg border border-border bg-secondary px-3 py-2.5">
-            <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
-              Tidak menemukan email? Cek spam/promosi, lalu kirim ulang ke{" "}
-              <span className="font-semibold text-primary">
-                {email.trim() || "email kamu"}
-              </span>
-              .
-            </p>
-            <button type="button" onClick={handleResend} disabled={resendLoading || isResendCooling || !email.trim()} className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-4 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-60">
+    return (<motion.div variants={containerVariants} initial="hidden" animate="show" className="flex min-h-0 flex-col">
+
+      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
+
+        <Link href="/" className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-primary">
+
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5"/>
+
+          Kembali
+
+        </Link>
+
+      </motion.div>
+
+
+
+      <motion.div variants={itemVariants} className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0">
+
+        <Image src="/logo.avif" alt="ReBites" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-black/5"/>
+
+        <span className="font-display text-lg font-semibold tracking-tight text-primary">
+
+          ReBites
+
+        </span>
+
+      </motion.div>
+
+
+
+      <motion.h1 variants={itemVariants} className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-primary flex-shrink-0">
+
+        {title}
+
+      </motion.h1>
+
+      <motion.p variants={itemVariants} className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0">
+
+        {subtitle}
+
+      </motion.p>
+
+
+
+      <motion.div variants={itemVariants} className="mt-5 flex flex-col gap-4 flex-shrink-0">
+
+        <button type="button" onClick={handleGoogleAuth} disabled={oauthLoading || loading} aria-busy={oauthLoading} className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-border bg-white px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-primary shadow-sm transition-colors duration-200 hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70">
+
+          {oauthLoading ? (<span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"/>) : (<svg aria-hidden="true" focusable="false" viewBox="0 0 48 48" className="h-[18px] w-[18px] shrink-0">
+
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+
+            </svg>)}
+
+          Lanjutkan dengan Google
+
+        </button>
+
+
+
+        <div className="flex items-center gap-3" aria-hidden="true">
+
+          <span className="h-px flex-1 bg-border"/>
+
+          <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+
+            atau
+
+          </span>
+
+          <span className="h-px flex-1 bg-border"/>
+
+        </div>
+
+      </motion.div>
+
+
+
+      <motion.form variants={itemVariants} className="mt-5 flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
+
+        <div className="grid gap-4">
+
+        {isSignup && (<Field id="fullName" label="Nama Lengkap" icon={User} name="fullName" type="text" autoComplete="name" placeholder="Nama Lengkap" value={fullName} onChange={(e) => setFullName(e.target.value)}/>)}
+
+
+
+        <Field id="email" label="Alamat Email" icon={Mail} name="email" type="email" autoComplete="email" placeholder="editorial@example.com" value={email} onChange={(e) => setEmail(e.target.value)}/>
+
+
+
+        <Field id="password" label="Kata Sandi" icon={Lock} name="password" type="password" autoComplete={isSignup ? "new-password" : "current-password"} placeholder="............" value={password} onChange={(e) => setPassword(e.target.value)}/>
+
+
+
+        <AnimatePresence initial={false}>
+
+          {isSignup && password.length > 0 && (<motion.div key="password-strength" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.28, ease: EASE }} className="overflow-hidden">
+
+              <div className="flex items-center justify-between pb-1.5">
+
+                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+
+                  Kekuatan Kata Sandi
+
+                </span>
+
+                <span className={`font-sans text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors duration-300 ${strengthMeta.text}`}>
+
+                  {strengthMeta.label}
+
+                </span>
+
+              </div>
+
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-border/70">
+
+                <div className={`h-full rounded-full transition-all duration-500 ease-out ${strengthMeta.bar} ${strengthMeta.width}`}/>
+
+              </div>
+
+            </motion.div>)}
+
+        </AnimatePresence>
+
+
+
+        {!isSignup && (<>
+
+            <div className="flex items-center justify-between -mt-1">
+
+              <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+
+                <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-3.5 w-3.5 rounded border-border text-primary accent-primary focus:ring-primary/30"/>
+
+                <span className="font-sans text-[11px] text-muted-foreground">Ingat saya</span>
+
+              </label>
+
+              <Link href="/auth/forgotPassword" className="font-sans text-[11px] text-muted-foreground underline underline-offset-4 transition-colors hover:text-primary">
+
+                Lupa password?
+
+              </Link>
+
+            </div>
+
+          </>)}
+
+
+
+        {error && (<div role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
+
+            <p>{error}</p>
+
+            
+
+            {isAccountBlockMessage(error) && (<p className="mt-1.5">
+
+                <Link href="/banding" className="font-semibold text-destructive underline underline-offset-2 transition-opacity hover:opacity-80">
+
+                  Ajukan banding ke admin
+
+                </Link>
+
+              </p>)}
+
+          </div>)}
+
+
+
+        {needsVerification && !isSignup && (<div className="rounded-lg border border-border bg-secondary px-3 py-2.5">
+
+            <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
+
+              Tidak menemukan email? Cek spam/promosi, lalu kirim ulang ke{" "}
+
+              <span className="font-semibold text-primary">
+
+                {email.trim() || "email kamu"}
+
+              </span>
+
+              .
+
+            </p>
+
+            <button type="button" onClick={handleResend} disabled={resendLoading || isResendCooling || !email.trim()} className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-4 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-60">
+
               {resendLoading
                 ? "Mengirim…"
                 : isResendCooling
                     ? `Kirim ulang dalam ${resendRemainingSec} detik`
-                    : "Kirim Ulang Email Konfirmasi"}
-            </button>
-            {resendMessage && (<p role="status" className="mt-2 font-sans text-[12px] leading-relaxed text-muted-foreground">
-                {resendMessage}
-              </p>)}
-          </div>)}
-        </div>
-
-        <button type="submit" disabled={loading || confirmEmailOpen} className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0">
-          {loading ? (isSignup ? "Mendaftar" : "Masuk") : submitLabel}
-          <ArrowRight className="h-4 w-4"/>
-        </button>
-      </motion.form>
-
-      <motion.p variants={itemVariants} className="mt-6 text-center font-sans text-[13px] text-muted-foreground flex-shrink-0">
-        {bottomHint.text}{" "}
-        <Link href={bottomHint.href} className="font-semibold text-primary underline underline-offset-4 transition-colors hover:text-primary">
-          {bottomHint.linkText}
-        </Link>
-      </motion.p>
-
-      <Dialog open={confirmEmailOpen} onOpenChange={setConfirmEmailOpen}>
-        <DialogContent className="max-w-sm rounded-2xl border-border bg-white p-6">
-          <DialogHeader>
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <MailCheck className="h-6 w-6"/>
-            </span>
-            <DialogTitle className="text-center font-display text-lg font-medium tracking-tight text-primary">
-              Cek Email Kamu
-            </DialogTitle>
-            <DialogDescription className="text-center font-sans text-sm leading-relaxed text-muted-foreground">
-              Registrasi berhasil! Kami mengirim email verifikasi ke{" "}
-              <span className="font-semibold text-primary">
-                {email.trim()}
-              </span>
-              . Masukkan kode verifikasi dari email itu di kolom bawah untuk
-              mengaktifkan akunmu.
-            </DialogDescription>
-            <p className="text-center font-sans text-[12px] leading-relaxed text-muted-foreground">
-              Email bisa memuat kode, tautan, atau keduanya: kodenya diisi di
-              kolom bawah, dan tautannya juga langsung mengaktifkan akunmu
-              begitu diklik.
-            </p>
-          </DialogHeader>
-          <form className="mt-4 flex flex-col gap-2" onSubmit={handleVerifyOtp} noValidate>
-            <Field id="otpCode" label="Kode Verifikasi" icon={KeyRound} name="otpCode" type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="Kode dari email" maxLength={MAX_OTP_DIGITS} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, MAX_OTP_DIGITS))} disabled={otpLoading}/>
-            {otpError && (<p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700">
-                {otpError}
-              </p>)}
-            <button type="submit" disabled={otpLoading || otpCode.length < MIN_OTP_DIGITS} className="mt-1 inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-primary disabled:cursor-not-allowed disabled:opacity-60">
-              {otpLoading ? "Memverifikasi…" : "Verifikasi Kode"}
-            </button>
-          </form>
-          <button type="button" onClick={handleResend} disabled={resendLoading || isResendCooling || otpLoading} className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60">
+                    : "Kirim Ulang Email Konfirmasi"}
+
+            </button>
+
+            {resendMessage && (<p role="status" className="mt-2 font-sans text-[12px] leading-relaxed text-muted-foreground">
+
+                {resendMessage}
+
+              </p>)}
+
+          </div>)}
+
+        </div>
+
+
+
+        <button type="submit" disabled={loading || confirmEmailOpen} className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0">
+
+          {loading ? (isSignup ? "Mendaftar" : "Masuk") : submitLabel}
+
+          <ArrowRight className="h-4 w-4"/>
+
+        </button>
+
+      </motion.form>
+
+
+
+      <motion.p variants={itemVariants} className="mt-6 text-center font-sans text-[13px] text-muted-foreground flex-shrink-0">
+
+        {bottomHint.text}{" "}
+
+        <Link href={bottomHint.href} className="font-semibold text-primary underline underline-offset-4 transition-colors hover:text-primary">
+
+          {bottomHint.linkText}
+
+        </Link>
+
+      </motion.p>
+
+
+
+      <Dialog open={confirmEmailOpen} onOpenChange={setConfirmEmailOpen}>
+
+        <DialogContent className="max-w-sm rounded-2xl border-border bg-white p-6">
+
+          <DialogHeader>
+
+            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+
+              <MailCheck className="h-6 w-6"/>
+
+            </span>
+
+            <DialogTitle className="text-center font-display text-lg font-medium tracking-tight text-primary">
+
+              Cek Email Kamu
+
+            </DialogTitle>
+
+            <DialogDescription className="text-center font-sans text-sm leading-relaxed text-muted-foreground">
+
+              Registrasi berhasil! Kami mengirim email verifikasi ke{" "}
+
+              <span className="font-semibold text-primary">
+
+                {email.trim()}
+
+              </span>
+
+              . Masukkan kode verifikasi dari email itu di kolom bawah untuk
+
+              mengaktifkan akunmu.
+
+            </DialogDescription>
+
+            <p className="text-center font-sans text-[12px] leading-relaxed text-muted-foreground">
+
+              Email bisa memuat kode, tautan, atau keduanya: kodenya diisi di
+
+              kolom bawah, dan tautannya juga langsung mengaktifkan akunmu
+
+              begitu diklik.
+
+            </p>
+
+          </DialogHeader>
+
+          <form className="mt-4 flex flex-col gap-2" onSubmit={handleVerifyOtp} noValidate>
+
+            <Field id="otpCode" label="Kode Verifikasi" icon={KeyRound} name="otpCode" type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="Kode dari email" maxLength={MAX_OTP_DIGITS} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, MAX_OTP_DIGITS))} disabled={otpLoading}/>
+
+            {otpError && (<p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700">
+
+                {otpError}
+
+              </p>)}
+
+            <button type="submit" disabled={otpLoading || otpCode.length < MIN_OTP_DIGITS} className="mt-1 inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-primary disabled:cursor-not-allowed disabled:opacity-60">
+
+              {otpLoading ? "Memverifikasi…" : "Verifikasi Kode"}
+
+            </button>
+
+          </form>
+
+          <button type="button" onClick={handleResend} disabled={resendLoading || isResendCooling || otpLoading} className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60">
+
             {resendLoading
             ? "Mengirim…"
             : isResendCooling
                 ? `Kirim ulang dalam ${resendRemainingSec} detik`
-                : "Kirim Ulang Kode"}
-          </button>
-          {resendMessage && (<p role="status" className="mt-2 text-center font-sans text-[12px] leading-relaxed text-muted-foreground">
-              {resendMessage}
-            </p>)}
-          <Link href="/auth/login" className="mt-2 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[13px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors duration-200 hover:bg-primary">
-            Ke Halaman Masuk
-          </Link>
-        </DialogContent>
-      </Dialog>
+                : "Kirim Ulang Kode"}
+
+          </button>
+
+          {resendMessage && (<p role="status" className="mt-2 text-center font-sans text-[12px] leading-relaxed text-muted-foreground">
+
+              {resendMessage}
+
+            </p>)}
+
+          <Link href="/auth/login" className="mt-2 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[13px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors duration-200 hover:bg-primary">
+
+            Ke Halaman Masuk
+
+          </Link>
+
+        </DialogContent>
+
+      </Dialog>
+
     </motion.div>);
 }

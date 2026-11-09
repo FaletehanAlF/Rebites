@@ -49,9 +49,8 @@ test('kartu toko menandai keadaan tutup di tengah foto', () => {
     assert.match(CARD, /bg-forest-900\/70/);
     assert.doesNotMatch(CARD, /'Tutup'/);
 });
-test('halaman beranda pembeli memakai footer terpadu', () => {
-    assert.match(HOME_PAGE, /import \{ AppFooter \} from "@\/app\/components\/shared\/app-footer"/);
-    assert.match(HOME_PAGE, /<AppFooter hasMobileBottomNav \/>/);
+test('halaman beranda pembeli tidak memasang footer terpadu', () => {
+    assert.doesNotMatch(HOME_PAGE, /AppFooter/);
 });
 test('footer menyisakan ruang agar tidak tertutup tombol asisten', () => {
     assert.match(FOOTER, /pb-\[calc\(4\.5rem\+env\(safe-area-inset-bottom\)\)\]/);

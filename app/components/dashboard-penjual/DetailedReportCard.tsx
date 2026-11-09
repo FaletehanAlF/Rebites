@@ -65,70 +65,124 @@ export function DetailedReportCard() {
         }
     }
     if (!hydrated) {
-        return (<Card>
-        <Skeleton className="h-6 w-40 rounded-lg"/>
-        <div className="mt-4">
-          <CardLinesSkeleton />
-        </div>
+        return (<Card>
+
+        <Skeleton className="h-6 w-40 rounded-lg"/>
+
+        <div className="mt-4">
+
+          <CardLinesSkeleton />
+
+        </div>
+
       </Card>);
     }
     if (!plan.detailedReport) {
         return (<LockedFeatureCard title="Laporan Rinci Penjualan" description="Laporan harian per porsi beserta estimasi pendapatan per hari." requiredPlanLabel="Standar"/>);
     }
-    const header = (<div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Laporan Rinci · {PERIOD_HINT[period]}
-        </p>
-        <h3 className="mt-1 flex items-center gap-1.5 font-display text-lg font-medium tracking-tight text-primary">
-          <FileText className="h-4 w-4"/>
-          Penjualan Harian
-        </h3>
-      </div>
-      <div className="flex items-center gap-2">
-        <FilterDropdown value={period} onChange={(next) => setPeriod(next as SellerReportPeriod)} options={SELLER_REPORT_PERIODS} ariaLabel="Pilih rentang laporan penjualan"/>
-        <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
-          Paket {plan.label}
-        </span>
-      </div>
+    const header = (<div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+
+      <div>
+
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+
+          Laporan Rinci · {PERIOD_HINT[period]}
+
+        </p>
+
+        <h3 className="mt-1 flex items-center gap-1.5 font-display text-lg font-medium tracking-tight text-primary">
+
+          <FileText className="h-4 w-4"/>
+
+          Penjualan Harian
+
+        </h3>
+
+      </div>
+
+      <div className="flex items-center gap-2">
+
+        <FilterDropdown value={period} onChange={(next) => setPeriod(next as SellerReportPeriod)} options={SELLER_REPORT_PERIODS} ariaLabel="Pilih rentang laporan penjualan"/>
+
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-foreground">
+
+          Paket {plan.label}
+
+        </span>
+
+      </div>
+
     </div>);
     if (!hasOrders) {
-        return (<Card>
-        {header}
-        <div className="mt-4">
-          <SalesEmptyState title="Laporan belum tersedia" description="Rincian penjualan harian akan terisi otomatis setelah ada pesanan yang masuk ke tokomu."/>
-        </div>
+        return (<Card>
+
+        {header}
+
+        <div className="mt-4">
+
+          <SalesEmptyState title="Laporan belum tersedia" description="Rincian penjualan harian akan terisi otomatis setelah ada pesanan yang masuk ke tokomu."/>
+
+        </div>
+
       </Card>);
     }
-    return (<Card>
-      {header}
-
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">
-          {report.summary.orders} pesanan
-          {rangeLabel ? ` · ${rangeLabel}` : ''}
+    return (<Card>
+
+      {header}
+
+
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+
+        <p className="text-xs text-muted-foreground">
+
+          {report.summary.orders} pesanan
+
+          {rangeLabel ? ` · ${rangeLabel}` : ''}
+
           {report.summary.cancelled > 0
             ? ` · ${report.summary.cancelled} dibatalkan (tidak dihitung)`
-            : ''}
-        </p>
-        <button type="button" onClick={handleExport} disabled={exporting} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3.5 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60">
-          {exporting ? (<Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"/>) : (<Download aria-hidden className="h-3.5 w-3.5"/>)}
-          {exporting ? 'Menyiapkan…' : 'Ekspor Excel'}
-        </button>
-      </div>
-
-      {(exportMessage || exportError) && (<p role="status" className={cn('mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed', exportError ? 'text-destructive' : 'text-muted-foreground')}>
-          {exportError && <AlertCircle aria-hidden className="mt-0.5 h-3 w-3 shrink-0"/>}
-          {exportError ?? exportMessage}
-        </p>)}
-
-      <SellerReportTable report={report} className="mt-3"/>
-
-      <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-        Rentang &ldquo;Semua&rdquo; memuat seluruh riwayat tokomu sejak pesanan
-        pertama. Ekspor Excel memuat rekap per bulan dan rincian harian pada
-        rentang yang sedang dipilih
-        {sellerReportPeriodDays(period) === null ? '.' : ` (${PERIOD_HINT[period]}).`}
-      </p>
+            : ''}
+
+        </p>
+
+        <button type="button" onClick={handleExport} disabled={exporting} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3.5 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60">
+
+          {exporting ? (<Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"/>) : (<Download aria-hidden className="h-3.5 w-3.5"/>)}
+
+          {exporting ? 'Menyiapkan…' : 'Ekspor Excel'}
+
+        </button>
+
+      </div>
+
+
+
+      {(exportMessage || exportError) && (<p role="status" className={cn('mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed', exportError ? 'text-destructive' : 'text-muted-foreground')}>
+
+          {exportError && <AlertCircle aria-hidden className="mt-0.5 h-3 w-3 shrink-0"/>}
+
+          {exportError ?? exportMessage}
+
+        </p>)}
+
+
+
+      <SellerReportTable report={report} className="mt-3"/>
+
+
+
+      <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+
+        Rentang &ldquo;Semua&rdquo; memuat seluruh riwayat tokomu sejak pesanan
+
+        pertama. Ekspor Excel memuat rekap per bulan dan rincian harian pada
+
+        rentang yang sedang dipilih
+
+        {sellerReportPeriodDays(period) === null ? '.' : ` (${PERIOD_HINT[period]}).`}
+
+      </p>
+
     </Card>);
 }

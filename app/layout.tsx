@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from 'next/font/google';
 import { ChatbotMount } from '@/app/components/chatbot/chatbot-mount';
 import { VisitorTracker } from '@/app/components/analytics/visitor-tracker';
+import { Toaster } from '@/app/components/ui/toaster';
 const plusJakartaSans = Plus_Jakarta_Sans({
     subsets: ['latin'],
     variable: '--font-sans',
@@ -33,13 +34,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children, }: {
     children: React.ReactNode;
 }) {
-    return (<html lang="id" className={`${plusJakartaSans.variable} ${beVietnamPro.variable}`}>
-      <body className="font-sans antialiased">
-        {children}
-        
-        <VisitorTracker />
-        
-        <ChatbotMount />
-      </body>
+    return (<html lang="id" className={`${plusJakartaSans.variable} ${beVietnamPro.variable}`}>
+      <body className="font-sans antialiased">{children}<VisitorTracker /><ChatbotMount /><Toaster /></body>
     </html>);
 }

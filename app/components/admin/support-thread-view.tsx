@@ -13,6 +13,7 @@ import { AdminErrorState, AdminForbiddenState, AdminInlineError, AdminInlineLoad
 import { formatTanggalWaktu, labelPeran, labelStatusAkun } from './admin-format';
 import { redirectIfSessionExpired } from './admin-session';
 import { SUPPORT_UPDATED_EVENT } from '@/hooks/use-support-badge';
+import { subscribeSupportRealtime } from '@/lib/support-realtime';
 import { cn } from '@/lib/utils';
 export function SupportThreadView({ id }: {
     id: string;
@@ -94,6 +95,10 @@ export function SupportThreadView({ id }: {
         if (el)
             el.scrollTo({ top: el.scrollHeight });
     }, [detail?.messages.length]);
+    useEffect(() => subscribeSupportRealtime({
+        label: 'admin-thread',
+        onChange: () => void load({ silent: true }),
+    }), [load]);
     const handleReply = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const body = draft.trim();
@@ -292,9 +297,13 @@ export function SupportThreadView({ id }: {
                 Akun dihapus
               </span>)}
           </div>
-          <p className="mt-3 break-words text-sm text-charcoal-700">
-            {profile?.email || thread.email}
-          </p>
+          <div className="mt-3 space-y-1 text-sm text-charcoal-700">
+            <p className="break-words">{profile?.email || thread.email}</p>
+            {profile?.phone?.trim() && (<p className="break-words">
+                <span className="text-sage-500">Telepon </span>
+                {profile.phone.trim()}
+              </p>)}
+          </div>
           {profile?.id && (<Link href={`/dashboard/admin/pengguna/${profile.id}`} className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-primary underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
               Buka detail pengguna
               <ArrowUpRight aria-hidden className="h-3.5 w-3.5"/>

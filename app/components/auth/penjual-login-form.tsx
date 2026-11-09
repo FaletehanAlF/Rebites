@@ -36,23 +36,34 @@ function FieldBox({ id, label, icon: Icon, children, trailing, }: {
     children: React.ReactNode;
     trailing?: React.ReactNode;
 }) {
-    return (<div>
-      <label htmlFor={id} className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </label>
-      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
-        <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]"/>
-        {children}
-        {trailing}
-      </div>
+    return (<div>
+
+      <label htmlFor={id} className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+
+        {label}
+
+      </label>
+
+      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+
+        <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]"/>
+
+        {children}
+
+        {trailing}
+
+      </div>
+
     </div>);
 }
 function PasswordVisibilityButton({ visible, onToggle, }: {
     visible: boolean;
     onToggle: () => void;
 }) {
-    return (<button type="button" onClick={onToggle} aria-label={visible ? "Sembunyikan password" : "Tampilkan password"} aria-pressed={visible} className="shrink-0 rounded-sm p-0.5 text-muted-foreground/55 transition-colors duration-200 hover:text-[hsl(var(--primary))] focus-visible:text-[hsl(var(--primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))]/30">
-      {visible ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
+    return (<button type="button" onClick={onToggle} aria-label={visible ? "Sembunyikan password" : "Tampilkan password"} aria-pressed={visible} className="shrink-0 rounded-sm p-0.5 text-muted-foreground/55 transition-colors duration-200 hover:text-[hsl(var(--primary))] focus-visible:text-[hsl(var(--primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))]/30">
+
+      {visible ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
+
     </button>);
 }
 function inputClass(additional?: string) {
@@ -238,88 +249,167 @@ export default function PenjualLoginForm() {
             setLoading(false);
         }
     }
-    return (<motion.div variants={containerVariants} initial="hidden" animate="show" className="flex min-h-0 flex-col">
-      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
-        <Link href="/auth/register/penjual" className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-[hsl(var(--primary))]">
-          <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5"/>
-          Kembali
-        </Link>
-      </motion.div>
-
-      <motion.div variants={itemVariants} className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0">
-        <Image src="/logo.avif" alt="ReBites" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-black/5"/>
-        <span className="font-display text-lg font-semibold tracking-tight text-[hsl(var(--primary))]">
-          ReBites
-        </span>
-      </motion.div>
-
-      <motion.h1 variants={itemVariants} className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-foreground flex-shrink-0">
-        Masuk sebagai Penjual
-      </motion.h1>
-      <motion.p variants={itemVariants} className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0">
-        Sudah punya toko? Masukkan email, nama toko, dan password untuk
-        melanjutkan ke dashboard penjual.
-      </motion.p>
-
-      <motion.form variants={itemVariants} className="mt-5 grid grid-cols-1 gap-4" onSubmit={handleSubmit} noValidate>
-        <FieldBox id="email" label="Alamat Email" icon={Mail}>
-          <input id="email" type="email" autoComplete="email" placeholder="nama@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass()}/>
-        </FieldBox>
-
-        <FieldBox id="businessName" label="Nama Toko" icon={Store}>
-          <input id="businessName" type="text" autoComplete="organization" placeholder="Contoh: Warung Nasi Berkah" value={businessName} onChange={(e) => setBusinessName(e.target.value)} className={inputClass()}/>
-        </FieldBox>
-
-        <FieldBox id="password" label="Kata Sandi" icon={Lock} trailing={<PasswordVisibilityButton visible={showPassword} onToggle={() => setShowPassword((v) => !v)}/>}>
-          <input id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass()}/>
-        </FieldBox>
-
-        <div className="flex items-center justify-between">
-          <Link href="/auth/forgotPassword" className="font-sans text-[12px] text-muted-foreground underline underline-offset-4 transition-colors hover:text-[hsl(var(--primary))]">
-            Lupa password?
-          </Link>
-        </div>
-
-        {error && (<div role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
-            <p>{error}</p>
-            
-            {isAccountBlockMessage(error) && (<p className="mt-1.5">
-                <Link href="/banding" className="font-semibold text-destructive underline underline-offset-2 transition-opacity hover:opacity-80">
-                  Ajukan banding ke admin
-                </Link>
-              </p>)}
-          </div>)}
-
-        {needsVerification && (<div className="rounded-lg border border-border bg-secondary px-3 py-2.5">
-            <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
-              Tidak menemukan email? Cek spam/promosi, lalu kirim ulang ke{" "}
-              <span className="font-semibold text-[hsl(var(--primary))]">
-                {email.trim() || "email kamu"}
-              </span>
-              .
-            </p>
-            <button type="button" onClick={handleResend} disabled={resendLoading || isResendCooling || !email.trim()} className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-4 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--primary))] transition-colors hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-60">
+    return (<motion.div variants={containerVariants} initial="hidden" animate="show" className="flex min-h-0 flex-col">
+
+      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
+
+        <Link href="/auth/register/penjual" className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-[hsl(var(--primary))]">
+
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5"/>
+
+          Kembali
+
+        </Link>
+
+      </motion.div>
+
+
+
+      <motion.div variants={itemVariants} className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0">
+
+        <Image src="/logo.avif" alt="ReBites" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-black/5"/>
+
+        <span className="font-display text-lg font-semibold tracking-tight text-[hsl(var(--primary))]">
+
+          ReBites
+
+        </span>
+
+      </motion.div>
+
+
+
+      <motion.h1 variants={itemVariants} className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-foreground flex-shrink-0">
+
+        Masuk sebagai Penjual
+
+      </motion.h1>
+
+      <motion.p variants={itemVariants} className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0">
+
+        Sudah punya toko? Masukkan email, nama toko, dan password untuk
+
+        melanjutkan ke dashboard penjual.
+
+      </motion.p>
+
+
+
+      <motion.form variants={itemVariants} className="mt-5 grid grid-cols-1 gap-4" onSubmit={handleSubmit} noValidate>
+
+        <FieldBox id="email" label="Alamat Email" icon={Mail}>
+
+          <input id="email" type="email" autoComplete="email" placeholder="nama@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass()}/>
+
+        </FieldBox>
+
+
+
+        <FieldBox id="businessName" label="Nama Toko" icon={Store}>
+
+          <input id="businessName" type="text" autoComplete="organization" placeholder="Contoh: Warung Nasi Berkah" value={businessName} onChange={(e) => setBusinessName(e.target.value)} className={inputClass()}/>
+
+        </FieldBox>
+
+
+
+        <FieldBox id="password" label="Kata Sandi" icon={Lock} trailing={<PasswordVisibilityButton visible={showPassword} onToggle={() => setShowPassword((v) => !v)}/>}>
+
+          <input id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass()}/>
+
+        </FieldBox>
+
+
+
+        <div className="flex items-center justify-between">
+
+          <Link href="/auth/forgotPassword" className="font-sans text-[12px] text-muted-foreground underline underline-offset-4 transition-colors hover:text-[hsl(var(--primary))]">
+
+            Lupa password?
+
+          </Link>
+
+        </div>
+
+
+
+        {error && (<div role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
+
+            <p>{error}</p>
+
+            
+
+            {isAccountBlockMessage(error) && (<p className="mt-1.5">
+
+                <Link href="/banding" className="font-semibold text-destructive underline underline-offset-2 transition-opacity hover:opacity-80">
+
+                  Ajukan banding ke admin
+
+                </Link>
+
+              </p>)}
+
+          </div>)}
+
+
+
+        {needsVerification && (<div className="rounded-lg border border-border bg-secondary px-3 py-2.5">
+
+            <p className="font-sans text-[12px] leading-relaxed text-muted-foreground">
+
+              Tidak menemukan email? Cek spam/promosi, lalu kirim ulang ke{" "}
+
+              <span className="font-semibold text-[hsl(var(--primary))]">
+
+                {email.trim() || "email kamu"}
+
+              </span>
+
+              .
+
+            </p>
+
+            <button type="button" onClick={handleResend} disabled={resendLoading || isResendCooling || !email.trim()} className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-4 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--primary))] transition-colors hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-60">
+
               {resendLoading
                 ? "Mengirim…"
                 : isResendCooling
                     ? `Kirim ulang dalam ${resendRemainingSec} detik`
-                    : "Kirim Ulang Email Konfirmasi"}
-            </button>
-            {resendMessage && (<p role="status" className="mt-2 font-sans text-[12px] leading-relaxed text-muted-foreground">
-                {resendMessage}
-              </p>)}
-          </div>)}
-
-        <button type="submit" disabled={loading} className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-70">
-          {loading ? "Memverifikasi..." : "Masuk"}
-        </button>
-      </motion.form>
-
-      <motion.p variants={itemVariants} className="mt-6 text-center font-sans text-[13px] text-muted-foreground flex-shrink-0">
-        Belum punya toko?{" "}
-        <Link href="/auth/register/penjual" className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-foreground">
-          Daftar sebagai penjual
-        </Link>
-      </motion.p>
+                    : "Kirim Ulang Email Konfirmasi"}
+
+            </button>
+
+            {resendMessage && (<p role="status" className="mt-2 font-sans text-[12px] leading-relaxed text-muted-foreground">
+
+                {resendMessage}
+
+              </p>)}
+
+          </div>)}
+
+
+
+        <button type="submit" disabled={loading} className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-70">
+
+          {loading ? "Memverifikasi..." : "Masuk"}
+
+        </button>
+
+      </motion.form>
+
+
+
+      <motion.p variants={itemVariants} className="mt-6 text-center font-sans text-[13px] text-muted-foreground flex-shrink-0">
+
+        Belum punya toko?{" "}
+
+        <Link href="/auth/register/penjual" className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-foreground">
+
+          Daftar sebagai penjual
+
+        </Link>
+
+      </motion.p>
+
     </motion.div>);
 }

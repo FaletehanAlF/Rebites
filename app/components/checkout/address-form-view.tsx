@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ChevronDown, LocateFixed } from 'lucide-react';
-import { DialogDescription, DialogHeader, DialogTitle, } from '@/app/components/ui/dialog';
+
 import type { AddressLabel, DeliveryAddress } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import type { AddressFormValues } from '@/hooks/use-addresses';
@@ -10,7 +10,7 @@ import { Skeleton } from '@/app/components/ui/skeleton';
 import { parseCoordinatePairInput } from '@/lib/location-validation';
 import { resolveFormCoordinates } from '@/lib/delivery-map-plan';
 import { requestDeviceLocation, type DeviceLocationReason, } from '@/lib/device-location';
-import { useCheckout } from './checkout-context';
+import { useCheckoutOptional } from './checkout-context';
 const LocationPickerMap = dynamic(() => import('@/app/components/shared/location-picker-map'), {
     ssr: false,
     loading: () => <Skeleton className="h-[220px] rounded-xl sm:h-[260px]"/>,
@@ -70,13 +70,14 @@ export function AddressFormView({ editing, onDone, addAddress, updateAddress, }:
     editing: DeliveryAddress | null;
     onDone: () => void;
     addAddress?: (values: AddressFormValues) => Promise<DeliveryAddress | null> | void;
-    updateAddress?: (id: string, values: AddressFormValues) => Promise<void> | void;
+    updateAddress?: (id: string, values: AddressFormValues) => Promise<boolean> | void;
 }) {
-    const checkout = useCheckout();
-    const saveAdd = addAddress ?? checkout.addAddress;
-    const saveUpdate = updateAddress ?? checkout.updateAddress;
+    const checkout = useCheckoutOptional();
+    const saveAdd = addAddress ?? checkout?.addAddress;
+    const saveUpdate = updateAddress ?? checkout?.updateAddress;
     const [form, setForm] = useState<AddressFormValues>(() => toFormValues(editing));
     const [error, setError] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
     const [latInput, setLatInput] = useState(() => coordinateToInput(editing?.latitude));
     const [lngInput, setLngInput] = useState(() => coordinateToInput(editing?.longitude));
     const [gpsStatus, setGpsStatus] = useState<GpsStatus>('idle');
@@ -95,7 +96,9 @@ export function AddressFormView({ editing, onDone, addAddress, updateAddress, }:
         setGpsStatus('ok');
     };
     const setField = <K extends keyof AddressFormValues>(key: K, value: AddressFormValues[K]) => setForm((prev) => ({ ...prev, [key]: value }));
-    const handleSave = () => {
+    const handleSave = async () => {
+        if (saving)
+            return;
         if (!form.receiverName.trim())
             return setError('Nama penerima wajib diisi.');
         if (!/^[0-9+\-\s]{9,16}$/.test(form.phone.trim()))
@@ -120,160 +123,332 @@ export function AddressFormView({ editing, onDone, addAddress, updateAddress, }:
             longitude: coordinatePair.longitude,
         };
         if (editing) {
-            saveUpdate(editing.id, values);
+            if (!saveUpdate)
+                return setError('Halaman tidak terhubung ke daftar alamat. Muat ulang halaman.');
+            setSaving(true);
+            let ok = false;
+            try {
+                ok = (await saveUpdate(editing.id, values)) === true;
+            }
+            catch (saveError) {
+                console.error('[address-form] gagal memperbarui alamat:', saveError);
+                ok = false;
+            }
+            finally {
+                setSaving(false);
+            }
+            if (!ok)
+                return setError('Gagal menyimpan alamat. Periksa koneksi lalu coba lagi.');
         }
         else {
-            saveAdd(values);
+            if (!saveAdd)
+                return setError('Halaman tidak terhubung ke daftar alamat. Muat ulang halaman.');
+            setSaving(true);
+            let saved: unknown = null;
+            try {
+                saved = (await saveAdd(values)) ?? null;
+            }
+            catch (saveError) {
+                console.error('[address-form] gagal menambah alamat:', saveError);
+                saved = null;
+            }
+            finally {
+                setSaving(false);
+            }
+            if (!saved)
+                return setError('Gagal menyimpan alamat. Periksa koneksi lalu coba lagi.');
         }
         onDone();
     };
-    return (<>
-      <DialogHeader className="pr-10 text-left">
-        <DialogTitle className="font-display text-xl font-semibold text-foreground">
-          {editing ? 'Ubah Alamat' : 'Tambah Alamat Baru'}
-        </DialogTitle>
-        <DialogDescription className="text-sm text-muted-foreground">
-          Alamat aktif akan dipakai untuk pengantaran pesanan ini.
-        </DialogDescription>
-      </DialogHeader>
-
-      
-      <div className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-0.5">
-        
-        <fieldset>
-          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Label Alamat
-          </legend>
-          <div className="flex flex-wrap gap-2">
+    return (<>
+
+      <div className="text-left">
+
+        <h3 id="judul-form-alamat" className="font-display text-xl font-semibold text-foreground">
+
+          {editing ? 'Ubah Alamat' : 'Tambah Alamat Baru'}
+
+        </h3>
+
+        <p className="mt-1 text-sm text-muted-foreground">
+
+          Alamat aktif akan dipakai untuk pengantaran pesanan.
+
+        </p>
+
+      </div>
+
+
+
+      
+
+      <div className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-0.5">
+
+        
+
+        <fieldset>
+
+          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+
+            Label Alamat
+
+          </legend>
+
+          <div className="flex flex-wrap gap-2">
+
             {LABELS.map((label) => (<button key={label} type="button" aria-pressed={form.label === label} onClick={() => setField('label', label)} className={cn('rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200', form.label === label
                 ? 'bg-primary text-white shadow-md shadow-primary/20'
-                : 'border border-border bg-white text-muted-foreground hover:border-primary/30 hover:text-primary')}>
-                {label}
-              </button>))}
-          </div>
-        </fieldset>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Nama Penerima
-            </span>
-            <input value={form.receiverName} onChange={(e) => setField('receiverName', e.target.value)} placeholder="cth. Arga" aria-label="Nama penerima" autoComplete="name" className={INPUT_CLASS}/>
-          </label>
-
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Nomor Telepon
-            </span>
-            <input value={form.phone} onChange={(e) => setField('phone', e.target.value)} placeholder="08xxxxxxxxxx" inputMode="tel" autoComplete="tel" aria-label="Nomor telepon" className={INPUT_CLASS}/>
-          </label>
-        </div>
-
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Kecamatan{' '}
-            <span className="normal-case text-muted-foreground">
-              (wilayah Kota Depok)
-            </span>
-          </span>
-          <span className="relative block">
-            <select value={form.district} onChange={(e) => setField('district', e.target.value)} aria-label="Kecamatan di Kota Depok" className={cn(INPUT_CLASS, 'appearance-none pr-10', !form.district && 'text-muted-foreground')}>
-              <option value="" disabled>
-                Pilih kecamatan
-              </option>
-              {DEPOK_DISTRICTS.map((district) => (<option key={district} value={district}>
-                  {district}
-                </option>))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
-          </span>
-        </label>
-
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
-            Kode Pos{' '}
-            <span className="normal-case text-sage-500">(opsional, 5 digit)</span>
-          </span>
-          <input value={form.postalCode ?? ''} onChange={(e) => setField('postalCode', e.target.value)} placeholder="cth. 16424" inputMode="numeric" maxLength={5} autoComplete="postal-code" aria-label="Kode pos" className={INPUT_CLASS}/>
-        </label>
-
-        <div className="rounded-xl border border-sage-100 bg-cream-50/70 p-3.5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-charcoal-500">
-              Koordinat Lokasi{' '}
-              <span className="normal-case text-sage-500">(opsional)</span>
-            </span>
-            <button type="button" onClick={() => void handleUseDeviceLocation()} disabled={gpsStatus === 'requesting'} className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60">
-              <LocateFixed className="h-3.5 w-3.5"/>
-              {gpsStatus === 'requesting' ? 'Meminta izin…' : 'Gunakan lokasi saat ini'}
-            </button>
-          </div>
-          <p className="mt-1 text-[11px] leading-relaxed text-charcoal-500">
-            Dipakai untuk simulasi pengiriman dan akurasi ongkir. Kosongkan jika
-            belum diketahui — jangan asal isi.
-          </p>
-          {gpsStatus === 'denied' && (<p className="mt-1.5 rounded-md bg-red-50 px-2.5 py-1.5 text-[11px] text-red-700 ring-1 ring-red-200">
-              Izin lokasi ditolak browser. Isi koordinat manual di bawah.
-            </p>)}
-          {gpsStatus === 'unavailable' && (<p className="mt-1.5 rounded-md bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-700 ring-1 ring-amber-200">
-              Lokasi perangkat tidak tersedia saat ini. Isi koordinat manual di
-              bawah.
-            </p>)}
-          {gpsStatus === 'ok' && (<p className="mt-1.5 rounded-md bg-primary/5 px-2.5 py-1.5 text-[11px] text-primary ring-1 ring-primary/20">
-              Koordinat terisi dari perangkat. Periksa lalu simpan.
-            </p>)}
-          <div className="mt-2">
+                : 'border border-border bg-white text-muted-foreground hover:border-primary/30 hover:text-primary')}>
+
+                {label}
+
+              </button>))}
+
+          </div>
+
+        </fieldset>
+
+
+
+        <div className="grid gap-4 sm:grid-cols-2">
+
+          <label className="block">
+
+            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+
+              Nama Penerima
+
+            </span>
+
+            <input value={form.receiverName} onChange={(e) => setField('receiverName', e.target.value)} placeholder="cth. Arga" aria-label="Nama penerima" autoComplete="name" className={INPUT_CLASS}/>
+
+          </label>
+
+
+
+          <label className="block">
+
+            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+
+              Nomor Telepon
+
+            </span>
+
+            <input value={form.phone} onChange={(e) => setField('phone', e.target.value)} placeholder="08xxxxxxxxxx" inputMode="tel" autoComplete="tel" aria-label="Nomor telepon" className={INPUT_CLASS}/>
+
+          </label>
+
+        </div>
+
+
+
+        <label className="block">
+
+          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+
+            Kecamatan{' '}
+
+            <span className="normal-case text-muted-foreground">
+
+              (wilayah Kota Depok)
+
+            </span>
+
+          </span>
+
+          <span className="relative block">
+
+            <select value={form.district} onChange={(e) => setField('district', e.target.value)} aria-label="Kecamatan di Kota Depok" className={cn(INPUT_CLASS, 'appearance-none pr-10', !form.district && 'text-muted-foreground')}>
+
+              <option value="" disabled>
+
+                Pilih kecamatan
+
+              </option>
+
+              {DEPOK_DISTRICTS.map((district) => (<option key={district} value={district}>
+
+                  {district}
+
+                </option>))}
+
+            </select>
+
+            <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
+
+          </span>
+
+        </label>
+
+
+
+        <label className="block">
+
+          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+
+            Kode Pos{' '}
+
+            <span className="normal-case text-sage-500">(opsional, 5 digit)</span>
+
+          </span>
+
+          <input value={form.postalCode ?? ''} onChange={(e) => setField('postalCode', e.target.value)} placeholder="cth. 16424" inputMode="numeric" maxLength={5} autoComplete="postal-code" aria-label="Kode pos" className={INPUT_CLASS}/>
+
+        </label>
+
+
+
+        <div className="rounded-xl border border-sage-100 bg-cream-50/70 p-3.5">
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+
+            <span className="text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+
+              Koordinat Lokasi{' '}
+
+              <span className="normal-case text-sage-500">(opsional)</span>
+
+            </span>
+
+            <button type="button" onClick={() => void handleUseDeviceLocation()} disabled={gpsStatus === 'requesting'} className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60">
+
+              <LocateFixed className="h-3.5 w-3.5"/>
+
+              {gpsStatus === 'requesting' ? 'Meminta izin…' : 'Gunakan lokasi saat ini'}
+
+            </button>
+
+          </div>
+
+          <p className="mt-1 text-[11px] leading-relaxed text-charcoal-500">
+
+            Dipakai untuk simulasi pengiriman dan akurasi ongkir. Kosongkan jika
+
+            belum diketahui — jangan asal isi.
+
+          </p>
+
+          {gpsStatus === 'denied' && (<p className="mt-1.5 rounded-md bg-red-50 px-2.5 py-1.5 text-[11px] text-red-700 ring-1 ring-red-200">
+
+              Izin lokasi ditolak browser. Isi koordinat manual di bawah.
+
+            </p>)}
+
+          {gpsStatus === 'unavailable' && (<p className="mt-1.5 rounded-md bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-700 ring-1 ring-amber-200">
+
+              Lokasi perangkat tidak tersedia saat ini. Isi koordinat manual di
+
+              bawah.
+
+            </p>)}
+
+          {gpsStatus === 'ok' && (<p className="mt-1.5 rounded-md bg-primary/5 px-2.5 py-1.5 text-[11px] text-primary ring-1 ring-primary/20">
+
+              Koordinat terisi dari perangkat. Periksa lalu simpan.
+
+            </p>)}
+
+          <div className="mt-2">
+
             <LocationPickerMap latitude={pickerLat} longitude={pickerLng} initialLatitude={editing?.latitude ?? null} initialLongitude={editing?.longitude ?? null} onPick={(lat, lng) => {
             setLatInput(lat.toFixed(6));
             setLngInput(lng.toFixed(6));
             setGpsStatus('idle');
-        }}/>
-          </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
-                Latitude
-              </span>
-              <input value={latInput} onChange={(e) => setLatInput(e.target.value)} placeholder="cth. -6.20000" inputMode="decimal" aria-label="Latitude lokasi" className={INPUT_CLASS}/>
-            </label>
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
-                Longitude
-              </span>
-              <input value={lngInput} onChange={(e) => setLngInput(e.target.value)} placeholder="cth. 106.81667" inputMode="decimal" aria-label="Longitude lokasi" className={INPUT_CLASS}/>
-            </label>
-          </div>
-        </div>
-
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
-            Alamat Lengkap
-          </span>
-          <textarea value={form.fullAddress} onChange={(e) => setField('fullAddress', e.target.value)} placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan" rows={3} autoComplete="street-address" aria-label="Alamat lengkap" className={cn(INPUT_CLASS, 'resize-none')}/>
-        </label>
-
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Catatan untuk Kurir{' '}
-            <span className="normal-case text-muted-foreground">(opsional)</span>
-          </span>
-          <input value={form.note ?? ''} onChange={(e) => setField('note', e.target.value)} placeholder="cth. Titip di pos ronda jika tidak ada di rumah" aria-label="Catatan untuk kurir" className={INPUT_CLASS}/>
-        </label>
-      </div>
-
-      
-      <div className="mt-3 shrink-0 border-t border-border pt-3">
-        {error && (<p role="alert" className="mb-2.5 text-xs font-medium text-destructive">
-            {error}
-          </p>)}
-        <div className="flex gap-3">
-          <button type="button" onClick={onDone} className="flex-1 rounded-full border border-border px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted">
-            Batal
-          </button>
-          <button type="button" onClick={handleSave} className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-colors hover:bg-primary-dark">
-            {editing ? 'Simpan Perubahan' : 'Simpan Alamat'}
-          </button>
-        </div>
-      </div>
+        }}/>
+
+          </div>
+
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+
+            <label className="block">
+
+              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+
+                Latitude
+
+              </span>
+
+              <input value={latInput} onChange={(e) => setLatInput(e.target.value)} placeholder="cth. -6.20000" inputMode="decimal" aria-label="Latitude lokasi" className={INPUT_CLASS}/>
+
+            </label>
+
+            <label className="block">
+
+              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+
+                Longitude
+
+              </span>
+
+              <input value={lngInput} onChange={(e) => setLngInput(e.target.value)} placeholder="cth. 106.81667" inputMode="decimal" aria-label="Longitude lokasi" className={INPUT_CLASS}/>
+
+            </label>
+
+          </div>
+
+        </div>
+
+
+
+        <label className="block">
+
+          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+
+            Alamat Lengkap
+
+          </span>
+
+          <textarea value={form.fullAddress} onChange={(e) => setField('fullAddress', e.target.value)} placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan" rows={3} autoComplete="street-address" aria-label="Alamat lengkap" className={cn(INPUT_CLASS, 'resize-none')}/>
+
+        </label>
+
+
+
+        <label className="block">
+
+          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+
+            Catatan untuk Kurir{' '}
+
+            <span className="normal-case text-muted-foreground">(opsional)</span>
+
+          </span>
+
+          <input value={form.note ?? ''} onChange={(e) => setField('note', e.target.value)} placeholder="cth. Titip di pos ronda jika tidak ada di rumah" aria-label="Catatan untuk kurir" className={INPUT_CLASS}/>
+
+        </label>
+
+      </div>
+
+
+
+      
+
+      <div className="mt-3 shrink-0 border-t border-border pt-3">
+
+        {error && (<p role="alert" className="mb-2.5 text-xs font-medium text-destructive">
+
+            {error}
+
+          </p>)}
+
+        <div className="flex gap-3">
+
+          <button type="button" onClick={onDone} className="flex-1 rounded-full border border-border px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted">
+
+            Batal
+
+          </button>
+
+          <button type="button" onClick={handleSave} className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-colors hover:bg-primary-dark">
+
+            {editing ? 'Simpan Perubahan' : 'Simpan Alamat'}
+
+          </button>
+
+        </div>
+
+      </div>
+
     </>);
 }

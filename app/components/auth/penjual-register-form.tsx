@@ -96,23 +96,34 @@ function FieldBox({ id, label, icon: Icon, children, trailing, }: {
     children: React.ReactNode;
     trailing?: React.ReactNode;
 }) {
-    return (<div>
-      <label htmlFor={id} className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </label>
-      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
-        <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]"/>
-        {children}
-        {trailing}
-      </div>
+    return (<div>
+
+      <label htmlFor={id} className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+
+        {label}
+
+      </label>
+
+      <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+
+        <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]"/>
+
+        {children}
+
+        {trailing}
+
+      </div>
+
     </div>);
 }
 function PasswordVisibilityButton({ visible, onToggle, }: {
     visible: boolean;
     onToggle: () => void;
 }) {
-    return (<button type="button" onClick={onToggle} aria-label={visible ? "Sembunyikan password" : "Tampilkan password"} aria-pressed={visible} className="shrink-0 rounded-sm p-0.5 text-muted-foreground/55 transition-colors duration-200 hover:text-[hsl(var(--primary))] focus-visible:text-[hsl(var(--primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))]/30">
-      {visible ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
+    return (<button type="button" onClick={onToggle} aria-label={visible ? "Sembunyikan password" : "Tampilkan password"} aria-pressed={visible} className="shrink-0 rounded-sm p-0.5 text-muted-foreground/55 transition-colors duration-200 hover:text-[hsl(var(--primary))] focus-visible:text-[hsl(var(--primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))]/30">
+
+      {visible ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
+
     </button>);
 }
 function inputClass(additional?: string) {
@@ -418,118 +429,218 @@ export default function PenjualRegisterForm() {
         }
     }
     if (!sessionReady) {
-        return (<div className="flex items-center justify-center py-16">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"/>
+        return (<div className="flex items-center justify-center py-16">
+
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"/>
+
       </div>);
     }
-    return (<motion.div variants={containerVariants} initial="hidden" animate="show" className="flex min-h-0 flex-col">
-      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
-        <Link href="/home" className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-[hsl(var(--primary))]">
-          <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5"/>
-          Kembali
-        </Link>
-      </motion.div>
-
-      <motion.div variants={itemVariants} className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0">
-        <Image src="/logo.avif" alt="ReBites" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-black/5"/>
-        <span className="font-display text-lg font-semibold tracking-tight text-[hsl(var(--primary))]">
-          ReBites
-        </span>
-      </motion.div>
-
-      
-      <motion.div variants={itemVariants} className="mb-5 flex-shrink-0">
-        <div className="flex items-center gap-1.5">
-          <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${step >= 1 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-muted text-muted-foreground"}`}>
-            {step > 1 ? <CheckCircle2 className="h-3.5 w-3.5"/> : "1"}
-          </div>
-          <div className={`h-px flex-1 transition-colors ${step >= 2 ? "bg-[hsl(var(--primary))]" : "bg-border"}`}/>
-          <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${step >= 2 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-muted text-muted-foreground"}`}>
-            {step > 2 ? <CheckCircle2 className="h-3.5 w-3.5"/> : "2"}
-          </div>
-          <div className={`h-px flex-1 transition-colors ${step >= 3 ? "bg-[hsl(var(--primary))]" : "bg-border"}`}/>
-          <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${step >= 3 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-muted text-muted-foreground"}`}>
-            3
-          </div>
-        </div>
-        <div className="mt-2 flex justify-between">
-          <span className={`font-sans text-[10px] font-semibold uppercase tracking-widest ${step === 1 ? "text-[hsl(var(--primary))]" : "text-muted-foreground"}`}>Akun</span>
-          <span className={`font-sans text-[10px] font-semibold uppercase tracking-widest ${step === 2 ? "text-[hsl(var(--primary))]" : "text-muted-foreground"}`}>Usaha</span>
-          <span className={`font-sans text-[10px] font-semibold uppercase tracking-widest ${step === 3 ? "text-[hsl(var(--primary))]" : "text-muted-foreground"}`}>Paket</span>
-        </div>
-      </motion.div>
-
-      <motion.h1 variants={itemVariants} className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-foreground flex-shrink-0">
-        {step === 1 ? "Buat Akun Penjual" : step === 2 ? "Data Usaha" : "Pilih Paket Langganan"}
-      </motion.h1>
-      <motion.p variants={itemVariants} className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0">
+    return (<motion.div variants={containerVariants} initial="hidden" animate="show" className="flex min-h-0 flex-col">
+
+      <motion.div variants={itemVariants} className="mb-4 flex-shrink-0">
+
+        <Link href="/home" className="group inline-flex items-center gap-1.5 rounded-full py-1 pr-2 font-sans text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-[hsl(var(--primary))]">
+
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5"/>
+
+          Kembali
+
+        </Link>
+
+      </motion.div>
+
+
+
+      <motion.div variants={itemVariants} className="mb-6 flex items-center justify-center gap-2 lg:hidden flex-shrink-0">
+
+        <Image src="/logo.avif" alt="ReBites" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-black/5"/>
+
+        <span className="font-display text-lg font-semibold tracking-tight text-[hsl(var(--primary))]">
+
+          ReBites
+
+        </span>
+
+      </motion.div>
+
+
+
+      
+
+      <motion.div variants={itemVariants} className="mb-5 flex-shrink-0">
+
+        <div className="flex items-center gap-1.5">
+
+          <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${step >= 1 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-muted text-muted-foreground"}`}>
+
+            {step > 1 ? <CheckCircle2 className="h-3.5 w-3.5"/> : "1"}
+
+          </div>
+
+          <div className={`h-px flex-1 transition-colors ${step >= 2 ? "bg-[hsl(var(--primary))]" : "bg-border"}`}/>
+
+          <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${step >= 2 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-muted text-muted-foreground"}`}>
+
+            {step > 2 ? <CheckCircle2 className="h-3.5 w-3.5"/> : "2"}
+
+          </div>
+
+          <div className={`h-px flex-1 transition-colors ${step >= 3 ? "bg-[hsl(var(--primary))]" : "bg-border"}`}/>
+
+          <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${step >= 3 ? "bg-[hsl(var(--primary))] text-white shadow-sm" : "bg-muted text-muted-foreground"}`}>
+
+            3
+
+          </div>
+
+        </div>
+
+        <div className="mt-2 flex justify-between">
+
+          <span className={`font-sans text-[10px] font-semibold uppercase tracking-widest ${step === 1 ? "text-[hsl(var(--primary))]" : "text-muted-foreground"}`}>Akun</span>
+
+          <span className={`font-sans text-[10px] font-semibold uppercase tracking-widest ${step === 2 ? "text-[hsl(var(--primary))]" : "text-muted-foreground"}`}>Usaha</span>
+
+          <span className={`font-sans text-[10px] font-semibold uppercase tracking-widest ${step === 3 ? "text-[hsl(var(--primary))]" : "text-muted-foreground"}`}>Paket</span>
+
+        </div>
+
+      </motion.div>
+
+
+
+      <motion.h1 variants={itemVariants} className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-foreground flex-shrink-0">
+
+        {step === 1 ? "Buat Akun Penjual" : step === 2 ? "Data Usaha" : "Pilih Paket Langganan"}
+
+      </motion.h1>
+
+      <motion.p variants={itemVariants} className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0">
+
         {step === 1
             ? "Verifikasi akun Anda untuk melanjutkan. Email & nama sudah sesuai sesi login."
             : step === 2
                 ? "Ceritakan tentang usaha kuliner Anda untuk tampil di ReBites."
-                : "Pilih paket untuk memulai berjualan, Basic 24.999/bulan wajib bayar via Xendit."}
-      </motion.p>
-
-      <div className="mt-5 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1.5 -mr-1.5 pb-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
-        <AnimatePresence mode="wait" custom={direction}>
-          {step === 1 && (<motion.div key="step1" custom={direction} variants={stepSlide} initial="enter" animate="center" exit="exit">
-              <Form {...step1Form}>
+                : "Pilih paket untuk memulai berjualan, Basic 24.999/bulan wajib bayar via Xendit."}
+
+      </motion.p>
+
+
+
+      <div className="mt-5 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1.5 -mr-1.5 pb-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
+
+        <AnimatePresence mode="wait" custom={direction}>
+
+          {step === 1 && (<motion.div key="step1" custom={direction} variants={stepSlide} initial="enter" animate="center" exit="exit">
+
+              <Form {...step1Form}>
+
                 <form className="grid grid-cols-1 gap-4" onSubmit={(e) => {
                 e.preventDefault();
                 step1Form.handleSubmit(goNext)();
-            }} noValidate>
-                  <FormField control={step1Form.control} name="fullName" render={({ field }) => (<FormItem>
-                        <FieldBox id="fullName" label="Nama Lengkap" icon={User}>
-                          <input id="fullName" {...field} readOnly className={inputClass("cursor-default opacity-60")}/>
-                        </FieldBox>
-                        <FormMessage className="font-sans text-[12px]"/>
-                      </FormItem>)}/>
-
-                  <FormField control={step1Form.control} name="email" render={({ field }) => (<FormItem>
-                        <FieldBox id="email" label="Alamat Email" icon={Mail}>
-                          <input id="email" type="email" {...field} readOnly className={inputClass("cursor-default opacity-60")}/>
-                        </FieldBox>
-                        <FormMessage className="font-sans text-[12px]"/>
-                      </FormItem>)}/>
-
-                  <FormField control={step1Form.control} name="password" render={({ field }) => (<FormItem>
-                        <FieldBox id="password" label="Kata Sandi" icon={Lock} trailing={<PasswordVisibilityButton visible={showPassword} onToggle={() => setShowPassword((v) => !v)}/>}>
-                          <input id="password" type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="••••••••" className={inputClass()} {...field}/>
-                        </FieldBox>
-                        <FormMessage className="font-sans text-[12px]"/>
-                      </FormItem>)}/>
-
-                  <FormField control={step1Form.control} name="confirmPassword" render={({ field }) => (<FormItem>
-                        <FieldBox id="confirmPassword" label="Konfirmasi Kata Sandi" icon={Lock} trailing={<PasswordVisibilityButton visible={showConfirmPassword} onToggle={() => setShowConfirmPassword((v) => !v)}/>}>
-                          <input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" placeholder="••••••••" className={inputClass()} {...field}/>
-                        </FieldBox>
-                        <FormMessage className="font-sans text-[12px]"/>
-                      </FormItem>)}/>
-
-                  {error && (<p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
-                      {error}
-                    </p>)}
-
-                  <button type="submit" className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))]">
-                    Selanjutnya
-                  </button>
-                </form>
-              </Form>
-            </motion.div>)}
-
-          {step === 2 && (<motion.div key="step2" custom={direction} variants={stepSlide} initial="enter" animate="center" exit="exit">
-              <Form {...step2Form}>
+            }} noValidate>
+
+                  <FormField control={step1Form.control} name="fullName" render={({ field }) => (<FormItem>
+
+                        <FieldBox id="fullName" label="Nama Lengkap" icon={User}>
+
+                          <input id="fullName" {...field} readOnly className={inputClass("cursor-default opacity-60")}/>
+
+                        </FieldBox>
+
+                        <FormMessage className="font-sans text-[12px]"/>
+
+                      </FormItem>)}/>
+
+
+
+                  <FormField control={step1Form.control} name="email" render={({ field }) => (<FormItem>
+
+                        <FieldBox id="email" label="Alamat Email" icon={Mail}>
+
+                          <input id="email" type="email" {...field} readOnly className={inputClass("cursor-default opacity-60")}/>
+
+                        </FieldBox>
+
+                        <FormMessage className="font-sans text-[12px]"/>
+
+                      </FormItem>)}/>
+
+
+
+                  <FormField control={step1Form.control} name="password" render={({ field }) => (<FormItem>
+
+                        <FieldBox id="password" label="Kata Sandi" icon={Lock} trailing={<PasswordVisibilityButton visible={showPassword} onToggle={() => setShowPassword((v) => !v)}/>}>
+
+                          <input id="password" type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="••••••••" className={inputClass()} {...field}/>
+
+                        </FieldBox>
+
+                        <FormMessage className="font-sans text-[12px]"/>
+
+                      </FormItem>)}/>
+
+
+
+                  <FormField control={step1Form.control} name="confirmPassword" render={({ field }) => (<FormItem>
+
+                        <FieldBox id="confirmPassword" label="Konfirmasi Kata Sandi" icon={Lock} trailing={<PasswordVisibilityButton visible={showConfirmPassword} onToggle={() => setShowConfirmPassword((v) => !v)}/>}>
+
+                          <input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" placeholder="••••••••" className={inputClass()} {...field}/>
+
+                        </FieldBox>
+
+                        <FormMessage className="font-sans text-[12px]"/>
+
+                      </FormItem>)}/>
+
+
+
+                  {error && (<p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
+
+                      {error}
+
+                    </p>)}
+
+
+
+                  <button type="submit" className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))]">
+
+                    Selanjutnya
+
+                  </button>
+
+                </form>
+
+              </Form>
+
+            </motion.div>)}
+
+
+
+          {step === 2 && (<motion.div key="step2" custom={direction} variants={stepSlide} initial="enter" animate="center" exit="exit">
+
+              <Form {...step2Form}>
+
                 <form className="grid grid-cols-1 gap-4" onSubmit={(e) => {
                 e.preventDefault();
                 step2Form.handleSubmit(onSubmit)();
-            }} noValidate>
-                  <FormField control={step2Form.control} name="businessName" render={({ field }) => (<FormItem>
-                        <FieldBox id="businessName" label="Nama Usaha" icon={Store}>
-                          <input id="businessName" placeholder="Contoh: Warung Nasi Berkah" className={inputClass()} {...field}/>
-                        </FieldBox>
-                        <FormMessage className="font-sans text-[12px]"/>
-                      </FormItem>)}/>
-
+            }} noValidate>
+
+                  <FormField control={step2Form.control} name="businessName" render={({ field }) => (<FormItem>
+
+                        <FieldBox id="businessName" label="Nama Usaha" icon={Store}>
+
+                          <input id="businessName" placeholder="Contoh: Warung Nasi Berkah" className={inputClass()} {...field}/>
+
+                        </FieldBox>
+
+                        <FormMessage className="font-sans text-[12px]"/>
+
+                      </FormItem>)}/>
+
+
+
                   <FormField control={step2Form.control} name="categories" render={({ field }) => {
                 const selected = (field.value ?? []) as string[];
                 const toggleCategory = (k: string) => {
@@ -538,183 +649,347 @@ export default function PenjualRegisterForm() {
                         : [...selected, k];
                     field.onChange(next);
                 };
-                return (<FormItem>
-                          <div>
-                            <div className="mb-1.5 flex items-baseline justify-between gap-3">
-                              <label className="block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                                Kategori Jualan
-                              </label>
-                              <span className="font-sans text-[10px] text-muted-foreground">
-                                Bisa lebih dari satu
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
-                              <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55"/>
-                              <Popover>
-                                <PopoverTrigger asChild>
+                return (<FormItem>
+
+                          <div>
+
+                            <div className="mb-1.5 flex items-baseline justify-between gap-3">
+
+                              <label className="block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+
+                                Kategori Jualan
+
+                              </label>
+
+                              <span className="font-sans text-[10px] text-muted-foreground">
+
+                                Bisa lebih dari satu
+
+                              </span>
+
+                            </div>
+
+                            <div className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+
+                              <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55"/>
+
+                              <Popover>
+
+                                <PopoverTrigger asChild>
+
                                   <button type="button" aria-label="Pilih kategori jualan" className={cn("flex w-full items-center justify-between gap-2 bg-transparent text-left font-sans text-[14px] outline-none", selected.length > 0
                         ? "text-foreground"
-                        : "text-muted-foreground")}>
-                                    <span className="truncate">
+                        : "text-muted-foreground")}>
+
+                                    <span className="truncate">
+
                                       {selected.length > 0
                         ? selected.join(", ")
-                        : "Pilih kategori kuliner"}
-                                    </span>
-                                    <ChevronDown className="h-4 w-4 shrink-0 opacity-40"/>
-                                  </button>
-                                </PopoverTrigger>
-                                <PopoverContent align="start" className="w-72 rounded-xl border-border p-2">
-                                  <div className="space-y-0.5">
+                        : "Pilih kategori kuliner"}
+
+                                    </span>
+
+                                    <ChevronDown className="h-4 w-4 shrink-0 opacity-40"/>
+
+                                  </button>
+
+                                </PopoverTrigger>
+
+                                <PopoverContent align="start" className="w-72 rounded-xl border-border p-2">
+
+                                  <div className="space-y-0.5">
+
                                     {KATEGORI_KULINER.map((k) => {
                         const checked = selected.includes(k);
-                        return (<label key={k} className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-secondary">
-                                          <Checkbox checked={checked} onCheckedChange={() => toggleCategory(k)} className="data-[state=checked]:border-primary data-[state=checked]:bg-[hsl(var(--primary))]"/>
-                                          <span className="font-sans text-sm text-foreground">
-                                            {k}
-                                          </span>
+                        return (<label key={k} className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-secondary">
+
+                                          <Checkbox checked={checked} onCheckedChange={() => toggleCategory(k)} className="data-[state=checked]:border-primary data-[state=checked]:bg-[hsl(var(--primary))]"/>
+
+                                          <span className="font-sans text-sm text-foreground">
+
+                                            {k}
+
+                                          </span>
+
                                         </label>);
-                    })}
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-                          </div>
-                          <FormMessage className="font-sans text-[12px]"/>
+                    })}
+
+                                  </div>
+
+                                </PopoverContent>
+
+                              </Popover>
+
+                            </div>
+
+                          </div>
+
+                          <FormMessage className="font-sans text-[12px]"/>
+
                         </FormItem>);
-            }}/>
-
-                  <FormField control={step2Form.control} name="city" render={({ field }) => (<FormItem>
-                        <div>
-                          <label className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                            Kecamatan (Depok)
-                          </label>
-                          <div className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
-                            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55"/>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger className="w-full border-0 bg-transparent p-0 font-sans text-[14px] text-foreground shadow-none focus:ring-0 focus:ring-offset-0 h-auto py-1 [&>span]:text-left">
-                                <SelectValue placeholder="Pilih kecamatan di Depok"/>
-                              </SelectTrigger>
-                              <SelectContent>
-                                {KECAMATAN_DEPOK.map((k) => (<SelectItem key={k} value={k}>
-                                    {k}
-                                  </SelectItem>))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <FormMessage className="font-sans text-[12px]"/>
-                      </FormItem>)}/>
-
-                  <FormField control={step2Form.control} name="address" render={({ field }) => (<FormItem>
-                        <FieldBox id="address" label="Alamat Usaha" icon={MapPin}>
-                          <input id="address" placeholder="Jl. contoh no. 123, RT/RW" className={inputClass()} {...field}/>
-                        </FieldBox>
-                        <FormMessage className="font-sans text-[12px]"/>
-                      </FormItem>)}/>
-
-                  <FormField control={step2Form.control} name="description" render={({ field }) => (<FormItem>
-                        <div>
-                          <div className="mb-1.5 flex items-baseline justify-between gap-3">
-                            <label htmlFor="description" className="block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                              Deskripsi Usaha
-                            </label>
-                            <span className="font-sans text-[10px] text-muted-foreground">
-                              Opsional
-                            </span>
-                          </div>
-                          <div className="group flex items-start gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
-                            <Store className="mt-2 h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]"/>
-                            <Textarea id="description" placeholder="Ceritakan tentang usaha Anda..." rows={2} className="min-h-[56px] resize-none border-0 bg-transparent p-0 py-1 font-sans text-[14px] leading-relaxed text-foreground shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground" {...field}/>
-                          </div>
-                        </div>
-                        <FormMessage className="font-sans text-[12px]"/>
-                      </FormItem>)}/>
-
-                  <div>
-                    <div className="mb-1.5 flex items-baseline justify-between gap-3">
-                      <label className="block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                        Gambar Toko
-                      </label>
-                      <span className="font-sans text-[10px] text-muted-foreground">
-                        Opsional
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 rounded-lg border border-dashed border-border bg-secondary px-3 py-2.5">
-                      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-white">
-                        {logoPreview ? (<Image src={logoPreview} alt="Logo preview" fill className="object-cover" unoptimized/>) : (<ImageIcon className="h-5 w-5 text-muted-foreground"/>)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <button type="button" onClick={() => logoInputRef.current?.click()} className="rounded-md border border-border bg-white px-3 py-1.5 font-sans text-[11px] font-medium text-[hsl(var(--primary))] shadow-sm transition-colors hover:bg-secondary">
-                          {logoFile ? "Ganti Logo" : "Pilih Logo"}
-                        </button>
-                        <p className="mt-1 font-sans text-[10px] text-muted-foreground">
-                          PNG/JPG, maks 2MB
-                        </p>
-                      </div>
-                      <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/jpg" className="hidden" onChange={handleLogoChange}/>
-                    </div>
-                  </div>
-
-                  {error && (<p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
-                      {error}
-                    </p>)}
-
-                  <div className="flex gap-2 pt-1">
-                    <button type="button" onClick={goBack} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-4 py-3 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground shadow-sm transition-colors duration-200 hover:bg-secondary">
-                      <ArrowLeft className="h-3.5 w-3.5"/>
-                      Kembali
-                    </button>
-                    <button type="submit" disabled={loading} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-3 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-70">
-                      {loading ? "Menyimpan..." : "Lanjut ke Paket"}
-                      {!loading && <ArrowRight className="h-3.5 w-3.5"/>}
-                    </button>
-                  </div>
-                </form>
-              </Form>
-            </motion.div>)}
-
-          {step === 3 && (<motion.div key="step3" custom={direction} variants={stepSlide} initial="enter" animate="center" exit="exit" className="space-y-4">
-              {existingStoreNotice && (<p role="status" className="rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 font-sans text-[12px] leading-relaxed text-[hsl(var(--primary))]">
-                  {existingStoreNotice}
-                </p>)}
-
-              
-              <div className="flex justify-center">
-                <div className="inline-flex items-center rounded-full border border-border bg-white p-1">
-                  {(['monthly', 'yearly'] as BillingCycle[]).map((mode) => (<button key={mode} type="button" onClick={() => setBilling(mode)} aria-pressed={billing === mode} className={cn('rounded-full px-4 py-1.5 text-xs font-semibold transition-colors', billing === mode ? 'bg-[hsl(var(--primary))] text-white shadow-sm' : 'text-muted-foreground hover:text-[hsl(var(--primary))]')}>
-                      {mode === 'monthly' ? 'Bulanan' : 'Tahunan'}
-                    </button>))}
-                </div>
-              </div>
-
-              
-              <div className="grid grid-cols-1 gap-4">
+            }}/>
+
+
+
+                  <FormField control={step2Form.control} name="city" render={({ field }) => (<FormItem>
+
+                        <div>
+
+                          <label className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+
+                            Kecamatan (Depok)
+
+                          </label>
+
+                          <div className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+
+                            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55"/>
+
+                            <Select onValueChange={field.onChange} value={field.value}>
+
+                              <SelectTrigger className="w-full border-0 bg-transparent p-0 font-sans text-[14px] text-foreground shadow-none focus:ring-0 focus:ring-offset-0 h-auto py-1 [&>span]:text-left">
+
+                                <SelectValue placeholder="Pilih kecamatan di Depok"/>
+
+                              </SelectTrigger>
+
+                              <SelectContent>
+
+                                {KECAMATAN_DEPOK.map((k) => (<SelectItem key={k} value={k}>
+
+                                    {k}
+
+                                  </SelectItem>))}
+
+                              </SelectContent>
+
+                            </Select>
+
+                          </div>
+
+                        </div>
+
+                        <FormMessage className="font-sans text-[12px]"/>
+
+                      </FormItem>)}/>
+
+
+
+                  <FormField control={step2Form.control} name="address" render={({ field }) => (<FormItem>
+
+                        <FieldBox id="address" label="Alamat Usaha" icon={MapPin}>
+
+                          <input id="address" placeholder="Jl. contoh no. 123, RT/RW" className={inputClass()} {...field}/>
+
+                        </FieldBox>
+
+                        <FormMessage className="font-sans text-[12px]"/>
+
+                      </FormItem>)}/>
+
+
+
+                  <FormField control={step2Form.control} name="description" render={({ field }) => (<FormItem>
+
+                        <div>
+
+                          <div className="mb-1.5 flex items-baseline justify-between gap-3">
+
+                            <label htmlFor="description" className="block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+
+                              Deskripsi Usaha
+
+                            </label>
+
+                            <span className="font-sans text-[10px] text-muted-foreground">
+
+                              Opsional
+
+                            </span>
+
+                          </div>
+
+                          <div className="group flex items-start gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-[hsl(var(--primary))]/15">
+
+                            <Store className="mt-2 h-3.5 w-3.5 shrink-0 text-muted-foreground/55 transition-colors duration-200 group-focus-within:text-[hsl(var(--primary))]"/>
+
+                            <Textarea id="description" placeholder="Ceritakan tentang usaha Anda..." rows={2} className="min-h-[56px] resize-none border-0 bg-transparent p-0 py-1 font-sans text-[14px] leading-relaxed text-foreground shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground" {...field}/>
+
+                          </div>
+
+                        </div>
+
+                        <FormMessage className="font-sans text-[12px]"/>
+
+                      </FormItem>)}/>
+
+
+
+                  <div>
+
+                    <div className="mb-1.5 flex items-baseline justify-between gap-3">
+
+                      <label className="block font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+
+                        Gambar Toko
+
+                      </label>
+
+                      <span className="font-sans text-[10px] text-muted-foreground">
+
+                        Opsional
+
+                      </span>
+
+                    </div>
+
+                    <div className="flex items-center gap-3 rounded-lg border border-dashed border-border bg-secondary px-3 py-2.5">
+
+                      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-white">
+
+                        {logoPreview ? (<Image src={logoPreview} alt="Logo preview" fill className="object-cover" unoptimized/>) : (<ImageIcon className="h-5 w-5 text-muted-foreground"/>)}
+
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+
+                        <button type="button" onClick={() => logoInputRef.current?.click()} className="rounded-md border border-border bg-white px-3 py-1.5 font-sans text-[11px] font-medium text-[hsl(var(--primary))] shadow-sm transition-colors hover:bg-secondary">
+
+                          {logoFile ? "Ganti Logo" : "Pilih Logo"}
+
+                        </button>
+
+                        <p className="mt-1 font-sans text-[10px] text-muted-foreground">
+
+                          PNG/JPG, maks 2MB
+
+                        </p>
+
+                      </div>
+
+                      <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/jpg" className="hidden" onChange={handleLogoChange}/>
+
+                    </div>
+
+                  </div>
+
+
+
+                  {error && (<p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
+
+                      {error}
+
+                    </p>)}
+
+
+
+                  <div className="flex gap-2 pt-1">
+
+                    <button type="button" onClick={goBack} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-4 py-3 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground shadow-sm transition-colors duration-200 hover:bg-secondary">
+
+                      <ArrowLeft className="h-3.5 w-3.5"/>
+
+                      Kembali
+
+                    </button>
+
+                    <button type="submit" disabled={loading} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-3 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-70">
+
+                      {loading ? "Menyimpan..." : "Lanjut ke Paket"}
+
+                      {!loading && <ArrowRight className="h-3.5 w-3.5"/>}
+
+                    </button>
+
+                  </div>
+
+                </form>
+
+              </Form>
+
+            </motion.div>)}
+
+
+
+          {step === 3 && (<motion.div key="step3" custom={direction} variants={stepSlide} initial="enter" animate="center" exit="exit" className="space-y-4">
+
+              {existingStoreNotice && (<p role="status" className="rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 font-sans text-[12px] leading-relaxed text-[hsl(var(--primary))]">
+
+                  {existingStoreNotice}
+
+                </p>)}
+
+
+
+              
+
+              <div className="flex justify-center">
+
+                <div className="inline-flex items-center rounded-full border border-border bg-white p-1">
+
+                  {(['monthly', 'yearly'] as BillingCycle[]).map((mode) => (<button key={mode} type="button" onClick={() => setBilling(mode)} aria-pressed={billing === mode} className={cn('rounded-full px-4 py-1.5 text-xs font-semibold transition-colors', billing === mode ? 'bg-[hsl(var(--primary))] text-white shadow-sm' : 'text-muted-foreground hover:text-[hsl(var(--primary))]')}>
+
+                      {mode === 'monthly' ? 'Bulanan' : 'Tahunan'}
+
+                    </button>))}
+
+                </div>
+
+              </div>
+
+
+
+              
+
+              <div className="grid grid-cols-1 gap-4">
+
                 {SUBSCRIPTION_PLANS.map((plan) => {
                 const isSelected = selectedPlan === plan.slug;
                 const price = getPlanPrice(plan as any, billing);
                 const total = price + Math.round(price * 0.12);
-                return (<button key={plan.slug} type="button" onClick={() => setSelectedPlan(plan.slug)} className={cn('relative flex flex-col rounded-2xl border bg-white p-4 text-left transition-all', isSelected ? 'border-primary bg-secondary shadow-sm ring-1 ring-[hsl(var(--primary))]/20' : 'border-border hover:border-border')}>
-                      <span className={cn('absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full border-2', isSelected ? 'border-primary bg-[hsl(var(--primary))]' : 'border-border bg-white')}>
-                        {isSelected && <span className="h-2 w-2 rounded-full bg-white"/>}
-                      </span>
-                      <h3 className="font-display text-[15px] font-semibold text-[hsl(var(--primary))]">ReBites {plan.name}</h3>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{plan.tagline}</p>
-                      <p className="mt-2">
-                        <span className="font-display text-xl font-bold text-[hsl(var(--primary))]">{formatRupiah(price)}</span>
-                        <span className="ml-1 text-xs text-muted-foreground">/ {billing === 'yearly' ? 'tahun' : 'bulan'}</span>
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">+ Pajak 12% → {formatRupiah(total)}</p>
-                      <ul className="mt-2 space-y-1">
-                        {plan.features.map((f) => (<li key={f} className="flex gap-1.5 text-[11px] leading-snug text-[hsl(var(--primary))]">
-                            <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-[hsl(var(--primary))]"/>{f}
-                          </li>))}
-                      </ul>
-                      {isSelected && <span className="absolute -top-2 right-6 rounded-full bg-[hsl(var(--primary))] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Dipilih</span>}
+                return (<button key={plan.slug} type="button" onClick={() => setSelectedPlan(plan.slug)} className={cn('relative flex flex-col rounded-2xl border bg-white p-4 text-left transition-all', isSelected ? 'border-primary bg-secondary shadow-sm ring-1 ring-[hsl(var(--primary))]/20' : 'border-border hover:border-border')}>
+
+                      <span className={cn('absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full border-2', isSelected ? 'border-primary bg-[hsl(var(--primary))]' : 'border-border bg-white')}>
+
+                        {isSelected && <span className="h-2 w-2 rounded-full bg-white"/>}
+
+                      </span>
+
+                      <h3 className="font-display text-[15px] font-semibold text-[hsl(var(--primary))]">ReBites {plan.name}</h3>
+
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{plan.tagline}</p>
+
+                      <p className="mt-2">
+
+                        <span className="font-display text-xl font-bold text-[hsl(var(--primary))]">{formatRupiah(price)}</span>
+
+                        <span className="ml-1 text-xs text-muted-foreground">/ {billing === 'yearly' ? 'tahun' : 'bulan'}</span>
+
+                      </p>
+
+                      <p className="text-[11px] text-muted-foreground">+ Pajak 12% → {formatRupiah(total)}</p>
+
+                      <ul className="mt-2 space-y-1">
+
+                        {plan.features.map((f) => (<li key={f} className="flex gap-1.5 text-[11px] leading-snug text-[hsl(var(--primary))]">
+
+                            <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-[hsl(var(--primary))]"/>{f}
+
+                          </li>))}
+
+                      </ul>
+
+                      {isSelected && <span className="absolute -top-2 right-6 rounded-full bg-[hsl(var(--primary))] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Dipilih</span>}
+
                     </button>);
-            })}
-              </div>
-
-              
+            })}
+
+              </div>
+
+
+
+              
+
               {(() => {
                 const plan = SUBSCRIPTION_PLANS.find(p => p.slug === selectedPlan)!;
                 const price = getPlanPrice(plan as any, billing);
@@ -725,40 +1000,74 @@ export default function PenjualRegisterForm() {
                     periodEnd.setFullYear(periodEnd.getFullYear() + 1);
                 else
                     periodEnd.setMonth(periodEnd.getMonth() + 1);
-                return (<div className="rounded-xl border border-border bg-secondary p-4">
-                    <div className="flex items-center justify-between text-[13px]">
-                      <span className="text-muted-foreground">Paket terpilih</span>
-                      <span className="font-semibold text-[hsl(var(--primary))]">ReBites {plan.name} {billing === 'yearly' ? 'Tahunan' : 'Bulanan'}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[13px] mt-1.5">
-                      <span className="text-muted-foreground">Total bayar</span>
-                      <span className="font-display text-[15px] font-bold text-[hsl(var(--primary))]">{formatRupiah(total)}</span>
-                    </div>
-                    <p className="mt-1 text-[11px] text-muted-foreground">Berlaku s.d. {periodEnd.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} • via Xendit</p>
+                return (<div className="rounded-xl border border-border bg-secondary p-4">
+
+                    <div className="flex items-center justify-between text-[13px]">
+
+                      <span className="text-muted-foreground">Paket terpilih</span>
+
+                      <span className="font-semibold text-[hsl(var(--primary))]">ReBites {plan.name} {billing === 'yearly' ? 'Tahunan' : 'Bulanan'}</span>
+
+                    </div>
+
+                    <div className="flex items-center justify-between text-[13px] mt-1.5">
+
+                      <span className="text-muted-foreground">Total bayar</span>
+
+                      <span className="font-display text-[15px] font-bold text-[hsl(var(--primary))]">{formatRupiah(total)}</span>
+
+                    </div>
+
+                    <p className="mt-1 text-[11px] text-muted-foreground">Berlaku s.d. {periodEnd.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} • via Xendit</p>
+
                   </div>);
-            })()}
-
-              {payError && (<p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">{payError}</p>)}
-
-              <div className="flex gap-2">
-                <button type="button" onClick={goBackToStep2} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:bg-secondary">
-                  <ArrowLeft className="h-3.5 w-3.5"/> Kembali
-                </button>
-                <button type="button" onClick={handlePaySubscription} disabled={payProcessing} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white hover:bg-primary disabled:opacity-60">
-                  {payProcessing ? 'Memproses…' : `Bayar ${formatRupiah(getPlanPrice(SUBSCRIPTION_PLANS.find(p => p.slug === selectedPlan)! as any, billing) + Math.round(getPlanPrice(SUBSCRIPTION_PLANS.find(p => p.slug === selectedPlan)! as any, billing) * 0.12))} via Xendit`}
-                  {!payProcessing && <ArrowRight className="h-3.5 w-3.5"/>}
-                </button>
-              </div>
-              <p className="text-center text-[11px] text-muted-foreground">Wajib bayar, Basic 24.999 untuk memulai berjualan. Belum bisa tambah produk sebelum paid.</p>
-            </motion.div>)}
-        </AnimatePresence>
-      </div>
-
-      <motion.p variants={itemVariants} className="mt-6 text-center font-sans text-[13px] text-muted-foreground flex-shrink-0">
-        Sudah punya toko?{" "}
-        <Link href="/auth/login/penjual" className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-foreground">
-          Masuk sebagai penjual
-        </Link>
-      </motion.p>
+            })()}
+
+
+
+              {payError && (<p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">{payError}</p>)}
+
+
+
+              <div className="flex gap-2">
+
+                <button type="button" onClick={goBackToStep2} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:bg-secondary">
+
+                  <ArrowLeft className="h-3.5 w-3.5"/> Kembali
+
+                </button>
+
+                <button type="button" onClick={handlePaySubscription} disabled={payProcessing} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white hover:bg-primary disabled:opacity-60">
+
+                  {payProcessing ? 'Memproses…' : `Bayar ${formatRupiah(getPlanPrice(SUBSCRIPTION_PLANS.find(p => p.slug === selectedPlan)! as any, billing) + Math.round(getPlanPrice(SUBSCRIPTION_PLANS.find(p => p.slug === selectedPlan)! as any, billing) * 0.12))} via Xendit`}
+
+                  {!payProcessing && <ArrowRight className="h-3.5 w-3.5"/>}
+
+                </button>
+
+              </div>
+
+              <p className="text-center text-[11px] text-muted-foreground">Wajib bayar, Basic 24.999 untuk memulai berjualan. Belum bisa tambah produk sebelum paid.</p>
+
+            </motion.div>)}
+
+        </AnimatePresence>
+
+      </div>
+
+
+
+      <motion.p variants={itemVariants} className="mt-6 text-center font-sans text-[13px] text-muted-foreground flex-shrink-0">
+
+        Sudah punya toko?{" "}
+
+        <Link href="/auth/login/penjual" className="font-semibold text-[hsl(var(--primary))] underline underline-offset-4 transition-colors hover:text-foreground">
+
+          Masuk sebagai penjual
+
+        </Link>
+
+      </motion.p>
+
     </motion.div>);
 }

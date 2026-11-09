@@ -16,7 +16,6 @@ export interface ProductDetail {
     stockLabel: string;
     stockRemaining: number;
     rating: number;
-    reviewCount: number;
     distanceKm: number | null;
     isDelivery: boolean;
     isPickup: boolean;
@@ -31,10 +30,12 @@ export interface ProductDetail {
         from: string;
         to: string;
     };
+    storeOpenHours: string | null;
+    storeIsOpen: boolean;
+    storeIsActive: boolean;
     pickupLocation: string;
     consumeWindow: string;
     co2eSavedKg: number;
-    packageContents: string[];
 }
 export interface Review {
     id: string;

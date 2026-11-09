@@ -7,7 +7,6 @@ import { ArrowLeft, ArrowRight, ChevronDown, Quote, Search, SearchX, Star, Utens
 import { cn } from "@/lib/utils";
 import { useCatalog } from "@/lib/catalog";
 import type { FoodItem, Vendor } from "@/lib/types";
-import { AppFooter } from "@/app/components/shared/app-footer";
 import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { CategoryRow } from "@/app/components/detail-toko/category-row";
@@ -99,106 +98,192 @@ function StoreServiceReviews({ vendor }: {
     if (reviews.length === 0) {
         return null;
     }
-    return (<>
-      <div className="mt-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Review Pelanggan
-        </p>
-        <h2 className="mt-1.5 font-display text-2xl font-medium tracking-tight text-primary sm:text-3xl">
-          Kata Pelanggan tentang Pelayanan {vendor.name}
-        </h2>
-      </div>
-
-      <div className="relative mt-6">
-        <button type="button" onClick={() => carouselApi?.scrollPrev()} aria-label="Review sebelumnya" className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex">
-          <ArrowRight className="h-4 w-4 rotate-180"/>
-        </button>
-
-        <button type="button" onClick={() => carouselApi?.scrollNext()} aria-label="Review berikutnya" className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex">
-          <ArrowRight className="h-4 w-4"/>
-        </button>
-
-        <Carousel opts={{ align: "start", loop: true }} setApi={setCarouselApi}>
-          <CarouselContent className="-ml-4 lg:-ml-5">
-            {reviews.map((review) => (<CarouselItem key={review.id} className="basis-full pl-4 sm:basis-1/2 sm:pl-4 lg:basis-1/3 lg:pl-5">
-                <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-8 shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_30px_60px_-28px_rgba(34,81,56,0.35)] lg:p-9">
-                  <span aria-hidden className="pointer-events-none absolute -top-3 right-4 select-none font-display text-[6rem] font-extralight leading-none text-primary/[0.08] transition-colors duration-300 group-hover:text-primary/15">
-                    &ldquo;
-                  </span>
-
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: review.rating }).map((_, s) => (<Star key={s} className="h-4 w-4 fill-primary text-primary"/>))}
-                  </div>
-
-                  <Quote className="mt-5 h-5 w-5 text-primary/40"/>
-
-                  <blockquote className="mt-3 flex-1 font-sans text-sm leading-relaxed text-foreground/80">
-                    &ldquo;{review.comment}&rdquo;
-                  </blockquote>
-
-                  <div className="relative mt-7 flex items-center gap-3 pt-6">
+    return (<>
+
+      <div className="mt-8">
+
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+
+          Review Pelanggan
+
+        </p>
+
+        <h2 className="mt-1.5 font-display text-2xl font-medium tracking-tight text-primary sm:text-3xl">
+
+          Kata Pelanggan tentang Pelayanan {vendor.name}
+
+        </h2>
+
+      </div>
+
+
+
+      <div className="relative mt-6">
+
+        <button type="button" onClick={() => carouselApi?.scrollPrev()} aria-label="Review sebelumnya" className="absolute -left-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex">
+
+          <ArrowRight className="h-4 w-4 rotate-180"/>
+
+        </button>
+
+
+
+        <button type="button" onClick={() => carouselApi?.scrollNext()} aria-label="Review berikutnya" className="absolute -right-4 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-primary shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1/2 hover:border-primary hover:bg-primary-dark hover:text-white sm:flex">
+
+          <ArrowRight className="h-4 w-4"/>
+
+        </button>
+
+
+
+        <Carousel opts={{ align: "start", loop: true }} setApi={setCarouselApi}>
+
+          <CarouselContent className="-ml-4 lg:-ml-5">
+
+            {reviews.map((review) => (<CarouselItem key={review.id} className="basis-full pl-4 sm:basis-1/2 sm:pl-4 lg:basis-1/3 lg:pl-5">
+
+                <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white p-8 shadow-[0_10px_30px_-24px_rgba(34,81,56,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_30px_60px_-28px_rgba(34,81,56,0.35)] lg:p-9">
+
+                  <span aria-hidden className="pointer-events-none absolute -top-3 right-4 select-none font-display text-[6rem] font-extralight leading-none text-primary/[0.08] transition-colors duration-300 group-hover:text-primary/15">
+
+                    &ldquo;
+
+                  </span>
+
+
+
+                  <div className="flex items-center gap-1">
+
+                    {Array.from({ length: review.rating }).map((_, s) => (<Star key={s} className="h-4 w-4 fill-primary text-primary"/>))}
+
+                  </div>
+
+
+
+                  <Quote className="mt-5 h-5 w-5 text-primary/40"/>
+
+
+
+                  <blockquote className="mt-3 flex-1 font-sans text-sm leading-relaxed text-foreground/80">
+
+                    &ldquo;{review.comment}&rdquo;
+
+                  </blockquote>
+
+
+
+                  <div className="relative mt-7 flex items-center gap-3 pt-6">
+
                     <span aria-hidden className="absolute inset-x-0 top-0 h-px" style={{
                 background: "repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 10px)",
                 opacity: 0.35,
-            }}/>
-
-                    <Avatar className="h-11 w-11 border border-primary/30">
-                      <AvatarImage src={review.avatar} alt={review.name} className="object-cover"/>
-
-                      <AvatarFallback className="bg-primary font-display text-sm font-medium text-white">
-                        {initialsOf(review.name)}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    <div>
-                      <p className="font-display text-base font-medium text-primary">
-                        {review.name}
-                      </p>
-
-                      <p className="mt-0.5 font-sans text-xs text-muted-foreground">
-                        {review.timeAgo}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CarouselItem>))}
-          </CarouselContent>
-        </Carousel>
-      </div>
-
-      <div className="mt-7 flex justify-center gap-2">
+            }}/>
+
+
+
+                    <Avatar className="h-11 w-11 border border-primary/30">
+
+                      <AvatarImage src={review.avatar} alt={review.name} className="object-cover"/>
+
+
+
+                      <AvatarFallback className="bg-primary font-display text-sm font-medium text-white">
+
+                        {initialsOf(review.name)}
+
+                      </AvatarFallback>
+
+                    </Avatar>
+
+
+
+                    <div>
+
+                      <p className="font-display text-base font-medium text-primary">
+
+                        {review.name}
+
+                      </p>
+
+
+
+                      <p className="mt-0.5 font-sans text-xs text-muted-foreground">
+
+                        {review.timeAgo}
+
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </CarouselItem>))}
+
+          </CarouselContent>
+
+        </Carousel>
+
+      </div>
+
+
+
+      <div className="mt-7 flex justify-center gap-2">
+
         {reviews.map((review, i) => (<button key={review.id} type="button" aria-label={`Ke review ${i + 1}`} onClick={() => carouselApi?.scrollTo(i)} className={`h-1.5 rounded-full transition-all duration-300 ${activeIndex === i
                 ? "w-8 bg-primary"
-                : "w-1.5 bg-foreground/15 hover:bg-foreground/30"}`}/>))}
-      </div>
+                : "w-1.5 bg-foreground/15 hover:bg-foreground/30"}`}/>))}
+
+      </div>
+
     </>);
 }
 function StoreNotFound() {
-    return (<main className="flex min-h-screen items-center justify-center bg-secondary px-5 font-sans text-foreground">
-      <div className="flex w-full max-w-md flex-col items-center gap-5 rounded-2xl border border-border bg-white p-10 text-center shadow-md shadow-primary/5">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
-          <Utensils className="h-6 w-6"/>
-        </span>
-        <div>
-          <h1 className="font-display text-xl font-medium tracking-tight text-primary">
-            Toko tidak ditemukan
-          </h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-            Toko yang kamu cari tidak tersedia atau sudah tidak aktif. Coba
-            jelajahi toko lain di beranda.
-          </p>
-        </div>
-        <Link href="/" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark">
-          <ArrowLeft className="h-4 w-4"/>
-          Kembali ke Beranda
-        </Link>
-      </div>
+    return (<main className="flex min-h-screen items-center justify-center bg-white px-5 font-sans text-foreground">
+
+      <div className="flex w-full max-w-md flex-col items-center gap-5 rounded-2xl border border-border bg-white p-10 text-center shadow-md shadow-primary/5">
+
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
+
+          <Utensils className="h-6 w-6"/>
+
+        </span>
+
+        <div>
+
+          <h1 className="font-display text-xl font-medium tracking-tight text-primary">
+
+            Toko tidak ditemukan
+
+          </h1>
+
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+
+            Toko yang kamu cari tidak tersedia atau sudah tidak aktif. Coba
+
+            jelajahi toko lain di beranda.
+
+          </p>
+
+        </div>
+
+        <Link href="/" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark">
+
+          <ArrowLeft className="h-4 w-4"/>
+
+          Kembali ke Beranda
+
+        </Link>
+
+      </div>
+
     </main>);
 }
 function StoreDetailContent() {
     const searchParams = useSearchParams();
     const storeId = searchParams.get("id");
-    const { vendors, loading: catalogLoading } = useCatalog();
+    const { vendors, loading: catalogLoading, error: catalogError, refresh: refreshCatalog } = useCatalog();
     const vendor: Vendor | undefined = vendors.find((item) => item.id === storeId);
     const [storeProducts, setStoreProducts] = useState<SellerProduct[]>([]);
     const [storeLoading, setStoreLoading] = useState(true);
@@ -298,37 +383,66 @@ function StoreDetailContent() {
     if (!vendor) {
         return <StoreNotFound />;
     }
-    return (<BuyerShell>
-      <StoreVisitorTracker storeId={vendor.id}/>
-      <main className="min-h-screen bg-secondary font-sans text-foreground">
-        <StoreHeroCard vendor={vendor} openNow={openNow}/>
-
-      
-      <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
-        <section id="menu-surplus" className="pt-9">
-          <h2 className="mt-1.5 font-display text-2xl font-medium tracking-tight text-primary sm:text-3xl">
-            Menu Surplus dari {vendor.name}
-          </h2>
-
-          <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
-              <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={`Cari menu di ${vendor.name}...`} aria-label="Cari menu di toko ini" className="w-full rounded-full border border-border bg-secondary py-2.5 pl-11 pr-10 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:bg-white"/>
-              {query && (<button type="button" onClick={() => setQuery("")} aria-label="Hapus pencarian" className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-muted/70">
-                  <X className="h-3.5 w-3.5"/>
-                </button>)}
-            </div>
-
-            <div className="relative shrink-0 self-start lg:self-auto">
+    return (<BuyerShell>
+
+      <StoreVisitorTracker storeId={vendor.id}/>
+
+      <main className="min-h-screen bg-white pb-[calc(4.5rem+env(safe-area-inset-bottom))] font-sans text-foreground lg:pb-0">
+
+        <StoreHeroCard vendor={vendor} openNow={openNow}/>
+
+
+
+      
+
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
+
+        <section id="menu-surplus" className="pt-9">
+
+          <h2 className="mt-1.5 font-display text-2xl font-medium tracking-tight text-primary sm:text-3xl">
+
+            Menu Surplus dari {vendor.name}
+
+          </h2>
+
+
+
+          <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">
+
+            <div className="relative flex-1">
+
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
+
+              <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={`Cari menu di ${vendor.name}...`} aria-label="Cari menu di toko ini" className="w-full rounded-full border border-border bg-secondary py-2.5 pl-11 pr-10 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:bg-white"/>
+
+              {query && (<button type="button" onClick={() => setQuery("")} aria-label="Hapus pencarian" className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-muted/70">
+
+                  <X className="h-3.5 w-3.5"/>
+
+                </button>)}
+
+            </div>
+
+
+
+            <div className="relative shrink-0 self-start lg:self-auto">
+
               <button type="button" onClick={() => setIsCategoryOpen((v) => !v)} aria-expanded={isCategoryOpen} aria-haspopup="listbox" className={cn("flex h-[38px] items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors duration-200", activeCategory !== "Semua" || isCategoryOpen
             ? "border-primary bg-white text-primary"
-            : "border-border bg-white text-foreground hover:border-primary hover:text-primary")}>
-                {activeCategory === "Semua" ? "Kategori" : activeCategory}
-                <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isCategoryOpen && "rotate-180")}/>
-              </button>
-
-              <AnimatePresence>
-                {isCategoryOpen && (<motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18, ease: "easeOut" }} className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-border bg-white p-2 shadow-lg shadow-primary/10">
+            : "border-border bg-white text-foreground hover:border-primary hover:text-primary")}>
+
+                {activeCategory === "Semua" ? "Kategori" : activeCategory}
+
+                <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isCategoryOpen && "rotate-180")}/>
+
+              </button>
+
+
+
+              <AnimatePresence>
+
+                {isCategoryOpen && (<motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18, ease: "easeOut" }} className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-border bg-white p-2 shadow-lg shadow-primary/10">
+
                     {displayCategories.map((cat) => {
                 const isActive = activeCategory === cat;
                 return (<button key={cat} type="button" onClick={() => {
@@ -336,90 +450,163 @@ function StoreDetailContent() {
                         setIsCategoryOpen(false);
                     }} className={cn("flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors duration-200", isActive
                         ? "bg-primary font-semibold text-white"
-                        : "text-muted-foreground hover:bg-muted")}>
-                          {cat}
+                        : "text-muted-foreground hover:bg-muted")}>
+
+                          {cat}
+
                         </button>);
-            })}
-                  </motion.div>)}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {loadsOwnProducts && storeLoading ? (<div role="status" aria-label="Memuat menu toko" className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {[0, 1, 2].map((i) => (<Skeleton key={i} className="h-64 rounded-2xl"/>))}
-            </div>) : loadsOwnProducts && storeError ? (<div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border bg-white p-10 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
-                <SearchX className="h-6 w-6"/>
-              </span>
-              <div>
-                <p className="text-sm font-bold text-foreground">
-                  Menu gagal dimuat
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Terjadi kendala saat memuat menu toko ini. Silakan coba lagi.
-                </p>
-              </div>
-              <button type="button" onClick={() => setReloadKey((k) => k + 1)} className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark">
-                Coba Lagi
-              </button>
-            </div>) : loadsOwnProducts && storeProducts.length === 0 ? (<div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
-                <Utensils className="h-6 w-6"/>
-              </span>
-              <div>
-                <p className="text-sm font-bold text-foreground">
-                  Belum ada menu surplus
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Toko ini belum menayangkan menu surplus. Kunjungi lagi nanti,
-                  ya.
-                </p>
-              </div>
-            </div>) : (<>
-              <div className="mt-6 flex flex-col gap-10">
+            })}
+
+                  </motion.div>)}
+
+              </AnimatePresence>
+
+            </div>
+
+          </div>
+
+
+
+          {loadsOwnProducts && storeLoading ? (<div role="status" aria-label="Memuat menu toko" className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+              {[0, 1, 2].map((i) => (<Skeleton key={i} className="h-64 rounded-2xl"/>))}
+
+            </div>) : loadsOwnProducts && storeError ? (<div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border bg-white p-10 text-center">
+
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
+
+                <SearchX className="h-6 w-6"/>
+
+              </span>
+
+              <div>
+
+                <p className="text-sm font-bold text-foreground">
+
+                  Menu gagal dimuat
+
+                </p>
+
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+
+                  Terjadi kendala saat memuat menu toko ini. Silakan coba lagi.
+
+                </p>
+
+              </div>
+
+              <button type="button" onClick={() => setReloadKey((k) => k + 1)} className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-colors hover:bg-primary-dark">
+
+                Coba Lagi
+
+              </button>
+
+            </div>) : loadsOwnProducts && storeProducts.length === 0 ? (<div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
+
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
+
+                <Utensils className="h-6 w-6"/>
+
+              </span>
+
+              <div>
+
+                <p className="text-sm font-bold text-foreground">
+
+                  Belum ada menu surplus
+
+                </p>
+
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+
+                  Toko ini belum menayangkan menu surplus. Kunjungi lagi nanti,
+
+                  ya.
+
+                </p>
+
+              </div>
+
+            </div>) : (<>
+
+              <div className="mt-6 flex flex-col gap-10">
+
                 {visibleGroups.map(([cat, items]) => (<CategoryRow key={cat} title={cat} items={items} onSelect={handleViewDetail} featuredIds={featuredIds} isItemUnavailable={loadsOwnProducts
                     ? (item) => sellerAvailability.has(item.id)
                         ? !sellerAvailability.get(item.id)
                         : undefined
-                    : undefined}/>))}
-              </div>
-
-              {!hasResults && (<div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
-                    <SearchX className="h-6 w-6"/>
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-foreground">
-                      Menu tidak ditemukan
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      Coba kata kunci lain atau lihat semua menu surplus di toko
-                      ini.
-                    </p>
-                  </div>
+                    : undefined}/>))}
+
+              </div>
+
+
+
+              {!hasResults && (<div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
+
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
+
+                    <SearchX className="h-6 w-6"/>
+
+                  </span>
+
+                  <div>
+
+                    <p className="text-sm font-bold text-foreground">
+
+                      Menu tidak ditemukan
+
+                    </p>
+
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+
+                      Coba kata kunci lain atau lihat semua menu surplus di toko
+
+                      ini.
+
+                    </p>
+
+                  </div>
+
                   <button type="button" onClick={() => {
                     setQuery("");
                     setActiveCategory("Semua");
-                }} className="rounded-full border border-primary px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white">
-                    Lihat Semua Menu
-                  </button>
-                </div>)}
-            </>)}
-        </section>
-      </div>
-
-      <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
-        <section id="tentang-toko" className="mt-14 pb-4">
-          <StoreServiceReviews vendor={vendor}/>
-        </section>
-      </div>
-
-      <AppFooter hasMobileBottomNav/>
-    </main>
+                }} className="rounded-full border border-primary px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white">
+
+                    Lihat Semua Menu
+
+                  </button>
+
+                </div>)}
+
+            </>)}
+
+        </section>
+
+      </div>
+
+
+
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
+
+        <section id="tentang-toko" className="mt-14 pb-4">
+
+          <StoreServiceReviews vendor={vendor}/>
+
+        </section>
+
+      </div>
+
+
+
+
+    </main>
+
     </BuyerShell>);
 }
 export default function DetailTokoPage() {
-    return (<Suspense fallback={<div className="min-h-screen bg-secondary"/>}>
-      <StoreDetailContent />
+    return (<Suspense fallback={<div className="min-h-screen bg-secondary"/>}>
+
+      <StoreDetailContent />
+
     </Suspense>);
 }

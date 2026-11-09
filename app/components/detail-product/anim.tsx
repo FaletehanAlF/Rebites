@@ -29,8 +29,10 @@ export function SectionReveal({ children, className, delay = 0, y = 24, amount =
     y?: number;
     amount?: number;
 }) {
-    return (<motion.div className={className} initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount }} transition={{ duration: 0.65, delay, ease: EASE }}>
-      {children}
+    return (<motion.div className={className} initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount }} transition={{ duration: 0.65, delay, ease: EASE }}>
+
+      {children}
+
     </motion.div>);
 }
 export function StaggerGroup({ children, className, stagger = 0.08, delay = 0, amount = 0.2, as = 'div', }: {
@@ -42,8 +44,10 @@ export function StaggerGroup({ children, className, stagger = 0.08, delay = 0, a
     as?: React.ElementType;
 }) {
     const MotionTag = motion[as as keyof typeof motion] as typeof motion.div;
-    return (<MotionTag className={className} variants={staggerContainer(stagger, delay)} initial="hidden" whileInView="visible" viewport={{ once: true, amount }}>
-      {children}
+    return (<MotionTag className={className} variants={staggerContainer(stagger, delay)} initial="hidden" whileInView="visible" viewport={{ once: true, amount }}>
+
+      {children}
+
     </MotionTag>);
 }
 export function StaggerItem({ children, className, as = 'div', }: {
@@ -52,7 +56,9 @@ export function StaggerItem({ children, className, as = 'div', }: {
     as?: React.ElementType;
 }) {
     const MotionTag = motion[as as keyof typeof motion] as typeof motion.div;
-    return (<MotionTag className={className} variants={fadeUp}>
-      {children}
+    return (<MotionTag className={className} variants={fadeUp}>
+
+      {children}
+
     </MotionTag>);
 }
