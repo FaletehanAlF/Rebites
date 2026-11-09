@@ -20,8 +20,6 @@ export function CTAButtons({
   const saved = isLiked(product.id);
   const [added, setAdded] = useState(false);
   const reduce = useReducedMotion();
-  // Sumber kebenaran stok adalah angka; tombol pesan disabled saat habis,
-  // tombol simpan/favorit tetap berfungsi.
   const isOutOfStock = product.stockRemaining <= 0;
 
   const handleSave = async () => {

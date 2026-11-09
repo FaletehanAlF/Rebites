@@ -15,8 +15,6 @@ const FOCUS_RING =
 
 const ITEMS_PER_PAGE = 4;
 
-// Grid toko dengan pagination; orderVendorsOpenFirst menaruh toko buka
-// di depan (toggle penjual + jam buka), penjual prioritas paling atas.
 export function VendorSection() {
     const { plan } = useSellerPlan();
     const { vendors, loading, error: catalogError, refresh: refreshCatalog } = useCatalog();

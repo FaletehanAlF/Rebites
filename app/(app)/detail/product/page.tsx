@@ -8,9 +8,6 @@ export const metadata: Metadata = {
     'Selamatkan porsi makanan surplus favoritmu langsung dari UMKM pilihan di Depok.',
 };
 
-// Route detail produk aplikasi. `buyerShell: true` membungkus halaman dengan
-// BuyerShell — chrome sama dengan halaman aplikasi pembeli lainnya, sekaligus
-// menjaga /preview/product bebas UI akun dan keluar dari bundle supabase/auth.
 export default function DetailProductPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-secondary" />}>

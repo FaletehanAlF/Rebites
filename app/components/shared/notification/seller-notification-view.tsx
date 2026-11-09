@@ -24,7 +24,6 @@ const MODERATION_TYPES: NotificationType[] = [
   'product_approved',
   'product_rejected',
   'product_warning',
-  // NOTIF-1: laporan baru untuk toko termasuk kategori moderasi.
   'report_received',
 ];
 const SUBSCRIPTION_TYPES: NotificationType[] = [

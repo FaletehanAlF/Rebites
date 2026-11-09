@@ -80,16 +80,13 @@ export function StoreCard() {
 
   return (
     <Card className="overflow-hidden p-0">
-      {/* Header */}
       <div className="flex items-center justify-between px-5 pb-0 pt-5 sm:px-6">
         <h2 className="text-sm font-bold text-foreground">Profil Toko</h2>
         <p className="text-[11px] font-medium text-muted-foreground">Paket {plan.label}</p>
       </div>
 
-      {/* ReBites Partner Card */}
       <div className="relative mx-4 mt-4 overflow-hidden rounded-2xl bg-primary sm:mx-5">
         <div className="relative p-5 sm:p-6">
-          {/* Top row: label + avatar + toggle */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary/15">
@@ -132,7 +129,6 @@ export function StoreCard() {
             </button>
           </div>
 
-          {/* Verified badge */}
           {plan.verifiedBadge && (
             <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-2.5 py-1">
               <BadgeCheck className="h-3.5 w-3.5 text-primary" />
@@ -140,10 +136,8 @@ export function StoreCard() {
             </div>
           )}
 
-          {/* Divider */}
           <div className="my-4 h-px bg-secondary/10" />
 
-          {/* Info rows */}
           <div className="space-y-2.5">
             <div className="flex items-center gap-2.5">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/10">
@@ -169,7 +163,6 @@ export function StoreCard() {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="px-5 pt-4 sm:px-6">
         <Link
           href={`/detail/toko?id=${storeSlug ?? storeId ?? ''}`}

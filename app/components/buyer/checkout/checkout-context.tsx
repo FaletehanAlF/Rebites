@@ -32,9 +32,6 @@ import { getOrderById } from '@/lib/order-storage';
 import { buildAddressRateSignature, buildAddressSnapshot } from '@/lib/location-validation';
 import { paymentMethods } from './payment-methods';
 
-// Total server ≠ total yang tampil saat pesanan dibuat (harga/ongkir/koin
-// berubah antara load dan submit). Dialog konfirmasi ditampilkan sebelum
-// redirect ke Xendit.
 export interface PendingInvoiceReview {
   invoiceUrl: string;
   serverTotal: number;
@@ -78,22 +75,15 @@ interface CheckoutContextValue {
 
   successOrder: StoredOrder | null;
 
-  // Non-null = total server berbeda dari tampilan; tunggu keputusan user
-  // sebelum redirect ke Xendit (lihat CheckoutPriceReviewDialog).
   pendingInvoiceReview: PendingInvoiceReview | null;
-  // Redirect ke invoice Xendit setelah user menyetujui total terbaru.
   continueToInvoice: () => void;
 
-  // Opsi ongkir Biteship (display-only; harga final tetap revalidasi server).
   shippingOptions: ShippingRateOption[];
-  // Pilihan kurir user (identifier saja, bukan harga). Tidak auto-select.
   selectedShipping: { courierCode: string; serviceCode: string } | null;
   setSelectedShipping: (next: { courierCode: string; serviceCode: string } | null) => void;
-  // Opsi yang cocok dengan pilihan (null bila belum/stale), untuk display pricing.
   selectedShippingOption: ShippingRateOption | null;
   shippingLoading: boolean;
   shippingError: string | null;
-  // Kode penyebab gagal hitung ongkir dari API (machine-readable); null bila bukan dari API.
   shippingErrorCode: string | null;
 }
 
@@ -106,7 +96,6 @@ const shippingRatesCache = new Map<
 >();
 const shippingRatesInFlight = new Map<string, Promise<ShippingRateOption[]>>();
 
-// Error ongkir membawa `code` dari API (machine-readable) untuk arahan UI per penyebab.
 class ShippingRatesError extends Error {
   readonly code: string | null;
 
@@ -117,10 +106,8 @@ class ShippingRatesError extends Error {
   }
 }
 
-// Keystroke-frequency state lives in its own context: every promoInput change
-// used to change the main context value and re-render all 11 checkout
-// consumers (payment summary, sticky bar, steppers, ...). Only the promo
-// input subscribes to this one.
+// State promo di context sendiri: tiap keystroke tidak memicu re-render
+// semua konsumen context utama checkout.
 interface PromoInputContextValue {
   promoInput: string;
   setPromoInput: (value: string) => void;
@@ -161,10 +148,7 @@ export function CheckoutProvider({
   const { user } = useCurrentUser();
 
   const [quantity, setQuantity] = useState(initialQuantity);
-  // fulfillment awal mengikuti kapabilitas produk. Berat yang belum diisi
-  // TIDAK menutup delivery: server memakai berat perkiraan kategori.
   const deliveryUsable = draft.isDelivery;
-  // delivery-only -> 'delivery'; selain itu 'pickup' (invalid diblokir missingRequirement).
   const [fulfillment, setFulfillment] = useState<FulfillmentMode>(() =>
     deliveryUsable && !draft.isPickup ? 'delivery' : 'pickup'
   );
@@ -178,7 +162,6 @@ export function CheckoutProvider({
   const [pendingInvoiceReview, setPendingInvoiceReview] =
     useState<PendingInvoiceReview | null>(null);
 
-  // shipping state (rates Biteship, display-only; total/pricing tidak berubah).
   const [shippingOptions, setShippingOptions] = useState<ShippingRateOption[]>([]);
   const [selectedShipping, setSelectedShipping] = useState<{
     courierCode: string;
@@ -201,23 +184,18 @@ export function CheckoutProvider({
     updateAddress,
   } = useAddresses();
 
-  // Tahap 3: signature field alamat yang memengaruhi tarif (postal + koordinat).
-  // Dipakai di cache key DAN dependency effect ongkir di bawah, agar perubahan
-  // isi alamat terpilih (id tetap sama) tidak memakai estimasi lama. String
-  // stabil: konten tidak berubah -> effect tidak jalan ulang (anti loop).
+  // Signature alamat yang memengaruhi tarif ongkir (postal + koordinat).
+  // Tetap stabil bila id tidak berubah agar effect tidak jalan ulang (anti loop).
   const selectedAddressRateSignature = useMemo(
     () => buildAddressRateSignature(selectedAddress),
     [selectedAddress]
   );
 
-  // fetch rates Biteship via endpoint internal (server-authoritative).
-  // Hanya untuk delivery + alamat terpilih; pickup/tanpa-alamat = reset kosong.
-  // Tidak auto-select; pilihan lama selalu di-reset saat dependency berubah.
+  // Fetch rates Biteship via endpoint internal; hanya delivery + alamat terpilih.
   useEffect(() => {
     const seq = shippingSeqRef.current + 1;
     shippingSeqRef.current = seq;
 
-    // Reset dulu agar pilihan lama tidak terbawa.
     setSelectedShipping(null);
     setShippingOptions([]);
     setShippingError(null);
@@ -303,7 +281,7 @@ export function CheckoutProvider({
 
           const options = await shared;
 
-          // Stale-response protection: abaikan bila sudah ada request lebih baru.
+          // Stale-response protection.
           if (shippingSeqRef.current !== seq || controller.signal.aborted) return;
 
           setShippingOptions(options);
@@ -369,8 +347,7 @@ export function CheckoutProvider({
     setPromoError(null);
   }, []);
 
-  // derive opsi yang cocok dengan pilihan user dari options terbaru.
-  // Pilihan yang sudah tidak ada di options = stale → null (tanpa harga lama).
+  // Derive opsi yang cocok dengan pilihan user; stale = null.
   const selectedShippingOption = useMemo<ShippingRateOption | null>(
     () =>
       selectedShipping
@@ -390,8 +367,8 @@ export function CheckoutProvider({
     promo,
     useCoins,
     coinBalance,
-    // DISPLAY memakai harga opsi terpilih; tanpa pilihan = 0
-    // (tanpa fallback Rp8.000). Final order tetap revalidasi server.
+        // DISPLAY memakai harga opsi terpilih; tanpa pilihan = 0.
+    // Final order tetap revalidasi server.
     deliveryFeeOverride:
       fulfillment === 'delivery' ? (selectedShippingOption?.price ?? 0) : 0,
   });
@@ -402,8 +379,6 @@ export function CheckoutProvider({
   );
 
   const missingRequirement = useMemo<string | null>(() => {
-    // fulfillment harus didukung kapabilitas produk (UI gating;
-    // security boundary tetap di server checkout).
     if (!draft.isDelivery && !draft.isPickup) {
       return 'Produk ini sedang tidak tersedia untuk dipesan.';
     }
@@ -413,9 +388,6 @@ export function CheckoutProvider({
     if (fulfillment === 'pickup' && !draft.isPickup) {
       return 'Produk ini tidak tersedia untuk diambil sendiri.';
     }
-    // pickup tidak butuh alamat (behavior lama dipertahankan).
-    // delivery wajib ada alamat terpilih dengan field minimum
-    // (nama, telepon, alamat, kecamatan). postal/latlng opsional (NULL legacy).
     if (fulfillment === 'delivery') {
       if (!selectedAddress) return 'Pilih alamat pengiriman terlebih dahulu.';
       if (
@@ -426,8 +398,6 @@ export function CheckoutProvider({
       ) {
         return 'Alamat pengiriman belum lengkap. Perbarui nama, telepon, alamat, dan kecamatan.';
       }
-      // delivery wajib memilih layanan pengiriman (identifier saja;
-      // harga final tetap revalidasi server). Pickup tidak butuh pilihan.
       if (!selectedShipping) return 'Pilih layanan pengiriman terlebih dahulu.';
     }
     return null;
@@ -452,8 +422,6 @@ export function CheckoutProvider({
       router.push('/auth/login');
       return;
     }
-    // pickup tetap tanpa alamat; delivery wajib alamat minimum.
-    // Fulfillment yang tidak didukung produk ditolak di sini (server menolak juga).
     if (!draft.isDelivery && !draft.isPickup) return;
     if (fulfillment === 'delivery' && !draft.isDelivery) return;
     if (fulfillment === 'pickup' && !draft.isPickup) return;
@@ -467,7 +435,6 @@ export function CheckoutProvider({
       ) {
         return;
       }
-      // cegah submit delivery tanpa pilihan kurir (server menolak juga).
       if (!selectedShipping) return;
     }
 
@@ -497,26 +464,17 @@ export function CheckoutProvider({
           promoCode: promo?.code ?? null,
           useCoins,
           distanceKm: draft.distanceKm ?? null,
-          // info package untuk observabilitas; SUMBER KEBENARAN
-          // tetap database di server (server mengabaikan nilai ini bila beda).
           weightGram: draft.weightGram ?? null,
           lengthCm: draft.lengthCm ?? null,
           widthCm: draft.widthCm ?? null,
           heightCm: draft.heightCm ?? null,
-          // identifier pilihan kurir saja (bukan harga/nama).
-          // Harga final selalu hasil revalidasi Biteship di server.
           courierCode: selectedShipping?.courierCode ?? null,
           courierServiceCode: selectedShipping?.serviceCode ?? null,
         };
         if (fulfillment === 'delivery' && selectedAddress) {
-          // snapshot diperluas (addressId + postal + lat/lng, NULL jika belum ada).
-          // Order lama tanpa field baru tetap terbaca (backward compat).
-          // TIDAK ada panggilan provider shipping / hitung ongkir / shipment di sini.
           payload.addressSnapshot = buildAddressSnapshot(selectedAddress);
         }
 
-        // Tahap 2D-E: kunci idempotensi per niat checkout (UUID baru setiap
-        // submit; server mengikatnya ke buyer dari JWT, bukan dari nilai ini).
         const idempotencyKey =
           typeof crypto !== 'undefined' && 'randomUUID' in crypto
             ? crypto.randomUUID()
@@ -535,9 +493,8 @@ export function CheckoutProvider({
           | { error?: string; invoiceUrl?: string; orderCode?: string; free?: boolean; order?: StoredOrder | null; retryable?: boolean; invoiceState?: string; amount?: number }
           | null;
 
-        // Tahap 2D-E: 409 retryable = hasil belum diketahui (paralel/unknown).
-        // JANGAN submit ulang (kunci sama akan replay); arahkan ke halaman
-        // sukses agar polling verify yang memantau status.
+        // 409 retryable = hasil belum diketahui; jangan submit ulang (kunci
+        // sama akan replay), arahkan ke halaman sukses agar polling verify memantau.
         if (res.status === 409 && json?.retryable && json.orderCode) {
           setSubmitting(false);
           submittedRef.current = false;
@@ -547,8 +504,7 @@ export function CheckoutProvider({
 
         if (!res.ok) {
           const msg = json?.error ?? `Gagal membuat pembayaran (${res.status}).`;
-          // Body respons TIDAK dicatat: dapat memuat objek pesanan (orderCode,
-          // total, metadata). Status HTTP sudah cukup untuk diagnosis.
+          // Body respons tidak dicatat: dapat memuat data pesanan. Status HTTP cukup.
           console.error('[checkout] API error', { status: res.status });
           setSubmitting(false);
           submittedRef.current = false;
@@ -583,9 +539,8 @@ export function CheckoutProvider({
         }
 
         if (json?.invoiceUrl) {
-          // Tahap 1: server selalu menghitung ulang dari DB. Bila total server
-          // berbeda dari yang tampil (harga katalog / ongkir / koin berubah),
-          // JANGAN redirect diam-diam — tampilkan perbedaannya dulu.
+          // Server menghitung ulang dari DB. Bila total server berbeda dari
+          // tampilan, tampilkan perbedaannya dulu (jangan redirect diam-diam).
           const serverTotal =
             typeof json.amount === 'number' && Number.isFinite(json.amount)
               ? json.amount
@@ -596,12 +551,11 @@ export function CheckoutProvider({
               serverTotal,
               displayTotal: summary.total,
             });
-            // `submitting` sengaja tetap true: tombol bayar terkunci sampai
-            // user memutuskan lewat dialog konfirmasi.
+            // `submitting` tetap true: tombol bayar terkunci sampai user memutuskan lewat dialog.
             return;
           }
-          // `invoiceUrl` TIDAK dicatat: ia URL kapabilitas — siapa pun yang
-          // memegangnya dapat melihat/membayar invoice. orderCode cukup.
+          // `invoiceUrl` tidak dicatat: URL kapabilitas, siapa pun yang
+          // memegangnya dapat melihat/membayar invoice.
           window.location.href = json.invoiceUrl;
           return;
         }

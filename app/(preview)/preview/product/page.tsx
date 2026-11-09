@@ -9,10 +9,6 @@ export const metadata: Metadata = {
     'Pratinjau publik menu surplus dari UMKM pilihan di Depok — tanpa perlu masuk ke aplikasi ReBites.',
 };
 
-// Route detail produk showcase publik — tujuan semua kartu produk di landing
-// (/). Konten sama persis dengan /detail/product, tapi memakai shell publik:
-// navbar landing, link tetap di /preview/product, "Lihat Semua" kembali ke
-// katalog landing. Tidak ada UI akun sama sekali.
 export default function PreviewProductPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-secondary" />}>

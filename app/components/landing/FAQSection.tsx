@@ -86,7 +86,6 @@ export function FAQSection() {
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
-          {/* Kolom kiri */}
           <Reveal>
             <div className="lg:sticky lg:top-24">
               <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
@@ -142,7 +141,6 @@ export function FAQSection() {
             </div>
           </Reveal>
 
-          {/* Kolom kanan: accordion */}
           <Reveal delay={0.08}>
             <div className="border-t border-border">
               {FAQS.map((faq, index) => {

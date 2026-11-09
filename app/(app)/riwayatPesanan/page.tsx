@@ -11,8 +11,6 @@ export const metadata: Metadata = {
 };
 
 export default function OrderHistoryPage() {
-  // RequireAuth di luar shell: navbar, judul halaman, dan skeleton TIDAK
-  // ikut terlihat sebelum sesi valid (mencegah flash UI pra-redirect).
   return (
     <RequireAuth>
       <RiwayatSidebarShell>

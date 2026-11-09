@@ -30,7 +30,6 @@ const OPTIONS: {
   },
 ];
 
-// Ringkasan biaya per metode: angka dari summary (server-authoritative saat checkout).
 function feeLabel(value: number, hasValue: boolean): string {
   if (!hasValue) return 'Hitung saat pilih alamat';
   if (value <= 0) return 'Gratis';
@@ -40,16 +39,12 @@ function feeLabel(value: number, hasValue: boolean): string {
 export function FulfillmentToggle() {
   const { draft, fulfillment, setFulfillment, summary, selectedShippingOption } = useCheckout();
 
-  // hanya tampilkan metode yang didukung kapabilitas produk.
-  // Security boundary tetap di server (checkout menolak fulfillment invalid).
-  // Berat yang belum diisi tidak lagi menutup Diantar: server memakai berat
-  // perkiraan kategori dan pembeli melihat catatan bahwa ongkirnya perkiraan.
+  // Tampilkan hanya metode yang didukung produk; berat kosong tidak menutup Diantar.
   const visibleOptions = OPTIONS.filter((option) =>
     option.value === 'pickup' ? draft.isPickup : draft.isDelivery
   );
 
   // Ongkir hanya dianggap diketahui bila opsi pengiriman benar-benar terpilih.
-  // Tanpa pilihan = "Hitung saat pilih alamat", BUKAN Rp0 (tidak menyesatkan).
   const deliveryFeeKnown = fulfillment === 'delivery' && selectedShippingOption != null;
 
   const costFor = (mode: FulfillmentMode): string => {

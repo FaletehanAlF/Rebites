@@ -30,12 +30,6 @@ const CHANNELS = [
   },
 ] as const;
 
-/**
- * `/hubungi-kami` — dua kanal kontak di kiri, formulir Formspree di kanan.
- * Halaman ini adalah tujuan dari CTA "Hubungi Kami" di seluruh situs publik,
- * jadi ia memakai `PublicShell` (navbar + `<main>` + footer) seperti halaman
- * publik lainnya dan judul `h1` datang dari `PageIntro`.
- */
 export default function HubungiKamiPage() {
   return (
     <PublicShell>

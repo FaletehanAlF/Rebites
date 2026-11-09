@@ -39,7 +39,6 @@ export function StoreRatingCard() {
     load();
     const onReview = () => load();
     window.addEventListener(REVIEWS_UPDATED_EVENT, onReview);
-    // Polling ulasan dari pembeli lain juga terlihat tanpa reload
     const intervalId = setInterval(load, POLL_INTERVAL_MS);
     return () => {
       cancelled = true;

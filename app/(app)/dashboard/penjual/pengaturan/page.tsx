@@ -21,7 +21,7 @@ import {
   type DeviceLocationReason,
 } from "@/lib/device-location";
 
-// Peta dimuat hanya saat halaman pengaturan dirender (MapLibre berat).
+// MapLibre berat — dimuat saat halaman dirender.
 const LocationPickerMap = dynamic(
   () => import("@/app/components/shared/location-picker-map"),
   {
@@ -50,7 +50,6 @@ export default function PengaturanTokoPage() {
   // origin foundation (opsional, NULL untuk data legacy).
   const [postalCode, setPostalCode] = useState("");
   const [storePhone, setStorePhone] = useState("");
-  // koordinat toko (GPS/manual, opsional). Kosong = belum diketahui.
   const [storeLatInput, setStoreLatInput] = useState("");
   const [storeLngInput, setStoreLngInput] = useState("");
   const [gpsStatus, setGpsStatus] = useState<
@@ -61,8 +60,7 @@ export default function PengaturanTokoPage() {
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
 
-    // Nilai marker peta: difilter lewat helper yang sama dengan peta Tahap A,
-      // sehingga pasangan setengah/tidak sah tidak pernah menjadi marker.
+  // Nilai marker peta: difilter lewat helper yang sama dengan peta.
       const storePickerPoint = resolveFormCoordinates(
     storeLatInput,
     storeLngInput,
@@ -70,7 +68,6 @@ export default function PengaturanTokoPage() {
   );
       const storePickerLat = storePickerPoint?.latitude ?? null;
       const storePickerLng = storePickerPoint?.longitude ?? null;
-    // Koordinat saat halaman dimuat — untuk tombol "Kembalikan".
     const [savedPair, setSavedPair] = useState<{ lat: number | null; lng: number | null }>({
       lat: null,
       lng: null,
@@ -96,8 +93,7 @@ export default function PengaturanTokoPage() {
       setStoreLngInput(
         typeof settings?.longitude === "number" ? String(settings.longitude) : ""
       );
-      // Simpan koordinat tersimpan untuk tombol "Kembalikan". Membuka halaman
-      // ini TIDAK mengubah nilai apa pun.
+      // Simpan koordinat tersimpan untuk tombol "Kembalikan".
       setSavedPair({
         lat: typeof settings?.latitude === "number" ? settings.latitude : null,
         lng: typeof settings?.longitude === "number" ? settings.longitude : null,
@@ -107,7 +103,6 @@ export default function PengaturanTokoPage() {
       setLoading(false);
     };
     load();
-    // Sync jika ada update dari Topbar / tab lain (instant)
     const onStoreUpdated = () => {
       void load();
     };
@@ -166,7 +161,6 @@ export default function PengaturanTokoPage() {
       setError("Format jam operasional tidak valid. Contoh: 09.00–21.00");
       return;
     }
-    // kode pos opsional; jika diisi harus 5 digit. String kosong = NULL.
     const postalTrimmed = postalCode.trim();
     if (postalTrimmed !== '' && !/^[0-9]{5}$/.test(postalTrimmed)) {
       setError("Kode pos toko harus 5 digit angka (cth. 16424). Kosongkan jika belum tahu.");
@@ -178,8 +172,6 @@ export default function PengaturanTokoPage() {
       setError("Nomor telepon toko tidak valid (9–16 digit). Kosongkan jika belum ada.");
       return;
     }
-    // koordinat opsional — dua-duanya atau tidak sama sekali; tidak
-    // pernah menyimpan setengah pasangan atau nilai karangan.
     const coordinatePair = parseCoordinatePairInput(storeLatInput, storeLngInput);
     if (!coordinatePair.ok) {
       setError(coordinatePair.error);
@@ -232,7 +224,6 @@ export default function PengaturanTokoPage() {
       });
       if (!ok) throw new Error("Gagal menyimpan pengaturan toko.");
 
-      // UI sync: jangan hilangkan data setelah save, tetap tampil di form
       setImageUrl(finalImage);
       setOpenHours(trimmedOpenHours);
       setStoreName(storeName.trim());

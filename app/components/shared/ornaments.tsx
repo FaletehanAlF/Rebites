@@ -11,8 +11,6 @@ export function FloatingLeaf({ className, delay = 0, }: {
     className?: string;
     delay?: number;
 }) {
-    // Leaf statis (tanpa loop); dekorasi tetap hidup lewat reveal saat scroll,
-    // bukan animasi berulang. delay dipertahankan agar pemanggil lama tetap valid.
     void delay;
     return (<span aria-hidden className={cn('pointer-events-none absolute', className)}>
 

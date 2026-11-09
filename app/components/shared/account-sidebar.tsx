@@ -102,8 +102,6 @@ export function AccountSidebar({
   const { balance, totalEarned } = useRebitesCoins();
   const { avatarUrl } = useProfile();
   const { isSeller, loading: sellerStatusLoading } = useSellerStatus();
-  // Status kurir hanya diperiksa saat sidebar terbuka: user yang tidak
-  // pernah membuka sidebar tidak perlu memanggil endpoint ini.
   const { isCourier } = useIsCourier(open);
 
   return (

@@ -23,11 +23,8 @@ export interface LanyardMember {
 }
 
 export interface TeamLanyardRailLabels {
-  /** Hint under the name while a badge faces the front. */
   flip: string;
-  /** Hint under the name while a badge shows its back. */
   back: string;
-  /** Prefix of the carousel dots on narrow screens. */
   show: string;
 }
 
@@ -35,22 +32,15 @@ export interface TeamLanyardRailProps extends React.ComponentProps<"section"> {
   items: LanyardMember[];
   eyebrow?: string;
   heading?: string;
-  /** Shown under the rail while nobody is selected. */
   caption?: string;
-  /** Call to action rendered under the caption. */
   action?: React.ReactNode;
-  /** Turns the badges to the front and flips them one by one until the visitor interacts. */
   autoplay?: boolean;
-  /** Milliseconds a badge shows its back during autoplay. */
   interval?: number;
-  /** Badge facing the front (controlled). */
   active?: number | null;
   onActiveChange?: (index: number | null) => void;
-  /** Badge turned to its back (controlled). */
   flipped?: number | null;
   onFlippedChange?: (index: number | null) => void;
   labels?: TeamLanyardRailLabels;
-  /** Caps the badge width in px; everything scales from it. Defaults to 124. */
   maxBadgeWidth?: number;
 }
 

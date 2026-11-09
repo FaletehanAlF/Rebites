@@ -101,7 +101,6 @@ export function OrderSuccessView() {
           
         }
       } catch {
-        // Tidak ada session valid — biarkan retry RLS/direct di bawah.
       }
       return false;
     };
@@ -173,8 +172,6 @@ export function OrderSuccessView() {
     };
 
     fetchStatus();
-    // Interval polling tidak boleh lebih sering dari batas server
-    // (VERIFY_CHECK_WINDOW 15 dtk di lib/server/verify-throttle.ts).
     pollRef.current = setInterval(() => {
       elapsed += 15000;
       if (elapsed >= 180000 && pollRef.current) {

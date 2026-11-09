@@ -8,8 +8,7 @@ import { formatRupiah } from '@/lib/data';
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
-// On the near-black Max card the green ring would be low-contrast,
-// so the focus ring switches to orange with a matching dark offset.
+// Kartu Max gelap: ganti ring fokus ke hijau + offset gelap (kontras).
 const FOCUS_RING_MAX =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#245C43] focus-visible:ring-offset-2 focus-visible:ring-offset-[#202820]';
 

@@ -75,7 +75,6 @@ export function EditProductModal({
   product: SellerProduct | null;
   open: boolean;
   onClose: () => void;
-  // Buka "Edit lebih lanjut" langsung; dipakai arahan isi berat dari Menu Saya.
   initialShowAdvanced?: boolean;
 }) {
   const [name, setName] = useState('');
@@ -91,10 +90,8 @@ export function EditProductModal({
   const [isSurplusToday, setIsSurplusToday] = useState(true);
   const [scheduledStart, setScheduledStart] = useState<string | null>(null);
   const [scheduledEnd, setScheduledEnd] = useState<string | null>(null);
-  // kapabilitas fulfillment (DB NOT NULL, default true untuk legacy).
   const [isDelivery, setIsDelivery] = useState(true);
   const [isPickup, setIsPickup] = useState(true);
-  // package opsional sebagai teks mentah ('' = kosong = NULL).
   const [weightRaw, setWeightRaw] = useState('');
   const [lengthRaw, setLengthRaw] = useState('');
   const [widthRaw, setWidthRaw] = useState('');
@@ -117,13 +114,10 @@ export function EditProductModal({
     setEndTime(product.endTime || '17:00');
     setAllDay(product.allDay ?? false);
     setIsSurplusToday(product.isSurplusToday);
-    // State selalu berupa tanggal (YYYY-MM-DD) untuk <input type="date">.
-    // Konversi ke awal/akhir hari WIB dilakukan saat menyimpan.
     setScheduledStart(product.scheduledStart ? toScheduleDateInput(product.scheduledStart) : null);
     setScheduledEnd(product.scheduledEnd ? toScheduleDateInput(product.scheduledEnd) : null);
     setIsDelivery(product.isDelivery ?? true);
     setIsPickup(product.isPickup ?? true);
-    // produk lama tanpa package (NULL) tampil sebagai kosong.
     setWeightRaw(product.weightGram != null ? String(product.weightGram) : '');
     setLengthRaw(product.lengthCm != null ? String(product.lengthCm) : '');
     setWidthRaw(product.widthCm != null ? String(product.widthCm) : '');
@@ -186,10 +180,6 @@ export function EditProductModal({
       setError('Berat dan dimensi harus berupa angka positif. Kosongkan jika belum tahu.');
       return;
     }
-    // Berat TIDAK wajib: server memakai berat bawaan kategori bila kosong
-    // (lib/package-weight.ts), dan pembeli diberi tahu bahwa ongkirnya
-    // perkiraan. Kewajiban lama ini memblokir 44 dari 50 produk yang belum
-    // punya berat sehingga penjual tidak bisa menyimpan perubahan apa pun.
     if (!isScheduleRangeValid(scheduledStart, scheduledEnd)) {
       setError('Tanggal selesai tidak boleh mendahului tanggal mulai.');
       return;

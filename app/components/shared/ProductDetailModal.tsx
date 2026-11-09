@@ -104,7 +104,6 @@ export function ProductDetailModal({
   const savings = product.originalPrice - product.discountedPrice;
   const savingsPercent = Math.round((savings / product.originalPrice) * 100);
   const primaryImage = product.images[0];
-  // Sumber kebenaran stok adalah angka (<= 0 berarti habis).
   const isOutOfStock = product.stockRemaining <= 0;
   const lowStock = product.stockRemaining <= 3;
 

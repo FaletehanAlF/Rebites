@@ -22,13 +22,11 @@ export function FoodCard({
 }: {
   item: FoodItem & { stock?: number | null };
   onViewDetail?: (id: string) => void;
-  /** Dipakai Detail Toko: paksa kartu jadi tidak tersedia (stok habis / jam jual habis). */
+  // Dipakai Detail Toko: paksa kartu tidak tersedia (stok/jam habis).
   forceUnavailable?: boolean;
 }) {
   const { isLiked, toggle } = useLikedFoods();
   const liked = isLiked(item.id);
-  // Sumber kebenaran stok adalah angka; teks label hanya fallback bila angka
-  // tidak tersedia (mis. item flash-sale/urgent tanpa field stok).
   const numericStock =
     typeof item.stock === "number" && Number.isFinite(item.stock)
       ? item.stock
@@ -59,9 +57,6 @@ export function FoodCard({
       );
       return;
     }
-    // Pemanggil yang masih memakai popup bisa mengoper `onViewDetail`.
-    // Tanpa itu, kartu langsung membuka HALAMAN detail — bukan modal — sesuai
-    // alur katalog. `rawId` (uuid) dipakai bila ada; `id` bisa berupa slug.
     if (onViewDetail) {
       onViewDetail(item.id);
       return;

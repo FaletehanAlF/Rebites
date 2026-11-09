@@ -12,7 +12,6 @@ import { resolveFormCoordinates } from '@/lib/delivery-map-plan';
 import { requestDeviceLocation, type DeviceLocationReason } from '@/lib/device-location';
 import { useCheckoutOptional } from './checkout-context';
 
-// Peta dimuat hanya saat form alamat terbuka (MapLibre berat).
 const LocationPickerMap = dynamic(
   () => import('@/app/components/shared/location-picker-map'),
   {
@@ -38,7 +37,6 @@ const DEPOK_DISTRICTS = [
 const INPUT_CLASS =
   'w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 
-// Tampilkan koordinat tersimpan sebagai teks input; kosong = belum ada.
 function coordinateToInput(value: number | null | undefined): string {
     return typeof value === 'number' && Number.isFinite(value) ? String(value) : '';
 }

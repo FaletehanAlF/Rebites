@@ -13,9 +13,7 @@ export function RelatedProducts({
   seeAllHref,
 }: {
   products: RelatedProduct[];
-  /** Route halaman detail produk dalam konteks saat ini. */
   productPath: string;
-  /** Target "Lihat Semua": beranda aplikasi atau katalog landing. */
   seeAllHref: string;
 }) {
   return (

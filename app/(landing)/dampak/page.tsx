@@ -54,17 +54,12 @@ const CHAIN = [
   },
 ];
 
-/**
- * `/dampak` — disengaja lebih naratif daripada `/fitur`: satu cerita,
- * tiga hasil yang saling terkait, lalu rantai pendek yang membentuknya.
- * Tidak ada angka kumulatif di halaman ini karena aplikasi belum
- * menyimpan data dampak yang bisa diverifikasi.
- */
+// Tidak ada angka kumulatif: aplikasi belum menyimpan data dampak yang
+// bisa diverifikasi.
 export default function DampakPage() {
   return (
     <PublicShell>
 
-      {/* Narasi */}
       <section
         id="narrasi"
         aria-labelledby="narrative-heading"
@@ -94,7 +89,6 @@ export default function DampakPage() {
         </div>
       </section>
 
-      {/* Tiga hasil */}
       <section
         id="hasil"
         aria-labelledby="outcomes-heading"
@@ -138,7 +132,6 @@ export default function DampakPage() {
         </div>
       </section>
 
-      {/* Rantai */}
       <section
         id="rantai"
         aria-labelledby="chain-heading"

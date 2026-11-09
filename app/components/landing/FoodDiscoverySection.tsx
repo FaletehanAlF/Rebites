@@ -36,7 +36,6 @@ function getRandomItems(
   const source = available.length >= count ? available : pool;
   const shuffled = [...source];
 
-  // Fisher-Yates shuffle
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -55,7 +54,6 @@ export function FoodDiscoverySection() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
 
-  // Fetch featured products
   useEffect(() => {
     let active = true;
 
@@ -78,7 +76,6 @@ export function FoodDiscoverySection() {
     };
   }, []);
 
-  // GSAP horizontal scroll animation
   useLayoutEffect(() => {
     const pin = pinRef.current;
     const viewport = viewportRef.current;
@@ -125,7 +122,6 @@ export function FoodDiscoverySection() {
     };
   }, [isLoading, displayedItems.length]);
 
-  // Shuffle products without immediately repeating current items
   const handleShuffle = () => {
     if (allProducts.length === 0) return;
 

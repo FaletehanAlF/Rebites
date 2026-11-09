@@ -48,7 +48,6 @@ export function PickupInfoCard() {
                 <p className="mt-0.5 flex items-start gap-1 text-sm leading-relaxed text-muted-foreground">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   {draft.pickupLocation}
-                  {/* tampilkan jarak hanya jika angka nyata; NULL disembunyikan. */}
                   {typeof draft.distanceKm === 'number' && (
                     <> · {draft.distanceKm} km</>
                   )}

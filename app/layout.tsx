@@ -5,9 +5,8 @@ import { ChatbotMount } from '@/app/components/chatbot/chatbot-mount';
 import { VisitorTracker } from '@/app/components/analytics/visitor-tracker';
 import { Toaster } from '@/app/components/ui/toaster';
 
-// Dua font seluruh produk: `--font-sans` utama, `--font-secondary` pendukung.
-// Semua weight yang dideklarasikan dipakai kelas utility yang ada.
-// `preload` false: next/font memuat semua face, jadi lebih hemat bila dimuat saat diperlukan.
+// Font utama + pendukung. preload false: next/font muat semua face,
+// hemat bila dimuat saat diperlukan.
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-sans',

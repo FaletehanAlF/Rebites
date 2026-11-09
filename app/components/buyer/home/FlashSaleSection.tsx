@@ -320,8 +320,6 @@ function UrgentCard({ item, startsAtIso, endsAtIso, onViewDetail, }: {
 
     </article>);
 }
-// Flash sale per slot waktu. Latar hijau solid jadi satu-satunya blok warna
-// pekat di beranda, agar bagian lain bisa memakai permukaan putih yang tenang.
 export function FlashSaleSection({
   onViewDetail,
 }: {

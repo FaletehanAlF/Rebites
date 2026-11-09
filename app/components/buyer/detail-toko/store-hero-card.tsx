@@ -60,9 +60,6 @@ export function StoreHeroCard({ vendor, openNow }: StoreHeroCardProps) {
     if (!ok) setFollowing(!next);
   };
 
-  // Store settings = override asinkron vendor props. Nilai display diturunkan
-  // langsung agar props `vendor` baru tampil di render berikutnya, bukan satu
-  // render terlambat (sebelumnya memakai mirror useState + effect sinkron).
   const [settings, setSettings] = useState<StoreSettingsOverride | null>(null);
 
   const storeName = settings?.storeName || vendor.name;
@@ -213,7 +210,7 @@ export function StoreHeroCard({ vendor, openNow }: StoreHeroCardProps) {
             </p>
 
             {(() => {
-              // Info trust dari database; hanya tampilkan field yang punya nilai.
+              // Info trust dari database.
               const stats: string[] = [];
               if (vendor.memberSince != null) stats.push(`Mitra sejak ${vendor.memberSince}`);
               if (vendor.responseTime) stats.push(`Respons ${vendor.responseTime}`);

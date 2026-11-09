@@ -19,7 +19,6 @@ export function StickyMobileBar({
 }) {
   const [visible, setVisible] = useState(false);
   const reduce = useReducedMotion();
-  // Sumber kebenaran stok adalah angka; tombol pesan disabled saat habis.
   const isOutOfStock = product.stockRemaining <= 0;
 
   useEffect(() => {

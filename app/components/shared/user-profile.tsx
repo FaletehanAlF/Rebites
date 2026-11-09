@@ -962,20 +962,14 @@ export function UserProfile() {
     };
   }, [userId]);
 
-  // Tautan akun memakai hash (mis. #sukai-makanan) karena section terkait
-  // berupa dialog. Buka dialog yang sesuai saat halaman dimuat / hash berubah.
   useEffect(() => {
     const syncHash = () => {
       const hash = window.location.hash.replace(/^#/, "");
       if (hash === "sukai-makanan") {
         router.push("/sukai");
       } else if (hash === "toko-diikuti") {
-        // Daftar toko yang diikuti kini punya halaman khusus: deep-link
-        // hash lama dialihkan ke sana tanpa duplikasi dialog.
         router.replace("/toko-diikuti");
       } else if (hash) {
-        // Section biasa (#rebites-coin, #alamat) digulir manual supaya
-        // deep-link dari sidebar tetap bekerja setelah halaman ter-render.
         document.getElementById(hash)?.scrollIntoView({ block: "start" });
       }
     };

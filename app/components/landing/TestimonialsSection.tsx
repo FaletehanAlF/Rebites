@@ -5,13 +5,6 @@ import { Reveal } from '@/app/components/shared/reveal';
 import { SectionHeading } from '@/app/components/landing/SectionHeading';
 import { TESTIMONIALS } from '@/app/components/landing/testimonials';
 
-/**
- * Ulasan pengguna di halaman landing.
- *
- * Data masih berupa demo dan belum merupakan ulasan pelanggan
- * yang dapat diverifikasi. Ketika data riil tersedia, cukup
- * ganti isi dataset testimonials.ts.
- */
 export function TestimonialsSection() {
   return (
     <section

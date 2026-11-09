@@ -112,14 +112,12 @@ export function LandingFooter() {
 
   return (
     <footer className="relative overflow-hidden bg-white text-foreground border-t border-border/40">
-      {/* Background Decorative Elements (+, x, o, diamond, dots) */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 select-none overflow-hidden"
       >
 
 
-        {/* Diamond / Square Element (Inline SVG) */}
         <svg
           className="absolute bottom-12 right-[5%] h-5 w-5 text-foreground/15 rotate-12"
           viewBox="0 0 24 24"
@@ -130,7 +128,6 @@ export function LandingFooter() {
           <rect x="3" y="3" width="18" height="18" rx="2" />
         </svg>
 
-        {/* Subtle Grid Dot Pattern Canvas */}
         <div
           className="absolute inset-0 opacity-[0.035]"
           style={{
@@ -139,16 +136,13 @@ export function LandingFooter() {
           }}
         />
 
-        {/* Big Watermark Brand Typography */}
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[14vw] font-extrabold uppercase leading-none tracking-tighter text-foreground/[0.02] sm:-bottom-10 lg:-bottom-14">
           ReBites.
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-8 pt-16 sm:px-8 lg:px-10">
         <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))] lg:gap-x-8">
-          {/* Brand */}
           <div className="col-span-2 max-w-sm md:col-span-1">
             <Link
               href="/"
@@ -196,7 +190,6 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Menu groups */}
           {columns.map((column) => (
             <nav key={column.title} aria-label={column.title}>
               <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-foreground/90">
@@ -224,7 +217,6 @@ export function LandingFooter() {
           ))}
         </div>
 
-        {/* Bottom row */}
         <div className="mt-14 flex flex-col gap-4 border-t border-border/40 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[12px] text-muted-foreground">
             © {new Date().getFullYear()} ReBites. Dibuat dengan penuh kepedulian oleh{' '}

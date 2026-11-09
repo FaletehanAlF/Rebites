@@ -10,8 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default function BuyerNotificationPage() {
-  // RequireAuth di luar shell: navbar, judul halaman, dan skeleton TIDAK
-  // ikut terlihat sebelum sesi valid (mencegah flash UI pra-redirect).
   return (
     <RequireAuth>
       <NotificationSidebarShell>

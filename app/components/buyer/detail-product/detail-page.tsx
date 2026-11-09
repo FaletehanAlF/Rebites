@@ -14,18 +14,10 @@ import { RelatedProducts } from "./related-products";
 import { StickyMobileBar } from "./sticky-mobile-bar";
 import type { ProductDetail, RelatedProduct, Review, } from "@/app/components/buyer/detail-product/data";
 import { EASE } from "./anim";
-// Shell detail produk. Route menyediakannya: /detail/product (aplikasi)
-// memakai UI akun, /preview/product (showcase publik) memakai navbar landing.
-// Shell di-inject, tidak diinfer dari pathname, agar showcase publik tidak
-// pernah mewarisi UI akun.
 export interface DetailProductShell {
-  /** Chrome tetap di atas konten produk. */
   header?: ReactNode;
-  /** Bungkus halaman dengan BuyerShell; hanya diaktifkan route aplikasi. */
   buyerShell?: boolean;
-  /** Route untuk membuka produk lain dalam konteks sama. */
   productPath: string;
-  /** Target link "Lihat Semua" produk terkait. */
   seeAllHref: string;
 }
 export default function DetailPage({ product, reviews, relatedProducts, shell, }: {

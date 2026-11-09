@@ -13,8 +13,6 @@ import type {
 import { fetchProductDetail, fetchRelatedProducts } from "./detail-data";
 import { getProductReviews } from "@/lib/review-storage";
 
-// Ambil satu produk + ulasan + produk terkait, lalu render di dalam shell
-// yang disediakan route pemanggil.
 export function DetailProductContent({
   shell,
 }: {

@@ -56,12 +56,6 @@ const SELLER_POINTS = [
   'Pantau pesanan dan performa penjualan',
 ];
 
-/**
- * Halaman `/tentang-kami`: alur baca dari visi & misi, masalah yang
- * dihadapi, cara ReBites meresponsnya, manfaat untuk tiap pihak,
- * dan akhirnya tim di balik proyek — diintegrasikan lewat
- * `TeamLanyardRail` (fisika spring, flip-card, QR).
- */
 export default function TentangKamiPage() {
   return (
     <PublicShell>
@@ -70,7 +64,7 @@ export default function TentangKamiPage() {
         lead="ReBites lahir dari satu pertanyaan sederhana: apa yang terjadi pada makanan yang masih layak tetapi tidak terjual?"
       />
 
-      {/* Visi & Misi — anchor target dari navbar */}
+      {/* Visi & Misi */}
       <section
         id="visi-misi"
         aria-labelledby="visi-misi-heading"
@@ -84,7 +78,6 @@ export default function TentangKamiPage() {
           />
 
           <div className="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-2 lg:gap-14">
-            {/* Visi */}
             <Reveal>
               <div className="relative">
                 <Eye className="h-5 w-5 text-primary" aria-hidden />
@@ -102,7 +95,6 @@ export default function TentangKamiPage() {
               </div>
             </Reveal>
 
-            {/* Misi */}
             <Reveal delay={0.06}>
               <div className="relative">
                 <ListChecks className="h-5 w-5 text-primary" aria-hidden />
@@ -131,7 +123,6 @@ export default function TentangKamiPage() {
         </div>
       </section>
 
-      {/* Masalah */}
       <section aria-labelledby="problem-heading" className="bg-white">
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <SectionHeading
@@ -162,7 +153,6 @@ export default function TentangKamiPage() {
         </div>
       </section>
 
-      {/* Pendekatan */}
       <section aria-labelledby="approach-heading" className="border-t border-border bg-white">
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <SectionHeading
@@ -209,7 +199,6 @@ export default function TentangKamiPage() {
         </div>
       </section>
 
-      {/* Manfaat */}
       <section aria-labelledby="value-heading" className="bg-white">
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <SectionHeading
@@ -316,7 +305,6 @@ export default function TentangKamiPage() {
         </div>
       </section>
 
-      {/* Tim di balik ReBites — anchor target dari navbar */}
       <section
         id="tim-leadership"
         aria-labelledby="team-heading"

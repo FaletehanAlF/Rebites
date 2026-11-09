@@ -1,11 +1,5 @@
 import type { ReactNode } from 'react';
 
-/**
- * Pembuka setiap halaman konten publik (`/tentang-kami`, `/fitur`,
- * `/dampak`, `/hubungi-kami`): judul `h1` rata tengah di atas latar putih,
- * tanpa eyebrow, tanpa panel, tanpa dekorasi — spacing-lah yang memberi
- * ruang sebelum konten halaman dimulai.
- */
 export function PageIntro({
   title,
   lead,

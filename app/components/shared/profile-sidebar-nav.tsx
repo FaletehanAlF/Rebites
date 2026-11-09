@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
 import { useSellerStatus } from "@/hooks/seller/use-seller-status";
-// Lebar sidebar pembeli = satu-satunya sumber kebenaran. Topbar dan konten
-// memakai offset konstanta ini agar tidak ada margin ganda / celah piksel.
+// Lebar sidebar pembeli = satu-satunya sumber kebenaran; topbar dan konten
+// memakai offset ini agar tidak ada margin ganda.
 import { useIsCourier } from "@/hooks/use-is-courier";
 import { IconTooltip } from "./icon-tooltip";
 export const BUYER_SIDEBAR_WIDTH_CLASS = {

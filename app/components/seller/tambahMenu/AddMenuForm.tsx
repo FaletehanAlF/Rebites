@@ -114,9 +114,6 @@ export function AddMenuForm() {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       return;
     }
-    // Berat opsional: bila kosong, ongkir memakai berat bawaan kategori
-    // (lib/package-weight.ts). Memaksanya di sini membuat penjual tidak bisa
-    // menambahkan menu yang beratnya belum diketahui.
     if (!isScheduleRangeValid(form.scheduledStart, form.scheduledEnd)) {
       setSaveError('Tanggal selesai tidak boleh mendahului tanggal mulai.');
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });

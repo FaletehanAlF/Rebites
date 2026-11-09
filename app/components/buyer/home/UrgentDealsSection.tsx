@@ -8,7 +8,7 @@ import { FoodCardSkeleton } from "@/app/components/shared/FoodCardSkeleton";
 import { cn } from "@/lib/utils";
 const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const ITEMS_PER_PAGE = 4;
-// Grid rekomendasi dengan pagination; pencarian lengkap di halaman /makanan.
+
 export function UrgentDealsSection({ onViewDetail, }: {
     onViewDetail?: (id: string) => void;
     from?: "landing" | "home";

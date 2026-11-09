@@ -15,7 +15,6 @@ export const PRIMARY_NAV: NavItem[] = [
 
 export function isCurrentPath(pathname: string, href: string): boolean {
   if (href === '/') return pathname === '/';
-  // Untuk anchor dalam halaman yang sama, gunakan hanya slug-nya.
   const slug = href.split('#')[0] || href;
   return pathname === slug || pathname.startsWith(`${slug}/`);
 }

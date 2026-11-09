@@ -61,9 +61,6 @@ const SWEEP_INTERVAL_MS = 5_000;
 function useVendorOrders() {
   const [orders, setOrders] = useState<StoredOrder[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  // Toko punya titik lokasi (khususnya latitude) sehingga kurir bisa ditugaskan
-  // otomatis. Ditampilkan sebelum penjual menekan tombol, bukan setelah pesanan
-  // tertahan tanpa kurir.
   const [storeHasPoint, setStoreHasPoint] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -88,8 +85,6 @@ function useVendorOrders() {
         );
       })
       .catch(() => {
-        // Gagal membaca pengaturan toko bukan alasan memblokir pilihan;
-        // penjual tetap melihat tombol antarnya.
         if (!cancelled) setStoreHasPoint(false);
       });
     return () => {
@@ -166,9 +161,7 @@ function OrderRow({
   onStatusChange,
 }: {
   order: StoredOrder;
-  /** Toko punya titik lokasi, jadi kurir bisa ditugaskan otomatis. */
   storeHasPoint: boolean;
-  /** Tiba di halaman lewat filter "Butuh Aksi": sorot kartunya sekali. */
   highlightWaiting?: boolean;
   onStatusChange?: (orderId: string) => void;
 }) {
@@ -176,16 +169,10 @@ function OrderRow({
   const [chatOpen, setChatOpen] = useState(false);
   const isOngoing = order.status === 'ongoing';
 
-  // Fase operacional berasal dari SATU sumber (lib/order-status-source.ts).
-  // Sebelumnya syarat tombol memakai `!order.progressStatus`, dan
-  // progress_status selalu berisi 'disiapkan' dari checkout — sehingga
-  // tombol "Mulai Siapkan Pesanan" tidak pernah muncul dan UI jatuh ke
-  // tombol cadangan yang mencoba `paid -> out_for_delivery`, transisi yang
-  // ditolak trigger database.
+  // Fase operasional dari satu sumber (lib/order-status-source.ts).
   const phase = resolveOrderPhase(order);
 
-  // Pesanan pengiriman langsung lanjut ke tahap antar setelah penyiapan selesai
-  // — hanya bila toko punya titik lokasi (kurir tidak ditugaskan tanpa koordinat).
+  // Kurir otomatis ditugaskan bila toko punya titik lokasi.
   const canAutoDispatch =
     storeHasPoint && phase === 'processing' && order.fulfillment === 'delivery';
 
@@ -197,16 +184,13 @@ function OrderRow({
       )
     : null;
 
-  // Tenggat penyiapan dari estimated_completion_at server.
-  // Jam diperbarui tiap 30 detik, cukup untuk teks "Siap dalam N menit".
+  // Tenggat penyiapan dari server; update tiap 30 detik.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!isOngoing) return;
     const id = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(id);
   }, [isOngoing]);
-  // Pesanan belum dibayar tidak diberi hitung mundur: jam persiapan baru
-  // mulai setelah pembayaran diterima.
   const prep =
     isOngoing && phase !== 'pending'
       ? formatPrepRemaining(order.estimatedCompletionAt, now)
@@ -231,20 +215,9 @@ function OrderRow({
     }
   };
 
-  // Menunggu tindakan penjual (lihat `needsSellerAction`). Kartunya diberi
-  // garis merah supaya pesanan yang butuh diketuk tidak hilang di antara
-  // pesanan lain di tab "Semua".
   const waitingForSeller = isOngoing && needsSellerAction(phase);
 
-  /**
-   * Alat kurir hanya muncul saat pesanan BENAR-BENAR sedang diantar.
-   *
-   * Selama penyiapan (paid/processing) belum ada kurir yang ditugaskan —
-   * trigger penugasan berjalan saat status berpindah ke out_for_delivery —
-   * sehingga panel "Kurir belum mengirim posisi" dan tombol Chat Kurir pada
-   * tahap itu hanya membingungkan penjual: tampak seperti ada urusan kurir
-   * yang harus dia konfirmasi padahal dia hanya sedang memasak.
-   */
+  // Tool kurir hanya muncul saat status = out_for_delivery.
   const courierToolsActive =
     order.fulfillment === 'delivery' && phase === 'out_for_delivery';
   const { location: courierLocation, freshness: courierFreshness } = useCourierLocation(order.dbId, courierToolsActive);
@@ -463,8 +436,6 @@ export default function PesananMasukPage() {
   const [tab, setTab] = useState<OrderTab>('berlangsung');
   const [storeName, setStoreName] = useState('');
 
-  // Pesanan berlangsung yang menunggu penjual (belum dibayar tidak dihitung).
-  // Angka ini ditampilkan di tab dan judul agar penjual tahu ada berapa yang perlu diketuk.
   const waitingOrders = useMemo(
     () => ongoing.filter((order) => needsSellerAction(resolveOrderPhase(order))),
     [ongoing]

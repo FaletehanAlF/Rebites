@@ -19,7 +19,6 @@ const UMKM_IMAGE = "/terselamatan.avif";
 const SIDE_LINK =
   "inline-flex w-fit items-center gap-1.5 rounded-full font-sans text-[13px] font-semibold text-primary transition-colors duration-150 hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
-/** Varian animasi masuk hero (kontainer bertahap + per kartu). */
 const container: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
@@ -34,16 +33,11 @@ const item: Variants = {
   },
 };
 
-// Hero beranda pembeli: satu panel utama (foto + CTA) dan dua kartu pintasan
-// ke flash sale serta daftar toko. Kartu samping sengaja bukan foto overlay —
-// teks di atas foto sulit dibaca dan foto tambahan membebani muat awal.
 export function Hero() {
   const router = useRouter();
   const { userId } = useCurrentUser();
   const [hasStore, setHasStore] = useState(false);
 
-  // Sapaan dihitung setelah mount, bukan saat render server: jam mengikuti
-  // perangkat pengguna. Tanpa timer — cukup akurat saat halaman dibuka.
   const [greeting, setGreeting] = useState("Selamat datang");
   useEffect(() => {
     const hour = new Date().getHours();
@@ -101,15 +95,9 @@ export function Hero() {
               priority
             />
           </div>
-          {/* Scrim warna solid (bukan gradient) agar teks tetap terbaca. */}
           <div aria-hidden className="absolute inset-0 bg-primary/85" />
 
           <div className="relative flex h-full flex-col justify-between gap-6 p-6 sm:p-10 lg:p-14">
-            {/*
-              Header beranda: sapaan singkat + tautan kontekstual. Diletakkan di
-              dalam panel hero (bukan baris terpisah) agar tidak ada blok judul
-              besar yang mendorong konten penting ke bawah lipatan.
-            */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 font-secondary text-[11px] font-semibold text-white/90">
                 <span className="h-1.5 w-1.5 rounded-full bg-white/80" aria-hidden />

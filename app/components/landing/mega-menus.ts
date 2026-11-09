@@ -1,13 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import { Eye, ShoppingBag, Store, Users } from 'lucide-react';
 
-/**
- * Konfigurasi mega-menu navbar publik.
- *
- * Setiap item menunjuk ke tujuan nyata — halaman, section id, atau
- * `/tentang-kami#anchor` yang memang ada di markup — jadi tidak ada
- * navigasi rusak yang bisa muncul dari menu.
- */
 export interface MegaMenuLink {
   label: string;
   href: string;
@@ -16,22 +9,13 @@ export interface MegaMenuLink {
 }
 
 export interface MegaMenuGroup {
-  /** Kunci stabil untuk state open + panel id */
   id: string;
-  /** Label pada pemicu navbar */
   triggerLabel: string;
-  /** Label panel untuk `aria-labelledby` */
   panelTitle: string;
-  /** Judul grup opsional (di atas baris item) */
   groupLabel?: string;
   items: MegaMenuLink[];
 }
 
-/**
- * Panel desktop di navbar publik. Hanya untuk halaman yang section-nya
- * benar-benar ada — `fitur` memakai dua section (`#pembeli`, `#umkm`),
- * `dampak` memakai tiga, dan `tentang-kami` memakai dua anchor.
- */
 export const MEGA_MENUS: MegaMenuGroup[] = [
   {
     id: 'tentang-kami',

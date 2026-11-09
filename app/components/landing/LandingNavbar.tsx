@@ -84,7 +84,6 @@ export function LandingNavbar() {
 
       clearHoverTimeout();
 
-      // Beri waktu pointer berpindah dari trigger ke panel.
       hoverTimeoutRef.current = setTimeout(() => {
         setOpenGroup(null);
         hoverTimeoutRef.current = null;
@@ -102,14 +101,12 @@ export function LandingNavbar() {
     [clearHoverTimeout],
   );
 
-  // Reset menu saat berpindah halaman.
   useEffect(() => {
     closeMegaMenu();
     setOpen(false);
     setOpenMobileGroup(null);
   }, [pathname, closeMegaMenu]);
 
-  // Escape dan resize.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -137,7 +134,6 @@ export function LandingNavbar() {
     };
   }, [closeMegaMenu]);
 
-  // Klik di luar navbar menutup mega-menu.
   useEffect(() => {
     if (!openGroup) return;
 
@@ -158,7 +154,6 @@ export function LandingNavbar() {
     };
   }, [openGroup, closeMegaMenu]);
 
-  // Bersihkan timer ketika komponen dilepas.
   useEffect(() => {
     return () => clearHoverTimeout();
   }, [clearHoverTimeout]);
@@ -168,7 +163,6 @@ export function LandingNavbar() {
       <div className="border-b border-border bg-white">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:h-[72px] sm:px-6 lg:grid lg:grid-cols-[auto_1fr_auto] lg:gap-4 lg:px-8">
 
-          {/* Logo */}
           <Link
             href="/"
             aria-label="ReBites — beranda"
@@ -188,7 +182,6 @@ export function LandingNavbar() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav aria-label="Navigasi utama" className="hidden lg:block">
             <ul className="flex items-center justify-center gap-3">
               {PRIMARY_NAV.map((item) => {
@@ -204,12 +197,6 @@ export function LandingNavbar() {
                   <li key={item.href} className="relative">
 
                     {menu ? (
-                      /*
-                       * PENTING:
-                       * Trigger dan dropdown berada dalam satu wrapper.
-                       * Pointer tidak dianggap meninggalkan area saat
-                       * bergerak dari tombol menuju dropdown.
-                       */
                       <div
                         className="relative"
                         onPointerEnter={(event) =>
@@ -218,7 +205,6 @@ export function LandingNavbar() {
                         onPointerLeave={onTriggerLeave}
                         onFocus={() => openMegaMenu(menu.id)}
                       >
-                        {/* Trigger */}
                         <button
                           type="button"
                           onClick={() => onToggleGroup(menu.id)}
@@ -244,7 +230,6 @@ export function LandingNavbar() {
                           />
                         </button>
 
-                        {/* Mega Menu */}
                         <AnimatePresence>
                           {isGroupOpen && (
                             <motion.div
@@ -342,7 +327,6 @@ export function LandingNavbar() {
             </ul>
           </nav>
 
-          {/* Desktop Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/auth/login"
@@ -378,7 +362,6 @@ export function LandingNavbar() {
               />
             </Link>
 
-            {/* Mobile Toggle */}
             <button
               type="button"
               onClick={() => setOpen((value) => !value)}
@@ -402,7 +385,6 @@ export function LandingNavbar() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       <div className="px-4 sm:px-6 lg:hidden">
         {open && (
           <div
@@ -510,7 +492,6 @@ export function LandingNavbar() {
                   );
                 })}
 
-                {/* Anchor halaman Tentang Kami */}
                 {pathname.startsWith('/tentang-kami') && (
                   <li className="mt-1 border-t border-border pt-2">
                     <div className="flex flex-wrap gap-4 px-4 py-2 text-xs text-muted-foreground/80">
@@ -528,7 +509,6 @@ export function LandingNavbar() {
                 )}
               </ul>
 
-              {/* Mobile Actions */}
               <div className="mt-2 flex flex-col gap-2 border-t border-border pt-3">
                 <Link
                   href="/auth/login"

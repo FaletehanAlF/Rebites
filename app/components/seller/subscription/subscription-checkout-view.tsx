@@ -336,7 +336,6 @@ export function SubscriptionCheckoutView() {
     });
   }, []);
 
-  // Auth check effect - must be at top level
   useEffect(() => {
     if (!authLoading) {
       setAuthChecked(true);
@@ -352,7 +351,6 @@ export function SubscriptionCheckoutView() {
     }
   }, [user, authLoading, router]);
 
-  // Early returns after all hooks
   if (authLoading || !authChecked) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-border bg-white px-6 py-14 text-center">
@@ -363,7 +361,7 @@ export function SubscriptionCheckoutView() {
   }
 
   if (!user) {
-    return null; // Will redirect via useEffect
+    return null;
   }
 
   if (!initialPlan) {

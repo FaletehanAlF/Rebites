@@ -94,7 +94,6 @@ export default function UlasanPage() {
     load();
     const onUpdate = () => load();
     window.addEventListener(REVIEWS_UPDATED_EVENT, onUpdate);
-    // Polling  ulasan dari pembeli lain juga terlihat tanpa reload
     const intervalId = setInterval(load, POLL_INTERVAL_MS);
     return () => {
       window.removeEventListener(REVIEWS_UPDATED_EVENT, onUpdate);

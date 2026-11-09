@@ -75,9 +75,6 @@ function ProductLimitMeter({ products }: { products: SellerProduct[] }) {
   const percent = isUnlimited ? 100 : Math.min(100, (count / max) * 100);
   const isFull = !isUnlimited && count >= max;
 
-  // Satu garis tipis, bukan kotak abu di dalam kartu: kuota adalah keterangan
-  // tambahan, bukan bagian yang bisa diklik, jadi tidak perlu bingkainya
-  // sendiri.
   return (
     <div className="mt-5 rounded-2xl bg-secondary p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -350,8 +347,6 @@ function FlashSalePanel({
   const cfg = product.flashSale ?? null;
   const status = resolveFlashSaleStatus(product);
   const [editing, setEditing] = useState(false);
-  // Ringkas secara default: detail harga/slot/tanggal dilipat agar kartu tidak
-  // memanjang. Pembeli melihat statusnya; penjual membuka detail bila perlu.
   const [showDetails, setShowDetails] = useState(false);
   const [error, setError] = useState('');
   const [price, setPrice] = useState('');
@@ -1050,7 +1045,6 @@ function MenuCard({
   );
 }
 
-// Ringkasan Flash Sale: satu baris dalam kartu daftar menu.
 function FlashSaleSummaryRow({
   plan,
   quota,

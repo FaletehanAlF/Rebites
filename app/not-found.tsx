@@ -18,7 +18,6 @@ export default function NotFound() {
       <div className="flex flex-1 items-center justify-center px-5 py-16">
         <section className="mx-auto flex w-full max-w-xl flex-col items-center text-center">
 
-          {/* Illustration */}
           <div className="mb-1 w-full max-w-[300px] sm:max-w-[340px]">
             <LottieIllustration
               src="/lottie_animation/not-found.json"
@@ -26,19 +25,16 @@ export default function NotFound() {
             />
           </div>
 
-          {/* Heading */}
           <h1 className="font-display text-2xl font-semibold tracking-tight text-charcoal-900 sm:text-3xl">
             Waduh, halaman tidak ditemukan!
           </h1>
 
-          {/* Description */}
           <p className="mt-3 max-w-md text-sm leading-7 text-stone sm:text-base">
             Sepertinya halaman yang kamu cari tidak tersedia,
             sudah dipindahkan, atau alamatnya kurang tepat.
             Tenang, masih banyak makanan enak di ReBites.
           </p>
 
-          {/* Actions */}
           <div className="mt-8 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
             <Button asChild size="lg" className="w-full sm:w-auto">
               <Link href="/home">
@@ -60,7 +56,6 @@ export default function NotFound() {
             </Button>
           </div>
 
-          {/* Footer */}
           <p className="mt-12 text-xs text-stone">
             ReBites — Selamatkan makanan, nikmati kebaikan.
           </p>

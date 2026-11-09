@@ -4,7 +4,6 @@ import { Clock, Leaf, ShieldCheck, Store, Truck } from "lucide-react";
 import type { ProductDetail } from "@/app/components/buyer/detail-product/data";
 import { StaggerGroup, StaggerItem } from "./anim";
 
-// Ringkas metode yang benar-benar diaktifkan penjual untuk produk ini.
 function fulfillmentLabel(product: ProductDetail): string | null {
   if (product.isDelivery && product.isPickup) return "Diantar atau ambil sendiri";
   if (product.isDelivery) return "Diantar ke alamatmu";
@@ -21,8 +20,6 @@ export function InfoGrid({ product }: { product: ProductDetail }) {
       value: `${product.pickupTime.from}–${product.pickupTime.to} WIB`,
     },
     { icon: Store, label: "Titik Ambil", value: product.pickupLocation },
-    // Metode pengiriman mengikuti pengaturan penjual per produk; hanya
-    // ditampilkan bila ada yang aktif (tidak mengarang opsi).
     ...(fulfillment
       ? [
           {

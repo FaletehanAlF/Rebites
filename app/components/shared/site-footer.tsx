@@ -144,7 +144,7 @@ export function SiteFooter() {
             SMK Taruna Bhakti.
           </p>
 
-          {/* Halaman kebijakan belum ada; label statis, tanpa pointer yang berbohong (R-26). */}
+          // Halaman kebijakan belum ada; label statis.
           <div className="flex flex-wrap items-center gap-6 font-sans text-xs text-primary-foreground/50">
             <span>Kebijakan Privasi</span>
             <span>Syarat Penggunaan</span>

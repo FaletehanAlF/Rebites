@@ -22,7 +22,7 @@ import {
   downloadSellerReportExcel,
 } from '@/lib/seller-report-export';
 
-// Rentang grafik penjualan (batang/garis); 'semua' tidak masuk akal di grafik.
+// 'semua' tidak masuk akal di grafik.
 export type StatsPeriod = '7-hari' | '14-hari' | '30-hari';
 
 const PERIOD_HINT: Record<SellerReportPeriod, string> = {
@@ -40,9 +40,7 @@ export function DetailedReportCard() {
   const [exportMessage, setExportMessage] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  // Satu agregasi untuk layar dan berkas: laporan dibangun dari SELURUH
-  // pesanan toko, lalu rentangnya dipilih di sini. Tidak ada potongan 30 hari
-  // yang diam-diam memendekkan riwayat.
+// Laporan dibangun dari SELURUH pesanan toko, lalu rentangnya dipilih di sini.
   const report = useMemo(
     () =>
       buildSellerReport(
@@ -60,9 +58,6 @@ export function DetailedReportCard() {
     [orders, period]
   );
 
-  // Baris terbaru di atas supaya hari ini langsung terlihat tanpa menggulir —
-  // urutan itu diurus SellerReportTable.
-
   const rangeLabel = useMemo(
     () =>
       formatReportRangeLabel(
@@ -72,7 +67,7 @@ export function DetailedReportCard() {
     [report.summary]
   );
 
-  // Pesan lama tidak boleh menempel saat penjual berganti rentang.
+  // Reset pesan saat ganti rentang.
   useEffect(() => {
     setExportMessage(null);
     setExportError(null);

@@ -35,11 +35,8 @@ function buildOrderDraft(product: ProductDetail): OrderDraft {
     discountedPrice: product.discountedPrice,
     stockRemaining: product.stockRemaining,
     distanceKm: product.distanceKm,
-    // kapabilitas fulfillment untuk gating UI (server validasi ulang).
     isDelivery: product.isDelivery ?? true,
     isPickup: product.isPickup ?? true,
-    // package dari ProductDetail (NULL = belum diketahui; server memakai
-    // berat perkiraan kategori sehingga Diantar tetap bisa dipilih).
     weightGram: product.weightGram ?? null,
     lengthCm: product.lengthCm ?? null,
     widthCm: product.widthCm ?? null,
@@ -124,7 +121,6 @@ export function CheckoutView() {
     "loading",
   );
 
-  // Auth check effect - must be at top level
   useEffect(() => {
     if (!authLoading) {
       setAuthChecked(true);
@@ -140,7 +136,6 @@ export function CheckoutView() {
     }
   }, [user, authLoading, router]);
 
-  // Product fetch effect - must be at top level
   useEffect(() => {
     let active = true;
     if (!productId) {
@@ -168,7 +163,6 @@ export function CheckoutView() {
     return Math.min(Math.max(raw, 1), Math.max(1, draft?.stockRemaining ?? 1));
   }, [searchParams, draft?.stockRemaining]);
 
-  // Early returns after all hooks
   if (authLoading || !authChecked) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
@@ -178,7 +172,7 @@ export function CheckoutView() {
   }
 
   if (!user) {
-    return null; // Will redirect via useEffect
+    return null;
   }
 
   if (status === "loading") {
