@@ -82,19 +82,16 @@ export function LandingFooter() {
       links: [
         { label: 'Beranda', href: '/' },
         { label: 'Jelajahi makanan', href: '/home' },
-        { label: 'Kategori makanan', href: '/kategori' },
         { label: 'Fitur unggulan', href: '/fitur' },
-        { label: 'Membership', href: '/membership' },
+        { label: 'Dampak lingkungan', href: '/dampak' },
       ],
     },
     {
       title: 'Tentang',
       links: [
         { label: 'Tentang Kami', href: '/tentang-kami' },
-        { label: 'Cara Kerja', href: '/cara-kerja' },
-        { label: 'Dampak lingkungan', href: '/dampak' },
-        { label: 'Untuk Pembeli', href: '/untuk-pembeli' },
-        { label: 'Untuk UMKM', href: '/untuk-umkm' },
+        { label: 'Visi & Misi', href: '/tentang-kami#visi-misi' },
+        { label: 'Tim Kami', href: '/tentang-kami#tim-leadership' },
       ],
     },
     {
@@ -102,20 +99,13 @@ export function LandingFooter() {
       links: [
         { label: 'Masuk', href: '/auth/login' },
         { label: 'Daftar akun', href: '/auth/register' },
-        { label: 'Riwayat pesanan', href: '/riwayatPesanan' },
-        { label: 'Profil saya', href: '/profile' },
-        { label: 'Notifikasi', href: '/notifikasi' },
         { label: 'Gabung sebagai UMKM', href: '/auth/register/penjual' },
       ],
     },
     {
       title: 'Bantuan',
       links: [
-        { label: 'Pertanyaan umum', href: '/pertanyaan-umum' },
-        { label: 'Pusat bantuan', href: '/bantuan' },
         { label: 'Hubungi Kami', href: '/hubungi-kami' },
-        { label: 'Kebijakan privasi', href: '/kebijakan-privasi' },
-        { label: 'Syarat dan ketentuan', href: '/syarat-ketentuan' },
       ],
     },
   ];

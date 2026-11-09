@@ -9,8 +9,6 @@ import { FAQSection } from '@/app/components/landing/FAQSection';
 import { ContactCTASection } from '@/app/components/landing/ContactCTASection';
 import { HeroStack } from '../components/landing/HeroStack';
 
-
-
 export default function Home() {
   return (
     <PublicShell intro>

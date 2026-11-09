@@ -54,7 +54,12 @@ const CHAIN = [
   },
 ];
 
-// /dampak lebih naratif daripada /fitur; tanpa angka kumulatif karena data dampak belum bisa diverifikasi.
+/**
+ * `/dampak` — disengaja lebih naratif daripada `/fitur`: satu cerita,
+ * tiga hasil yang saling terkait, lalu rantai pendek yang membentuknya.
+ * Tidak ada angka kumulatif di halaman ini karena aplikasi belum
+ * menyimpan data dampak yang bisa diverifikasi.
+ */
 export default function DampakPage() {
   return (
     <PublicShell>

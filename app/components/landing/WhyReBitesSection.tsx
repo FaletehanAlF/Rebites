@@ -37,7 +37,13 @@ const DIFFERENTIATORS = [
   },
 ];
 
-// Empat keunggulan utama. Angka statistik tidak ditampilkan karena data dampak belum dapat diverifikasi.
+/**
+ * "Kenapa ReBites?" — menampilkan empat keunggulan utama
+ * ReBites melalui daftar bernomor dan visual pendukung.
+ *
+ * Tidak menampilkan angka statistik karena belum tersedia
+ * data dampak yang dapat diverifikasi.
+ */
 export function WhyReBitesSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
@@ -128,7 +134,7 @@ export function WhyReBitesSection() {
       ref={sectionRef}
       id="kenapa"
       aria-labelledby="why-heading"
-      className="relative z-10 border-t border-border bg-white"
+      className="border-t border-border bg-white"
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
         <div ref={headingRef}>
@@ -145,7 +151,7 @@ export function WhyReBitesSection() {
             className="relative aspect-[4/3] w-full overflow-hidden rounded-[1.5rem] border border-border/70 bg-muted sm:aspect-[3/2]"
           >
             <Image
-              src="/terselamatkan.jpg"
+              src="/terselamatkan.avif"
               alt="Aneka hidangan dari dapur UMKM yang siap dinikmati pembeli"
               fill
               sizes="(min-width: 1024px) 24rem, calc(100vw - 2rem)"

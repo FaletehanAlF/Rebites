@@ -126,7 +126,6 @@ export function HeroSection() {
                 className="object-cover"
               />
             </div>
-
           </div>
         </Reveal>
       </div>

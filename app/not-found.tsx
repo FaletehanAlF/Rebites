@@ -1,8 +1,16 @@
 
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, Home } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
+import { Lottie } from "lottie-react";
 import { Button } from "@/app/components/ui/button";
-import { LottieIllustration } from "./(landing)/fitur/page";
+
+function LottieIllustration({ src, label }: { src: string; label: string }) {
+  return (
+    <div role="img" aria-label={label} className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden sm:aspect-[3/2]">
+      <Lottie src={src} autoplay loop className="h-auto w-full" />
+    </div>
+  );
+}
 
 export default function NotFound() {
   return (

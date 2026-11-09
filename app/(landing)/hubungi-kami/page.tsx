@@ -9,7 +9,7 @@ import { ContactForm } from './contact-form';
 export const metadata: Metadata = {
   title: 'Hubungi Kami - ReBites',
   description:
-    'Hubungi tim ReBites untuk pertanyaan, kerja sama, atau dukungan seputar marketplace makanan surplus UMKM.',
+    'Punya pertanyaan tentang ReBites? Kirim pesan lewat formulir atau email langsung ke halo@rebites.id.',
 };
 
 const FOCUS_RING =
@@ -30,7 +30,12 @@ const CHANNELS = [
   },
 ] as const;
 
-// /hubungi-kami: dua kanal kontak + formulir Formspree. Tujuan CTA "Hubungi Kami" di situs publik.
+/**
+ * `/hubungi-kami` — dua kanal kontak di kiri, formulir Formspree di kanan.
+ * Halaman ini adalah tujuan dari CTA "Hubungi Kami" di seluruh situs publik,
+ * jadi ia memakai `PublicShell` (navbar + `<main>` + footer) seperti halaman
+ * publik lainnya dan judul `h1` datang dari `PageIntro`.
+ */
 export default function HubungiKamiPage() {
   return (
     <PublicShell>
