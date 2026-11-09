@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, createServiceClient, getAdminActor, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { canDecideRoleRequest, isSuperAdminUserId, resolveSuperAdminId, } from '@/lib/admin-access';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 type Row = Record<string, unknown>;
 const NOTE_MAX = 500;
 function asString(value: unknown): string | null {

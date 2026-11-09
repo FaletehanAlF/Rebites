@@ -6,6 +6,7 @@ import { sanitizeSearchTerm } from '@/lib/filter-search';
 import { accountStatusOrCondition, isAdminAccountStatusFilter, isAdminRoleFilter, type AdminAccountStatusFilter, type AdminRoleFilter, } from '@/lib/admin-user-filters';
 import { computeCoinBalance } from '@/lib/coin-adjustment';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const USERS_SELECT = [
     'id',
     'email',

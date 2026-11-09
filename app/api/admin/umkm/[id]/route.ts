@@ -3,6 +3,7 @@ import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUn
 import { displayBusinessName } from '@/lib/business-name';
 import { isSuperAdminUserId } from '@/lib/admin-access';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const UMKM_DETAIL_SELECT = [
     'id',
     'user_id',

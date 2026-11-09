@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const VALID_STATUSES = ['open', 'reviewing', 'resolved', 'dismissed'] as const;
 const VALID_SEVERITIES = ['low', 'medium', 'high', 'critical'] as const;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

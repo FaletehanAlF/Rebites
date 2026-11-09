@@ -3,6 +3,7 @@ import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUn
 import { sanitizeSearchTerm } from '@/lib/filter-search';
 import { displayBusinessName } from '@/lib/business-name';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const UMKM_SELECT = [
     'id',
     'user_id',

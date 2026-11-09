@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, createServiceClient, getAdminActor, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { canChangeUserRole, isSuperAdminUserId, resolveSuperAdminId, } from '@/lib/admin-access';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 type Row = Record<string, unknown>;
 const ALLOWED_ROLES = ['buyer', 'umkm', 'admin'] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];

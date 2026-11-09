@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getAdminUser, getUserFromBearer, } from '@/lib/server/supabase';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const KEY_MAX = 80;
 const KEY_PATTERN = /^[A-Za-z0-9-]{8,80}$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

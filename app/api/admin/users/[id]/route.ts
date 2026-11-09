@@ -3,6 +3,7 @@ import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUn
 import { isSuperAdminUserId } from '@/lib/admin-access';
 import { resolveSellerStatus, type SellerStatus, } from '@/lib/server/seller-status';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const USER_SELECT = [
     'id',
     'email',

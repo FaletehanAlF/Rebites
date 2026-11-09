@@ -3,6 +3,7 @@ import { createServiceClient, getAdminUser, getUserFromBearer, isSupabaseUnavail
 import { isActiveBlockSanction } from '@/lib/account-block';
 import { SUPPORT_MESSAGE_MAX } from '@/lib/support';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const REQUEST_TIMEOUT_MS = 10000;
 const MESSAGE_LIMIT = 300;
 const THREAD_DETAIL_COLUMNS = [

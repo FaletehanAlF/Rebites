@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { sanitizeSearchTermKeepingWords } from '@/lib/filter-search';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const PRODUCT_SELECT = [
     'id',
     'umkm_id',

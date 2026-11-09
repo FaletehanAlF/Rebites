@@ -3,6 +3,7 @@ import { createServiceClient, isSupabaseUnavailable, upstreamUnavailableResponse
 import { SUPPORT_MESSAGE_MAX, escapeLikePattern, isPlausibleAppealCode, isValidSupportEmail, normalizeAppealCode, normalizeSupportEmail, } from '@/lib/support';
 import { allowSupportRequest, clientIpFrom, } from '@/lib/server/support-rate-limit';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const REQUEST_TIMEOUT_MS = 10000;
 const IP_LIMIT_PER_HOUR = 10;
 export async function POST(req: NextRequest) {

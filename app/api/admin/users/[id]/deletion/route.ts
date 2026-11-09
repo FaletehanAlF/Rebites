@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { canManageAccountDeletion, isSuperAdminUserId } from '@/lib/admin-access';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const REASON_MAX = 500;
 function asString(value: unknown): string | null {
     return typeof value === 'string' ? value : null;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const ORDER_COLUMNS = [
     'id',
     'order_code',

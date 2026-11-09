@@ -4,6 +4,7 @@ import { getXenditInvoice } from '@/lib/server/xendit';
 import { activateSubscriptionPaid } from '@/lib/server/subscription-activation';
 import { claimXenditCheck, VERIFY_CHECK_WINDOW_SECONDS } from '@/lib/server/verify-throttle';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
     const user = await getUserFromBearer(req.headers.get('authorization'));
     if (!user) {

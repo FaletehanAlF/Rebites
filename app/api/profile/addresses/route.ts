@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getUserFromBearer } from '@/lib/server/supabase';
 import { validateCoordinatePairFields } from '@/lib/location-validation';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const ALLOWED_LABELS = ['Rumah', 'Kos', 'Sekolah', 'Lainnya'];
 const ADDRESS_COLUMNS = [
     'id',

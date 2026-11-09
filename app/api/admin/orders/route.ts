@@ -3,6 +3,7 @@ import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUn
 import { sanitizeSearchTerm } from '@/lib/filter-search';
 import { deriveOrderMonitoringFlags } from '@/lib/order-monitoring-flags';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const ORDER_STATUS_ALLOWLIST = [
     'pending',
     'paid',

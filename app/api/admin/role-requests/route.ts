@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminActor, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { canCreateRoleRequest, isSuperAdminUserId, type AdminUserRole, } from '@/lib/admin-access';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 type Row = Record<string, unknown>;
 const ALLOWED_ROLES = ['buyer', 'umkm', 'admin'] as const;
 const STATUS_FILTERS = ['pending', 'approved', 'rejected'] as const;
