@@ -140,6 +140,20 @@ function slugify(text: string): string {
 function randomSuffix(): string {
     return Math.random().toString(36).slice(2, 7);
 }
+function loginUrlForOnboarding(): string {
+    if (typeof window === "undefined")
+        return "/auth/login";
+    const current = new URLSearchParams(window.location.search);
+    const keep = new URLSearchParams();
+    for (const key of ["step", "plan", "billing"]) {
+        const value = current.get(key);
+        if (value)
+            keep.set(key, value);
+    }
+    const query = keep.toString();
+    const target = `/auth/register/penjual${query ? `?${query}` : ""}`;
+    return `/auth/login?redirect=${encodeURIComponent(target)}`;
+}
 export default function PenjualRegisterForm() {
     const router = useRouter();
     const [step, setStep] = useState(1);
@@ -189,7 +203,7 @@ export default function PenjualRegisterForm() {
                 if (cancelled)
                     return;
                 if (!session) {
-                    router.replace("/auth/login");
+                    router.replace(loginUrlForOnboarding());
                     return;
                 }
                 const user = session.user;
@@ -241,7 +255,7 @@ export default function PenjualRegisterForm() {
             }
             catch {
                 if (!cancelled)
-                    router.replace("/auth/login");
+                    router.replace(loginUrlForOnboarding());
             }
         })();
         return () => {
@@ -292,7 +306,7 @@ export default function PenjualRegisterForm() {
             const { supabase } = await import("@/lib/supabase");
             const { data: { session }, } = await supabase.auth.getSession();
             if (!session) {
-                router.replace("/auth/login");
+                router.replace(loginUrlForOnboarding());
                 return;
             }
             const s2 = step2Form.getValues();
