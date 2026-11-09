@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   description:
     'Marketplace yang mempertemukan pelaku UMKM kuliner dengan pembeli untuk menyelamatkan makanan surplus yang masih layak konsumsi. Dari dapur UMKM, ke piring yang butuh.',
   icons: {
-    icon: '/logo.png',
+    icon: '/icon.svg',
   },
   openGraph: {
     title: 'ReBites - Selamatkan Makanan Surplus',
