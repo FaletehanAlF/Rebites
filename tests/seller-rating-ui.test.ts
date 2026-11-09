@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 function readProjectFile(relativePath: string): string {
     return readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), 'utf8');
 }
-const STARS = readProjectFile('app/components/dashboard-penjual/RatingStars.tsx');
-const CHIPS = readProjectFile('app/components/dashboard-penjual/RatingFilterChips.tsx');
+const STARS = readProjectFile('app/components/seller/dashboard-penjual/RatingStars.tsx');
+const CHIPS = readProjectFile('app/components/seller/dashboard-penjual/RatingFilterChips.tsx');
 const PAGE = readProjectFile('app/(app)/dashboard/penjual/[storeId]/ulasan/page.tsx');
 const TAILWIND = readProjectFile('tailwind.config.ts');
 test('bintang tidak pernah memakai warna hijau brand', () => {
@@ -33,7 +33,7 @@ test('token emas yang dipakai benar-benar ada di tema Tailwind', () => {
     assert.match(TAILWIND, /'gold-600': '#B08A1C'/);
 });
 test('kartu Rating Toko di halaman yang sama ikut memakai bintang emas', () => {
-    const card = readProjectFile('app/components/dashboard-penjual/StoreRatingCard.tsx');
+    const card = readProjectFile('app/components/seller/dashboard-penjual/StoreRatingCard.tsx');
     assert.doesNotMatch(card, /fill-primary/);
     assert.doesNotMatch(card, /fill-border-100|text-primary-foreground/);
     assert.match(card, /fill-gold-600 text-gold-600/);

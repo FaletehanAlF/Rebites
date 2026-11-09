@@ -151,7 +151,7 @@ test('role requests: blok error akses dirender SEBELUM tabel', () => {
     assert.match(source, /role="alert"/);
 });
 test('sidebar penjual hanya menautkan Panel Admin untuk akun ber-role admin', () => {
-    const source = readProjectFile('app/components/dashboard-penjual/Sidebar.tsx');
+    const source = readProjectFile('app/components/seller/dashboard-penjual/Sidebar.tsx');
     assert.match(source, /useIsAdminAccount/);
     assert.match(source, /\{isAdmin && \(/);
     assert.doesNotMatch(source, /useAdminMe/);

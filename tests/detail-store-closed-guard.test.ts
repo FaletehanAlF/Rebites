@@ -52,18 +52,18 @@ test('vendorPurchaseWindowState: tanpa open_hours memakai jendela jual produk', 
 });
 
 test('tipe ProductDetail memuat status toko dan detail-data memetakannya dari umkm', () => {
-    const data = readProjectFile('app/components/detail-product/data.ts');
+    const data = readProjectFile('app/components/buyer/detail-product/data.ts');
     for (const field of ['storeOpenHours', 'storeIsOpen', 'storeIsActive']) {
         assert.ok(data.includes(field), `ProductDetail maka mengenalkan ${field}`);
     }
-    const detailData = readProjectFile('app/components/detail-product/detail-data.ts');
+    const detailData = readProjectFile('app/components/buyer/detail-product/detail-data.ts');
     assert.match(detailData, /umkm\.open_hours/);
     assert.match(detailData, /umkm\.is_open !== false/);
     assert.match(detailData, /umkm\.is_active !== false/);
 });
 
 test('handleOrder di detail produk validasi dulu sebelum menavigasi ke checkout', () => {
-    const page = readProjectFile('app/components/detail-product/detail-page.tsx');
+    const page = readProjectFile('app/components/buyer/detail-product/detail-page.tsx');
     assert.match(page, /vendorPurchaseWindowState\(\{[\s\S]*?openHours: product\.storeOpenHours/);
     assert.match(page, /if \(storeStatus\.closed\) \{[\s\S]*?openStoreClosedModal\(storeStatus\.from, storeStatus\.to\)/);
     assert.match(page, /<StoreClosedModal isOpen=\{storeClosedModal\.isOpen\}/);

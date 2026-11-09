@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolveEffectiveUnitPrice } from '../lib/flash-pricing.ts';
 const read = (relativePath: string) => readFileSync(new URL(`../${relativePath}`, import.meta.url), 'utf8');
 const CHECKOUT_ROUTE = 'app/api/checkout/xendit/route.ts';
-const CONTEXT = 'app/components/checkout/checkout-context.tsx';
+const CONTEXT = 'app/components/buyer/checkout/checkout-context.tsx';
 const VERIFY_ROUTE = 'app/api/checkout/xendit/verify/route.ts';
 const STATE_MACHINE = 'lib/order-state-machine.ts';
 test('tanpa flash sale: surplus_price dipakai', () => {
@@ -74,7 +74,7 @@ test('checkout menahan redirect ke Xendit bila total server berbeda dari tampila
     const source = read(CONTEXT);
     assert.match(source, /serverTotal\s*!==\s*summary\.total/);
     assert.match(source, /setPendingInvoiceReview\(/);
-    const dialog = read('app/components/checkout/checkout-price-review-dialog.tsx');
+    const dialog = read('app/components/buyer/checkout/checkout-price-review-dialog.tsx');
     assert.match(dialog, /pendingInvoiceReview/);
     assert.match(dialog, /continueToInvoice/);
 });

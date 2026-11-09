@@ -41,6 +41,6 @@ test('order-utils menurunkan sub-status dari fase, bukan dari kemajuan waktu', (
 });
 
 test('kartu pesanan tidak lagi menjadikan pesanan batal sebagai Selesai', () => {
-    const card = readProjectFile('app/components/order-history/order-card.tsx');
+    const card = readProjectFile('app/components/buyer/order-history/order-card.tsx');
     assert.ok(!card.includes("sub === 'selesai' ? 'Selesai'"), 'cabang label pesanan batal masih menebak selesai');
 });

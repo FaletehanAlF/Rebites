@@ -44,7 +44,7 @@ function readSource(rel: string): string {
     return readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 }
 test('sumber: halaman sukses memakai helper, bukan redirect spesifik penjual', () => {
-    const src = readSource('app/components/subscription/subscription-success-client.tsx');
+    const src = readSource('app/components/seller/subscription/subscription-success-client.tsx');
     assert.match(src, /resolvePostPaymentHref\(\{ hasStore, storeId \}\)/);
     assert.doesNotMatch(src, /router\.replace\('\/dashboard\/penjual'\)/);
     assert.match(src, /resolveSuccessStatus\(\{ externalId \}\)/);

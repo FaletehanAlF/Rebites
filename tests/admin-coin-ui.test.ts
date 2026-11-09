@@ -11,7 +11,7 @@ const PENGATURAN = readProjectFile('app/pengaturan/page.tsx');
 const SIDEBAR_PEMBELI = readProjectFile('app/components/shared/profile-sidebar-nav.tsx');
 const MOBILE_NAVBAR = readProjectFile('app/components/shared/MobileNavbar.tsx');
 const USERS_ROUTE = readProjectFile('app/api/admin/users/route.ts');
-const HOOK = readProjectFile('hooks/use-rebites-coins.ts');
+const HOOK = readProjectFile('hooks/buyer/use-rebites-coins.ts');
 test('route koin menolak pemanggil yang bukan Super Admin', () => {
     assert.match(ROUTE, /isSuperAdminUserId\(admin\.id\)/);
     assert.match(ROUTE, /getAdminUser\(req\.headers\.get\('authorization'\)\)/);

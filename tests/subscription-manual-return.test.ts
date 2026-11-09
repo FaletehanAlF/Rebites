@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
-const source = readFileSync(join(ROOT, 'app/components/subscription/subscription-success-client.tsx'), 'utf8');
+const source = readFileSync(join(ROOT, 'app/components/seller/subscription/subscription-success-client.tsx'), 'utf8');
 
 function between(startMarker: string, endMarker: string): string {
     const start = source.indexOf(startMarker);

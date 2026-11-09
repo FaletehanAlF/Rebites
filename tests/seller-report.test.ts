@@ -213,14 +213,14 @@ test('route ekspor penjual: otorisasi server, tanpa service role, toko dari toke
     assert.doesNotMatch(source, /searchParams\.get\('(umkm|store|toko|vendor)/);
 });
 test('tabel laporan tidak memakai kelas token yang tidak ada di tema', () => {
-    const table = readProjectFile('app/components/dashboard-penjual/SellerReportTable.tsx');
+    const table = readProjectFile('app/components/seller/dashboard-penjual/SellerReportTable.tsx');
     assert.doesNotMatch(table, /divide-border-100|fill-border-100/);
     assert.match(table, /divide-border\b/);
 });
 test('kartu laporan memakai rentang penuh, bukan potongan 30 hari', () => {
-    const card = readProjectFile('app/components/dashboard-penjual/DetailedReportCard.tsx');
+    const card = readProjectFile('app/components/seller/dashboard-penjual/DetailedReportCard.tsx');
     const page = readProjectFile('app/(app)/dashboard/penjual/[storeId]/page.tsx');
-    const hook = readProjectFile('hooks/use-seller-analytics.ts');
+    const hook = readProjectFile('hooks/seller/use-seller-analytics.ts');
     assert.match(card, /SELLER_REPORT_PERIODS/);
     assert.match(card, /buildSellerReport\(/);
     assert.match(card, /downloadSellerReportExcel/);

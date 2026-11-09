@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 function readProjectFile(relativePath: string): string {
     return readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), 'utf8');
 }
-const SELLER_SIDEBAR = readProjectFile('app/components/dashboard-penjual/Sidebar.tsx');
+const SELLER_SIDEBAR = readProjectFile('app/components/seller/dashboard-penjual/Sidebar.tsx');
 const BUYER_SIDEBAR = readProjectFile('app/components/shared/profile-sidebar-nav.tsx');
 const BUYER_MOBILE_NAV = readProjectFile('app/components/shared/MobileNavbar.tsx');
 test('sidebar penjual punya satu jalan masuk ke beranda pembeli', () => {

@@ -29,24 +29,24 @@ test('useCatalog membawa error katalog dan tidak meninggalkan skeleton menggantu
 });
 
 test('beranda: cabang gagal muncul sebelum cabang kosong, dengan Coba lagi', () => {
-    const vendor = readProjectFile('app/components/home/VendorSection.tsx');
+    const vendor = readProjectFile('app/components/buyer/home/VendorSection.tsx');
     assert.equal(errorBeforeEmpty(vendor, 'Gagal memuat daftar toko', '!loading && !catalogError && sortedVendors.length === 0'), true);
     assert.ok(vendor.includes('Coba lagi'));
     assert.ok(vendor.includes('refreshCatalog()'));
 
-    const urgent = readProjectFile('app/components/home/UrgentDealsSection.tsx');
+    const urgent = readProjectFile('app/components/buyer/home/UrgentDealsSection.tsx');
     assert.equal(errorBeforeEmpty(urgent, 'Gagal memuat daftar menu', '!loading && !catalogError && items.length === 0'), true);
     assert.ok(urgent.includes('Coba lagi'));
     assert.ok(urgent.includes('refreshCatalog()'));
 
-    const flash = readProjectFile('app/components/home/FlashSaleSection.tsx');
+    const flash = readProjectFile('app/components/buyer/home/FlashSaleSection.tsx');
     assert.equal(errorBeforeEmpty(flash, 'Gagal memuat flash sale', '!catalogLoading && !catalogError && visibleItems.length === 0'), true);
     assert.ok(flash.includes('Coba lagi'));
     assert.ok(flash.includes('refreshCatalog()'));
 });
 
 test('katalog kategori dan daftar toko: gagal memuat bukan "belum ada"', () => {
-    const category = readProjectFile('app/components/makanan-category/category-view.tsx');
+    const category = readProjectFile('app/components/buyer/makanan-category/category-view.tsx');
     assert.equal(errorBeforeEmpty(category, 'catalogError ?', 'isCategoryEmpty ?'), true);
     assert.ok(category.includes('Gagal memuat makanan'));
     assert.ok(category.includes('refreshCatalog()'));

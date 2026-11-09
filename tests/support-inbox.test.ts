@@ -148,8 +148,8 @@ test('menu chat pengguna tidak ada lagi di navigasi mana pun', () => {
     const navigationFiles = [
         'app/components/shared/profile-sidebar-nav.tsx',
         'app/components/shared/MobileNavbar.tsx',
-        'app/components/dashboard-penjual/Sidebar.tsx',
-        'app/components/dashboard-penjual/MobileSellerNav.tsx',
+        'app/components/seller/dashboard-penjual/Sidebar.tsx',
+        'app/components/seller/dashboard-penjual/MobileSellerNav.tsx',
     ];
     for (const path of navigationFiles) {
         const source = readProjectFile(path);

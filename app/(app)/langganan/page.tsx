@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { RequireAuth } from "@/app/components/auth/require-auth";
-import { AnimatedRupiah } from "@/app/components/subscription/animated-rupiah";
+import { AnimatedRupiah } from "@/app/components/seller/subscription/animated-rupiah";
 import { cn } from "@/lib/utils";
 import { SUBSCRIPTION_PLANS, getYearlyMultiplier, getYearlyPerMonth, type BillingCycle, } from "@/lib/subscription-plans";
 import { useCurrentUser } from "@/lib/current-user";

@@ -18,13 +18,13 @@ function normalize(source: string): string {
     return stripComments(source).toLowerCase().replace(/\s+/g, ' ');
 }
 const MIGRATION = normalize(readProjectFile('supabase/migrations/20261031010000_courier_live_delivery.sql'));
-const MAP = normalize(readProjectFile('app/components/order-history/delivery-map.tsx'));
+const MAP = normalize(readProjectFile('app/components/buyer/order-history/delivery-map.tsx'));
 const LOCATION_ROUTE = normalize(readProjectFile('app/api/courier/location/route.ts'));
 const MESSAGES_ROUTE = normalize(readProjectFile('app/api/courier/messages/route.ts'));
 const ASSIGNMENTS_ROUTE = normalize(readProjectFile('app/api/courier/assignments/route.ts'));
 const COURIER_DASHBOARD = normalize(readProjectFile('app/dashboard/kurir/page.tsx'));
-const CHAT = normalize(readProjectFile('app/components/order-history/courier-chat.tsx'));
-const POSITION_PANEL = normalize(readProjectFile('app/components/order-history/courier-position-panel.tsx'));
+const CHAT = normalize(readProjectFile('app/components/buyer/order-history/courier-chat.tsx'));
+const POSITION_PANEL = normalize(readProjectFile('app/components/buyer/order-history/courier-position-panel.tsx'));
 const LOCATION_HOOK = normalize(readProjectFile('hooks/use-courier-location.ts'));
 const SELLER_PAGE = normalize(readProjectFile('app/(app)/dashboard/penjual/[storeId]/pesanan/page.tsx'));
 const BUYER_PAGE = normalize(readProjectFile('app/riwayatPesanan/[orderCode]/page.tsx'));

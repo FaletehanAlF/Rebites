@@ -13,10 +13,10 @@ const TOPBAR = readProjectFile('app/components/shared/navbar.tsx');
 const MOBILE_NAV = readProjectFile('app/components/shared/MobileNavbar.tsx');
 const SKELETON = readProjectFile('app/components/ui/skeleton.tsx');
 const TAILWIND = readProjectFile('tailwind.config.ts');
-const HOME_DEALS = readProjectFile('app/components/home/UrgentDealsSection.tsx');
+const HOME_DEALS = readProjectFile('app/components/buyer/home/UrgentDealsSection.tsx');
 const REQUIRE_AUTH = readProjectFile('app/components/auth/require-auth.tsx');
-const SELLER_SHELL = readProjectFile('app/components/dashboard-penjual/SellerShell.tsx');
-const SELLER_SKELETON = readProjectFile('app/components/dashboard-penjual/SellerShellSkeleton.tsx');
+const SELLER_SHELL = readProjectFile('app/components/seller/dashboard-penjual/SellerShell.tsx');
+const SELLER_SKELETON = readProjectFile('app/components/seller/dashboard-penjual/SellerShellSkeleton.tsx');
 test('kolom pencarian membuka detail makanan tanpa pindah ke halaman katalog', () => {
     assert.match(SEARCH_BAR, /router\.push\(/);
     assert.match(SEARCH_BAR, /\/detail\/product\?id=\$\{encodeURIComponent\(id\)\}/);
@@ -81,17 +81,17 @@ test('shell penjual memakai kerangka dashboard, bukan spinner halaman penuh', ()
     assert.match(SELLER_SKELETON, /<Skeleton/);
 });
 test('pengalih alamat toko penjual memakai kerangka yang sama', () => {
-    const redirect = readProjectFile('app/components/dashboard-penjual/seller-store-redirect.tsx');
+    const redirect = readProjectFile('app/components/seller/dashboard-penjual/seller-store-redirect.tsx');
     assert.match(redirect, /SellerShellSkeleton/);
     assert.doesNotMatch(redirect, /animate-spin/);
 });
 test('katalog kategori memuat dengan kerangka kartu', () => {
     assert.match(projectFile('app/components/shared/FoodCardSkeleton.tsx'), /<Skeleton/);
     assert.match(projectFile('app/components/shared/VendorCardSkeleton.tsx'), /<Skeleton/);
-    assert.match(readProjectFile('app/components/makanan-category/category-view.tsx'), /<FoodCardSkeleton/);
+    assert.match(readProjectFile('app/components/buyer/makanan-category/category-view.tsx'), /<FoodCardSkeleton/);
 });
 test('riwayat pesanan dan detail pesanan memuat dengan kerangka', () => {
-    assert.match(readProjectFile('app/components/order-history/order-history-view.tsx'), /<Skeleton/);
+    assert.match(readProjectFile('app/components/buyer/order-history/order-history-view.tsx'), /<Skeleton/);
     assert.match(readProjectFile('app/riwayatPesanan/[orderCode]/page.tsx'), /<Skeleton/);
 });
 test('halaman penjual memuat menu, pesanan, dan ulasan dengan kerangka', () => {

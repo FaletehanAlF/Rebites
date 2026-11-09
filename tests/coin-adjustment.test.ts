@@ -36,7 +36,7 @@ test('tipe tak dikenal tidak mengubah saldo', () => {
     assert.equal(computeCoinBalance(rows), 100);
 });
 test('rumus saldo admin identik dengan deriveSnapshot di hook user', () => {
-    const hook = readProjectFile('hooks/use-rebites-coins.ts');
+    const hook = readProjectFile('hooks/buyer/use-rebites-coins.ts');
     assert.match(hook, /tx\.type === 'earned'[\s\S]{0,200}=== 'refund'[\s\S]{0,200}=== 'adjustment'/, 'hook harus menghitung adjustment sebagai penambah, sama seperti admin');
     assert.match(hook, /earned \+= tx\.amount;/);
     assert.match(hook, /spent \+= tx\.amount;/);

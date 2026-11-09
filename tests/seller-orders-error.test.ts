@@ -15,7 +15,7 @@ test('query pesanan penjual meneruskan galat, bukan berpura-pura toko kosong', (
 });
 
 test('hook useSellerOrders mewariskan error ke pemanggil', () => {
-    const hook = read('hooks/use-seller-orders.ts');
+    const hook = read('hooks/seller/use-seller-orders.ts');
     assert.ok(hook.includes('error: string | null;'));
     assert.ok(hook.includes('error: result.error'));
     assert.ok(hook.includes('error: snapshot.error'));

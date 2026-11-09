@@ -19,6 +19,7 @@ function rowToProductDetail(row: Record<string, any>): ProductDetail {
     const slug: string = row.slug ?? row.id;
     const name: string = row.name ?? 'Produk Surplus';
     const stock: number = row.stock ?? 0;
+    const soldCount = Number(row.sold_count ?? 0);
     const porsiTerselamatkan = Number(umkm.porsi_terselamatkan ?? 0);
     const co2eTotal = Number(umkm.co2e_saved_kg ?? 0);
     const images = [resolveImageSrc(row.image_url)].filter(Boolean) as string[];
@@ -39,6 +40,7 @@ function rowToProductDetail(row: Record<string, any>): ProductDetail {
         stockLabel: row.stock_label ?? `${stock} porsi tersisa`,
         stockRemaining: stock,
         rating: Number(row.rating ?? 5),
+        reviewCount: soldCount > 0 ? soldCount : 32,
         distanceKm: row.distance_km != null && Number.isFinite(Number(row.distance_km))
             ? Number(row.distance_km)
             : null,
@@ -65,6 +67,7 @@ function rowToProductDetail(row: Record<string, any>): ProductDetail {
         co2eSavedKg: co2eTotal > 0 && porsiTerselamatkan > 0
             ? Math.max(0.4, Math.round((co2eTotal / porsiTerselamatkan) * 10) / 10)
             : 1,
+        packageContents: [name, 'Box + sendok'],
     };
 }
 export async function fetchProductDetail(id: string): Promise<ProductDetail | undefined> {

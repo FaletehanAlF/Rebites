@@ -6,8 +6,8 @@ import { isVendorReallyOpen, orderVendorsOpenFirst, } from '../lib/store-status.
 function readProjectFile(relativePath: string): string {
     return readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), 'utf8').replace(/\r\n/g, '\n');
 }
-const SECTION = readProjectFile('app/components/home/VendorSection.tsx');
-const CARD = readProjectFile('app/components/home/VendorCard.tsx');
+const SECTION = readProjectFile('app/components/buyer/home/VendorSection.tsx');
+const CARD = readProjectFile('app/components/buyer/home/VendorCard.tsx');
 const HOME_PAGE = readProjectFile('app/(app)/home/page.tsx');
 const FOOTER = readProjectFile('app/components/shared/app-footer.tsx');
 const CLOSED = { id: 'tutup', isOpen: false, openHours: null };
