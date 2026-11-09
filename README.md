@@ -215,7 +215,7 @@ npm run lint             # eslint
 node --test tests/*.test.ts
 ```
 
-Suite berisi 1254 tes dan berjalan sepenuhnya offline: tanpa peramban, basis data, atau
+Suite berisi 1260 tes dan berjalan sepenuhnya offline: tanpa peramban, basis data, atau
 jaringan. Tes membaca berkas proyek dan memeriksa kontrak yang mudah rusak diam-diam,
 seperti urutan cabang galat sebelum cabang kosong, atribut aksesibilitas, alur status
 pesanan, dan pemasangan komponen global. Kegagalan tes selalu berarti ada yang salah dan
