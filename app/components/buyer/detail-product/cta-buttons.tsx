@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, Heart, ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLikedFoods } from "@/hooks/buyer/use-liked-foods";
 import type { ProductDetail } from "@/app/components/buyer/detail-product/data";
@@ -18,7 +17,6 @@ export function CTAButtons({
 }) {
   const { isLiked, toggle } = useLikedFoods();
   const saved = isLiked(product.id);
-  const [added, setAdded] = useState(false);
   const reduce = useReducedMotion();
   const isOutOfStock = product.stockRemaining <= 0;
 
@@ -31,8 +29,6 @@ export function CTAButtons({
   const handleOrder = () => {
     if (isOutOfStock) return;
     onOrder();
-    setAdded(true);
-    window.setTimeout(() => setAdded(false), 1600);
   };
 
   return (
@@ -52,11 +48,6 @@ export function CTAButtons({
       >
         {isOutOfStock ? (
           <>Stok Habis</>
-        ) : added ? (
-          <>
-            <Check className="h-4 w-4" />
-            Ditambahkan ke keranjang
-          </>
         ) : (
           <>
             <ShoppingBag className="h-4 w-4" />

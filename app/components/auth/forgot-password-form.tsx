@@ -2,9 +2,10 @@
 import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, type Variants } from "framer-motion";
-import { ArrowLeft, ArrowRight, CheckCircle2, Mail } from "lucide-react";
-import { EMAIL_COOLDOWN_SECONDS, EMAIL_DELIVERY_ERROR_MESSAGE, getAuthCallbackUrl, isEmailDeliveryError, isEmailRateLimitError, parseCooldownSeconds, useEmailCooldown, } from "@/lib/auth-email";
+import { ArrowLeft, ArrowRight, CheckCircle2, KeyRound, Mail } from "lucide-react";
+import { EMAIL_COOLDOWN_SECONDS, EMAIL_DELIVERY_ERROR_MESSAGE, getAuthCallbackUrl, isEmailDeliveryError, isEmailRateLimitError, mapOtpVerifyError, parseCooldownSeconds, useEmailCooldown, } from "@/lib/auth-email";
 const EASE: [
     number,
     number,
@@ -49,11 +50,15 @@ function FieldBox({ id, label, icon: Icon, children, }: {
     </div>);
 }
 export default function ForgotPasswordForm() {
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
     const [resendNote, setResendNote] = useState("");
+    const [otpCode, setOtpCode] = useState("");
+    const [otpError, setOtpError] = useState("");
+    const [otpLoading, setOtpLoading] = useState(false);
     const { remainingSec: cooldownSec, isCooling, start: startCooldown, } = useEmailCooldown(EMAIL_COOLDOWN_SECONDS);
     function describeResetError(rawMessage: string): {
         message: string;
@@ -87,6 +92,54 @@ export default function ForgotPasswordForm() {
             message: rawMessage || "Terjadi kesalahan. Silakan coba lagi.",
             cooldownSeconds: null,
         };
+    }
+    async function handleVerifyResetCode(e: FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (otpLoading)
+            return;
+        const token = otpCode.trim();
+        if (!/^\d{6,10}$/.test(token)) {
+            setOtpError("Masukkan kode verifikasi berupa angka (6–10 digit).");
+            return;
+        }
+        if (!email.trim()) {
+            setOtpError("Email tidak ditemukan. Muat ulang halaman lalu coba lagi.");
+            return;
+        }
+        setOtpError("");
+        setOtpLoading(true);
+        try {
+            const { supabase } = await import("@/lib/supabase");
+            const { error: verifyError } = await supabase.auth.verifyOtp({
+                email: email.trim(),
+                token,
+                type: "recovery",
+            });
+            if (verifyError) {
+                setOtpError(mapOtpVerifyError(verifyError.message));
+                return;
+            }
+            let adaSesi = false;
+            for (let attempt = 0; attempt < 10 && !adaSesi; attempt += 1) {
+                const { data: { session } } = await supabase.auth.getSession();
+                adaSesi = Boolean(session);
+                if (!adaSesi) {
+                    await new Promise((resolve) => setTimeout(resolve, 200));
+                }
+            }
+            if (!adaSesi) {
+                setOtpError("Kode benar, tetapi sesi pemulihan belum terbentuk di peramban ini. Coba lagi, atau minta tautan baru dari halaman lupa kata sandi.");
+                return;
+            }
+            setOtpCode("");
+            router.push("/auth/buat-sandi-baru");
+        }
+        catch {
+            setOtpError("Gagal memverifikasi kode. Periksa koneksi lalu coba lagi.");
+        }
+        finally {
+            setOtpLoading(false);
+        }
     }
     async function requestResetEmail(): Promise<void> {
         const { supabase } = await import("@/lib/supabase");
@@ -137,7 +190,7 @@ export default function ForgotPasswordForm() {
         try {
             await requestResetEmail();
             startCooldown(EMAIL_COOLDOWN_SECONDS);
-            setResendNote("Tautan reset baru dikirim. Cek inbox, spam, dan folder promosi.");
+            setResendNote("Kalau email itu terdaftar, tautan reset baru sudah dikirim. Cek inbox, spam, dan folder promosi.");
         }
         catch (err) {
             const rawMessage = err instanceof Error ? err.message : "";
@@ -197,13 +250,37 @@ export default function ForgotPasswordForm() {
 
           <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground">
 
-            Kami sudah mengirimkan tautan reset kata sandi ke{" "}
+            Kalau email itu terdaftar, kami sudah mengirimkan tautan reset kata sandi ke{" "}
 
             <span className="font-semibold text-primary">{email}</span>. Ikuti
 
-            tautan tersebut untuk membuat kata sandi baru.
+            tautan tersebut untuk membuat kata sandi baru, atau masukkan kode verifikasi dari email yang sama di kolom bawah.
 
           </p>
+
+          <form onSubmit={handleVerifyResetCode} noValidate className="mt-5 flex w-full flex-col gap-2 rounded-xl border border-border bg-white px-3.5 py-3.5">
+
+            <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Atau masukkan kode dari email
+            </p>
+
+            <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/15">
+
+              <KeyRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55"/>
+
+              <input id="otp" name="otp" type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="Kode verifikasi" maxLength={10} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 10))} disabled={otpLoading} className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-primary outline-none placeholder:text-muted-foreground"/>
+
+            </div>
+
+            {otpError && (<p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-left font-sans text-[12px] leading-relaxed text-red-700">
+                {otpError}
+              </p>)}
+
+            <button type="submit" disabled={otpLoading || otpCode.trim().length < 6} className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white transition-colors duration-200 hover:bg-primary disabled:cursor-not-allowed disabled:opacity-60">
+              {otpLoading ? "Memverifikasi…" : "Verifikasi Kode"}
+            </button>
+
+          </form>
 
           <button type="button" onClick={handleResend} disabled={loading || isCooling} className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-primary/30 bg-white px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-primary transition-colors duration-200 hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60">
 

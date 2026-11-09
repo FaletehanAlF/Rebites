@@ -8,6 +8,7 @@ import type { LucideIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, } from "@/app/components/ui/dialog";
 import { getExplicitNextPath, getOAuthCallbackUrl, mapOAuthError, } from "@/lib/auth-oauth";
 import { EMAIL_COOLDOWN_SECONDS, EMAIL_DELIVERY_ERROR_MESSAGE, getAuthCallbackUrl, getDesiredNextPath, isEmailDeliveryError, isEmailRateLimitError, mapOtpVerifyError, mapResendError, parseCooldownSeconds, useEmailCooldown, } from "@/lib/auth-email";
+import { isInvalidCredentialsMessage, loginErrorMessageFor, lookupEmailRegistered, } from "@/lib/auth-login-hint";
 import { DUPLICATE_EMAIL_MESSAGE, isDuplicateEmailSignUp, } from "@/lib/auth-signup";
 import { BLOCKED_ACCOUNT_MESSAGE, isAccountBlockMessage, isBannedAuthError } from "@/lib/account-block";
 const EASE: [
@@ -381,8 +382,9 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
             else if (message.includes("Supabase env")) {
                 setError("Autentikasi belum aktif. Atur NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY.");
             }
-            else if (message.includes("Invalid login credentials")) {
-                setError("Email atau kata sandi salah.");
+            else if (isInvalidCredentialsMessage(message)) {
+                const registered = isSignup ? null : await lookupEmailRegistered(email.trim());
+                setError(loginErrorMessageFor(message, registered));
             }
             else if (isDuplicateEmailSignUp({ error: err })) {
                 setError(DUPLICATE_EMAIL_MESSAGE);

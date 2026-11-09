@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, Lock, } from "lucide-react";
@@ -82,8 +81,8 @@ function FieldBox({ id, label, icon: Icon, children, trailing, }: {
     </div>);
 }
 export default function BuatSandiBaruForm() {
-    const router = useRouter();
     const [checkingSession, setCheckingSession] = useState(true);
+    const [linkError, setLinkError] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -106,15 +105,17 @@ export default function BuatSandiBaruForm() {
             }
             if (cancelled)
                 return;
-            if (!session)
-                router.replace("/auth/login");
-            else
+            if (!session) {
+                setLinkError("Sesi pemulihan tidak aktif di peramban ini — tautan reset mungkin sudah kedaluwarsa, pernah dipakai, atau dibuka di peramban yang berbeda. Minta tautan baru dari halaman lupa kata sandi, lalu buka di peramban yang sama.");
                 setCheckingSession(false);
+                return;
+            }
+            setCheckingSession(false);
         })();
         return () => {
             cancelled = true;
         };
-    }, [router]);
+    }, []);
     async function handleSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setError("");
@@ -173,6 +174,27 @@ export default function BuatSandiBaruForm() {
           </p>
 
         </div>
+
+      </div>);
+    }
+    if (linkError) {
+        return (<div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-secondary px-6 py-8 text-center">
+
+        <h1 className="font-display text-[22px] font-bold tracking-[-0.02em] text-foreground">
+          Tautan Reset Tidak Berlaku
+        </h1>
+
+        <p role="alert" className="font-sans text-[13px] leading-relaxed text-muted-foreground">
+          {linkError}
+        </p>
+
+        <Link href="/auth/forgotPassword" className="mt-2 inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white">
+          Minta Tautan Baru
+        </Link>
+
+        <Link href="/auth/login" className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-primary/30 bg-white px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-primary">
+          Ke Halaman Masuk
+        </Link>
 
       </div>);
     }

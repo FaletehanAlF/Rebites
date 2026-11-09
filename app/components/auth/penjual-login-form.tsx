@@ -10,6 +10,7 @@ import { CurrentUserRoleError, fetchCurrentUserRole, getHomePathForRole, } from 
 import { sellerStorePath } from "@/lib/seller-store-path";
 import { BLOCKED_ACCOUNT_MESSAGE, isAccountBlockMessage, isBannedAuthError, isBlockedRoleErrorCode, } from "@/lib/account-block";
 import { EMAIL_COOLDOWN_SECONDS, getAuthCallbackUrl, getDesiredNextPath, mapResendError, parseCooldownSeconds, useEmailCooldown, } from "@/lib/auth-email";
+import { isInvalidCredentialsMessage, loginErrorMessageFor, lookupEmailRegistered, } from "@/lib/auth-login-hint";
 const EASE: [
     number,
     number,
@@ -158,8 +159,9 @@ export default function PenjualLoginForm() {
                     throw new Error(BLOCKED_ACCOUNT_MESSAGE);
                 }
                 const msg = signInError.message;
-                if (msg.includes("Invalid login credentials")) {
-                    throw new Error("Email atau kata sandi salah.");
+                if (isInvalidCredentialsMessage(msg)) {
+                    const registered = await lookupEmailRegistered(emailTrim);
+                    throw new Error(loginErrorMessageFor(msg, registered));
                 }
                 if (msg.includes("Email not confirmed")) {
                     setNeedsVerification(true);

@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
             id: user.id,
             email: user.email ?? '',
             full_name: (meta.full_name as string | undefined) ?? null,
-            role: (meta.role as string | undefined) ?? 'buyer',
+            role: 'buyer',
             phone: (meta.phone as string | undefined) ?? null,
             avatar_url: (meta.avatar_url as string | undefined) ?? null,
             is_verified: false,
