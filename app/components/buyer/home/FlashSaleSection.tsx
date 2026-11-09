@@ -256,13 +256,13 @@ function UrgentCard({ item, startsAtIso, endsAtIso, onViewDetail, }: {
 
               <div className="flex items-center justify-between text-xs">
 
-                <span className="font-extrabold text-red-600 drop-shadow-sm">
+                <span className="font-bold text-sale">
 
                   Sisa {stockCount}
 
                 </span>
 
-                <span className="font-extrabold text-red-600 drop-shadow-sm">Buru!</span>
+                <span className="font-bold text-sale">Buru!</span>
 
               </div>
 

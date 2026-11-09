@@ -90,7 +90,7 @@ export function MobileNavbar() {
 
       
 
-      <header className="fixed inset-x-0 top-0 z-[65] border-b border-border bg-white/95 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-[65] border-b border-border bg-white">
 
         <div className="flex h-14 items-center gap-2 px-4 sm:gap-3">
 

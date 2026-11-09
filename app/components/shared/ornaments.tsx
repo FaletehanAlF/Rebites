@@ -1,6 +1,5 @@
 'use client';
 import { useId } from 'react';
-import { motion } from 'framer-motion';
 import { Leaf } from 'lucide-react';
 import { cn } from '@/lib/utils';
 export function SoftBlob({ className }: {
@@ -12,11 +11,14 @@ export function FloatingLeaf({ className, delay = 0, }: {
     className?: string;
     delay?: number;
 }) {
-    return (<motion.span aria-hidden animate={{ y: [0, -14, 0], rotate: [0, 10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay }} className={cn('pointer-events-none absolute', className)}>
+    // Leaf statis (tanpa loop); dekorasi tetap hidup lewat reveal saat scroll,
+    // bukan animasi berulang. delay dipertahankan agar pemanggil lama tetap valid.
+    void delay;
+    return (<span aria-hidden className={cn('pointer-events-none absolute', className)}>
 
       <Leaf className="h-full w-full" strokeWidth={1.5}/>
 
-    </motion.span>);
+    </span>);
 }
 export function DotPattern({ className }: {
     className?: string;

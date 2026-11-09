@@ -239,6 +239,19 @@ export function LandingFooter() {
           </div>
         </div>
       </div>
+      <div
+        aria-hidden="true"
+        className="relative z-0 -mt-15 w-full overflow-hidden"
+      >
+        <Image
+          src="/footer_img_updt.png"
+          alt=""
+          width={2400}
+          height={800}
+          sizes="100vw"
+          className="block h-auto w-full object-contain object-bottom saturate-[0.65]"
+        />
+      </div>
     </footer>
   );
 }

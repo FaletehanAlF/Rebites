@@ -8,7 +8,6 @@ import { Reveal } from './reveal';
 export function SiteFooter() {
   return (
     <footer
-      data-nav="green"
       className="relative overflow-hidden bg-primary text-primary-foreground"
     >
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
@@ -145,18 +144,11 @@ export function SiteFooter() {
             SMK Taruna Bhakti.
           </p>
 
+          {/* Halaman kebijakan belum ada; label statis, tanpa pointer yang berbohong (R-26). */}
           <div className="flex flex-wrap items-center gap-6 font-sans text-xs text-primary-foreground/50">
-            <span className="cursor-pointer transition-colors hover:text-primary">
-              Kebijakan Privasi
-            </span>
-
-            <span className="cursor-pointer transition-colors hover:text-primary">
-              Syarat Penggunaan
-            </span>
-
-            <span className="cursor-pointer transition-colors hover:text-primary">
-              Penyangkalan
-            </span>
+            <span>Kebijakan Privasi</span>
+            <span>Syarat Penggunaan</span>
+            <span>Penyangkalan</span>
           </div>
         </div>
       </div>

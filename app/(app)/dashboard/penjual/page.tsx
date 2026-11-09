@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
-import { Crown } from 'lucide-react';
 import { Reveal } from '@/app/components/shared/reveal';
 import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
 import { DetailedReportCard, type StatsPeriod } from '@/app/components/seller/dashboard-penjual/DetailedReportCard';
@@ -65,15 +64,13 @@ export default function VendorDashboardPage() {
                     Pantau penjualan dan pesanan masuk tokomu 
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-foreground">
-                    <Crown className="h-3.5 w-3.5 text-primary" />
-                    Paket Aktif · {plan.label}
-                  </span>
-                  { }
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Paket aktif: <span className="font-semibold text-foreground">{plan.label}</span>
+                  </p>
                   <Link
                     href="/dashboard/penjual/langganan"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3.5 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary-dark/10"
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-primary/40 px-3.5 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary-dark/10"
                   >
                     Kelola Paket Langganan
                   </Link>

@@ -40,7 +40,7 @@ export function Topbar({ onMenuClick, storeId }: TopbarProps) {
             window.removeEventListener(STORE_SETTINGS_UPDATED_EVENT, refresh);
         };
     }, []);
-    return (<header className="sticky top-0 z-30 border-b border-border bg-white/90 backdrop-blur-md">
+    return (<header className="sticky top-0 z-30 border-b border-border bg-white">
 
       <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-4 py-2 sm:gap-3 sm:py-2.5 sm:px-6 lg:px-10">
 

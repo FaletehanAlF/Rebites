@@ -14,7 +14,7 @@ import { getSellerStoreSettings } from "@/lib/store-settings-storage";
 const HERO_IMAGE =
   "https://images.pexels.com/photos/16134564/pexels-photo-16134564.jpeg?auto=compress&cs=tinysrgb&w=1200";
 
-const UMKM_IMAGE = "/terselamatkan.jpg";
+const UMKM_IMAGE = "/terselamatan.avif";
 
 const SIDE_LINK =
   "inline-flex w-fit items-center gap-1.5 rounded-full font-sans text-[13px] font-semibold text-primary transition-colors duration-150 hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
@@ -174,7 +174,7 @@ export function Hero() {
           >
             <div className="absolute inset-0">
               <SmartImage
-                src="/hero-makanan.jpeg"
+                src="/hero-makanan.avif"
                 alt="Makanan surplus diskon besar"
                 sizes="(min-width: 1024px) 40vw, 100vw"
               />

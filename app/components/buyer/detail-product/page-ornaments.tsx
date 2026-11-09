@@ -2,7 +2,6 @@
 
 import { useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { Leaf } from 'lucide-react';
 import {
   ArcLines,
   DotPattern,
@@ -43,29 +42,8 @@ export function PageOrnaments() {
 
       <LeafSprig className="-left-6 top-72 hidden h-44 w-44 -rotate-12 text-muted-foreground/25 lg:block" />
 
-      {reduce ? (
-        <Leaf
-          className="absolute right-8 top-72 hidden h-5 w-5 text-muted-foreground/40 lg:block"
-          strokeWidth={1.5}
-        />
-      ) : (
-        <FloatingLeaf
-          className="right-8 top-72 hidden h-5 w-5 text-muted-foreground/40 lg:block"
-          delay={1.2}
-        />
-      )}
-
-      {reduce ? (
-        <Leaf
-          className="absolute left-8 top-[58rem] hidden h-5 w-5 text-muted-foreground/40 lg:block"
-          strokeWidth={1.5}
-        />
-      ) : (
-        <FloatingLeaf
-          className="left-8 top-[58rem] hidden h-5 w-5 text-muted-foreground/40 lg:block"
-          delay={0.4}
-        />
-      )}
+      <FloatingLeaf className="right-8 top-72 hidden h-5 w-5 text-muted-foreground/40 lg:block" />
+      <FloatingLeaf className="left-8 top-[58rem] hidden h-5 w-5 text-muted-foreground/40 lg:block" />
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { notFound, useParams } from 'next/navigation';
 import { MotionConfig } from 'framer-motion';
 import { RefreshCw, WifiOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DashboardDecor } from './decor';
 import { SellerShellSkeleton } from './SellerShellSkeleton';
 import { Sidebar, SELLER_CONTENT_OFFSET_CLASS } from './Sidebar';
 import { Topbar } from './Topbar';
@@ -85,10 +84,6 @@ export function SellerShell({ children }: SellerShellProps) {
     return (<MotionConfig reducedMotion="user">
 
       <div className="relative min-h-screen bg-secondary font-sans text-foreground">
-
-        <DashboardDecor />
-
-
 
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} storeId={storeId} collapsed={sidebarCollapsed} onToggleCollapsed={toggleSidebarCollapsed}/>
 
