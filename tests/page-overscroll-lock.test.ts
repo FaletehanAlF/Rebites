@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import postcss from 'postcss';
 
 function readProjectFile(relativePath: string): string {
     return readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), 'utf8').replace(/\r\n/g, '\n');
@@ -30,4 +31,12 @@ test('penjaga ini benar-benar bisa gagal', () => {
 test('aturan ini menahan pantulan, bukan mengunci guliran halaman', () => {
     assert.doesNotMatch(blokPertama(CSS, 'html'), /overflow:\s*hidden/, 'html tidak boleh dikunci overflow:hidden — seluruh situs jadi tidak bisa digulir');
     assert.doesNotMatch(blokPertama(CSS, 'body'), /overflow:\s*hidden/, 'body tidak boleh dikunci overflow:hidden');
+});
+
+test('globals.css harus lolos parse PostCSS', () => {
+    assert.doesNotThrow(() => postcss.parse(CSS), 'kurung yang tidak seimbang di globals.css menggagalkan build produksi, bukan typecheck/lint/tes');
+});
+
+test('penjaga parse CSS ini benar-benar bisa gagal', () => {
+    assert.throws(() => postcss.parse('html { overscroll-behavior: none; }\n}\n'), 'kurung menggantung harus ditolak');
 });

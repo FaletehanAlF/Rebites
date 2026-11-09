@@ -144,7 +144,6 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     overscroll-behavior: none;
-  }
     /* Setelan 'ss01'/'ss02' warisan Plus Jakarta Sans dihapus: pada Inter
        fitur tersebut mengubah bentuk angka/huruf sehingga tampilannya tidak
        konsisten. Angka tabular tetap dipakai lewat utilitas `tabular-nums`
