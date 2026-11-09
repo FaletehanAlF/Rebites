@@ -1,79 +1,64 @@
+
 import Link from "next/link";
-import Image from "next/image";
-import { Home } from "lucide-react";
-import { ErrorBackgroundMarquee } from "@/app/components/shared/error-background-marquee";
+import { ArrowLeft, ArrowUpRight, Home } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
+import { LottieIllustration } from "./(landing)/fitur/page";
+
 export default function NotFound() {
-    return (<main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-forest-900 px-6 pb-40 pt-14 text-center sm:pb-24 sm:pt-20">
+  return (
+    <main className="flex min-h-screen flex-col bg-cream-50">
+      <div className="flex flex-1 items-center justify-center px-5 py-16">
+        <section className="mx-auto flex w-full max-w-xl flex-col items-center text-center">
 
-      <ErrorBackgroundMarquee code="ERROR 404" label="PAGE NOT FOUND"/>
+          {/* Illustration */}
+          <div className="mb-1 w-full max-w-[300px] sm:max-w-[340px]">
+            <LottieIllustration
+              src="/lottie_animation/not-found.json"
+              label="Ilustrasi halaman tidak ditemukan"
+            />
+          </div>
 
+          {/* Heading */}
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-charcoal-900 sm:text-3xl">
+            Waduh, halaman tidak ditemukan!
+          </h1>
 
+          {/* Description */}
+          <p className="mt-3 max-w-md text-sm leading-7 text-stone sm:text-base">
+            Sepertinya halaman yang kamu cari tidak tersedia,
+            sudah dipindahkan, atau alamatnya kurang tepat.
+            Tenang, masih banyak makanan enak di ReBites.
+          </p>
 
-      
+          {/* Actions */}
+          <div className="mt-8 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href="/home">
+                <Home className="mr-2 h-4 w-4" aria-hidden="true" />
+                Kembali ke Beranda
+              </Link>
+            </Button>
 
-      <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/25 blur-[120px]"/>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              <Link href="/">
+                <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
+                Landing Page
+              </Link>
+            </Button>
+          </div>
 
+          {/* Footer */}
+          <p className="mt-12 text-xs text-stone">
+            ReBites — Selamatkan makanan, nikmati kebaikan.
+          </p>
 
-
-      <div className="relative z-10 flex w-full max-w-xl flex-col items-center">
-
-        <Image src="/logo.avif" alt="" width={36} height={36} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-white/20"/>
-
-
-
-        
-
-        <p aria-hidden="true" className="mt-8 font-display text-[clamp(5rem,16vw,9.5rem)] font-extrabold leading-none tracking-[-0.04em] text-white tabular-nums">
-
-          404
-
-        </p>
-
-
-
-        <h1 className="mt-4 font-display text-xl font-semibold tracking-tight text-white sm:text-2xl">
-
-          <span className="sr-only">Error 404: </span>
-
-          Halaman yang kamu cari tidak ditemukan
-
-        </h1>
-
-
-
-        <p className="mt-3 max-w-md text-sm leading-relaxed text-white/70 sm:text-[15px]">
-
-          Alamat ini tidak mengarah ke halaman mana pun di ReBites. Mungkin
-
-          tautannya sudah berubah, atau makanan surplusnya keburu habis. Yuk
-
-          kembali berburu kuliner enak.
-
-        </p>
-
-
-
-        
-
-        <div className="mt-7 flex w-full flex-col items-center gap-1 sm:mt-9 sm:w-auto sm:flex-row sm:gap-3">
-
-          <Link href="/home" className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-7 font-sans text-sm font-semibold text-forest-900 shadow-lg shadow-black/25 transition duration-200 hover:bg-cream-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98] sm:w-auto">
-
-            <Home className="h-4 w-4" aria-hidden/>
-
-            Kembali ke Beranda
-
-          </Link>
-
-          <Link href="/" className="inline-flex items-center justify-center rounded-full px-5 py-3 font-sans text-sm font-semibold text-white/75 underline underline-offset-4 transition duration-200 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98] sm:h-12 sm:w-auto sm:border sm:border-white/35 sm:px-7 sm:py-0 sm:text-white sm:no-underline sm:hover:bg-white/10">
-
-            Landing Page ReBites
-
-          </Link>
-
-        </div>
-
+        </section>
       </div>
-
-    </main>);
+    </main>
+  );
 }

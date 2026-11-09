@@ -1,4 +1,5 @@
-import { SellerStoreRedirect } from '@/app/components/dashboard-penjual/seller-store-redirect';
-export default function SellerNotificationRedirectPage() {
-    return <SellerStoreRedirect sub="notifikasi"/>;
+import { SellerNotificationView } from '@/app/components/shared/notification/seller-notification-view';
+
+export default function SellerNotificationPage() {
+  return <SellerNotificationView />;
 }

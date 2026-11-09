@@ -6,7 +6,7 @@ import { BuyerTopbar } from "./navbar";
 import { BUYER_CONTENT_OFFSET_CLASS, BuyerSidebarNav, } from "./profile-sidebar-nav";
 import { MobileNavbar } from "./MobileNavbar";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { NotificationAlertPopup } from "@/app/components/notification/notification-alert-popup";
+import { NotificationAlertPopup } from "@/app/components/shared/notification/notification-alert-popup";
 const SIDEBAR_COLLAPSED_KEY = "rebites-buyer-sidebar-collapsed";
 export const SIDEBAR_COLLAPSED_CHANGED_EVENT = "rebites-buyer-sidebar-collapsed-changed";
 export function getSidebarCollapsedPreference(): boolean {
@@ -52,39 +52,23 @@ export function BuyerShell({ children, showBottomNav = true, }: BuyerShellProps)
             return next;
         });
     };
-    return (<MotionConfig reducedMotion="user">
-
-      <div className="min-h-screen bg-white">
-
-        <div className="lg:hidden">
-
-          <MobileNavbar />
-
-        </div>
-
-
-
-        <BuyerTopbar collapsed={collapsed}/>
-
-        <BuyerSidebarNav collapsed={collapsed} onToggleCollapsed={toggleCollapsed}/>
-
-
-
+    return (<MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-secondary">
+        <div className="lg:hidden">
+          <MobileNavbar />
+        </div>
+
+        <BuyerTopbar collapsed={collapsed}/>
+        <BuyerSidebarNav collapsed={collapsed} onToggleCollapsed={toggleCollapsed}/>
+
         <div className={cn("min-w-0 pt-14 transition-[padding] duration-200 ease-out lg:pt-16", collapsed
             ? BUYER_CONTENT_OFFSET_CLASS.collapsed
-            : BUYER_CONTENT_OFFSET_CLASS.expanded)}>
-
-          {children}
-
-          {showBottomNav && <MobileBottomNav />}
-
-        </div>
-
-        
-
-        <NotificationAlertPopup />
-
-      </div>
-
+            : BUYER_CONTENT_OFFSET_CLASS.expanded)}>
+          {children}
+          {showBottomNav && <MobileBottomNav />}
+        </div>
+        
+        <NotificationAlertPopup />
+      </div>
     </MotionConfig>);
 }

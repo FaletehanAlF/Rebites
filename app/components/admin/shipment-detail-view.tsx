@@ -21,7 +21,7 @@ import { paymentMethodName } from '@/lib/order-utils';
 import { formatPositionAge, type LocationFreshness } from '@/lib/courier-location';
 import { buildMapPlan } from '@/lib/delivery-map-plan';
 import { useCourierLocation } from '@/hooks/use-courier-location';
-const DeliveryMap = dynamic(() => import('@/app/components/order-history/delivery-map'), {
+const DeliveryMap = dynamic(() => import('@/app/components/buyer/order-history/delivery-map'), {
     ssr: false,
     loading: () => (<div className="h-[260px] animate-pulse rounded-[var(--radius)] bg-sage-100/60 sm:h-[320px] lg:h-[380px]"/>),
 });

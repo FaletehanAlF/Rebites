@@ -1,31 +1,32 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { OrderHistoryView } from '@/app/components/order-history/order-history-view';
-import { RiwayatSidebarShell } from '@/app/components/order-history/riwayat-sidebar-shell';
+import { OrderHistoryView } from '@/app/components/buyer/order-history/order-history-view';
+import { RiwayatSidebarShell } from '@/app/components/buyer/order-history/riwayat-sidebar-shell';
 import { RequireAuth } from '@/app/components/auth/require-auth';
-import { Skeleton } from '@/app/components/ui/skeleton';
+
 export const metadata: Metadata = {
-    title: 'Pesanan Saya | ReBites',
-    description: 'Lacak pesanan yang sedang berlangsung dan lihat riwayat belanja makanan di ReBites.',
+  title: 'Pesanan Saya | ReBites',
+  description:
+    'Lacak pesanan yang sedang berlangsung dan lihat riwayat belanja makanan di ReBites.',
 };
+
 export default function OrderHistoryPage() {
-    return (<RequireAuth>
-
+  // RequireAuth di luar shell: navbar, judul halaman, dan skeleton TIDAK
+  // ikut terlihat sebelum sesi valid (mencegah flash UI pra-redirect).
+  return (
+    <RequireAuth>
       <RiwayatSidebarShell>
-
-        <Suspense fallback={<div role="status" aria-label="Memuat riwayat pesanan" className="space-y-5">
-
-              <Skeleton className="h-14 w-56 rounded-xl"/>
-
-              <Skeleton className="h-52 rounded-2xl"/>
-
-            </div>}>
-
+        <Suspense
+          fallback={
+            <div className="space-y-5">
+              <div className="h-14 w-56 animate-pulse rounded-xl bg-white ring-1 ring-border" />
+              <div className="h-52 animate-pulse rounded-2xl bg-white ring-1 ring-border" />
+            </div>
+          }
+        >
           <OrderHistoryView />
-
         </Suspense>
-
       </RiwayatSidebarShell>
-
-    </RequireAuth>);
+    </RequireAuth>
+  );
 }

@@ -9,18 +9,18 @@ import { patchSellerProduct, deleteSellerProduct, } from '@/lib/product-storage'
 import { isProductAvailable } from '@/lib/product-storage';
 import { formatScheduleDate, resolveMenuScheduleStatus, toScheduleDateInput, todayScheduleDateInput, } from '@/lib/menu-schedule';
 import { useSellerPlan, type SellerEntitlements } from '@/lib/seller-plan';
-import { useStoreProducts } from '@/hooks/use-store-products';
-import { useSellerStatus } from '@/hooks/use-seller-status';
+import { useStoreProducts } from '@/hooks/seller/use-store-products';
+import { useSellerStatus } from '@/hooks/seller/use-seller-status';
 import { addWibDays, countFlashSaleProducts, FLASH_SLOTS, flashSlotRange, formatFlashScheduleLabel, getFlashQuota, isFlashSlotPast, removeFlashSale, resolveFlashSaleStatus, setFlashSale, slotFromStartIso, todayWibDate, validateFlashSaleSchedule, type FlashSaleStatus, } from '@/lib/flash-sale';
 import type { UrgentSlot } from '@/lib/types';
 import type { SellerProduct } from '@/lib/product-storage';
-import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
-import { Card } from '@/app/components/dashboard-penjual/Card';
+import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
+import { Card } from '@/app/components/seller/dashboard-penjual/Card';
 import { Skeleton } from '@/app/components/ui/skeleton';
 import { Badge } from '@/app/components/ui/badge';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, } from '@/app/components/ui/dialog';
-import { EditProductModal } from '@/app/components/tambahMenu/EditProductModal';
+import { EditProductModal } from '@/app/components/seller/tambahMenu/EditProductModal';
 import { useStoreRouteId } from '@/hooks/use-store-route-id';
 import { sellerStorePath } from '@/lib/seller-store-path';
 function ProductLimitMeter({ products }: {

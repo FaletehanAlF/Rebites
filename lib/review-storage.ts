@@ -1,9 +1,10 @@
 'use client';
-import { supabase } from './supabase';
 import type { OrderReview } from './types';
-import type { Review } from '@/app/components/detail-product/data';
+import { supabase } from './supabase';
+
+
 type ReviewRow = Record<string, any>;
-function rowToDisplayReview(row: ReviewRow): Review {
+function rowToDisplayReview(row: ReviewRow) {
     const created = row.created_at ? new Date(row.created_at) : null;
     return {
         id: String(row.id ?? ''),
@@ -41,7 +42,7 @@ async function resolveUmkmId(slug: string): Promise<string | null> {
         .maybeSingle();
     return data?.id ?? null;
 }
-export async function getProductReviews(productSlug: string): Promise<Review[]> {
+export async function getProductReviews(productSlug: string): Promise<Array<{ id: string; reviewerName: string; avatar: string; rating: number; comment: string; date: string; }>> {
     const productId = await resolveProductId(productSlug);
     if (!productId)
         return [];
@@ -55,7 +56,7 @@ export async function getProductReviews(productSlug: string): Promise<Review[]> 
         return [];
     return data.map(rowToDisplayReview);
 }
-export async function getServiceReviews(storeSlug: string): Promise<Review[]> {
+export async function getServiceReviews(storeSlug: string): Promise<Array<{ id: string; reviewerName: string; avatar: string; rating: number; comment: string; date: string; }>> {
     const umkmId = await resolveUmkmId(storeSlug);
     if (!umkmId)
         return [];

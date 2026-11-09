@@ -13,7 +13,7 @@ const DRAWER_EASE: [
     number,
     number
 ] = [0.23, 1, 0.32, 1];
-import { useSellerStatus } from '@/hooks/use-seller-status';
+import { useSellerStatus } from '@/hooks/seller/use-seller-status';
 import { useAdminMe } from '@/hooks/use-admin-me';
 import { useRoleRequestBadge } from '@/hooks/use-role-request-badge';
 import { useStoreActivationBadge } from '@/hooks/use-store-activation-badge';

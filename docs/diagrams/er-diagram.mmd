@@ -1,0 +1,153 @@
+# ER Diagram
+
+> **Source:** `supabase/migrations/`, `types/index.ts`
+> **Note:** Simplified — shows core tables and relationships
+
+```mermaid
+erDiagram
+    profiles ||--o{ umkm_profiles : "has"
+    profiles ||--o{ orders : "buyer"
+    profiles ||--o{ addresses : "owns"
+    profiles ||--o{ user_reports : "reports"
+    profiles ||--o{ user_warnings : "receives"
+    profiles ||--o{ user_sanctions : "receives"
+    profiles ||--o{ activity_logs : "generates"
+    profiles ||--o{ notifications : "receives"
+    profiles ||--o{ subscriptions : "seller"
+    profiles ||--o{ liked_foods : "likes"
+    profiles ||--o{ store_follows : "follows"
+    profiles ||--o{ chat_messages : "sends"
+
+    umkm_profiles ||--o{ products : "owns"
+    umkm_profiles ||--o{ orders : "seller"
+    umkm_profiles ||--o{ subscriptions : "has"
+    umkm_profiles ||--o{ store_visitors : "tracked"
+    umkm_profiles ||--o{ store_settings : "configures"
+
+    products ||--o{ orders : "in"
+    products ||--o{ flash_sales : "has"
+
+    orders ||--o{ shipments : "has"
+    orders ||--o{ chat_messages : "about"
+
+    subscriptions ||--o{ plans : "based_on"
+
+    shipments ||--o{ courier_assignments : "assigned_to"
+
+    courier_profiles ||--o{ courier_assignments : "handles"
+    courier_profiles ||--o{ courier_locations : "tracks"
+
+    articles ||--o{ article_views : "viewed_by"
+
+    promo_codes ||--o{ orders : "used_in"
+
+    admin_audit_logs }|--|| profiles : "by_admin"
+```
+
+---
+
+## Core Tables
+
+| Table | Primary Key | Key Relationships |
+|-------|-------------|-------------------|
+| `profiles` | `id` (UUID) | → `auth.users` (1:1), → `umkm_profiles` (1:0/1) |
+| `umkm_profiles` | `id` | → `profiles.user_id` (1:1), → `products` (1:N) |
+| `products` | `id` | → `umkm_profiles.umkm_id` (N:1), → `orders` (1:N) |
+| `orders` | `id` | → `profiles.buyer_id` (N:1), → `umkm_profiles.umkm_id` (N:1), → `products.product_id` (N:1) |
+| `subscriptions` | `id` | → `umkm_profiles.umkm_id` (N:1), → `plans.plan_id` (N:1) |
+| `addresses` | `id` | → `profiles.user_id` (N:1) |
+| `shipments` | `id` | → `orders.order_code` (1:1), → `courier_assignments` (1:N) |
+
+---
+
+## Key Columns
+
+### `profiles`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | PK, FK to auth.users |
+| `email` | TEXT | From auth |
+| `full_name` | TEXT | Display name |
+| `role` | user_role | `buyer` \| `umkm` \| `admin` |
+| `phone` | TEXT | Contact |
+| `avatar_url` | TEXT | Supabase Storage path |
+| `is_verified` | BOOLEAN | Email verified |
+| `account_status` | account_status | `active` \| `suspended` \| `banned` |
+
+### `umkm_profiles`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | PK |
+| `user_id` | UUID | FK to profiles |
+| `business_name` | TEXT | Store name |
+| `slug` | TEXT | URL-friendly |
+| `city` | TEXT | City (Depok) |
+| `latitude`/`longitude` | NUMERIC | Store location |
+| `is_verified` | BOOLEAN | Admin approved |
+| `rating` | NUMERIC | Avg rating |
+
+### `products`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | PK |
+| `umkm_id` | UUID | FK to umkm_profiles |
+| `name` | TEXT | Product name |
+| `category` | TEXT | Category |
+| `surplus_price` | INTEGER | Sale price (IDR minor) |
+| `original_price` | INTEGER | Strike-through price |
+| `stock` | INTEGER | Available qty |
+| `status` | product_status | `available` \| `sold_out` \| `hidden` |
+| `verification_status` | TEXT | `pending` \| `approved` \| `rejected` |
+| `image_url` | TEXT | Supabase Storage path |
+| `flash_sale_price` | INTEGER | Promo price |
+| `flash_sale_start`/`end` | TIMESTAMPTZ | Schedule |
+| `is_delivery`/`is_pickup` | BOOLEAN | Fulfillment options |
+
+### `orders`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | PK |
+| `order_code` | TEXT | Human-readable: `RB-YYYYMMDD-XXXXX` |
+| `buyer_id` | UUID | FK to profiles |
+| `umkm_id` | UUID | FK to umkm_profiles |
+| `product_id` | UUID | FK to products |
+| `quantity` | INTEGER | Qty ordered |
+| `total_price` | INTEGER | Final price (IDR minor) |
+| `delivery_option` | delivery_option | `delivery` \| `pickup` |
+| `payment_status` | payment_status | `unpaid` \| `paid` \| `failed` \| `refunded` |
+| `order_status` | order_status | `pending`...`completed` |
+| `invoice_state` | TEXT | `pending` \| `paid` \| `failed` \| `refunded` |
+| `address_snapshot` | JSONB | Frozen address at order time |
+| `coin_used`/`coin_earned` | INTEGER | Loyalty |
+| `co2e_saved_kg` | NUMERIC | Environmental impact |
+
+---
+
+## RLS Policy Summary
+
+| Table | Policies |
+|-------|----------|
+| `profiles` | Self read/write, Admin all |
+| `umkm_profiles` | Public read, Owner write, Admin all |
+| `products` | Approved public read, Seller all, Admin all |
+| `orders` | Buyer own, Seller own UMKM, Admin all |
+| `addresses` | Self, Admin |
+| `subscriptions` | Seller own, Admin all |
+| `shipments` | Buyer/Seller own order, Admin all |
+| `courier_profiles` | Self, Admin |
+| `courier_assignments` | Courier own, Admin all |
+| `chat_messages` | Participants, Admin |
+| `notifications` | Self only |
+
+---
+
+## Related Docs
+
+- [Database: Overview](../database/overview.md) — Full schema
+- [Database: RLS Policies](../database/rls-policies.md) — Policy details
+- [Database: Functions](../database/functions.md) — RPCs
+- [Types: index.ts](../reference/types.md) — TypeScript interfaces

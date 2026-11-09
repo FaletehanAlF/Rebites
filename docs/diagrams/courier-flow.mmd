@@ -1,0 +1,73 @@
+# Courier Flow
+
+> **Source:** `app/api/courier/**`, `lib/server/biteship-shipment.ts`
+
+```mermaid
+sequenceDiagram
+    participant S as Seller
+    participant O as Order
+    participant C as Courier
+    participant B as Biteship
+    participant App as ReBites
+
+    S->>O: Marks ready_for_pickup
+    O->>App: POST /api/courier/assignments
+    App->>B: Create Biteship shipment
+    B-->>App: waybill + tracking_url
+    App->>C: Assignment notification
+    
+    par External Courier (Biteship)
+        C->>B: Accept shipment
+        B->>App: Webhook PICKED_UP
+        App->>O: order_status = out_for_delivery
+        C->>B: Mark DELIVERED
+        B->>App: Webhook DELIVERED
+        App->>O: order_status = completed
+    and Internal Courier (ReBites)
+        C->>App: POST /assignments/[id]/accept
+        C->>App: POST /assignments/[id]/pickup
+        App->>O: order_status = out_for_delivery
+        C->>App: POST /assignments/[id]/deliver
+        App->>O: order_status = completed
+    end
+    
+    App->>S: Earnings released
+    App->>Buyer: Coins earned
+```
+
+---
+
+## Courier States
+
+```mermaid
+stateDiagram-v2
+    [*] --> available: Courier online
+    available --> assigned: Gets assignment
+    assigned --> en_route_to_pickup: Accepts
+    en_route_to_pickup --> at_pickup: Arrives
+    at_pickup --> en_route_to_delivery: Picks up
+    en_route_to_delivery --> at_delivery: Arrives
+    at_delivery --> completed: Delivers
+    completed --> available: Ready for next
+    
+    assigned --> available: Rejects
+    en_route_to_pickup --> available: Unassigns
+    at_pickup --> available: Order cancelled
+```
+
+---
+
+## Assignment Types
+
+| Type | Source | Flow |
+|------|--------|------|
+| **External** | Biteship (JNE, SiCepat, etc.) | Biteship webhook |
+| **Internal** | ReBites Courier (in-house) | App API |
+
+---
+
+## Related Docs
+
+- [Features: Courier Dashboard](../features/courier-dashboard.md) — UI
+- [API: Courier](../api/overview.md#courier-dashboard) — Endpoints
+- [Integrations: Biteship](../integrations/biteship.md) — External flow

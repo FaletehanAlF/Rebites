@@ -1,13 +1,15 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { OrderSuccessView } from '@/app/components/checkout/order-success-view';
+import { OrderSuccessView } from '@/app/components/buyer/checkout/order-success-view';
+
 export const metadata: Metadata = {
-    title: 'Pesanan Berhasil - ReBites',
+  title: 'Pesanan Berhasil - ReBites',
 };
+
 export default function OrderSuccessPage() {
-    return (<Suspense fallback={<main className="min-h-screen bg-secondary"/>}>
-
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-secondary" />}>
       <OrderSuccessView />
-
-    </Suspense>);
+    </Suspense>
+  );
 }

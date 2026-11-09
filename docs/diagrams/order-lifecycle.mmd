@@ -1,0 +1,84 @@
+# Order Lifecycle
+
+> **Source:** `lib/order-state-machine.ts`, `app/api/webhooks/xendit/route.ts`
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending: Order created
+
+    pending --> paid: Xendit webhook (PAID/SETTLED)
+    pending --> cancelled: Buyer cancel / Xendit EXPIRED/FAILED
+    pending --> cancelled: Admin cancel
+
+    paid --> processing: Auto (seller confirmed)
+    paid --> refunded: Admin refund
+
+    processing --> ready_for_pickup: Seller marks ready
+    processing --> cancelled: Seller cancel (no stock)
+    processing --> cancelled: Admin cancel
+
+    ready_for_pickup --> out_for_delivery: Courier accepts/picks up
+    ready_for_pickup --> cancelled: Buyer cancel / timeout
+
+    out_for_delivery --> completed: Courier delivers (Biteship DELIVERED)
+    out_for_delivery --> cancelled: Shipment failed/returned
+
+    completed --> [*]
+    cancelled --> [*]
+    refunded --> [*]
+
+    note right of paid
+        invoice_state:
+        pending → paid
+    end note
+
+    note right of cancelled
+        If unpaid: release stock
+        If paid: refund + release stock
+        Release promo code
+    end note
+```
+
+---
+
+## State Details
+
+| State | `order_status` | `payment_status` | `invoice_state` |
+|-------|---------------|-----------------|-----------------|
+| Created | `pending` | `unpaid` | `pending` |
+| Paid | `processing` | `paid` | `paid` |
+| Ready | `ready_for_pickup` | `paid` | `paid` |
+| Out for Delivery | `out_for_delivery` | `paid` | `paid` |
+| Completed | `completed` | `paid` | `paid` |
+| Cancelled (unpaid) | `cancelled` | `failed` | `failed` |
+| Cancelled (paid) | `cancelled` | `refunded` | `refunded` |
+| Refunded | `cancelled` | `refunded` | `refunded` |
+
+---
+
+## Transition Guards
+
+| From | To | Guard |
+|------|----|-------|
+| `pending` | `paid` | Xendit webhook + amount match |
+| `pending` | `cancelled` | Buyer/admin action |
+| `paid` | `processing` | Seller confirms / auto |
+| `processing` | `ready_for_pickup` | Seller action |
+| `ready_for_pickup` | `out_for_delivery` | Courier accepts |
+| `out_for_delivery` | `completed` | Biteship DELIVERED |
+| `paid` | `refunded` | Admin refund action |
+
+**Invalid transitions (blocked):**
+- `completed` → any
+- `cancelled` → any
+- `refunded` → any
+- `paid` → `pending` (can't unpay)
+- `out_for_delivery` → `ready_for_pickup` (can't go back)
+
+---
+
+## Related Docs
+
+- [Features: Checkout](../features/checkout.md) — Full checkout flow
+- [API: Webhooks](../api/webhooks.md) — Webhook processing
+- [Engineering: Decisions](../engineering/decisions.md) — Idempotency ADR

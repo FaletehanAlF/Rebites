@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils';
 import { formatRupiah } from '@/lib/data';
 import { SUBSCRIPTION_PLANS, getPlanPrice, type BillingCycle, } from '@/lib/subscription-plans';
 import { SUBSCRIPTION_UPDATED_EVENT, getActiveSubscription, type StoredSubscription, } from '@/lib/subscription-storage';
-import { SellerShell } from '@/app/components/dashboard-penjual/SellerShell';
-import { Card } from '@/app/components/dashboard-penjual/Card';
+import { SellerShell } from '@/app/components/seller/dashboard-penjual/SellerShell';
+import { Card } from '@/app/components/seller/dashboard-penjual/Card';
 import { Reveal } from '@/app/components/shared/reveal';
 function formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('id-ID', {

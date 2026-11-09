@@ -1,5 +1,5 @@
 import type { StoredOrder } from './types';
-import { paymentMethods } from '@/app/components/checkout/payment-methods';
+import { paymentMethods } from '@/app/components/buyer/checkout/payment-methods';
 import { resolveOrderPhase } from './order-status-source';
 import { subStatusForPhase, type OrderSubStatus } from './order-substatus';
 export function paymentMethodName(id?: string): string {
