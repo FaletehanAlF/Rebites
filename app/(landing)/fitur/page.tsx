@@ -169,7 +169,7 @@ export default function FiturPage() {
           />
 
           <div className="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-14">
-            <div className='scale-125'>
+            <div className="origin-top-left scale-125 sm:scale-110 lg:scale-100">
               <Reveal>
                 <LottieIllustration
                   src="/lottie_animation/toko.json"

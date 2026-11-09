@@ -65,7 +65,11 @@ export default function DampakPage() {
     <PublicShell>
 
       {/* Narasi */}
-      <section aria-labelledby="narrative-heading" className="border-t border-border bg-white">
+      <section
+        id="narrasi"
+        aria-labelledby="narrative-heading"
+        className="border-t border-border bg-white scroll-mt-20"
+      >
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <SectionHeading
             id="narrative-heading"
@@ -92,8 +96,9 @@ export default function DampakPage() {
 
       {/* Tiga hasil */}
       <section
+        id="hasil"
         aria-labelledby="outcomes-heading"
-        className="border-t border-border bg-white"
+        className="border-t border-border bg-white scroll-mt-20"
       >
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <SectionHeading
@@ -134,7 +139,11 @@ export default function DampakPage() {
       </section>
 
       {/* Rantai */}
-      <section aria-labelledby="chain-heading" className="border-t border-border bg-white">
+      <section
+        id="rantai"
+        aria-labelledby="chain-heading"
+        className="border-t border-border bg-white scroll-mt-20"
+      >
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <SectionHeading
             id="chain-heading"
