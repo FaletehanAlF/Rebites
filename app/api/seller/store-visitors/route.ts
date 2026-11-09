@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getUserFromBearer, } from '@/lib/server/supabase';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const RANGE_OPTIONS = [7, 14, 30, 90] as const;
 function asCount(value: unknown): number {
     const parsed = typeof value === 'number' ? value : Number(value);

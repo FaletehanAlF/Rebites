@@ -7,6 +7,7 @@ import { resolvePackageWeightGram, isDefaultPackageWeight, } from '@/lib/package
 import { resolveOriginPoint } from '@/lib/store-origin-point';
 import { isMenuScheduleVisible } from '@/lib/menu-schedule';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
     try {
         const user = await getUserFromBearer(req.headers.get('authorization'));

@@ -10,6 +10,7 @@ import { resolvePackageWeightGram } from '@/lib/package-weight';
 import { resolveOriginPoint } from '@/lib/store-origin-point';
 import { isMenuScheduleVisible } from '@/lib/menu-schedule';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const POSTAL_CODE_RE = /^[0-9]{5}$/;
 function getWibMinutesNow(now = new Date()): number | null {
     try {

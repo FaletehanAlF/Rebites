@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createAuthedServerClient, getUserFromBearer } from '@/lib/server/supabase';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const VALID_CATEGORIES = ['harassment', 'spam', 'fraud', 'inappropriate_content', 'other'] as const;
 const MIN_DESCRIPTION_LENGTH = 10;
 const MAX_DESCRIPTION_LENGTH = 1000;

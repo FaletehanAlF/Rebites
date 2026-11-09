@@ -5,6 +5,7 @@ import { settleOrderPaid } from '@/lib/server/order-settlement';
 import { claimXenditCheck, VERIFY_CHECK_WINDOW_SECONDS } from '@/lib/server/verify-throttle';
 import { planTerminalPromoRelease, isInvoiceStateColumnMissingError, type InvoiceState } from '@/lib/server/checkout-idempotency';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
     const user = await getUserFromBearer(req.headers.get('authorization'));
     if (!user) {

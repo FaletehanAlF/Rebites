@@ -3,6 +3,7 @@ import { getUserFromBearer } from '@/lib/server/supabase';
 import { isValidCoordinatePair } from '@/lib/shipping-tariff';
 import { isValidRouteGeometry, simplifyRoute, straightRoute, buildRouteCacheKey, routePolylineKm, type RouteCoordinate, } from '@/lib/route-geometry';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const DEFAULT_ROUTING_URL = 'https://router.project-osrm.org';
 const ROUTING_TIMEOUT_MS = 6000;
 const ROUTE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;

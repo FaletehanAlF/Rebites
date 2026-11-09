@@ -5,6 +5,7 @@ import { canManageAccountDeletion, isSuperAdminUserId } from '@/lib/admin-access
 import { HARD_DELETE_PASSWORD_MISMATCH_MESSAGE, HARD_DELETE_UNCONFIGURED_MESSAGE, isHardDeleteConfigured, isHardDeletePasswordValid, readHardDeletePassword, } from '@/lib/server/hard-delete-password';
 import { evaluateHardDeletePreconditions, type HardDeleteImpact, } from '@/lib/hard-delete';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const AUTH_TIMEOUT_MS = 10000;
 const REASON_MAX = 500;
 const FINISHED_ORDER_STATUSES = ['completed', 'cancelled', 'refunded'] as const;

@@ -3,6 +3,7 @@ import { createServiceClient, getSiteUrl, getUserFromBearer } from '@/lib/server
 import { createXenditInvoice } from '@/lib/server/xendit';
 import { SUBSCRIPTION_PLANS, getPlanPrice, computePeriodEnd, type BillingCycle } from '@/lib/subscription-plans';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
     try {
         const user = await getUserFromBearer(req.headers.get('authorization'));

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { isValidCourierPosition } from '@/lib/courier-location';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
     try {
         const authHeader = req.headers.get('authorization');

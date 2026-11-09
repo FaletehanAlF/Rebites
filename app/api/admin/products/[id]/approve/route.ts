@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { notifySellerModeration } from '@/lib/server/moderation-notifications';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 type ProductRow = Record<string, unknown>;
 export async function POST(req: NextRequest, { params }: {
     params: {

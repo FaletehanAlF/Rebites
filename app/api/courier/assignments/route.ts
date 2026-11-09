@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const ALLOWED_NEXT: Record<string, string[]> = {
     assigned: ['picked_up', 'cancelled'],
     picked_up: ['delivering', 'cancelled'],

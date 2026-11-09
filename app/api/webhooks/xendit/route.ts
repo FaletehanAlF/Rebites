@@ -5,6 +5,7 @@ import { activateSubscriptionPaid } from '@/lib/server/subscription-activation';
 import { createBiteshipShipment } from '@/lib/server/biteship-shipment';
 import { planTerminalPromoRelease, isInvoiceStateColumnMissingError } from '@/lib/server/checkout-idempotency';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 function timingSafeEqual(a: string, b: string): boolean {
     if (a.length !== b.length)
         return false;

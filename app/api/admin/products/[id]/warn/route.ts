@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { canIssueSanction, isSuperAdminUserId } from '@/lib/admin-access';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const VALID_LEVELS = [1, 2, 3] as const;
 type Row = Record<string, unknown>;
 export async function POST(req: NextRequest, { params }: {

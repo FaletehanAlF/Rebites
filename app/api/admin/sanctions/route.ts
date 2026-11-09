@@ -3,6 +3,7 @@ import { createAuthedServerClient, createServiceClient, getAdminActor, getAdminU
 import { canIssueSanction, isSuperAdminUserId } from '@/lib/admin-access';
 import { syncAccountBan } from '@/lib/server/account-ban';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const BAN_SYNC_TIMEOUT_MS = 10000;
 const SANCTIONS_SELECT = [
     'id',

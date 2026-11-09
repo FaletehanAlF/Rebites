@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getUserFromBearer } from '@/lib/server/supabase';
 import { AVATAR_ALLOWED_EXTENSIONS, avatarExtension, avatarFileError, } from '@/lib/admin-avatar';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
     const user = await getUserFromBearer(req.headers.get('authorization'));
     if (!user) {

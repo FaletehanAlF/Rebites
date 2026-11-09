@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { demoGreeting, demoScheduleFor, resolveDemoTarget, } from '@/lib/demo-courier';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const DEMO_COURIER_NAME = 'Kurir Demo';
 export async function GET(req: NextRequest) {
     try {

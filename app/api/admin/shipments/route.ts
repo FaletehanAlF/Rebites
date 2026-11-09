@@ -4,6 +4,7 @@ import { firstFailedQuery } from '@/lib/server/supabase-errors';
 import { sanitizeSearchTerm } from '@/lib/filter-search';
 import { TO_SHIP_STATUSES, TO_SHIP_STALE_HOURS, deriveShipmentState, type ShipmentState, } from '@/lib/shipment-state';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const STATE_ALLOWLIST = ['to_ship', 'in_transit', 'late', 'done'] as const;
 const SHIPMENT_SELECT = [
     'id',

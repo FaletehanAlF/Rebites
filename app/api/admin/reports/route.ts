@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { applyReportFiltersToQuery, parseReportFilters } from '@/lib/report-filters';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const REPORTS_SELECT = [
     'id',
     'reported_user_id',

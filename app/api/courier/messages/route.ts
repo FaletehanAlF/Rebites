@@ -9,6 +9,7 @@ import { decideAutoReplyMode } from '@/lib/courier-auto-reply';
 import { isGeminiConfigured } from '@/lib/server/gemini';
 import type { CourierAiContent } from '@/lib/server/gemini';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const MAX_BODY_LENGTH = 1000;
 const HISTORY_LIMIT = 12;
 async function loadCourierHistory(service: SupabaseClient, orderId: string): Promise<CourierAiContent[]> {

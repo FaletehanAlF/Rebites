@@ -3,6 +3,7 @@ import { createServiceClient, getAdminUser, isSupabaseUnavailable, upstreamUnava
 import { isSuperAdminUserId } from '@/lib/admin-access';
 import { COIN_ADJUST_MAX, computeCoinBalance, resolveAdjustmentRow, validateAdjustment, } from '@/lib/coin-adjustment';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const HISTORY_LIMIT = 50;
 type Row = Record<string, unknown>;
 function asNumber(value: unknown): number {

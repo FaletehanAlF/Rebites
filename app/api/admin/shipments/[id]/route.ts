@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, queryFailureResponse, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { deriveShipmentState } from '@/lib/shipment-state';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const DETAIL_SELECT = [
     'id',
     'order_code',

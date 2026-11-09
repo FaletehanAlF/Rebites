@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { sanitizeSearchTerm } from '@/lib/filter-search';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const STATUS_ALLOWLIST = ['active', 'pending', 'expired', 'cancelled', 'trial'] as const;
 type RawStatus = (typeof STATUS_ALLOWLIST)[number];
 type Effective = 'active' | 'lapsed' | 'pending' | 'expired' | 'trial';

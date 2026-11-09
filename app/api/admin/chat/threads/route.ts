@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { sanitizeSupportSearch } from '@/lib/support';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const REQUEST_TIMEOUT_MS = 10000;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;

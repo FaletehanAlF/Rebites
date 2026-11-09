@@ -3,6 +3,7 @@ import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUn
 import { COVER_IMAGE_ERROR, isArticleCoverUrl } from '@/lib/article-cover';
 import { sanitizeSearchTerm } from '@/lib/filter-search';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const ADMIN_LIST_SELECT = [
     'id',
     'title',

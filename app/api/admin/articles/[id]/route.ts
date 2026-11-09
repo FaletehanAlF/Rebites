@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthedServerClient, getAdminUser, getUserFromBearer, isSupabaseUnavailable, upstreamUnavailableResponse, } from '@/lib/server/supabase';
 import { COVER_IMAGE_ERROR, isArticleCoverUrl } from '@/lib/article-cover';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const MAX_TITLE_LENGTH = 200;
 const MAX_SLUG_LENGTH = 200;
 const MAX_EXCERPT_LENGTH = 500;

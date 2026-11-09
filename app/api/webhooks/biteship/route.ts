@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/server/supabase';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const SUPPORTED_EVENTS = ['order.status', 'order.waybill_id', 'order.price'] as const;
 type SupportedEvent = (typeof SUPPORTED_EVENTS)[number];
 const KNOWN_SHIPMENT_STATUSES = [

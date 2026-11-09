@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, getAdminUser, getUserFromBearer, } from '@/lib/server/supabase';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const KEY_MAX = 80;
 const KEY_PATTERN = /^[A-Za-z0-9-]{8,80}$/;
 const RECORD_TIMEOUT_MS = 10000;
