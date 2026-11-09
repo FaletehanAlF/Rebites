@@ -20,7 +20,7 @@ interface SearchFilterBarProps {
   onSelectResult?: (id: string) => void;
   placeholder?: string;
   variant?: "default" | "glass" | "light";
-  /** Optional override for the searchable pool (defaults to the catalog). */
+  /** Override pool pencarian (default: katalog). */
   items?: FoodItem[];
 }
 
@@ -65,13 +65,8 @@ function applySort(key: FilterKey) {
   };
 }
 
-/**
- * Urutan saran pencarian: yang paling dekat lebih dulu.
- *
- * Jarak null berarti tidak diketahui (kolom `distance_km` kosong) dan
- * diletakkan paling belakang — bukan dianggap 0, yang akan menaruhnya di
- * urutan teratas secara keliru.
- */
+// Urutan: yang paling dekat lebih dulu. Jarak null = tidak diketahui →
+// diletakkan paling belakang, bukan dianggap 0 (keliru masuk teratas).
 function byNearest(a: FoodItem, b: FoodItem): number {
   return (
     (a.distanceKm ?? Number.MAX_SAFE_INTEGER) -

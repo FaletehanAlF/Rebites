@@ -13,9 +13,9 @@ export function RelatedProducts({
   seeAllHref,
 }: {
   products: RelatedProduct[];
-  /** Route of the product detail page in the current context. */
+  /** Route halaman detail produk dalam konteks saat ini. */
   productPath: string;
-  /** Where "Lihat Semua" leads: the application home or the landing catalog. */
+  /** Target "Lihat Semua": beranda aplikasi atau katalog landing. */
   seeAllHref: string;
 }) {
   return (

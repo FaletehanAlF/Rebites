@@ -1,15 +1,6 @@
-/**
- * DATA CONTOH (demo) — BUKAN pelanggan nyata.
- *
- * Ulasan di bawah hanya ilustrasi tampilan section "Ulasan pengguna" di
- * halaman landing. Belum ada tabel ulasan publik di Supabase yang bisa
- * diverifikasi, jadi tidak ada satu pun kutipan yang boleh diperlakukan
- * sebagai testimoni pelanggan ReBites.
- *
- * Saat data riil tersedia, ganti isi `TESTIMONIALS` — bentuk record-nya
- * sengaja dibuat netral (`name` / `role` / `quote`) agar bisa langsung
- * dipetakan ke kolom yang sebenarnya tanpa mengubah komponennya.
- */
+// Data demo — bukan pelanggan nyata. Jangan perlakukan kutipan sebagai testimoni.
+// Saat data riil tersedia, ganti isi TESTIMONIALS; bentuk record netral agar langsung
+// bisa dipetakan ke kolom database tanpa mengubah komponen.
 export type TestimonialAudience = 'Pembeli' | 'UMKM';
 
 export interface Testimonial {

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const STORAGE_KEY = 'rebits:landing-seen';
 
-// Curved ease-out (melengkung) untuk transisi slide ke atas.
+
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
 
 type Phase = 'loading' | 'leaving' | 'done';

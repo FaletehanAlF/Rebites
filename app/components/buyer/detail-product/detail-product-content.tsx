@@ -13,12 +13,8 @@ import type {
 import { fetchProductDetail, fetchRelatedProducts } from "./detail-data";
 import { getProductReviews } from "@/lib/review-storage";
 
-/**
- * Fetches one product (plus its reviews and related products) and renders it
- * inside the shell the calling route provides. The shell is the only thing
- * that differs between the application route (`/detail/product`) and the
- * public showcase route (`/preview/product`).
- */
+// Ambil satu produk + ulasan + produk terkait, lalu render di dalam shell
+// yang disediakan route pemanggil.
 export function DetailProductContent({
   shell,
 }: {

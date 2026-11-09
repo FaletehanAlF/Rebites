@@ -12,15 +12,8 @@ export function scrollToSection(id: string, offset = -96): void {
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/**
- * Click handler for links shaped like `/#section-id` that may be rendered on
- * any marketing page.
- *
- * When the target section is on the *current* page the jump is animated in
- * place (Lenis-aware). When it is not — e.g. `/#cara-kerja` clicked from
- * `/fitur` — the handler does nothing and lets the `<Link>` navigate, so the
- * browser lands on `/` and scrolls to the section itself.
- */
+// Klik link `/#section-id`: target di halaman saat ini di-scroll dengan animasi
+// (Lenis-aware); tidak ada targetnya → biarkan <Link> menavigasi.
 export function handleSectionLinkClick(
   event: React.MouseEvent<HTMLAnchorElement>,
   id: string,

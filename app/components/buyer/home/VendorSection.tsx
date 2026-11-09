@@ -13,18 +13,13 @@ import { isVendorReallyOpen } from "@/lib/store-status";
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
-/**
- * Grid toko pembuka.
- *
- * Rail geser dengan tombol panah diganti grid: jumlah toko yang tampil
- * sekaligus lebih banyak, tidak ada lagi kartu terpotong di tepi layar, dan
- * tidak ada lagi pengukuran lebar untuk menentukan langkah geser.
- */
+// Grid toko pembuka (sebelumnya rail geser: lebih banyak toko tampil,
+// tanpa kartu terpotong di tepi layar, tanpa pengukuran langkah geser).
 export function VendorSection() {
   const { plan } = useSellerPlan();
   const { vendors, loading } = useCatalog();
 
-  // Logic buka/tutup: isOpen (toggle penjual) DAN isOpenNow(openHours) harus true
+  // Buka/tutup: isOpen (toggle penjual) DAN isOpenNow(openHours) harus keduanya true
   const sortedVendors = useMemo(() => {
     const openOnly = vendors.filter((v) => isVendorReallyOpen(v));
     if (!plan.priorityListing) return openOnly;

@@ -5,12 +5,7 @@ import { Reveal } from '@/app/components/shared/reveal';
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
-/**
- * Ajakan penutup setiap halaman publik — dipakai di halaman utama dan
- * halaman pendukung (`/tentang-kami`, `/fitur`, `/dampak`) supaya setiap
- * halaman berakhir dengan langkah yang sama jelasnya. Sengaja polos di
- * atas putih: hierarki dibangun oleh tipografi, hijau hanya untuk tombol.
- */
+// Ajakan penutup halaman publik.
 export function ContactCTASection() {
   return (
     <section

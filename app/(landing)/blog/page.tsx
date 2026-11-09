@@ -9,10 +9,7 @@ export const metadata: Metadata = {
     'Blog ReBites: cerita dan edukasi seputar food waste, makanan surplus, dan perjuangan UMKM kuliner.',
 };
 
-/**
- * Halaman Blog — publik. Daftar artikel published (terbaru dulu) dengan
- * pencarian, filter kategori, dan kartu featured untuk artikel teratas.
- */
+// Blog publik: artikel published (terbaru dulu) dengan pencarian, filter kategori, kartu featured.
 export default function BlogPage() {
   return (
     <>

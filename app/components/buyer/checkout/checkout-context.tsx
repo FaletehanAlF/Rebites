@@ -32,11 +32,9 @@ import { getOrderById } from '@/lib/order-storage';
 import { buildAddressRateSignature, buildAddressSnapshot } from '@/lib/location-validation';
 import { paymentMethods } from './payment-methods';
 
-/**
- * Tahap 1 (konsistensi harga): total server ≠ total yang tampil saat pesanan
- * dibuat (harga katalog / ongkir / koin berubah antara load dan submit).
- * Dialog konfirmasi ditampilkan sebelum redirect ke Xendit.
- */
+// Total server ≠ total yang tampil saat pesanan dibuat (harga/ongkir/koin
+// berubah antara load dan submit). Dialog konfirmasi ditampilkan sebelum
+// redirect ke Xendit.
 export interface PendingInvoiceReview {
   invoiceUrl: string;
   serverTotal: number;
@@ -79,24 +77,22 @@ interface CheckoutContextValue {
 
   successOrder: StoredOrder | null;
 
-  /**
-   * Tahap 1: non-null = total server berbeda dari tampilan; tunggu keputusan
-   * user sebelum redirect ke Xendit (lihat CheckoutPriceReviewDialog).
-   */
+  // Non-null = total server berbeda dari tampilan; tunggu keputusan user
+  // sebelum redirect ke Xendit (lihat CheckoutPriceReviewDialog).
   pendingInvoiceReview: PendingInvoiceReview | null;
-  /** Redirect ke invoice Xendit setelah user menyetujui total terbaru. */
+  // Redirect ke invoice Xendit setelah user menyetujui total terbaru.
   continueToInvoice: () => void;
 
-  /** opsi ongkir Biteship (display-only; harga final tetap revalidasi server). */
+  // Opsi ongkir Biteship (display-only; harga final tetap revalidasi server).
   shippingOptions: ShippingRateOption[];
-  /** pilihan kurir user (identifier saja, bukan harga). Tidak auto-select. */
+  // Pilihan kurir user (identifier saja, bukan harga). Tidak auto-select.
   selectedShipping: { courierCode: string; serviceCode: string } | null;
   setSelectedShipping: (next: { courierCode: string; serviceCode: string } | null) => void;
-  /** opsi yang cocok dengan pilihan (null bila belum/stale). Untuk display pricing. */
+  // Opsi yang cocok dengan pilihan (null bila belum/stale), untuk display pricing.
   selectedShippingOption: ShippingRateOption | null;
   shippingLoading: boolean;
   shippingError: string | null;
-  /** Kode penyebab gagal hitung ongkir dari API (machine-readable), null bila bukan dari API. */
+  // Kode penyebab gagal hitung ongkir dari API (machine-readable); null bila bukan dari API.
   shippingErrorCode: string | null;
 }
 
@@ -109,7 +105,7 @@ const shippingRatesCache = new Map<
 >();
 const shippingRatesInFlight = new Map<string, Promise<ShippingRateOption[]>>();
 
-/** Error ongkir membawa `code` dari API (machine-readable) untuk arahan UI per penyebab. */
+// Error ongkir membawa `code` dari API (machine-readable) untuk arahan UI per penyebab.
 class ShippingRatesError extends Error {
   readonly code: string | null;
 

@@ -1050,7 +1050,7 @@ function MenuCard({
   );
 }
 
-/** Ringkasan Flash Sale: satu baris di dalam kartu daftar menu. */
+// Ringkasan Flash Sale: satu baris dalam kartu daftar menu.
 function FlashSaleSummaryRow({
   plan,
   quota,

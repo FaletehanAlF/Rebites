@@ -30,7 +30,7 @@ const OPTIONS: {
   },
 ];
 
-/** Ringkasan biaya per metode: angka diambil dari summary (server-authoritative saat checkout). */
+// Ringkasan biaya per metode: angka dari summary (server-authoritative saat checkout).
 function feeLabel(value: number, hasValue: boolean): string {
   if (!hasValue) return 'Hitung saat pilih alamat';
   if (value <= 0) return 'Gratis';

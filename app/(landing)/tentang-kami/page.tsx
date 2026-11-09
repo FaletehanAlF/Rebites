@@ -47,12 +47,7 @@ const SELLER_POINTS = [
   'Pantau pesanan dan performa penjualan',
 ];
 
-/**
- * Halaman `/tentang-kami`: alur baca tunggal dari masalah, cara ReBites
- * meresponsnya, sampai manfaat untuk tiap pihak. Tajuk memakai
- * `SectionHeading` yang sama dengan halaman utama supaya tipografinya
- * identik di seluruh section.
- */
+// Halaman /tentang-kami: alur baca tunggal masalah → respons ReBites → manfaat tiap pihak.
 export default function TentangKamiPage() {
   return (
     <PublicShell>

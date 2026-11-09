@@ -1,4 +1,4 @@
-// --- Component ---
+
 "use client";
 
 import * as React from "react";
@@ -10,24 +10,15 @@ export interface LanyardLink {
 
 export interface LanyardMember {
   id: string;
-  /** Accessible name, printed on both faces of the badge. */
   name: string;
   role: string;
-  /** Company or team line printed under the role, e.g. "Acme · Design". */
   team?: string;
-  /** Portrait, cropped to a circle. A square image works best. */
   image: string;
-  /** One or two sentences printed on the back. */
   bio?: string;
-  /** Short chips on the back such as "Design systems" or "Since 2021". */
   tags?: string[];
-  /** Contact links on the back. */
   links?: LanyardLink[];
-  /** Team colour: chart token 1–5 for the ribbon and the badge band. */
   tone?: 1 | 2 | 3 | 4 | 5;
-  /** Extra lanyard length in pixels at a 124 px badge; it scales with the badge. */
   drop?: number;
-  /** Real QR image for the back face (e.g. "/team/qr-<id>.png"), encoded to that person's link. When omitted, a decorative placeholder is drawn. Rendered in a 3.9em square slot, anchored 0.8em from the bottom and right edges. */
   qrSrc?: string;
 }
 

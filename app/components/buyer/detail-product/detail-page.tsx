@@ -20,26 +20,18 @@ import type {
 } from "@/app/components/buyer/detail-product/data";
 import { EASE } from "./anim";
 
-/**
- * Context shell for a product detail page.
- *
- * The route that renders `DetailProductContent` supplies it:
- * `/detail/product` (application) passes the profile/mobile navbars,
- * `/preview/product` (public showcase) passes the landing navbar. The shell is
- * injected, never inferred from the pathname, so the public showcase can never
- * inherit account UI and the application keeps the navbar it has always had.
- */
+// Shell detail produk. Route menyediakannya: /detail/product (aplikasi)
+// memakai UI akun, /preview/product (showcase publik) memakai navbar landing.
+// Shell di-inject, tidak diinfer dari pathname, agar showcase publik tidak
+// pernah mewarisi UI akun.
 export interface DetailProductShell {
-  /** Fixed chrome rendered above the product content. */
+  /** Chrome tetap di atas konten produk. */
   header?: ReactNode;
-  /**
-   * Bungkus halaman dengan `BuyerShell` (UI akun pembeli, tanpa bottom nav).
-   * Hanya diaktifkan oleh route aplikasi; showcase publik membiarkannya off.
-   */
+  /** Bungkus halaman dengan BuyerShell; hanya diaktifkan route aplikasi. */
   buyerShell?: boolean;
-  /** Route used to open another product inside the same context. */
+  /** Route untuk membuka produk lain dalam konteks sama. */
   productPath: string;
-  /** Target of the related-products "Lihat Semua" link. */
+  /** Target link "Lihat Semua" produk terkait. */
   seeAllHref: string;
 }
 

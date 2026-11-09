@@ -22,7 +22,7 @@ import {
   downloadSellerReportExcel,
 } from '@/lib/seller-report-export';
 
-/** Rentang grafik penjualan (batang/garis) — 'semua' tidak masuk akal di grafik. */
+// Rentang grafik penjualan (batang/garis); 'semua' tidak masuk akal di grafik.
 export type StatsPeriod = '7-hari' | '14-hari' | '30-hari';
 
 const PERIOD_HINT: Record<SellerReportPeriod, string> = {

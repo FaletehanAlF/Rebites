@@ -12,18 +12,8 @@ import { PRIMARY_NAV, isCurrentPath } from './nav-items';
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
-/**
- * Navbar situs publik: dipakai oleh kelima halaman di `app/(landing)/` dan
- * oleh pratinjau produk publik `/preview/product`.
- *
- * Navigasi utama menunjuk ke halaman nyata (`/tentang-kami`, `/fitur`, …),
- * bukan `#anchor`, dan halaman aktif ditandai lewat `usePathname()` sehingga
- * status aktif ikut berpindah bersama rute, bukan hasil tebakan scroll-spy.
- *
- * Selalu latar terang: hero seperti sebagian besar halaman duduk di permukaan
- * putih, jadi navbar tidak perlu membalik kontras mengikuti section di
- * belakangnya.
- */
+// Navbar situs publik; halaman aktif lewat usePathname, bukan scroll-spy.
+// Selalu latar terang: mayoritas halaman duduk di permukaan putih.
 export function LandingNavbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();

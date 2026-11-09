@@ -37,13 +37,7 @@ const DIFFERENTIATORS = [
   },
 ];
 
-/**
- * "Kenapa ReBites?" — menampilkan empat keunggulan utama
- * ReBites melalui daftar bernomor dan visual pendukung.
- *
- * Tidak menampilkan angka statistik karena belum tersedia
- * data dampak yang dapat diverifikasi.
- */
+// Empat keunggulan utama. Angka statistik tidak ditampilkan karena data dampak belum dapat diverifikasi.
 export function WhyReBitesSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);

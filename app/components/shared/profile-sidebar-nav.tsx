@@ -25,11 +25,8 @@ import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
 import { useSellerStatus } from "@/hooks/seller/use-seller-status";
 
-/**
- * Lebar sidebar pembeli adalah satu-satunya sumber kebenaran. Topbar dan area
- * konten memakai offset dari konstanta ini supaya tidak ada margin ganda atau
- * celah beberapa piksel antara sidebar dan konten.
- */
+// Lebar sidebar pembeli = satu-satunya sumber kebenaran. Topbar dan konten
+// memakai offset konstanta ini agar tidak ada margin ganda / celah piksel.
 export const BUYER_SIDEBAR_WIDTH_CLASS = {
   collapsed: "w-[76px]",
   expanded: "w-[260px]",

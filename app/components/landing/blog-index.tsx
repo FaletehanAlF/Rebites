@@ -30,13 +30,7 @@ const formatDate = (iso: string | null | undefined) => {
   });
 };
 
-/**
- * Indeks blog publik untuk halaman /blog (landing).
- * - Data dari public GET /api/articles — tanpa login, tanpa service role.
- * - Tanpa filter, artikel pertama ditampilkan sebagai kartu featured lebar;
- *   sisanya masuk grid.
- * - Loading / kosong / gagal punya state sendiri; gagal tidak merusak halaman.
- */
+// Indeks blog publik /blog; data dari GET /api/articles (tanpa login).
 export function BlogIndex() {
   const [items, setItems] = useState<LandingArticle[]>([]);
   const [total, setTotal] = useState(0);

@@ -1,10 +1,7 @@
 import type { LanyardMember } from '@/app/components/landing/team-lanyard-rail';
 
-/**
- * DEMO / PLACEHOLDER — data bawaan dari contoh komponen team-lanyard-rail.
- * Bukan anggota Tim Sixquit. Ganti dengan data tim asli (nama, role, foto
- * lokal di `public/team/`) sebelum halaman ini dipublikasikan.
- */
+// Data demo bawaan komponen team-lanyard-rail.
+// Ganti dengan data tim asli sebelum halaman dipublikasikan.
 export const LANYARD_DEMO_TEAM: LanyardMember[] = [
   {
     id: 'kayysan',

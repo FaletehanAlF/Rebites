@@ -34,24 +34,16 @@ const item: Variants = {
   },
 };
 
-/**
- * Hero beranda pembeli.
- *
- * Satu panel utama berisi foto dan CTA, ditemani dua kartu ringkas berisi
- * pintasan ke flash sale dan daftar toko. Kartu samping sengaja bukan foto
- * berlapis overlay: teks di atas foto sulit dibaca dan setiap foto tambahan
- * menambah bobot muat awal halaman.
- */
+// Hero beranda pembeli: satu panel utama (foto + CTA) dan dua kartu pintasan
+// ke flash sale serta daftar toko. Kartu samping sengaja bukan foto overlay —
+// teks di atas foto sulit dibaca dan foto tambahan membebani muat awal.
 export function Hero() {
   const router = useRouter();
   const { userId } = useCurrentUser();
   const [hasStore, setHasStore] = useState(false);
 
-  /*
-   * Sapaan dihitung setelah mount, bukan saat render server: jam harus mengikuti
-   * perangkat pengguna. Tidak memakai timer — sapaan cukup akurat pada saat
-   * halaman dibuka dan tidak perlu berubah sendiri.
-   */
+  // Sapaan dihitung setelah mount, bukan saat render server: jam mengikuti
+  // perangkat pengguna. Tanpa timer — cukup akurat saat halaman dibuka.
   const [greeting, setGreeting] = useState("Selamat datang");
   useEffect(() => {
     const hour = new Date().getHours();

@@ -21,7 +21,7 @@ import {
   type DeviceLocationReason,
 } from "@/lib/device-location";
 
-/** Peta pemilih dimuat hanya saat halaman pengaturan dirender (MapLibre berat). */
+// Peta dimuat hanya saat halaman pengaturan dirender (MapLibre berat).
 const LocationPickerMap = dynamic(
   () => import("@/app/components/shared/location-picker-map"),
   {

@@ -30,7 +30,7 @@ interface StoreHeroCardProps {
   openNow: boolean;
 }
 
-/** Async store-settings values that override the `vendor` props (empty → keep vendor). */
+// Nilai store-settings asinkron yang override props `vendor` (kosong → pakai vendor).
 interface StoreSettingsOverride {
   storeName: string;
   description: string;
@@ -60,9 +60,9 @@ export function StoreHeroCard({ vendor, openNow }: StoreHeroCardProps) {
     if (!ok) setFollowing(!next);
   };
 
-  // Store settings are an async *override* of the vendor props. Deriving the
-  // displayed values means a new `vendor` prop shows up on the very next
-  // render instead of one render late (the old `useState` mirror + sync effect).
+  // Store settings = override asinkron vendor props. Nilai display diturunkan
+  // langsung agar props `vendor` baru tampil di render berikutnya, bukan satu
+  // render terlambat (sebelumnya memakai mirror useState + effect sinkron).
   const [settings, setSettings] = useState<StoreSettingsOverride | null>(null);
 
   const storeName = settings?.storeName || vendor.name;

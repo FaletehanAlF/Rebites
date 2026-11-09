@@ -41,9 +41,8 @@ const NAV_LINKS = [
   { id: "flashSale", label: "Diskon Kilat", icon: Flame },
 ] as const;
 
-// Sub-menu akun memakai route/halaman yang benar: Toko Diikuti dan
-// Pengaturan punya halaman khusus; yang masih berupa section profil
-// (Makanan Disukai, ReBites Coin, Alamat) tetap memakai hash.
+// Sub-menu akun: Toko Diikuti dan Pengaturan punya halaman khusus;
+// section profil (Makanan Disukai, ReBites Coin, Alamat) memakai hash.
 const ACCOUNT_LINKS: {
   href: string;
   label: string;

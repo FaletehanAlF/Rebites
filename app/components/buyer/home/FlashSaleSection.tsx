@@ -325,14 +325,8 @@ function UrgentCard({
   );
 }
 
-/**
- * Flash sale per slot waktu.
- *
- * Latar hijau solid (tanpa gradient, tanpa grain overlay) menjadi satu-satunya
- * blok warna pekat di beranda, sehingga bagian lain bisa memakai permukaan
- * putih yang tenang. Pita marquee berjalan dan kilau melintas di setiap kartu
- * dihapus: keduanya berjalan terus-menerus tanpa memberi informasi.
- */
+// Flash sale per slot waktu. Latar hijau solid jadi satu-satunya blok warna
+// pekat di beranda, agar bagian lain bisa memakai permukaan putih yang tenang.
 export function FlashSaleSection({
   onViewDetail,
 }: {
@@ -360,11 +354,9 @@ export function FlashSaleSection({
   );
   const { urgentItems, loading: catalogLoading } = useCatalog();
 
-  // Dependensi sengaja HANYA `realSlot`. Sebelumnya efek ini bergantung pada
-  // `tick` (penanda 20 detik), sehingga setiap 20 detik daftar dikosongkan ke
-  // `[]` lalu diisi ulang -> kartu dilepas, Gambar berpindah kembali ke
-  // keadaan "belum dimuat", dan foto terlihat berkedip/hilang. Slot yang
-  // berganti tetap tertangkap lewat `activeSlot` di bawah.
+  // Dependensi sengaja hanya `realSlot`. Dulu ikut `tick` (20 detik), sehingga
+  // daftar dikosongkan lalu diisi ulang tiap 20 detik → foto berkedip/hilang.
+  // Slot yang berganti tetap tertangkap lewat `activeSlot`.
   useEffect(() => {
     let mounted = true;
     const load = () => {
@@ -386,17 +378,10 @@ export function FlashSaleSection({
   const dynamicSlotItems = sellerFlashItems.filter(
     (item) => item.slot === activeSlot,
   );
-  /**
-   * Katalog publik (`urgentItems`, dari tabel products.slot/expires_at) dan
-   * daftar flash sale penjual membaca BARIS YANG SAMA dengan `id` yang sama,
-   * tetapi bentuk kartunya berbeda: katalog memakai harga surplus + stok
-   * tersedia, sedangkan flash sale memakai harga flash + status jadwal.
-   *
-   * Sebelumnya katalog menang (union), sehingga produk yang baru dijadikan
-   * flash sale tetap tampil dengan harga normal dan tanpa badge diskon — baru
-   * "berubah" setelah refresh halaman. Sekarang entri katalog dibuang bila id
-   * yang sama sudah ada di daftar flash sale.
-   */
+  // Katalog publik dan daftar flash sale penjual merujuk baris yang sama
+  // (id sama), tapi tampilan berbeda. Sebelumnya katalog menang, jadi produk
+  // baru flash sale masih tampil harga normal sampai refresh — sekarang
+  // entri katalog dibuang bila id-nya sudah ada di flash sale.
   const dynamicIds = new Set(dynamicSlotItems.map((item) => item.id));
   let baseVisible: FlashSaleCardItem[] = [
     ...staticSlotItems.filter((item) => !dynamicIds.has(item.id)),

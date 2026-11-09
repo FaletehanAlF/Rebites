@@ -61,14 +61,9 @@ const SWEEP_INTERVAL_MS = 5_000;
 function useVendorOrders() {
   const [orders, setOrders] = useState<StoredOrder[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  /**
-   * Toko sudah punya titik lokasi.
-   *
-   * Trigger `auto_assign_courier_to_delivery` membaca `umkm_profiles.latitude`
-   * sebagai titik awal pengantaran; tanpa koordinat ia sengaja tidak menugaskan
-   * kurir. Halaman ini memakainya untuk memberi tahu penjual SEBELUM dia
-   * menekan tombol, bukan sesudah pesanan tertahan tanpa kurir.
-   */
+  // Toko punya titik lokasi (khususnya latitude) sehingga kurir bisa ditugaskan
+  // otomatis. Ditampilkan sebelum penjual menekan tombol, bukan setelah pesanan
+  // tertahan tanpa kurir.
   const [storeHasPoint, setStoreHasPoint] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -189,15 +184,8 @@ function OrderRow({
   // ditolak trigger database.
   const phase = resolveOrderPhase(order);
 
-  /**
-   * Pesanan pengiriman dilewati langsung ke tahap antar begitu penyiapan
-   * selesai — penjual tidak perlu menekan tombol kedua.
-   *
-   * Hanya berlaku bila toko sudah punya titik lokasi: trigger penugasan kurir
-   * memerlukan koordinat toko sebagai titik awal, dan tanpa koordinat kurir
-   * tidak akan ditugaskan. Pada toko tanpa titik lokasi, alur dua langkah
-   * dipertahankan agar pesanan tidak bergerak tanpa kurir.
-   */
+  // Pesanan pengiriman langsung lanjut ke tahap antar setelah penyiapan selesai
+  // — hanya bila toko punya titik lokasi (kurir tidak ditugaskan tanpa koordinat).
   const canAutoDispatch =
     storeHasPoint && phase === 'processing' && order.fulfillment === 'delivery';
 
@@ -209,22 +197,16 @@ function OrderRow({
       )
     : null;
 
-  /**
-   * Tenggat penyiapan, berasal dari `estimated_completion_at` server.
-   *
-   * Jam diperbarui 30 detik sekali — cukup untuk teks "Siap dalam N menit"
-   * tanpa memicu render tiap detik pada daftar yang bisa berisi banyak order.
-   */
+  // Tenggat penyiapan dari estimated_completion_at server.
+  // Jam diperbarui tiap 30 detik, cukup untuk teks "Siap dalam N menit".
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!isOngoing) return;
     const id = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(id);
   }, [isOngoing]);
-  // Pesanan yang belum dibayar tidak diberi hitung mundur: jam persiapan
-  // baru mulai setelah pembayaran diterima, jadi angka apa pun di sini akan
-  // menyesatkan (checkout lama bisa tampil "Lewat 20 menit" padahal penjual
-  // belum pernah menerima pesanannya).
+  // Pesanan belum dibayar tidak diberi hitung mundur: jam persiapan baru
+  // mulai setelah pembayaran diterima.
   const prep =
     isOngoing && phase !== 'pending'
       ? formatPrepRemaining(order.estimatedCompletionAt, now)
@@ -481,11 +463,8 @@ export default function PesananMasukPage() {
   const [tab, setTab] = useState<OrderTab>('berlangsung');
   const [storeName, setStoreName] = useState('');
 
-  /**
-   * Pesanan berlangsung yang menunggu penjual (belum dibayar tidak dihitung).
-   * Angka ini yang ditampilkan di tab dan di judul, supaya penjual langsung
-   * tahu ada berapa yang harus diketuk.
-   */
+  // Pesanan berlangsung yang menunggu penjual (belum dibayar tidak dihitung).
+  // Angka ini ditampilkan di tab dan judul agar penjual tahu ada berapa yang perlu diketuk.
   const waitingOrders = useMemo(
     () => ongoing.filter((order) => needsSellerAction(resolveOrderPhase(order))),
     [ongoing]

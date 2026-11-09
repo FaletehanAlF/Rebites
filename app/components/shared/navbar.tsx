@@ -27,9 +27,8 @@ const NAV_LINKS = [
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white";
 
-// Module scope so React keeps the same component type across renders -
-// defining it inside ProfileNavbar remounted both buttons (losing focus,
-// restarting transitions) on every navbar render.
+// Di module scope agar React menjaga tipe komponen sama antar render;
+// didefinisikan di dalam ProfileNavbar menyebabkan tombol remount setiap render navbar.
 function IconButton({
   label,
   children,

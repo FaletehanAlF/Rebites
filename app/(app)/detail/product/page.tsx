@@ -8,16 +8,9 @@ export const metadata: Metadata = {
     'Selamatkan porsi makanan surplus favoritmu langsung dari UMKM pilihan di Depok.',
 };
 
-/**
- * The *application* product detail route.
- *
- * The application shell is passed in here as the route's `shell`, not baked
- * into `detail-page.tsx`. `buyerShell: true` wraps the page in `BuyerShell`
- * (desktop topbar + sidebar with profile/logout + mobile navbar) — the same
- * chrome every other buyer application page uses. That is what keeps
- * `/preview/product` — the public showcase route used by the landing page —
- * free of account UI and out of the supabase/auth bundle.
- */
+// Route detail produk aplikasi. `buyerShell: true` membungkus halaman dengan
+// BuyerShell — chrome sama dengan halaman aplikasi pembeli lainnya, sekaligus
+// menjaga /preview/product bebas UI akun dan keluar dari bundle supabase/auth.
 export default function DetailProductPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-secondary" />}>

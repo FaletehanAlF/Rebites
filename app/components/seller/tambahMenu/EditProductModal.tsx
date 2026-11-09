@@ -75,7 +75,7 @@ export function EditProductModal({
   product: SellerProduct | null;
   open: boolean;
   onClose: () => void;
-  /** Buka bagian "Edit lebih lanjut" langsung (dipakai arahan isi berat dari Menu Saya). */
+  // Buka "Edit lebih lanjut" langsung; dipakai arahan isi berat dari Menu Saya.
   initialShowAdvanced?: boolean;
 }) {
   const [name, setName] = useState('');

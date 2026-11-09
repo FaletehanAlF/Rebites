@@ -32,14 +32,8 @@ function getDailyOffset(seed: number, length: number, pageSize: number): number 
   return seed % (maxStart + 1);
 }
 
-/**
- * Grid rekomendasi harian.
- *
- * Sebelumnya berupa rail geser mendatar dengan tombol panah dan animasi
- * masuk per kartu. Grid biasa menampilkan lebih banyak menu sekaligus di
- * layar sempit tanpa perlu geser, dan tidak lagi memasang animasi yang
- * harus dihitung ulang setiap kali daftar berubah.
- */
+// Grid rekomendasi harian (sebelumnya rail geser: lebih banyak menu tampil
+// tanpa geser, tanpa animasi yang dihitung ulang tiap daftar berubah).
 export function UrgentDealsSection({
   onViewDetail,
 }: {
@@ -50,14 +44,8 @@ export function UrgentDealsSection({
   const { foodItems, loading } = useCatalog();
   const router = useRouter();
 
-  /**
-   * Beranda hanya menampilkan sebagian menu, jadi pencarian TIDAK diselesaikan
-   * di sini. Menekan "Cari" membuka katalog `/makanan` dengan kata kuncinya
-   * sudah terisi — di sana hasilnya lengkap dan bisa disaring lebih lanjut.
-   *
-   * Sebelumnya tombol ini memanggil handler kosong, sehingga menekan "Cari"
-   * tidak mengubah apa pun: pengguna mengira pencariannya rusak.
-   */
+  // Beranda hanya menampilkan sebagian menu; pencarian diselesaikan di
+  // katalog /makanan (hasil lengkap + bisa disaring lebih lanjut).
   const goToCatalog = () => {
     const q = searchQuery.trim();
     router.push(q ? `/makanan?q=${encodeURIComponent(q)}` : "/makanan");

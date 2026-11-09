@@ -24,13 +24,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 
   const { unreadCount, refresh: refreshNotifications } = useNotifications(userId, 'seller');
 
-  /**
-   * Badge lonceng ikut disegarkan saat ada pesanan baru masuk.
-   *
-   * Sebelumnya angka ini hanya berubah setelah Realtime `notifications`
-   * memanggil refresh untuk dirinya sendiri; pesanan yang baru dibayar bisa
-   * membuat penjual menunggu tanpa angka yang berubah di layar.
-   */
+  // Badge lonceng disegarkan saat pesanan baru masuk, agar penjual tidak
+  // menunggu tanpa angka yang berubah di layar.
   useEffect(() => {
     const onOrdersUpdated = () => {
       void refreshNotifications();
