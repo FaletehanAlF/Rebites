@@ -281,7 +281,7 @@ export function Hero() {
             </p>
           </div>
 
-          <Link href="/toko" className={SIDE_LINK}>
+          <Link href="#umkm" className={SIDE_LINK}>
             Jelajahi toko
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>

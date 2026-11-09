@@ -475,3 +475,11 @@ html.lenis body {
     transform: translate(-50%, -48%) scale(0.97);
   }
 }
+
+@layer base {
+  html.auth-scroll-lock,
+  html.auth-scroll-lock body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}

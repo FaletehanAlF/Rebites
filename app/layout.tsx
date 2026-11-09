@@ -2,6 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from 'next/font/google';
 import { ChatbotMount } from '@/app/components/chatbot/chatbot-mount';
+import { VisitorTracker } from '@/app/components/analytics/visitor-tracker';
+import { Toaster } from '@/app/components/ui/toaster';
 
 // Exactly two typefaces for the whole product:
 //   --font-sans      Plus Jakarta Sans — primary (body, headings, UI)
@@ -67,25 +69,7 @@ export default function RootLayout({
       lang="id"
       className={`${plusJakartaSans.variable} ${beVietnamPro.variable}`}
     >
-      <body className="font-sans antialiased">
-        {/*
-         * Progressive-enhancement fallback: reveal animations ship inline
-         * `opacity:0` and only clear once React hydrates, and the preloader
-         * can only be dismissed from JS. Without JavaScript this keeps every
-         * section readable and hides the overlay instead of leaving a blank,
-         * blocked page. `dangerouslySetInnerHTML` is required so the CSS
-         * quotes survive — <style> is a raw-text element and would otherwise
-         * keep the HTML-escaped `&quot;` and break the rules.
-         */}
-        <noscript>
-          <style dangerouslySetInnerHTML={{ __html: noJsCss }} />
-        </noscript>
-        {children}
-        {/* Asisten melayang untuk semua halaman: pengunjung, pembeli, penjual,
-            dan admin. Profil perilakunya ditentukan server dari status sesi,
-            bukan dari klien. */}
-        <ChatbotMount />
-      </body>
+      <body className="font-sans antialiased">{/* Progressive-enhancement fallback: reveal animations ship inline `opacity:0` and only clear once React hydrates, and the preloader can only be dismissed from JS. Without JavaScript this keeps every section readable and hides the overlay instead of leaving a blank, blocked page. `dangerouslySetInnerHTML` is required so the CSS quotes survive — <style> is a raw-text element and would otherwise keep the HTML-escaped `&quot;` and break the rules. */}<noscript><style dangerouslySetInnerHTML={{ __html: noJsCss }} /></noscript>{children}<VisitorTracker /><ChatbotMount /><Toaster /></body>
     </html>
   );
 }

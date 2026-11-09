@@ -81,7 +81,7 @@ test('penjual boleh melihat posisi kurir, tanpa percakapan pribadi', () => {
     assert.ok(POSITION_PANEL.includes('freshness'), 'panel posisi menerima kesegaran posisi dari induk');
     assert.ok(SELLER_PAGE.includes('courierpositionpanel'), 'dashboard penjual harus menampilkan panel posisi kurir');
     assert.ok(SELLER_PAGE.includes('deliverymap'), 'dashboard penjual harus menampilkan peta posisi kurir');
-    assert.ok(SELLER_PAGE.includes('components/order-history/delivery-map'), 'peta penjual memakai komponen yang sama dengan halaman pembeli');
+    assert.ok(SELLER_PAGE.includes('components/buyer/order-history/delivery-map'), 'peta penjual memakai komponen yang sama dengan halaman pembeli');
     assert.ok(SELLER_PAGE.includes('usecourierlocation'), 'peta penjual harus membaca posisi kurir live');
     assert.ok(!SELLER_PAGE.includes('courierchat') && !SELLER_PAGE.includes('chat kurir'), 'halaman penjual tidak menampilkan chat kurir');
 });
