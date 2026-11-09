@@ -50,10 +50,24 @@ export async function POST(req: NextRequest) {
         console.error('[seller-role] gagal menaikkan peran', updateError.message);
         return NextResponse.json({ error: 'Gagal menaikkan peran akun.' }, { status: 500 });
     }
+    if (!updated) {
+        const { data: after } = await service
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+        const roleAfter = (after as {
+            role?: string;
+        } | null)?.role ?? '';
+        if (roleAfter === 'umkm' || roleAfter === 'admin') {
+            return NextResponse.json({ role: roleAfter, changed: false });
+        }
+        return NextResponse.json({ error: 'Gagal menaikkan peran akun.' }, { status: 500 });
+    }
     return NextResponse.json({
         role: (updated as {
             role?: string;
-        } | null)?.role ?? 'umkm',
+        }).role ?? 'umkm',
         changed: true,
     });
 }
