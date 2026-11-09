@@ -151,7 +151,7 @@ export function WhyReBitesSection() {
             className="relative aspect-[4/3] w-full overflow-hidden rounded-[1.5rem] border border-border/70 bg-muted sm:aspect-[3/2]"
           >
             <Image
-              src="/terselamatkan.jpg"
+              src="/terselamatkan.avif"
               alt="Aneka hidangan dari dapur UMKM yang siap dinikmati pembeli"
               fill
               sizes="(min-width: 1024px) 24rem, calc(100vw - 2rem)"
