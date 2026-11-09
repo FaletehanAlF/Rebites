@@ -106,7 +106,7 @@ export default function BuatSandiBaruForm() {
             if (cancelled)
                 return;
             if (!session) {
-                setLinkError("Tautan reset sudah kedaluwarsa atau pernah dipakai, sehingga tidak ada sesi pemulihan yang aktif. Minta tautan baru dari halaman lupa kata sandi.");
+                setLinkError("Sesi pemulihan tidak aktif di peramban ini — tautan reset mungkin sudah kedaluwarsa, pernah dipakai, atau dibuka di peramban yang berbeda. Minta tautan baru dari halaman lupa kata sandi, lalu buka di peramban yang sama.");
                 setCheckingSession(false);
                 return;
             }

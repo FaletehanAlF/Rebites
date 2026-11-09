@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Store, MapPin, Tag, ImageIcon, User, Mail, Lock, CheckCircle2, ChevronDown, } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Store, MapPin, Tag, ImageIcon, User, Mail, Lock, CheckCircle2, ChevronDown, KeyRound, } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,6 +15,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 import { Popover, PopoverContent, PopoverTrigger, } from "@/app/components/ui/popover";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, } from "@/app/components/ui/dialog";
+import { getAuthCallbackUrl, mapOtpVerifyError, } from "@/lib/auth-email";
+import { DUPLICATE_EMAIL_MESSAGE, isDuplicateEmailSignUp, } from "@/lib/auth-signup";
+const MIN_OTP_DIGITS = 6;
+const MAX_OTP_DIGITS = 10;
+const SELLER_ONBOARDING_PATH = "/auth/register/penjual";
 import { SELLER_STATUS_UPDATED_EVENT } from "@/hooks/seller/use-seller-status";
 import { SUBSCRIPTION_PLANS, getPlanPrice, type BillingCycle } from "@/lib/subscription-plans";
 import { formatRupiah } from "@/lib/data";
@@ -161,6 +167,12 @@ export default function PenjualRegisterForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [sessionReady, setSessionReady] = useState(false);
+    const [hasSession, setHasSession] = useState(true);
+    const [confirmEmailOpen, setConfirmEmailOpen] = useState(false);
+    const [pendingOtpEmail, setPendingOtpEmail] = useState("");
+    const [otpCode, setOtpCode] = useState("");
+    const [otpError, setOtpError] = useState("");
+    const [otpLoading, setOtpLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [sessionUser, setSessionUser] = useState<{
@@ -203,7 +215,16 @@ export default function PenjualRegisterForm() {
                 if (cancelled)
                     return;
                 if (!session) {
-                    router.replace(loginUrlForOnboarding());
+                    if (typeof window !== "undefined") {
+                        const params = new URLSearchParams(window.location.search);
+                        const stepParam = Number(params.get("step"));
+                        if (stepParam === 2 || stepParam === 3) {
+                            router.replace(loginUrlForOnboarding());
+                            return;
+                        }
+                    }
+                    setHasSession(false);
+                    setSessionReady(true);
                     return;
                 }
                 const user = session.user;
@@ -281,6 +302,118 @@ export default function PenjualRegisterForm() {
         setDirection(-1);
         setStep(2);
     }
+    async function ensureSellerRole(): Promise<void> {
+        const { getValidAuthHeader } = await import("@/lib/auth-token");
+        const authHeader = await getValidAuthHeader();
+        const res = await fetch("/api/auth/seller-role", {
+            method: "POST",
+            headers: { Authorization: authHeader },
+        });
+        if (res.ok)
+            return;
+        const json = (await res.json().catch(() => null)) as {
+            error?: string;
+        } | null;
+        throw new Error(json?.error ?? "Gagal menaikkan peran akun penjual.");
+    }
+    async function handleVerifyOtp(e: FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (otpLoading)
+            return;
+        const token = otpCode.trim();
+        if (!/^\d+$/.test(token) ||
+            token.length < MIN_OTP_DIGITS ||
+            token.length > MAX_OTP_DIGITS) {
+            setOtpError(`Masukkan kode verifikasi berupa angka (${MIN_OTP_DIGITS}–${MAX_OTP_DIGITS} digit).`);
+            return;
+        }
+        setOtpError("");
+        setOtpLoading(true);
+        try {
+            const { supabase } = await import("@/lib/supabase");
+            const { error } = await supabase.auth.verifyOtp({
+                email: pendingOtpEmail,
+                token,
+                type: "signup",
+            });
+            if (error) {
+                setOtpError(mapOtpVerifyError(error.message));
+                return;
+            }
+            setConfirmEmailOpen(false);
+            setHasSession(true);
+            setSessionUser({
+                fullName: step1Form.getValues("fullName").trim(),
+                email: pendingOtpEmail,
+            });
+            goNext();
+        }
+        catch {
+            setOtpError("Gagal memverifikasi kode. Periksa koneksi lalu coba lagi.");
+        }
+        finally {
+            setOtpLoading(false);
+        }
+    }
+    async function handleStep1Submit() {
+        if (hasSession) {
+            goNext();
+            return;
+        }
+        setError("");
+        setLoading(true);
+        try {
+            const { supabase } = await import("@/lib/supabase");
+            const values = step1Form.getValues();
+            const emailTrim = values.email.trim();
+            const { data, error } = await supabase.auth.signUp({
+                email: emailTrim,
+                password: values.password,
+                options: {
+                    data: { full_name: values.fullName.trim() },
+                    emailRedirectTo: getAuthCallbackUrl(SELLER_ONBOARDING_PATH),
+                },
+            });
+            if (isDuplicateEmailSignUp({
+                error,
+                identities: data?.user?.identities,
+                hasSession: Boolean(data?.session),
+            })) {
+                if (data?.session) {
+                    try {
+                        await supabase.auth.signOut();
+                    }
+                    catch {
+                    }
+                }
+                setError(DUPLICATE_EMAIL_MESSAGE);
+                return;
+            }
+            if (error)
+                throw error;
+            if (data?.session) {
+                setHasSession(true);
+                setSessionUser({
+                    fullName: values.fullName.trim(),
+                    email: emailTrim,
+                });
+                goNext();
+                return;
+            }
+            setPendingOtpEmail(emailTrim.toLowerCase());
+            setOtpCode("");
+            setOtpError("");
+            setConfirmEmailOpen(true);
+        }
+        catch (err) {
+            setError(err instanceof Error && err.message
+                ? err.message
+                : "Gagal membuat akun. Silakan coba lagi.");
+        }
+        finally {
+            setLoading(false);
+        }
+    }
     function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file)
@@ -317,6 +450,7 @@ export default function PenjualRegisterForm() {
                 .eq("user_id", userId)
                 .limit(1);
             if (existingUmkm && existingUmkm.length > 0) {
+                await ensureSellerRole();
                 const { getActiveSubscription } = await import("@/lib/subscription-storage");
                 const activeSub = await getActiveSubscription();
                 if (!activeSub) {
@@ -384,6 +518,7 @@ export default function PenjualRegisterForm() {
             if (insertPayloadError) {
                 throw new Error(insertPayloadError.message);
             }
+            await ensureSellerRole();
             window.dispatchEvent(new Event(SELLER_STATUS_UPDATED_EVENT));
             setDirection(1);
             setStep(3);
@@ -525,14 +660,16 @@ export default function PenjualRegisterForm() {
 
       <motion.h1 variants={itemVariants} className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-foreground flex-shrink-0">
 
-        {step === 1 ? "Buat Akun Penjual" : step === 2 ? "Data Usaha" : "Pilih Paket Langganan"}
+        {step === 1 ? (hasSession ? "Buat Akun Penjual" : "Daftar Toko Baru") : step === 2 ? "Data Usaha" : "Pilih Paket Langganan"}
 
       </motion.h1>
 
       <motion.p variants={itemVariants} className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground flex-shrink-0">
 
         {step === 1
-            ? "Verifikasi akun Anda untuk melanjutkan. Email & nama sudah sesuai sesi login."
+            ? hasSession
+                ? "Verifikasi akun Anda untuk melanjutkan. Email & nama sudah sesuai sesi login."
+                : "Belum punya akun ReBites? Isi data di bawah, verifikasi kode dari email, lalu langsung buat toko. Tidak perlu mendaftar sebagai pembeli dulu."
             : step === 2
                 ? "Ceritakan tentang usaha kuliner Anda untuk tampil di ReBites."
                 : "Pilih paket untuk memulai berjualan, Basic 24.999/bulan wajib bayar via Xendit."}
@@ -551,14 +688,14 @@ export default function PenjualRegisterForm() {
 
                 <form className="grid grid-cols-1 gap-4" onSubmit={(e) => {
                 e.preventDefault();
-                step1Form.handleSubmit(goNext)();
+                step1Form.handleSubmit(handleStep1Submit)();
             }} noValidate>
 
                   <FormField control={step1Form.control} name="fullName" render={({ field }) => (<FormItem>
 
                         <FieldBox id="fullName" label="Nama Lengkap" icon={User}>
 
-                          <input id="fullName" {...field} readOnly className={inputClass("cursor-default opacity-60")}/>
+                          <input id="fullName" {...field} readOnly={hasSession} className={inputClass(hasSession ? "cursor-default opacity-60" : "")}/>
 
                         </FieldBox>
 
@@ -572,7 +709,7 @@ export default function PenjualRegisterForm() {
 
                         <FieldBox id="email" label="Alamat Email" icon={Mail}>
 
-                          <input id="email" type="email" {...field} readOnly className={inputClass("cursor-default opacity-60")}/>
+                          <input id="email" type="email" {...field} readOnly={hasSession} className={inputClass(hasSession ? "cursor-default opacity-60" : "")}/>
 
                         </FieldBox>
 
@@ -620,7 +757,7 @@ export default function PenjualRegisterForm() {
 
                   <button type="submit" className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition-colors duration-200 hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--primary))]">
 
-                    Selanjutnya
+                    {hasSession ? "Selanjutnya" : "Buat Akun & Lanjut"}
 
                   </button>
 
@@ -1082,6 +1219,51 @@ export default function PenjualRegisterForm() {
         </Link>
 
       </motion.p>
+
+
+
+      <Dialog open={confirmEmailOpen} onOpenChange={(open) => {
+        if (!open)
+            setConfirmEmailOpen(false);
+    }}>
+
+        <DialogContent className="max-w-sm">
+
+          <DialogHeader>
+
+            <DialogTitle className="font-display text-[20px] font-bold tracking-[-0.02em] text-foreground">
+              Verifikasi Email Penjual
+            </DialogTitle>
+
+            <DialogDescription className="font-sans text-[13px] leading-relaxed text-muted-foreground">
+              Kode verifikasi sudah dikirim ke {pendingOtpEmail}. Masukkan kode dari email itu, atau klik tautan di email yang sama, untuk melanjutkan membuat toko.
+            </DialogDescription>
+
+          </DialogHeader>
+
+          <form onSubmit={handleVerifyOtp} noValidate className="flex flex-col gap-2">
+
+            <div className="group flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 transition-colors duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/15">
+
+              <KeyRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55"/>
+
+              <input id="otp-penjual" name="otp" type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="Kode verifikasi" maxLength={MAX_OTP_DIGITS} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, MAX_OTP_DIGITS))} disabled={otpLoading} className={inputClass()}/>
+
+            </div>
+
+            {otpError && (<p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1.5 font-sans text-[12px] leading-relaxed text-destructive">
+                {otpError}
+              </p>)}
+
+            <button type="submit" disabled={otpLoading || otpCode.trim().length < MIN_OTP_DIGITS} className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-white transition-colors duration-200 hover:bg-primary disabled:cursor-not-allowed disabled:opacity-60">
+              {otpLoading ? "Memverifikasi…" : "Verifikasi & Lanjutkan"}
+            </button>
+
+          </form>
+
+        </DialogContent>
+
+      </Dialog>
 
     </motion.div>);
 }

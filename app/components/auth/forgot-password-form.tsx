@@ -119,6 +119,18 @@ export default function ForgotPasswordForm() {
                 setOtpError(mapOtpVerifyError(verifyError.message));
                 return;
             }
+            let adaSesi = false;
+            for (let attempt = 0; attempt < 10 && !adaSesi; attempt += 1) {
+                const { data: { session } } = await supabase.auth.getSession();
+                adaSesi = Boolean(session);
+                if (!adaSesi) {
+                    await new Promise((resolve) => setTimeout(resolve, 200));
+                }
+            }
+            if (!adaSesi) {
+                setOtpError("Kode benar, tetapi sesi pemulihan belum terbentuk di peramban ini. Coba lagi, atau minta tautan baru dari halaman lupa kata sandi.");
+                return;
+            }
             setOtpCode("");
             router.push("/auth/buat-sandi-baru");
         }
@@ -178,7 +190,7 @@ export default function ForgotPasswordForm() {
         try {
             await requestResetEmail();
             startCooldown(EMAIL_COOLDOWN_SECONDS);
-            setResendNote("Tautan reset baru dikirim. Cek inbox, spam, dan folder promosi.");
+            setResendNote("Kalau email itu terdaftar, tautan reset baru sudah dikirim. Cek inbox, spam, dan folder promosi.");
         }
         catch (err) {
             const rawMessage = err instanceof Error ? err.message : "";
@@ -238,7 +250,7 @@ export default function ForgotPasswordForm() {
 
           <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground">
 
-            Kami sudah mengirimkan tautan reset kata sandi ke{" "}
+            Kalau email itu terdaftar, kami sudah mengirimkan tautan reset kata sandi ke{" "}
 
             <span className="font-semibold text-primary">{email}</span>. Ikuti
 
@@ -256,7 +268,7 @@ export default function ForgotPasswordForm() {
 
               <KeyRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55"/>
 
-              <input id="otp" name="otp" type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="Kode 6 digit" maxLength={10} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 10))} disabled={otpLoading} className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-primary outline-none placeholder:text-muted-foreground"/>
+              <input id="otp" name="otp" type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="Kode verifikasi" maxLength={10} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 10))} disabled={otpLoading} className="w-full bg-transparent py-1 font-sans text-[14px] leading-none text-primary outline-none placeholder:text-muted-foreground"/>
 
             </div>
 

@@ -31,6 +31,16 @@ test('halaman sandi baru menjelaskan tautan kedaluwarsa, tidak mengalihkan tanpa
     assert.doesNotMatch(BUAT_SANDI, /useRouter/);
 });
 
+test('form lupa sandi memastikan sesi pemulihan terbentuk sebelum pindah ke halaman sandi baru', () => {
+    assert.match(FORGOT, /adaSesi/);
+    assert.match(FORGOT, /getSession\(\)/);
+    assert.match(FORGOT, /sesi pemulihan belum terbentuk/);
+    const idxPenjaga = FORGOT.indexOf('if (!adaSesi)');
+    const idxPindah = FORGOT.indexOf('router.push("/auth/buat-sandi-baru")');
+    assert.ok(idxPenjaga > -1, 'penjaga sesi pemulihan harus ada');
+    assert.ok(idxPindah > idxPenjaga, 'perpindahan halaman harus terjadi SETELAH penjaga sesi');
+});
+
 test('/api/profile tidak memantulkan peran dari metadata yang bisa ditulis pengguna', () => {
     assert.doesNotMatch(PROFILE_ROUTE, /meta\.role/);
     assert.match(PROFILE_ROUTE, /role: 'buyer'/);
@@ -42,10 +52,21 @@ test('form lupa sandi menangani KEDUA bentuk email: kode maupun tautan', () => {
     assert.match(FORGOT, /tautan/);
 });
 
+test('panjang kode tidak dihardcode: produksi mengirim 8 digit, bukan 6', () => {
+    assert.doesNotMatch(FORGOT, /Kode \d+ digit/);
+    assert.doesNotMatch(FORGOT, /placeholder="[^"]*\d+ digit/);
+    assert.match(FORGOT, /maxLength=\{10\}/);
+});
+
 test('template email Supabase wajib memuat {{ .Token }} agar kolom kode punya isi', () => {
     assert.match(FORGOT, /verifyOtp\(/);
     assert.match(FORGOT, /type:\s*"recovery"/);
     assert.match(FORGOT, /otpCode/);
+});
+
+test('form lupa sandi tidak menjanjikan email terkirim ke alamat yang belum tentu terdaftar', () => {
+    assert.match(FORGOT, /Kalau email itu terdaftar/);
+    assert.doesNotMatch(FORGOT, /\bKami sudah mengirimkan\b/);
 });
 
 test('config lokal mengizinkan pengalihan konfirmasi ke alamat dev 3000', () => {
