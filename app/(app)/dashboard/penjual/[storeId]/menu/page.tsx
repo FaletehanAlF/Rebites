@@ -20,7 +20,6 @@ import { Skeleton } from '@/app/components/ui/skeleton';
 import { Badge } from '@/app/components/ui/badge';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, } from '@/app/components/ui/dialog';
-import { EditProductModal } from '@/app/components/seller/tambahMenu/EditProductModal';
 import { useStoreRouteId } from '@/hooks/use-store-route-id';
 import { sellerStorePath } from '@/lib/seller-store-path';
 function ProductLimitMeter({ products }: {
@@ -196,7 +195,6 @@ function FlashSalePanel({ product, quota, used, onUpgradeClick, onQuotaBlocked, 
     const cfg = product.flashSale ?? null;
     const status = resolveFlashSaleStatus(product);
     const [editing, setEditing] = useState(false);
-    const [showDetails, setShowDetails] = useState(false);
     const [error, setError] = useState('');
     const [price, setPrice] = useState('');
     const [selectedSlot, setSelectedSlot] = useState<UrgentSlot>('09-12');
@@ -205,7 +203,6 @@ function FlashSalePanel({ product, quota, used, onUpgradeClick, onQuotaBlocked, 
     const isBasic = quota === 0;
     const occupiesSlot = cfg != null;
     const canEnable = !isBasic && (occupiesSlot || used < quota);
-    const switchDisabled = isBasic || (!canEnable && !occupiesSlot);
     const firstAvailableSlot = (date: string): UrgentSlot | null => FLASH_SLOTS.find((slot) => !isFlashSlotPast(date, slot.key))?.key ?? null;
     const handleDateChange = (value: string) => {
         if (!value)
@@ -230,10 +227,6 @@ function FlashSalePanel({ product, quota, used, onUpgradeClick, onQuotaBlocked, 
     const handleToggle = () => {
         if (isBasic) {
             onUpgradeClick();
-            return;
-        }
-        if (cfg) {
-            removeFlashSale(product.id);
             return;
         }
         if (!canEnable) {
@@ -314,19 +307,32 @@ function FlashSalePanel({ product, quota, used, onUpgradeClick, onQuotaBlocked, 
         </span>
         <div className="ml-auto flex min-w-0 items-center gap-2">
           <FlashStatusBadge status={status}/>
-          <button type="button" role="switch" aria-checked={occupiesSlot} aria-label={`Flash Sale ${product.name}`} disabled={switchDisabled} onClick={handleToggle} title={isBasic
-            ? 'Tersedia mulai paket Standar'
-            : switchDisabled
-                ? 'Kuota Flash Sale paket Standar sudah digunakan.'
-                : undefined} className={cn('relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors', occupiesSlot ? 'bg-primary' : 'bg-muted', switchDisabled && 'cursor-not-allowed opacity-40')}>
-            <span className={cn('absolute h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-all', occupiesSlot ? 'left-[18px]' : 'left-0.5')}/>
+          <button type="button" onClick={handleToggle} aria-label={`Atur Flash Sale ${product.name}`} title="Atur Flash Sale" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sage-200 text-charcoal-500 transition-colors hover:border-caramel hover:bg-caramel/20 hover:text-caramel">
+            <Pencil className="h-3.5 w-3.5" aria-hidden/>
           </button>
         </div>
       </div>
 
       {isBasic ? (<p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
           Tidak tersedia di paket Basic. Upgrade ke Standar untuk mengikuti Flash Sale.
-        </p>) : editing ? (<Dialog open onOpenChange={(open) => !open && setEditing(false)}>
+        </p>) : cfg ? (<div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+          <span className="flex items-baseline gap-1.5">
+            <span className="text-xs font-bold text-charcoal-900">
+              {formatRupiah(cfg.price)}
+            </span>
+            {draftDiscount > 0 && (<span className="text-[10px] font-bold text-primary">−{draftDiscount}%</span>)}
+          </span>
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-sage-500">
+            <CalendarDays className="h-3 w-3 shrink-0" aria-hidden/>
+            {formatFlashScheduleLabel(cfg.startIso)}
+          </span>
+        </div>) : (<p className="mt-2 text-[11px] text-muted-foreground">
+          {!canEnable
+                ? 'Kuota Flash Sale paket Standar sudah digunakan.'
+                : 'Tidak mengikuti Flash Sale.'}
+        </p>)}
+
+      {editing && (<Dialog open onOpenChange={(open) => !open && setEditing(false)}>
           <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border-sage-100 bg-white p-5">
             <DialogHeader>
               <DialogTitle className="font-display text-base font-semibold text-charcoal-900">
@@ -475,67 +481,16 @@ function FlashSalePanel({ product, quota, used, onUpgradeClick, onQuotaBlocked, 
           </div>
             </div>
           </DialogContent>
-        </Dialog>) : cfg ? (<div className="mt-2">
-          
-          <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-            <span className="flex items-baseline gap-1.5">
-              <span className="text-xs font-bold text-charcoal-900">
-                {formatRupiah(cfg.price)}
-              </span>
-              {draftDiscount > 0 && (<span className="text-[10px] font-bold text-primary">−{draftDiscount}%</span>)}
-            </span>
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-sage-500">
-              <CalendarDays className="h-3 w-3 shrink-0" aria-hidden/>
-              {formatFlashScheduleLabel(cfg.startIso)}
-            </span>
-          </div>
-
-          <div className="mt-1.5 flex items-center gap-1.5">
-            <button type="button" onClick={() => setShowDetails((prev) => !prev)} aria-expanded={showDetails} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline">
-              {showDetails ? 'Sembunyikan detail' : 'Lihat detail'}
-            </button>
-            <span aria-hidden className="text-sage-500">·</span>
-            <button type="button" onClick={startEditing} className="inline-flex items-center gap-1 text-[11px] font-semibold text-charcoal-900 hover:text-primary">
-              <Pencil className="h-3 w-3" aria-hidden/>
-              Ubah
-            </button>
-          </div>
-
-          {showDetails && (<dl className="mt-2 space-y-1 border-t border-sage-100 pt-2 text-[11px]">
-              <div className="flex items-baseline justify-between gap-2">
-                <dt className="text-sage-500">Harga normal</dt>
-                <dd className="font-medium text-charcoal-500 line-through">
-                  {formatRupiah(product.surplusPrice)}
-                </dd>
-              </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <dt className="text-sage-500">Mulai</dt>
-                <dd className="text-right font-medium text-charcoal-900">
-                  {formatPeriodLabel(cfg.startIso)}
-                </dd>
-              </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <dt className="text-sage-500">Berakhir</dt>
-                <dd className="text-right font-medium text-charcoal-900">
-                  {formatPeriodLabel(cfg.endIso)}
-                </dd>
-              </div>
-            </dl>)}
-        </div>) : (<p className="mt-1.5 text-[11px] text-muted-foreground">
-          {!canEnable
-                ? 'Kuota Flash Sale paket Standar sudah digunakan.'
-                : 'Tidak mengikuti Flash Sale.'}
-        </p>)}
+        </Dialog>)}
     </div>);
 }
-function MenuCard({ product, flashQuota, flashUsed, onUpgradeClick, onQuotaBlocked, onEdit, onFixWeight, }: {
+function MenuCard({ product, flashQuota, flashUsed, onUpgradeClick, onQuotaBlocked, editHref, }: {
     product: SellerProduct;
     flashQuota: number;
     flashUsed: number;
     onUpgradeClick: () => void;
     onQuotaBlocked: () => void;
-    onEdit: () => void;
-    onFixWeight: () => void;
+    editHref: string;
 }) {
     const { plan } = useSellerPlan();
     const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -571,9 +526,9 @@ function MenuCard({ product, flashQuota, flashUsed, onUpgradeClick, onQuotaBlock
             <h3 className="line-clamp-2 text-sm font-bold leading-snug text-charcoal-900" title={product.name}>
               {product.name}
             </h3>
-            <button type="button" onClick={onEdit} aria-label={`Edit ${product.name}`} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-sage-200 text-charcoal-500 transition-colors hover:border-caramel hover:bg-caramel/20 hover:text-caramel">
-              <Pencil className="h-3 w-3" aria-hidden/>
-            </button>
+            <Link href={editHref} aria-label={`Ubah ${product.name}`} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sage-200 text-charcoal-500 transition-colors hover:border-caramel hover:bg-caramel/20 hover:text-caramel">
+              <Pencil className="h-3.5 w-3.5" aria-hidden/>
+            </Link>
           </div>
 
           <p className="mt-0.5 truncate text-xs text-sage-500">{product.category}</p>
@@ -633,9 +588,9 @@ function MenuCard({ product, flashQuota, flashUsed, onUpgradeClick, onQuotaBlock
             <p className="text-[11px] font-bold leading-snug text-charcoal-900">
               Berat belum diisi — ongkir masih perkiraan
             </p>
-            <button type="button" onClick={onFixWeight} className="mt-0.5 text-[11px] font-semibold text-caramel-dark underline-offset-2 hover:underline">
+            <Link href={`${editHref}?fokus=berat`} className="mt-0.5 inline-block text-[11px] font-semibold text-caramel-dark underline-offset-2 hover:underline">
               Isi berat agar ongkir lebih akurat
-            </button>
+            </Link>
           </div>
         </div>) : null}
 
@@ -705,12 +660,6 @@ export default function MenuSayaPage() {
     const flashUsed = countFlashSaleProducts(products);
     const [upgradeOpen, setUpgradeOpen] = useState(false);
     const [quotaBlocked, setQuotaBlocked] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<SellerProduct | null>(null);
-    const [editFocusShipping, setEditFocusShipping] = useState(false);
-    const openEditModal = (product: SellerProduct, focusShipping = false) => {
-        setEditingProduct(product);
-        setEditFocusShipping(focusShipping);
-    };
     const [, setStatusTick] = useState(0);
     useEffect(() => {
         const id = window.setInterval(() => setStatusTick((tick) => tick + 1), 30000);
@@ -800,10 +749,8 @@ export default function MenuSayaPage() {
               Tambah Menu
             </Link>)}
         </div>) : (<div className="mt-6 grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
-          {products.map((product) => (<MenuCard key={product.id} product={product} flashQuota={flashQuota} flashUsed={flashUsed} onUpgradeClick={() => setUpgradeOpen(true)} onQuotaBlocked={() => setQuotaBlocked(true)} onEdit={() => openEditModal(product)} onFixWeight={() => openEditModal(product, true)}/>))}
+          {products.map((product) => (<MenuCard key={product.id} product={product} flashQuota={flashQuota} flashUsed={flashUsed} onUpgradeClick={() => setUpgradeOpen(true)} onQuotaBlocked={() => setQuotaBlocked(true)} editHref={`${sellerStorePath(routeStoreId, 'menu')}/${encodeURIComponent(product.id)}/edit`}/>))}
         </div>)}
-
-      <EditProductModal product={editingProduct} open={editingProduct !== null} onClose={() => setEditingProduct(null)} initialShowAdvanced={editFocusShipping}/>
 
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
         <DialogContent className="max-w-sm rounded-2xl border-border bg-white p-6">
