@@ -20,7 +20,7 @@ const SIDE_LINK =
   "inline-flex w-fit items-center gap-1.5 rounded-full font-sans text-[13px] font-semibold text-primary transition-colors duration-150 hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 const TOMBOL_HERO =
-  "px-5 py-2.5 text-[12px] sm:scale-105 sm:px-7 sm:py-3.5 sm:text-[13px] lg:scale-110 lg:px-8";
+  "px-6 py-3.5 text-[12px] leading-none sm:px-8 sm:py-4 sm:text-[13px] lg:px-10 lg:py-5 lg:text-[14px]";
 
 const container: Variants = {
   hidden: {},
@@ -40,20 +40,6 @@ export function Hero() {
   const router = useRouter();
   const { userId } = useCurrentUser();
   const [hasStore, setHasStore] = useState(false);
-
-  const [greeting, setGreeting] = useState("Selamat datang");
-  useEffect(() => {
-    const hour = new Date().getHours();
-    setGreeting(
-      hour < 11
-        ? "Selamat pagi"
-        : hour < 15
-          ? "Selamat siang"
-          : hour < 18
-            ? "Selamat sore"
-            : "Selamat malam",
-    );
-  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -84,11 +70,11 @@ export function Hero() {
         variants={container}
         initial="hidden"
         animate="visible"
-        className="relative mx-auto grid max-w-7xl gap-4 sm:gap-6 lg:grid-cols-[1.85fr_1fr] lg:gap-7"
+        className="relative mx-auto grid max-w-7xl gap-4 sm:gap-6 lg:grid-cols-[1.5fr_1fr] lg:gap-7"
       >
         <motion.div
           variants={item}
-          className="relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[400px] lg:min-h-[640px]"
+          className="relative min-h-[280px] overflow-hidden rounded-2xl sm:min-h-[340px] lg:min-h-[540px]"
         >
           <div className="absolute inset-0">
             <SmartImage
@@ -100,16 +86,9 @@ export function Hero() {
           </div>
           <div aria-hidden className="absolute inset-0 bg-primary/85" />
 
-          <div className="relative flex h-full flex-col justify-between gap-6 p-6 sm:p-10 lg:p-14">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 font-sans text-[11px] font-semibold text-white/90">
-                <span className="h-1.5 w-1.5 rounded-full bg-white/80" aria-hidden />
-                {greeting}
-              </span>
-            </div>
-
+          <div className="relative flex h-full flex-col justify-center p-6 sm:p-10 lg:p-14">
             <div>
-              <h1 className="max-w-2xl font-sans text-2xl font-semibold leading-[1.2] tracking-[-0.02em] text-primary-foreground sm:text-4xl lg:text-[3.2rem]">
+              <h1 className="max-w-2xl font-sans text-2xl font-semibold leading-[1.15] tracking-[-0.02em] text-primary-foreground sm:text-4xl lg:text-[2.75rem]">
                 Temukan Makanan Surplus,
                 <br className="hidden sm:block" />
                 <span className="relative inline-block">

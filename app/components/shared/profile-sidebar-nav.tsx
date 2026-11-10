@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/lib/current-user";
 import { useSellerStatus } from "@/hooks/seller/use-seller-status";
+import { useOrderBadge } from "@/hooks/buyer/use-order-badge";
 // Lebar sidebar pembeli = satu-satunya sumber kebenaran; topbar dan konten
 // memakai offset ini agar tidak ada margin ganda.
 import { useIsCourier } from "@/hooks/use-is-courier";
@@ -84,11 +85,15 @@ function NavRow({ collapsed, active, href, title, onClick, children, icon: Icon,
             ? "bg-emerald-50 font-semibold text-emerald-900 shadow-[inset_3px_0_0_0_#1b4d32]"
             : "text-charcoal-900 hover:bg-emerald-50/60 hover:text-emerald-900", FOCUS_RING)}>
 
-        <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white shadow-[0_1px_2px_0_rgba(27,77,50,0.06)] transition-colors", active
+        <span className={cn("relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white shadow-[0_1px_2px_0_rgba(27,77,50,0.06)] transition-colors", active
             ? "text-emerald-900"
             : "text-muted-foreground group-hover:text-emerald-800")}>
 
           <Icon className="h-[18px] w-[18px]" aria-hidden/>
+
+          {collapsed && typeof badge === "number" && badge > 0 && (<span aria-hidden className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-600 px-0.5 text-[8px] font-bold leading-none text-white ring-2 ring-white">
+              {badge > 9 ? "9+" : badge}
+            </span>)}
 
         </span>
 
@@ -98,7 +103,7 @@ function NavRow({ collapsed, active, href, title, onClick, children, icon: Icon,
 
         </span>
 
-        {typeof badge === "number" && badge > 0 && (<span className={cn("flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold leading-none text-white", collapsed && "sr-only")} aria-label={`${badge} belum dibaca`}>
+        {typeof badge === "number" && badge > 0 && (<span className={cn("flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold leading-none text-white", collapsed && "sr-only")} aria-label={`${badge} pesanan baru belum dilihat`}>
 
             {badge > 99 ? "99+" : badge}
 
@@ -114,6 +119,7 @@ export function BuyerSidebarNav({ collapsed, onToggleCollapsed, }: BuyerSidebarN
     const { user } = useCurrentUser();
     const { isSeller, loading: sellerStatusLoading } = useSellerStatus();
     const { isCourier } = useIsCourier();
+    const orderBadge = useOrderBadge(user?.id);
     const handleLogout = async () => {
         await supabase.auth.signOut();
         router.push("/auth/login");
@@ -171,7 +177,7 @@ export function BuyerSidebarNav({ collapsed, onToggleCollapsed, }: BuyerSidebarN
           </NavRow>
 
 
-          <NavRow href="/riwayatPesanan" title="Pesanan Saya" active={isPesananRoute} collapsed={collapsed} icon={ReceiptText}>
+          <NavRow href="/riwayatPesanan" title="Pesanan Saya" active={isPesananRoute} collapsed={collapsed} icon={ReceiptText} badge={orderBadge}>
             Pesanan Saya
 
           </NavRow>

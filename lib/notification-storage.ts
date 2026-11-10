@@ -111,6 +111,32 @@ export async function getUnreadCount(userId: string, role: NotificationRole): Pr
         return 0;
     return count ?? 0;
 }
+export async function getUnreadCountByType(userId: string | null | undefined, role: NotificationRole, type: NotificationType): Promise<number> {
+    if (!userId)
+        return 0;
+    const { count, error } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('role', role)
+        .eq('type', type)
+        .eq('read', false);
+    if (error)
+        return 0;
+    return count ?? 0;
+}
+export async function markTypeAsRead(userId: string | null | undefined, role: NotificationRole, type: NotificationType): Promise<void> {
+    if (!userId)
+        return;
+    await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', userId)
+        .eq('role', role)
+        .eq('type', type)
+        .eq('read', false);
+    dispatchUpdated();
+}
 export async function markAsRead(notificationId: string): Promise<void> {
     await supabase.from('notifications').update({ read: true }).eq('id', notificationId);
     dispatchUpdated();
