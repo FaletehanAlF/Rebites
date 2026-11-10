@@ -125,9 +125,9 @@ export function BlogDetailView({ slug }: { slug: string }) {
                     {article.title ?? 'Tanpa judul'}
                 </h1>
 
-                <div className="mt-6 aspect-[16/9] w-full overflow-hidden rounded-3xl border border-border/40 bg-muted">
+                <div className="relative mt-6 aspect-[16/9] w-full overflow-hidden rounded-3xl border border-border/40 bg-muted">
                     {article.cover_image && (<SmartImage src={article.cover_image} alt={article.title ?? 'Cover artikel'}
-                        sizes="(min-width: 768px) 48rem, 100vw" priority className="h-full w-full object-cover" />)}
+                        sizes="(min-width: 768px) 48rem, 100vw" priority className="transition-transform duration-500 hover:scale-[1.01]" />)}
                 </div>
 
                 {article.excerpt && (<p className="mt-6 text-[16px] font-medium leading-relaxed text-foreground/90">
