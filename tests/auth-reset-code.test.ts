@@ -11,6 +11,13 @@ const FORGOT = readProjectFile('app/components/auth/forgot-password-form.tsx');
 const BUAT_SANDI = readProjectFile('app/components/auth/buat-sandi-baru-form.tsx');
 const PROFILE_ROUTE = readProjectFile('app/api/profile/route.ts');
 const CONFIG_TOML = readProjectFile('supabase/config.toml');
+const TEMPLATE = readProjectFile('supabase/templates/recovery.html');
+const CONFIRMATION_TEMPLATE = readProjectFile('supabase/templates/confirmation.html');
+
+const SEMUA_TEMPLATE = [
+    { nama: 'reset password', isi: TEMPLATE, kunci: 'recovery' },
+    { nama: 'konfirmasi pendaftaran', isi: CONFIRMATION_TEMPLATE, kunci: 'confirmation' },
+];
 
 test('form lupa sandi menerima kode pemulihan, bukan hanya tautan', () => {
     assert.match(FORGOT, /verifyOtp\(/);
@@ -73,3 +80,59 @@ test('config lokal mengizinkan pengalihan konfirmasi ke alamat dev 3000', () => 
     assert.match(CONFIG_TOML, /http:\/\/localhost:3000/);
     assert.match(CONFIG_TOML, /http:\/\/127\.0\.0\.1:3000/);
 });
+
+test('template reset password menaruh {{ .Token }} DI DALAM dokumen email', () => {
+    const posToken = TEMPLATE.indexOf('{{ .Token }}');
+    const posBodyBuka = TEMPLATE.indexOf('<body');
+    const posBodyTutup = TEMPLATE.lastIndexOf('</body>');
+    assert.ok(posToken > -1, 'template harus memuat {{ .Token }}');
+    assert.ok(posToken > posBodyBuka, '{{ .Token }} tidak boleh berada sebelum <body>');
+    assert.ok(posToken < posBodyTutup, '{{ .Token }} tidak boleh berada setelah </body>');
+});
+
+test('template reset password tetap menghidupkan jalur tautan', () => {
+    assert.match(TEMPLATE, /\{\{ \.ConfirmationURL \}\}/);
+});
+
+test('tidak ada isi setelah </html> yang akan dibuang klien email', () => {
+    const penutup = TEMPLATE.lastIndexOf('</html>');
+    assert.ok(penutup > -1, 'template harus berupa dokumen HTML utuh');
+    assert.equal(TEMPLATE.slice(penutup + '</html>'.length).trim(), '');
+});
+
+test('penjaga bisa gagal: token yang ditaruh setelah </html> tertangkap sebagai cacat', () => {
+    const rusak = TEMPLATE.replace('{{ .Token }}', '') + '{{ .Token }}';
+    const posToken = rusak.indexOf('{{ .Token }}');
+    const posBodyTutup = rusak.lastIndexOf('</body>');
+    assert.ok(posToken > posBodyTutup, 'versi rusak harus terdeteksi berada di luar body');
+});
+
+test('config lokal memakai template reset password dari repo, bukan bawaan', () => {
+    assert.match(CONFIG_TOML, /\[auth\.email\.template\.recovery\]/);
+    assert.match(CONFIG_TOML, /content_path = "\.\/supabase\/templates\/recovery\.html"/);
+});
+
+for (const { nama, isi, kunci } of SEMUA_TEMPLATE) {
+    test(`template ${nama}: {{ .Token }} ada DI DALAM dokumen dan tidak ada isi setelah </html>`, () => {
+        const posToken = isi.indexOf('{{ .Token }}');
+        const posBodyBuka = isi.indexOf('<body');
+        const posBodyTutup = isi.lastIndexOf('</body>');
+        const posHtmlTutup = isi.lastIndexOf('</html>');
+        assert.ok(posToken > -1, `${nama}: template harus memuat {{ .Token }}`);
+        assert.ok(posToken > posBodyBuka, `${nama}: {{ .Token }} tidak boleh sebelum <body>`);
+        assert.ok(posToken < posBodyTutup, `${nama}: {{ .Token }} tidak boleh setelah </body>`);
+        assert.ok(posHtmlTutup > -1, `${nama}: harus dokumen HTML utuh`);
+        assert.equal(isi.slice(posHtmlTutup + '</html>'.length).trim(), '', `${nama}: isi setelah </html> akan dibuang klien email`);
+    });
+
+    test(`template ${nama}: jalur tautan tetap hidup dan terdaftar di config lokal`, () => {
+        assert.match(isi, /\{\{ \.ConfirmationURL \}\}/);
+        assert.match(CONFIG_TOML, new RegExp(`\\[auth\\.email\\.template\\.${kunci}\\]`));
+        assert.match(CONFIG_TOML, new RegExp(`content_path = "\\.\\/supabase\\/templates\\/${kunci}\\.html"`));
+    });
+
+    test(`template ${nama}: penjaga bisa gagal kalau token ditaruh setelah </html>`, () => {
+        const rusak = isi.replace('{{ .Token }}', '') + '{{ .Token }}';
+        assert.ok(rusak.indexOf('{{ .Token }}') > rusak.lastIndexOf('</body>'));
+    });
+}

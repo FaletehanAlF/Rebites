@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Password ReBites</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F4F7F5; font-family: Montserrat, Arial, Helvetica, sans-serif; color: #26352D;">
+
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #F4F7F5; padding: 40px 16px;">
+    <tr>
+      <td align="center">
+
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 460px; background-color: #FFFFFF; border-radius: 16px; overflow: hidden;">
+
+          <tr>
+            <td style="padding: 32px 32px 24px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #16845B;">
+                ReBites<span style="color: #A7C957;">.</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 8px 32px 36px;">
+
+              <p style="margin: 0 0 12px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #16845B;">
+                ACCOUNT SECURITY
+              </p>
+
+              <h1 style="margin: 0 0 16px; font-size: 25px; line-height: 1.4; font-weight: 700; color: #26352D;">
+                Reset Kata Sandi Kamu
+              </h1>
+
+              <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.8; color: #68756D;">
+                Kami menerima permintaan untuk mengatur ulang kata sandi akun ReBites kamu. Masukkan kode di bawah ini pada halaman lupa kata sandi, atau klik tombolnya untuk membuat kata sandi baru langsung.
+              </p>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 0 0 24px;">
+                <tr>
+                  <td align="center" style="background-color: #F4F7F5; border: 1px solid #E8EEE9; border-radius: 12px; padding: 20px 16px;">
+                    <p style="margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #7A857E;">
+                      KODE VERIFIKASI
+                    </p>
+                    <div style="font-size: 34px; line-height: 1.2; font-weight: 800; letter-spacing: 8px; color: #16845B; font-family: Montserrat, Arial, Helvetica, sans-serif;">
+                      {{ .Token }}
+                    </div>
+                    <p style="margin: 10px 0 0; font-size: 12px; line-height: 1.7; color: #7A857E;">
+                      Kode ini berlaku terbatas dan hanya bisa dipakai sekali.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 0 0 24px;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td align="center" bgcolor="#16845B" style="border-radius: 8px;">
+                          <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 14px 24px; font-size: 14px; font-weight: 700; font-family: Montserrat, Arial, Helvetica, sans-serif; color: #FFFFFF; text-decoration: none; border-radius: 8px;">
+                            Reset Kata Sandi Lewat Tautan
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 16px; font-size: 12px; line-height: 1.8; color: #7A857E;">
+                Kalau tombolnya tidak berfungsi, buka halaman lupa kata sandi di ReBites lalu masukkan kode verifikasi di atas. Tautan pada tombol juga bisa disalin dan dibuka langsung di peramban.
+              </p>
+
+              <div style="height: 1px; background-color: #E8EEE9; margin: 24px 0;"></div>
+
+              <p style="margin: 0; font-size: 12px; line-height: 1.8; color: #7A857E;">
+                Jika kamu tidak meminta pengaturan ulang kata sandi, abaikan email ini. Kata sandi akunmu tidak akan berubah selama kamu tidak melanjutkan proses reset.
+              </p>
+
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 20px 32px; background-color: #F9FBF9; border-top: 1px solid #E8EEE9; text-align: center;">
+              <p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #16845B;">
+                ReBites.
+              </p>
+              <p style="margin: 0; font-size: 11px; line-height: 1.7; color: #929B95;">
+                Email otomatis dari ReBites. Mohon jangan membalas email ini.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
