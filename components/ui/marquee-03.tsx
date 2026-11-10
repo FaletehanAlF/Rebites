@@ -6,114 +6,79 @@ type Review = {
   username: string;
   body: string;
   profile: string;
-  role: string;
   audience: 'Pembeli' | 'UMKM';
 };
 
-// Data contoh (bukan testimoni pelanggan nyata) — sesuaikan dengan data riil
-// saat tersedia. Avatar: foto pria/wanita dewasa kawasan urban (Unsplash).
+// Data contoh ReBites (bukan testimoni pelanggan nyata).
+// Avatar: foto potret (Unsplash). 6 ulasan — 2 per kolom agar rapat.
 const reviews: Review[] = [
   {
     name: "Dimas A.",
     username: "@dimasbeji",
-    body: "“Saya biasanya baru tahu makanan surplus dari warung sekitar sudah hampir habis. Di ReBites saya bisa lihat duluan menu yang masih tersedia, jadi tidak perlu menebak-nebak.”",
+    body: "“Di ReBites saya bisa lihat dulu menu surplus yang masih tersedia, jadi tidak perlu menebak-nebak stok warung sekitar.”",
     profile: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=128&h=128&q=80",
-    role: "Pembeli — Beji, Kota Depok",
     audience: "Pembeli",
   },
   {
     name: "Sri Wahyuni",
     username: "@sriwarung",
-    body: "“Kalau menjelang tutup masih ada nasi sisa, dulu saya bingung mau diapakan. Sekarang saya unggah dari pagi, dan biasanya habis sebelum jam tutup.”",
+    body: "“Menjelang tutup masih ada sisa nasi? Sekarang saya unggah dari pagi, dan biasanya habis sebelum jam tutup.”",
     profile: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=128&h=128&q=80",
-    role: "Penjual nasi rumahan — Margonda, Kota Depok",
     audience: "UMKM",
-  },
-  {
-    name: "Ananda P.",
-    username: "@andpakukusan",
-    body: "“Yang bikin saya balik bukan cuma harganya. Saya jadi tahu siapa yang masaknya, dan porsinya tetap seperti pesan langsung di tempatnya.”",
-    profile: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=128&h=128&q=80",
-    role: "Pembeli — Kukusan, Kota Depok",
-    audience: "Pembeli",
   },
   {
     name: "Hendra S.",
     username: "@hendraroti",
-    body: "“Dashboard-nya tidak bikin pusing: isi nama menu, harga, sisa stok. Pesanan masuk langsung kelihatan, jadi saya bisa siapkan tanpa bolak-balik cek HP.”",
+    body: "“Dashboard-nya tidak bikin pusing: isi nama menu, harga, sisa stok. Pesanan langsung kelihatan tanpa bolak-balik cek HP.”",
     profile: "https://images.unsplash.com/photo-1500648767791-00dcc994a43?auto=format&fit=crop&w=128&h=128&q=80",
-    role: "Penjual roti — Sawangan, Kota Depok",
     audience: "UMKM",
   },
   {
     name: "Sinta Maharani",
     username: "@sintasav",
-    body: "“Pesanan sampai masih hangat dan porsinya sama seperti beli langsung di tempat. Harga surplusnya jujur, rasanya tetap sama seperti hari-hari biasa.”",
+    body: "“Pesanan sampai masih hangat dan porsinya sama seperti beli langsung di tempat. Harga surplusnya jujur, rasanya tetap enak.”",
     profile: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=128&h=128&q=80",
-    role: "Pembeli — Cimanggis, Kota Depok",
     audience: "Pembeli",
   },
   {
     name: "Laras Lestari",
     username: "@larasbakery",
-    body: "“Roti sisa display pagi yang biasanya harus didiskon habis-habisan, sekarang bisa langsung masuk etalase ReBites. Lebih untung dan tidak ada yang terbuang.”",
+    body: "“Roti sisa display pagi yang biasanya didiskon habis-habisan, sekarang masuk etalase ReBites. Lebih untung dan tidak terbuang.”",
     profile: "https://images.unsplash.com/photo-1544005313-4817aa6c0977?auto=format&fit=crop&w=128&h=128&q=80",
-    role: "Penjual kue & roti — Depok Lama",
-    audience: "UMKM",
-  },
-  {
-    name: "Bima Giriyanti",
-    username: "@bimagiri",
-    body: "“Sejak pandemi saya tidak terlalu sering jajan di luar. Menemukan makanan layak dengan harga normal di ReBites benar-benar membantu sekali.”",
-    profile: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=128&h=128&q=80",
-    role: "Pembeli — Sawangan, Kota Depok",
-    audience: "Pembeli",
-  },
-  {
-    name: "Nisa Hidayah",
-    username: "@nisatoko",
-    body: "“Pesanan lumayan ramai menjelang tutup. Sistemnya sederhana, dan pelanggan senang karena bisa jajan sisa produksi dengan wajar dan murah.”",
-    profile: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=128&h=128&q=80",
-    role: "Pemilik kedai pisang — Beji, Kota Depok",
     audience: "UMKM",
   },
   {
     name: "Dewi Kurnia",
     username: "@dewiku",
-    body: "“Hemat bukan berarti berkompromi. Saya dapat makanan gratis-ish bukan karena sisa yang jelek, tapi karena memang belum habis terjual di akhir hari.”",
+    body: "“Hemat bukan berarti berkompromi — harganya masuk akal karena memang belum habis terjual, bukan karena kualitasnya buruk.”",
     profile: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?auto=format&fit=crop&w=128&h=128&q=80",
-    role: "Pembeli — Pancoran Mas, Kota Depok",
     audience: "Pembeli",
   },
 ];
 
-const ReviewCard = ({ profile, name, username, body, role, audience }: Review) => {
+const ReviewCard = ({ profile, name, username, body, audience }: Review) => {
   return (
-    <Card className="relative w-full max-w-sm cursor-pointer border border-border bg-white p-4 shadow-none">
-      <CardContent className="flex flex-col gap-3 p-0">
-        <div className="flex flex-row items-center gap-3">
+    <Card className="relative w-full max-w-sm cursor-pointer overflow-hidden border border-border bg-white p-4 shadow-none">
+      <CardContent className="flex flex-col gap-2 p-0">
+        <div className="flex flex-row items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            className="h-9 w-9 rounded-full object-cover"
-            width="36"
-            height="36"
+            className="h-8 w-8 rounded-full object-cover"
+            width="32"
+            height="32"
             loading="lazy"
             alt={name}
             src={profile}
           />
           <div className="flex min-w-0 flex-col">
-            <p className="truncate text-sm font-semibold text-foreground">{name}</p>
-            <p className="truncate text-xs text-muted-foreground">
-              {username}
-              <span className="px-1.5 text-border">•</span>
-              {role}
-            </p>
+            <p className="truncate text-[13px] font-semibold text-foreground">{name}</p>
+            <p className="truncate text-[11px] text-muted-foreground">{username}</p>
           </div>
-          <span className="ml-auto shrink-0 rounded-full bg-accent px-2.5 py-1 font-secondary text-[9px] font-semibold uppercase tracking-[0.14em] text-primary">
+          <span className="ml-auto shrink-0 rounded-full bg-accent px-2 py-0.5 font-secondary text-[9px] font-semibold uppercase tracking-[0.12em] text-primary">
             {audience}
           </span>
         </div>
-        <p className="text-[13px] leading-relaxed text-foreground/90">{body}</p>
+        <p className="text-[12.5px] leading-snug text-foreground/90">{body}</p>
       </CardContent>
     </Card>
   );
@@ -121,12 +86,12 @@ const ReviewCard = ({ profile, name, username, body, role, audience }: Review) =
 
 const VerticalMarqueeDemo = () => {
   return (
-    <div className="relative flex h-[500px] w-full flex-row items-center justify-center overflow-hidden">
+    <div className="relative flex h-[420px] w-full flex-row items-center justify-center overflow-hidden">
       <div className="flex h-full w-full flex-row items-center justify-center gap-4 px-4">
         <Marquee
           pauseOnHover
           vertical
-          className="hidden h-full flex-1 sm:flex [--duration:24s]"
+          className="hidden h-full flex-1 sm:flex [--duration:28s]"
         >
           {reviews
             .filter((_, i) => i % 3 === 0)
@@ -138,7 +103,7 @@ const VerticalMarqueeDemo = () => {
           reverse
           pauseOnHover
           vertical
-          className="hidden h-full flex-1 sm:flex [--duration:24s]"
+          className="hidden h-full flex-1 sm:flex [--duration:28s]"
         >
           {reviews
             .filter((_, i) => i % 3 === 1)
@@ -149,7 +114,7 @@ const VerticalMarqueeDemo = () => {
         <Marquee
           pauseOnHover
           vertical
-          className="hidden h-full flex-1 lg:flex [--duration:24s]"
+          className="hidden h-full flex-1 lg:flex [--duration:28s]"
         >
           {reviews
             .filter((_, i) => i % 3 === 2)
@@ -160,7 +125,7 @@ const VerticalMarqueeDemo = () => {
         <Marquee
           pauseOnHover
           vertical
-          className="flex h-full flex-1 sm:hidden [--duration:24s]"
+          className="flex h-full flex-1 sm:hidden [--duration:28s]"
         >
           {reviews.map((review, idx) => (
             <ReviewCard key={idx} {...review} />
