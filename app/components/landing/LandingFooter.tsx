@@ -111,7 +111,7 @@ export function LandingFooter() {
         { label: 'Jelajahi makanan', href: '/home' },
         { label: 'Fitur unggulan', href: '/fitur' },
         { label: 'Dampak lingkungan', href: '/dampak' },
-        { label: 'Blog', href: '/artikel' },
+        { label: 'Blog', href: '/blog' },
       ],
     },
     {
