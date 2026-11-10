@@ -695,7 +695,7 @@ export default function PenjualRegisterForm() {
 
                         <FieldBox id="fullName" label="Nama Lengkap" icon={User}>
 
-                          <input id="fullName" {...field} readOnly={hasSession} className={inputClass(hasSession ? "cursor-default opacity-60" : "")}/>
+                          <input id="fullName" {...field} readOnly={hasSession} placeholder="Contoh: user1234567" className={inputClass(hasSession ? "cursor-default opacity-60" : "")}/>
 
                         </FieldBox>
 
@@ -709,7 +709,7 @@ export default function PenjualRegisterForm() {
 
                         <FieldBox id="email" label="Alamat Email" icon={Mail}>
 
-                          <input id="email" type="email" {...field} readOnly={hasSession} className={inputClass(hasSession ? "cursor-default opacity-60" : "")}/>
+                          <input id="email" type="email" {...field} readOnly={hasSession} placeholder="Contoh: user123@gmail.com" className={inputClass(hasSession ? "cursor-default opacity-60" : "")}/>
 
                         </FieldBox>
 
