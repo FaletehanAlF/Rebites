@@ -10,6 +10,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { label: 'Tentang Kami', href: '/tentang-kami' },
   { label: 'Fitur Unggulan', href: '/fitur' },
   { label: 'Dampak', href: '/dampak' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Hubungi Kami', href: '/hubungi-kami' },
 ];
 
