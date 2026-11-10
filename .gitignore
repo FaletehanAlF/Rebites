@@ -60,3 +60,13 @@ AGENTS.md
 
 # temporary files
 .vibecode-tmp/
+
+# perkakas bantu AI — tidak ikut di-commit
+.opencode/
+opencode.json
+.cursor/
+.claude/
+.continue/
+.aider*
+.vibecode/
+.aider.conf.yml
