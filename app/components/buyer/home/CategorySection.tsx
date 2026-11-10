@@ -56,7 +56,7 @@ export function CategorySection() {
     <section
       id="kategori"
       data-nav="neutral"
-      className="relative scroll-mt-20 bg-secondary py-10 sm:py-12 lg:py-14"
+      className="relative scroll-mt-20 bg-white py-10 sm:py-12 lg:py-14"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div>

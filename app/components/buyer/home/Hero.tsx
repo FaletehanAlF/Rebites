@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Store, Tag, Truck } from "lucide-react";
+import { ArrowRight, Store, Tag } from "lucide-react";
 import { Button } from "@/app/components/shared/Button";
 import { SmartImage } from "@/app/components/shared/SmartImage";
 import { scrollToId } from "@/lib/scroll";
@@ -18,6 +18,9 @@ const UMKM_IMAGE = "/terselamatan.avif";
 
 const SIDE_LINK =
   "inline-flex w-fit items-center gap-1.5 rounded-full font-sans text-[13px] font-semibold text-primary transition-colors duration-150 hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+const TOMBOL_HERO =
+  "px-5 py-2.5 text-[12px] sm:scale-105 sm:px-7 sm:py-3.5 sm:text-[13px] lg:scale-110 lg:px-8";
 
 const container: Variants = {
   hidden: {},
@@ -75,7 +78,7 @@ export function Hero() {
     <section
       id="home"
       data-nav="neutral"
-      className="scroll-mt-20 bg-secondary px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-6 lg:px-8 lg:pb-12"
+      className="scroll-mt-20 bg-white px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-6 lg:px-8 lg:pb-12"
     >
       <motion.div
         variants={container}
@@ -99,29 +102,22 @@ export function Hero() {
 
           <div className="relative flex h-full flex-col justify-between gap-6 p-6 sm:p-10 lg:p-14">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 font-secondary text-[11px] font-semibold text-white/90">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 font-sans text-[11px] font-semibold text-white/90">
                 <span className="h-1.5 w-1.5 rounded-full bg-white/80" aria-hidden />
                 {greeting}
               </span>
-              <Link
-                href="/riwayatPesanan"
-                className="inline-flex items-center gap-1.5 rounded-full font-sans text-[12px] font-semibold text-white/80 transition-colors duration-150 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
-              >
-                Pesanan saya
-                <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-              </Link>
             </div>
 
             <div>
-              <h1 className="max-w-2xl font-sans text-2xl font-semibold leading-[1.05] tracking-tight text-primary-foreground sm:text-4xl lg:text-[3.85rem]">
+              <h1 className="max-w-2xl font-sans text-2xl font-semibold leading-[1.2] tracking-[-0.02em] text-primary-foreground sm:text-4xl lg:text-[3.2rem]">
                 Temukan Makanan Surplus,
                 <br className="hidden sm:block" />
                 <span className="relative inline-block">
                   Hemat dan Nikmat
-                  <span className="absolute inset-x-0 -bottom-1 h-[3px] rounded-full bg-primary sm:-bottom-2" />
+                  <span className="absolute inset-x-0 -bottom-1 h-[3px] rounded-full bg-primary" />
                 </span>
               </h1>
-              <p className="mt-3 max-w-lg font-secondary text-xs leading-relaxed text-white sm:mt-5 sm:text-[15px] lg:text-[16px]">
+              <p className="mt-4 max-w-lg font-sans text-xs leading-relaxed text-white sm:mt-6 sm:text-[15px] lg:text-[16px]">
                 Temukan makanan surplus berkualitas dari UMKM di sekitarmu dengan
                 harga lebih bersahabat.
               </p>
@@ -131,7 +127,7 @@ export function Hero() {
                   variant="outlineLight"
                   size="sm"
                   onClick={() => scrollToId("rekomendasi")}
-                  className="group px-5 py-2.5 text-[12px] sm:scale-105 sm:px-7 sm:py-3.5 sm:text-[13px] lg:scale-110 lg:px-8"
+                  className={TOMBOL_HERO}
                 >
                   Jelajahi Makanan
                   <ArrowRight className="h-4 w-4" aria-hidden />
@@ -141,17 +137,12 @@ export function Hero() {
                   variant="light"
                   size="sm"
                   onClick={handleMulaiJual}
-                  className="px-5 py-2.5 text-[13px]"
+                  className={`${TOMBOL_HERO} bg-white text-primary hover:bg-white`}
                 >
                   Mulai Jual
                 </Button>
               </div>
             </div>
-
-            <p className="flex items-center gap-2 font-secondary text-[11px] text-primary-foreground/75 sm:text-sm">
-              <Truck className="h-3.5 w-3.5 text-primary-foreground sm:h-4 sm:w-4" aria-hidden />
-              Setelah dipesan, status pengantaran bisa kamu ikuti sampai tiba
-            </p>
           </div>
         </motion.div>
 
@@ -175,7 +166,7 @@ export function Hero() {
                 <br />
                 Hemat Besar.
               </h2>
-              <p className="mt-1.5 max-w-[260px] font-secondary text-xs leading-relaxed text-primary-foreground/80 sm:mt-2 sm:text-sm">
+              <p className="mt-1.5 max-w-[260px] font-sans text-xs leading-relaxed text-primary-foreground/80 sm:mt-2 sm:text-sm">
                 Dapatkan diskon spesial untuk makanan favoritmu sekarang.
               </p>
               <Button
@@ -207,7 +198,7 @@ export function Hero() {
               <h2 className="mt-2 font-sans text-base font-semibold leading-snug text-primary-foreground sm:mt-3 sm:text-xl lg:text-2xl">
                 Punya Makanan Surplus?
               </h2>
-              <p className="mt-1 max-w-[260px] font-secondary text-xs leading-relaxed text-primary-foreground/80 sm:mt-1.5 sm:text-sm">
+              <p className="mt-1 max-w-[260px] font-sans text-xs leading-relaxed text-primary-foreground/80 sm:mt-1.5 sm:text-sm">
                 Jual sekarang dengan harga diskon dan ubah sisa jadi pemasukan.
               </p>
               <Button
@@ -231,7 +222,7 @@ export function Hero() {
             <h2 className="mt-4 font-sans text-base font-bold tracking-tight text-foreground sm:text-[17px]">
               Diskon kilat hari ini
             </h2>
-            <p className="mt-1.5 font-secondary text-xs leading-relaxed text-muted-foreground sm:text-[13px]">
+            <p className="mt-1.5 font-sans text-xs leading-relaxed text-muted-foreground sm:text-[13px]">
               Harga lebih hemat untuk makanan surplus pilihan, berganti setiap
               slot waktu.
             </p>
@@ -255,7 +246,7 @@ export function Hero() {
             <h2 className="mt-4 font-sans text-base font-bold tracking-tight text-foreground sm:text-[17px]">
               Toko UMKM di sekitarmu
             </h2>
-            <p className="mt-1.5 font-secondary text-xs leading-relaxed text-muted-foreground sm:text-[13px]">
+            <p className="mt-1.5 font-sans text-xs leading-relaxed text-muted-foreground sm:text-[13px]">
               Lihat toko lokal yang rutin menyelamatkan makanan surplusnya
               setiap hari.
             </p>

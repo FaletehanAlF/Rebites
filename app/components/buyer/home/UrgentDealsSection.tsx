@@ -6,6 +6,7 @@ import { useCatalog } from "@/lib/catalog";
 import { FoodCard } from "@/app/components/shared/FoodCard";
 import { FoodCardSkeleton } from "@/app/components/shared/FoodCardSkeleton";
 import { cn } from "@/lib/utils";
+import { useSwipePager } from "@/lib/use-swipe-pager";
 const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const ITEMS_PER_PAGE = 4;
 
@@ -30,6 +31,7 @@ export function UrgentDealsSection({ onViewDetail, }: {
         setDirection(clamped > page ? 1 : -1);
         setPage(clamped);
     };
+    const pager = useSwipePager({ page, pageCount, onPageChange: goToPage });
     return (<section id="rekomendasi" data-nav="neutral" className="scroll-mt-20 py-10 sm:py-12 lg:py-14">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -77,7 +79,14 @@ export function UrgentDealsSection({ onViewDetail, }: {
           </div>)}
 
         {!loading && !catalogError && items.length > 0 && (<>
-            <div className="relative mt-6 overflow-hidden">
+            <div
+              className="relative mt-6 cursor-grab touch-pan-y select-none overflow-hidden active:cursor-grabbing"
+              onPointerDown={pager.onPointerDown}
+              onPointerUp={pager.onPointerUp}
+              onPointerCancel={pager.onPointerCancel}
+              onWheel={pager.onWheel}
+              onClickCapture={pager.onClickCapture}
+            >
               <AnimatePresence initial={false} mode="popLayout" custom={direction}>
                 <motion.div key={page} custom={direction} variants={{
                 enter: (dir: number) => ({ opacity: 0, x: 40 * dir }),

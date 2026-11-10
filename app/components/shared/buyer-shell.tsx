@@ -53,7 +53,7 @@ export function BuyerShell({ children, showBottomNav = true, }: BuyerShellProps)
         });
     };
     return (<MotionConfig reducedMotion="user">
-      <div className="min-h-screen bg-secondary">
+      <div className="min-h-screen bg-white">
         <div className="lg:hidden">
           <MobileNavbar />
         </div>

@@ -1,6 +1,6 @@
 export default function HomeLoading() {
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-[1400px] px-5 pt-24 sm:px-8 lg:px-12">
         <div className="h-10 w-2/3 max-w-md animate-pulse rounded-full bg-muted/50" />
         <div className="mt-4 h-10 w-1/2 max-w-sm animate-pulse rounded-full bg-muted/50" />

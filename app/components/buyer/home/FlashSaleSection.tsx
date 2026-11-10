@@ -278,7 +278,7 @@ function UrgentCard({ item, startsAtIso, endsAtIso, onViewDetail, }: {
 
 
 
-        {!isActive && item.startsAt && (<div className="mt-1.5 rounded-md bg-secondary/80 px-2 py-0.5 text-[10px] font-extrabold text-foreground shadow-sm">
+        {!isActive && item.startsAt && (<div className="mt-1.5 rounded-md bg-white px-2 py-0.5 text-[10px] font-extrabold text-foreground shadow-sm">
 
             {formatFlashScheduleLabel(item.startsAt)}
 

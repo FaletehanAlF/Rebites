@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useCatalog } from "@/lib/catalog";
 import { VendorCard } from "@/app/components/buyer/home/VendorCard";
 import { VendorCardSkeleton } from "@/app/components/shared/VendorCardSkeleton";
+import { useSwipePager } from "@/lib/use-swipe-pager";
 import { SELLER_VENDOR_SLUG } from "@/lib/product-storage";
 import { useSellerPlan } from "@/lib/seller-plan";
 import { orderVendorsOpenFirst } from "@/lib/store-status";
@@ -34,6 +35,7 @@ export function VendorSection() {
         setDirection(clamped > page ? 1 : -1);
         setPage(clamped);
     };
+    const pager = useSwipePager({ page, pageCount, onPageChange: goToPage });
     return (<section id="umkm" data-nav="neutral" className="scroll-mt-20 py-10 sm:py-12 lg:py-14">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -87,7 +89,14 @@ export function VendorSection() {
 
         {!loading && !catalogError && sortedVendors.length > 0 && (<>
             
-            <div className="relative mt-6 overflow-hidden">
+            <div
+              className="relative mt-6 cursor-grab touch-pan-y select-none overflow-hidden active:cursor-grabbing"
+              onPointerDown={pager.onPointerDown}
+              onPointerUp={pager.onPointerUp}
+              onPointerCancel={pager.onPointerCancel}
+              onWheel={pager.onWheel}
+              onClickCapture={pager.onClickCapture}
+            >
               <AnimatePresence initial={false} mode="popLayout" custom={direction}>
                 <motion.div key={page} custom={direction} variants={{
                 enter: (dir: number) => ({ opacity: 0, x: 40 * dir }),
