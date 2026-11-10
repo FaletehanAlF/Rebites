@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/server/supabase';
+import { classifyBiteshipWebhookRequest } from '@/lib/server/biteship-webhook-guard';
 export const runtime = 'nodejs';
 const SUPPORTED_EVENTS = ['order.status', 'order.waybill_id', 'order.price'] as const;
 type SupportedEvent = (typeof SUPPORTED_EVENTS)[number];
@@ -21,15 +22,6 @@ const KNOWN_SHIPMENT_STATUSES = [
     'delivered',
 ] as const;
 const TERMINAL_STATUSES = ['delivered', 'cancelled', 'rejected', 'disposed', 'returned'];
-function timingSafeEqual(a: string, b: string): boolean {
-    if (a.length !== b.length)
-        return false;
-    let result = 0;
-    for (let i = 0; i < a.length; i++) {
-        result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-    }
-    return result === 0;
-}
 function getConfiguredSecret(): string | null {
     const raw = process.env.BITESHIP_WEBHOOK_SECRET?.trim();
     return raw || null;
@@ -50,29 +42,31 @@ interface BiteshipWebhookPayload {
     order_price?: unknown;
 }
 export async function POST(req: NextRequest) {
-    const expected = getConfiguredSecret();
-    if (!expected) {
+    const rawBody = await req.text();
+    const headerSecret = req.headers.get('x-webhook-secret');
+    const authHeader = req.headers.get('authorization');
+    const bearerSecret = authHeader?.toLowerCase().startsWith('bearer ') ? authHeader.slice(7) : null;
+    const verdict = classifyBiteshipWebhookRequest({
+        rawBody,
+        providedSecret: headerSecret || bearerSecret,
+        expectedSecret: getConfiguredSecret(),
+    });
+    if (verdict.action === 'probe') {
+        console.log('[webhook/biteship] permintaan uji tanpa isi dijawab OK');
+        return NextResponse.json({ ok: true });
+    }
+    if (verdict.action === 'misconfigured') {
         console.error('[webhook/biteship] BITESHIP_WEBHOOK_SECRET belum di-set');
         return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
     }
-    const headerSecret = req.headers.get('x-webhook-secret')?.trim() ?? null;
-    const authHeader = req.headers.get('authorization')?.trim() ?? null;
-    const bearerSecret = authHeader?.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : null;
-    const provided = headerSecret || bearerSecret;
-    if (!provided || !timingSafeEqual(provided, expected)) {
+    if (verdict.action === 'unauthorized') {
         console.warn('[webhook/biteship] invalid webhook secret');
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    let payload: BiteshipWebhookPayload;
-    try {
-        payload = (await req.json()) as BiteshipWebhookPayload;
-    }
-    catch {
+    if (verdict.action === 'invalid-json') {
         return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
-    if (!payload || typeof payload !== 'object') {
-        return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
-    }
+    const payload = verdict.payload as BiteshipWebhookPayload;
     const event = nonEmptyString(payload.event);
     const biteshipOrderId = nonEmptyString(payload.order_id);
     if (!event || !SUPPORTED_EVENTS.includes(event as SupportedEvent) || !biteshipOrderId) {
