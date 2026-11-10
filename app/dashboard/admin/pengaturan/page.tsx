@@ -40,7 +40,7 @@ function SettingsSection({ icon, title, description, scope, children, footer, cl
 
       <CardContent className="px-5 py-5">
 
-        <div className="flex items-start gap-4.5">
+        <div className="flex items-start gap-4">
 
           <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius)] bg-primary/10 text-primary">
 

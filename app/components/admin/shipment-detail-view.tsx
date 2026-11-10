@@ -156,7 +156,7 @@ export function ShipmentDetailContent({ detail, history, historyStatus, historyE
               <h2 className="font-display text-[15px] font-semibold text-charcoal-900">
                 Produk yang dipesan
               </h2>
-              <div className="mt-3 flex items-center gap-4.5">
+              <div className="mt-3 flex items-center gap-4">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[var(--radius)] bg-sage-100/60">
                   <SmartImage src={detail.productImageUrl ?? ''} alt={detail.productName ?? 'Foto produk'} sizes="64px"/>
                 </div>
