@@ -22,6 +22,9 @@ export type PostLoginResult = {
 } | {
     ok: false;
     message: string;
+    /** Diisi saat kegagalan murni soal sesi/peran (transien) —
+     *  sesi valid tetap tersimpan dan dipanggil boleh fallback redirect. */
+    kind?: 'role-error';
 };
 function getSellerOnboardingTarget(plan: string | null | undefined, billing: string | null | undefined): string | null {
     const planParam = plan ?? '';
@@ -46,10 +49,15 @@ export async function completeAuthSession(userId: string | null, context: PostLo
                 }
                 catch {
                 }
+                return { ok: false, message: err.message };
             }
-            return { ok: false, message: err.message };
+            return { ok: false, message: err.message, kind: 'role-error' };
         }
-        return { ok: false, message: 'Gagal membaca peran akun. Silakan coba lagi.' };
+        return {
+            ok: false,
+            message: 'Gagal membaca peran akun. Silakan coba lagi.',
+            kind: 'role-error',
+        };
     }
     // Peran admin selalu mendarat di dashboard admin: `next` hasil guard halaman pembeli
     // (mis. /riwayatPesanan/...) tidak boleh menimpa beranda peran admin.

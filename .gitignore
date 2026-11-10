@@ -1,6 +1,7 @@
 # GitHub
 # See https://help.github.com/articles/ignoring-files/
 
+# Folder kerja agent/AI lokal
 .agents
 
 # dependencies
@@ -21,6 +22,14 @@
 # misc
 .DS_Store
 *.pem
+
+# file sampah OS Windows
+Thumbs.db
+desktop.ini
+
+# konfigurasi editor (tidak perlu di repo publik)
+.vscode/
+.idea/
 
 # debug
 npm-debug.log*
@@ -48,7 +57,6 @@ yarn-error.log*
 next-env.d.ts
 
 #skills
-.agents
 skills-lock.json
 
 # local verification & debug artifacts (Tahap 4B: jangan commit log/skrip verifikasi lokal)
