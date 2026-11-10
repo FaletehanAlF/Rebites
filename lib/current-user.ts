@@ -36,9 +36,9 @@ export async function fetchCurrentUserRole(userId?: string | null): Promise<User
     let uid = userId ?? null;
     if (!uid) {
         let sessionUser: string | null = null;
-        for (let attempt = 0; attempt < 3 && !sessionUser; attempt += 1) {
+        for (let attempt = 0; attempt < 6 && !sessionUser; attempt += 1) {
             if (attempt > 0) {
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 200));
             }
             const { data: { session }, } = await supabase.auth.getSession();
             sessionUser = session?.user?.id ?? null;

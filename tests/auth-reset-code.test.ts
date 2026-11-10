@@ -59,7 +59,7 @@ test('form lupa sandi menangani KEDUA bentuk email: kode maupun tautan', () => {
     assert.match(FORGOT, /tautan/);
 });
 
-test('panjang kode tidak dihardcode: produksi mengirim 8 digit, bukan 6', () => {
+test('panjang kode tidak dihardcode: form mengizinkan 6–10 digit produksi', () => {
     assert.doesNotMatch(FORGOT, /Kode \d+ digit/);
     assert.doesNotMatch(FORGOT, /placeholder="[^"]*\d+ digit/);
     assert.match(FORGOT, /maxLength=\{10\}/);

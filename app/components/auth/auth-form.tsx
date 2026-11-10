@@ -11,6 +11,7 @@ import { EMAIL_COOLDOWN_SECONDS, EMAIL_DELIVERY_ERROR_MESSAGE, getAuthCallbackUr
 import { isInvalidCredentialsMessage, loginErrorMessageFor, lookupEmailRegistered, } from "@/lib/auth-login-hint";
 import { DUPLICATE_EMAIL_MESSAGE, isDuplicateEmailSignUp, } from "@/lib/auth-signup";
 import { BLOCKED_ACCOUNT_MESSAGE, isAccountBlockMessage, isBannedAuthError } from "@/lib/account-block";
+import type { PostLoginResult } from "@/lib/auth-post-login";
 const EASE: [
     number,
     number,
@@ -129,6 +130,7 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
     const [otpCode, setOtpCode] = useState("");
     const [otpLoading, setOtpLoading] = useState(false);
     const [otpError, setOtpError] = useState("");
+    const [otpFinishing, setOtpFinishing] = useState(false);
     const pendingOtpEmailRef = useRef<string | null>(null);
     const { remainingSec: resendRemainingSec, isCooling: isResendCooling, start: startResendCooldown, } = useEmailCooldown(EMAIL_COOLDOWN_SECONDS);
     async function handleResend() {
@@ -177,7 +179,7 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
             setResendLoading(false);
         }
     }
-    async function finishAuth(authUserId: string | null) {
+    async function finishAuth(authUserId: string | null, opts?: { softFailRedirect?: string; }): Promise<PostLoginResult | null> {
         const params = new URLSearchParams(window.location.search);
         const lastUid = authUserId ??
             (window as Window & {
@@ -193,10 +195,17 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
             fallback: redirectTo,
         });
         if (!result.ok) {
+            if (opts?.softFailRedirect && result.kind === "role-error") {
+                // Sesi sudah valid; hanya penentuan rute akun yang gagal
+                // sementara. Tetap masuk gunakan fallback halaman.
+                window.location.href = opts.softFailRedirect;
+                return result;
+            }
             setError(result.message);
-            return;
+            return result;
         }
         window.location.href = result.destination;
+        return result;
     }
     async function handleGoogleAuth() {
         if (oauthLoading || loading)
@@ -227,7 +236,7 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
     }
     async function handleVerifyOtp(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        if (otpLoading)
+        if (otpLoading || otpFinishing)
             return;
         const token = otpCode.trim();
         if (!/^\d+$/.test(token) ||
@@ -236,8 +245,11 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
             setOtpError(`Masukkan kode verifikasi berupa angka (${MIN_OTP_DIGITS}–${MAX_OTP_DIGITS} digit).`);
             return;
         }
-        if (!email.trim()) {
-            setOtpError("Email tidak ditemukan. Muat ulang halaman lalu coba lagi.");
+        // Verifikasi selalu memakai email yang tercatat saat signUp — bukan
+        // isi field live yang bisa berubah, agar OTP tidak salah sasaran.
+        const verifyEmail = (pendingOtpEmailRef.current ?? email).trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(verifyEmail)) {
+            setOtpError("Email verifikasi tidak valid. Muat ulang halaman lalu ulangi pendaftaran.");
             return;
         }
         setOtpError("");
@@ -245,7 +257,7 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
         try {
             const { supabase } = await import("@/lib/supabase");
             const { data, error: verifyError } = await supabase.auth.verifyOtp({
-                email: email.trim(),
+                email: verifyEmail,
                 token,
                 type: "signup",
             });
@@ -255,10 +267,18 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
             }
             pendingOtpEmailRef.current = null;
             setOtpCode("");
-            setConfirmEmailOpen(false);
-            await finishAuth(data?.user?.id ?? null);
+            // Dialog tetap terbuka dengan status "menyiapkan sesi": kalau
+            // penyiapan rute gagal sesaat, kegagalannya tampil di dalam
+            // dialog — bukan hilang entah ke mana dan terkesan tidak masuk.
+            setOtpFinishing(true);
+            const result = await finishAuth(data?.user?.id ?? null, { softFailRedirect: redirectTo });
+            if (!result?.ok) {
+                setOtpFinishing(false);
+                setOtpError(result?.message ?? "Gagal menyiapkan sesi. Silakan coba masuk.");
+            }
         }
         catch {
+            setOtpFinishing(false);
             setOtpError("Gagal memverifikasi kode. Periksa koneksi lalu coba lagi.");
         }
         finally {
@@ -266,12 +286,16 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
         }
     }
     useEffect(() => {
+        // "Ingat saya" hanya untuk halaman masuk, jangan timpa email pada
+        // mode pendaftaran.
+        if (isSignup)
+            return;
         const remembered = localStorage.getItem("rebites_remembered_email");
         if (remembered) {
             setEmail(remembered);
             setRememberMe(true);
         }
-    }, []);
+    }, [isSignup]);
     async function handleSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         if (confirmEmailOpen)
@@ -673,7 +697,7 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
 
               <span className="font-semibold text-primary">
 
-                {email.trim()}
+                {(pendingOtpEmailRef.current ?? email).trim()}
 
               </span>
 
@@ -697,7 +721,13 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
 
           <form className="mt-4 flex flex-col gap-2" onSubmit={handleVerifyOtp} noValidate>
 
-            <Field id="otpCode" label="Kode Verifikasi" icon={KeyRound} name="otpCode" type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="Kode dari email" maxLength={MAX_OTP_DIGITS} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, MAX_OTP_DIGITS))} disabled={otpLoading}/>
+            <Field id="otpCode" label="Kode Verifikasi" icon={KeyRound} name="otpCode" type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="Kode dari email" maxLength={MAX_OTP_DIGITS} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, MAX_OTP_DIGITS))} disabled={otpLoading || otpFinishing}/>
+
+            {otpFinishing && (<p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-emerald-800">
+
+                Kode terverifikasi! Menyiapkan sesimu…
+
+              </p>)}
 
             {otpError && (<p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-[12px] leading-relaxed text-red-700">
 
@@ -705,15 +735,17 @@ export default function AuthForm({ mode, title, subtitle, submitLabel, redirectT
 
               </p>)}
 
-            <button type="submit" disabled={otpLoading || otpCode.length < MIN_OTP_DIGITS} className="mt-1 inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-primary disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="submit" disabled={otpLoading || otpFinishing || otpCode.length < MIN_OTP_DIGITS} className="mt-1 inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-primary disabled:cursor-not-allowed disabled:opacity-60">
 
-              {otpLoading ? "Memverifikasi…" : "Verifikasi Kode"}
+              {otpFinishing
+                ? "Berhasil — Menyiapkan sesi…"
+                : otpLoading ? "Memverifikasi…" : "Verifikasi Kode"}
 
             </button>
 
           </form>
 
-          <button type="button" onClick={handleResend} disabled={resendLoading || isResendCooling || otpLoading} className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60">
+          <button type="button" onClick={handleResend} disabled={resendLoading || isResendCooling || otpLoading || otpFinishing} className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-primary/30 bg-white px-5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60">
 
             {resendLoading
             ? "Mengirim…"
