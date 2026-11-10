@@ -11,12 +11,36 @@ const PILL_CLASS = 'inline-flex items-center rounded-full border border-rose-200
 
 type DetailState = 'loading' | 'ready' | 'notfound' | 'error';
 
+function RelatedCard({ article }: { article: BlogArticle }) {
+    const href = article.slug ? `/blog/${article.slug}` : '/blog';
+    return (
+        <Link href={href} className="group flex flex-col overflow-hidden rounded-2xl border border-border/40 bg-white transition-shadow hover:shadow-md">
+            <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+                {article.cover_image && (
+                    <SmartImage src={article.cover_image} alt={article.title ?? 'Cover artikel'} sizes="(min-width: 640px) 22rem, 100vw"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                )}
+            </div>
+            <div className="p-4">
+                <div className="flex flex-wrap items-center gap-2.5">
+                    {article.category && (<span className={PILL_CLASS}>{article.category}</span>)}
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        {formatDate(article.published_at ?? article.created_at)}
+                    </span>
+                </div>
+                <span className="mt-2 line-clamp-2 block text-[13px] font-semibold leading-snug text-foreground">
+                    {article.title ?? 'Tanpa judul'}
+                </span>
+            </div>
+        </Link>
+    );
+}
+
 export function BlogDetailView({ slug }: { slug: string }) {
     const [state, setState] = useState<DetailState>('loading');
     const [errorMsg, setErrorMsg] = useState('');
     const [article, setArticle] = useState<BlogArticle | null>(null);
     const [related, setRelated] = useState<BlogArticle[]>([]);
-    const [categories, setCategories] = useState<string[]>([]);
 
     const load = useCallback(async () => {
         setState('loading');
@@ -34,13 +58,11 @@ export function BlogDetailView({ slug }: { slug: string }) {
             const json = (await res.json()) as { article: BlogArticle };
             setArticle(json.article);
 
+            // Berita terkait: prioritaskan kategori sama, lalu sisanya.
             const list = await fetchPublishedArticles({ offset: 0, limit: 50 });
             const sameCategory = list.items.filter((a) => a.slug !== slug && a.category && a.category === json.article.category);
             const others = list.items.filter((a) => a.slug !== slug && (!a.category || a.category !== json.article.category));
-            setRelated([...sameCategory, ...others].slice(0, 4));
-            const unique = Array.from(new Set(list.items.map((a) => (a.category ?? '').trim()).filter(Boolean)));
-            unique.sort((a, b) => a.localeCompare(b, 'id'));
-            setCategories(unique);
+            setRelated([...sameCategory, ...others].slice(0, 3));
             setState('ready');
         }
         catch (err) {
@@ -57,20 +79,19 @@ export function BlogDetailView({ slug }: { slug: string }) {
         ? Math.max(1, Math.round(estimateReadingTime(article.content) / 220))
         : 0;
 
-    return (<section className="mx-auto w-full max-w-7xl px-5 pb-20 pt-28 sm:px-8 sm:pt-32">
-        <Link href="/blog" className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground transition-colors hover:text-primary">
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+    return (<section className="mx-auto w-full max-w-3xl px-5 pb-24 pt-28 sm:pt-32">
+        <Link href="/blog" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-primary">
+            <ArrowLeft className="h-4 w-4" aria-hidden />
             Kembali ke Blog
         </Link>
 
-        {state === 'loading' && (<div className="mt-6 grid gap-6 lg:grid-cols-[210px_minmax(0,1fr)_280px] lg:items-start" aria-hidden>
-            <Skeleton className="hidden h-48 rounded-2xl lg:block" />
-            <div className="space-y-4">
-                <Skeleton className="h-56 rounded-2xl" />
-                <Skeleton className="h-8 w-3/4 rounded-xl" />
-                <Skeleton className="h-40 rounded-2xl" />
-            </div>
-            <Skeleton className="hidden h-56 rounded-2xl lg:block" />
+        {state === 'loading' && (<div className="mt-6 space-y-4" aria-hidden>
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="aspect-[16/9] w-full rounded-3xl" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-2/3" />
         </div>)}
 
         {state === 'notfound' && (<div className="mt-10 rounded-2xl border border-border/40 bg-white p-12 text-center shadow-sm">
@@ -86,78 +107,50 @@ export function BlogDetailView({ slug }: { slug: string }) {
             <button type="button" onClick={() => void load()} className="ml-2 font-semibold underline underline-offset-4">Coba lagi</button>
         </div>)}
 
-        {state === 'ready' && article && (<div className="mt-6 grid gap-10 lg:grid-cols-[210px_minmax(0,1fr)_280px] lg:items-start">
-            <aside className="hidden rounded-2xl border border-border/40 bg-white p-6 shadow-sm lg:block">
-                <h2 className="font-display text-lg font-bold tracking-tight text-foreground">Kategori</h2>
-                <ul className="mt-5 space-y-2.5">
-                    {['Semua', ...categories].map((option) => (<li key={option}>
-                        <Link href={option === 'Semua' ? '/blog' : `/blog?kategori=${encodeURIComponent(option)}`}
-                            className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-rose-600">
-                            {option}
-                        </Link>
-                    </li>))}
-                </ul>
-            </aside>
-
-            <article className="min-w-0">
+        {state === 'ready' && article && (<>
+            <article className="mt-6">
                 <div className="flex flex-wrap items-center gap-3">
                     {article.category && (<span className={PILL_CLASS}>{article.category}</span>)}
-                    <span className="inline-flex items-center gap-1.5 font-sans text-[11px] uppercase tracking-[0.14em] text-rose-500">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                         <CalendarDays className="h-3.5 w-3.5" aria-hidden />
                         {formatDate(article.published_at ?? article.created_at)}
                     </span>
-                    {readingMinutes > 0 && (<span className="inline-flex items-center gap-1.5 text-[11px] font-sans uppercase tracking-[0.14em] text-rose-500">
+                    {readingMinutes > 0 && (<span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                         <Clock3 className="h-3.5 w-3.5" aria-hidden />
                         {readingMinutes} menit baca
                     </span>)}
                 </div>
 
-                <h1 className="mt-4 font-display text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+                <h1 className="mt-4 font-display text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
                     {article.title ?? 'Tanpa judul'}
                 </h1>
 
-                <div className="mt-5 aspect-[16/9] w-full overflow-hidden rounded-2xl border border-border/40 bg-muted">
+                <div className="mt-6 aspect-[16/9] w-full overflow-hidden rounded-3xl border border-border/40 bg-muted">
                     {article.cover_image && (<SmartImage src={article.cover_image} alt={article.title ?? 'Cover artikel'}
-                        sizes="(min-width: 1024px) 48rem, 100vw" priority className="h-full w-full object-cover" />)}
+                        sizes="(min-width: 768px) 48rem, 100vw" priority className="h-full w-full object-cover" />)}
                 </div>
 
-                {article.excerpt && (<p className="mt-6 border-l-4 border-primary/70 pl-4 font-sans text-[15px] font-medium leading-relaxed text-foreground/90">
+                {article.excerpt && (<p className="mt-6 text-[16px] font-medium leading-relaxed text-foreground/90">
                     {article.excerpt}
                 </p>)}
 
-                {article.content?.trim() && (<div className="mt-6 space-y-5 font-sans text-[15px] leading-8 text-foreground/80">
+                {article.content?.trim() && (<div className="mt-5 space-y-5 text-[15px] leading-8 text-foreground/80">
                     {splitParagraphs(article.content).map((paragraph, index) => (<p key={index}>{paragraph}</p>))}
                 </div>)}
 
-                {article.tags && article.tags.length > 0 && (<div className="mt-8 flex flex-wrap items-center gap-2 border-t border-border/40 pt-5">
+                {article.tags && article.tags.length > 0 && (<div className="mt-8 flex flex-wrap items-center gap-2">
                     {article.tags.map((tag) => (<span key={tag} className="rounded-full bg-secondary px-3 py-1 text-[11px] font-semibold text-primary">
                         #{tag}
                     </span>))}
                 </div>)}
             </article>
 
-            <div className="lg:sticky lg:top-28">
-                <h2 className="mb-4 font-display text-base font-bold tracking-tight text-foreground">Berita terkait</h2>
-                {related.length === 0 ? (<p className="rounded-2xl border border-border/40 bg-white p-5 text-[12px] leading-relaxed text-muted-foreground">
-                    Belum ada artikel lain yang bisa ditampilkan.
-                </p>) : (<div className="space-y-4">
-                    {related.map((item) => (<Link key={item.id} href={item.slug ? `/blog/${item.slug}` : '/blog'}
-                        className="flex gap-3 rounded-2xl border border-border/40 bg-white p-3 shadow-sm transition-shadow hover:shadow-md">
-                        <div className="h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-muted">
-                            {item.cover_image && (<SmartImage src={item.cover_image} alt={item.title ?? 'Artikel'} sizes="6rem" className="h-full w-full object-cover" />)}
-                        </div>
-                        <div className="flex min-w-0 flex-col justify-center gap-1.5">
-                            {item.category && (<span className={PILL_CLASS + ' w-fit'}>{item.category}</span>)}
-                            <span className="line-clamp-2 text-[13px] font-semibold leading-snug text-foreground">
-                                {item.title ?? 'Tanpa judul'}
-                            </span>
-                            <span className="text-[10px] uppercase tracking-[0.12em] text-rose-500">
-                                {formatDate(item.published_at ?? item.created_at)}
-                            </span>
-                        </div>
-                    </Link>))}
-                </div>)}
-            </div>
-        </div>)}
+            {related.length > 0 && (<div className="mt-16 border-t border-border/40 pt-8">
+                <h2 className="font-display text-lg font-bold tracking-tight text-foreground">Berita terkait</h2>
+                <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {related.map((item) => (<RelatedCard key={item.id} article={item} />))}
+                </div>
+            </div>)}
+        </>)}
     </section>);
 }
