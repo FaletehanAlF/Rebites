@@ -7,6 +7,7 @@ import { DashboardMonitoring } from '@/app/components/admin/dashboard/dashboard-
 import { DashboardActivity } from '@/app/components/admin/dashboard/dashboard-activity';
 import { DashboardSubscriptionSummary, DashboardUserSummary, } from '@/app/components/admin/dashboard/dashboard-summaries';
 import { DashboardSkeleton } from '@/app/components/admin/dashboard/dashboard-skeleton';
+import { Skeleton } from '@/app/components/ui/skeleton';
 import { DashboardSection } from '@/app/components/admin/dashboard/primitives';
 import { AdminPageHeader, ADMIN_PAGE_WRAPPER, } from '@/app/components/admin/admin-page-header';
 import { AdminErrorState } from '@/app/components/admin/admin-state';
@@ -16,7 +17,7 @@ const DashboardAnalytics = dynamic(() => import('@/app/components/admin/dashboar
     ssr: false,
     loading: () => (<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-hidden>
 
-        {Array.from({ length: 4 }).map((_, index) => (<div key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60"/>))}
+        {Array.from({ length: 4 }).map((_, index) => (<Skeleton key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60 ring-1 ring-border/50"/>))}
 
       </div>),
 });
@@ -24,7 +25,7 @@ const DashboardVisitors = dynamic(() => import('@/app/components/admin/dashboard
     ssr: false,
     loading: () => (<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-hidden>
 
-        {Array.from({ length: 4 }).map((_, index) => (<div key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60"/>))}
+        {Array.from({ length: 4 }).map((_, index) => (<Skeleton key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60 ring-1 ring-border/50"/>))}
 
       </div>),
 });

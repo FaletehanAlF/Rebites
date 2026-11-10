@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 import { ANALYTICS_RANGE_DAYS, type AdminAnalyticsData, type AnalyticsRangeDays, } from '@/lib/admin-analytics';
 import { fetchAdminAnalytics } from '@/lib/admin-dashboard';
 import { AdminErrorState, AdminForbiddenState, AdminInlineError } from '../admin-state';
+import { Skeleton } from '@/app/components/ui/skeleton';
 import { AdminFilterChip } from '../admin-controls';
 import { formatRupiah, formatTanggal, formatTanggalWaktu } from '../admin-format';
 import { DashboardCard } from './primitives';
@@ -101,19 +102,19 @@ function AnalyticsRangePicker({ rangeDays, onChange, }: {
     </div>);
 }
 function AnalyticsSkeleton() {
-    return (<div role="status" aria-label="Memuat analytics periode" className="animate-pulse motion-reduce:animate-none">
+    return (<div role="status" aria-label="Memuat analytics periode" className="space-y-4">
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-        {Array.from({ length: 4 }).map((_, index) => (<div key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60"/>))}
+        {Array.from({ length: 4 }).map((_, index) => (<Skeleton key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60 ring-1 ring-border/50"/>))}
 
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
 
-        <div className="h-64 rounded-[var(--radius)] bg-sage-100/60"/>
+        <Skeleton className="h-64 rounded-[var(--radius)] bg-sage-100/60 ring-1 ring-border/50"/>
 
-        <div className="h-64 rounded-[var(--radius)] bg-sage-100/60"/>
+        <Skeleton className="h-64 rounded-[var(--radius)] bg-sage-100/60 ring-1 ring-border/50"/>
 
       </div>
 

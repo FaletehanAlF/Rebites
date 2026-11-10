@@ -4,6 +4,7 @@ import { Eye, UserRound, UserRoundCheck, UsersRound } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { fetchAdminVisitorStats, type AdminVisitorStats, } from '@/lib/admin-visitors';
 import { AdminErrorState, AdminForbiddenState, AdminInlineError } from '../admin-state';
+import { Skeleton } from '@/app/components/ui/skeleton';
 import { AdminFilterChip } from '../admin-controls';
 import { DashboardCard } from './primitives';
 import { VisitorChart, VisitorChartSelector, dayLabel, type VisitorChartType, } from './visitor-chart';
@@ -37,11 +38,11 @@ function VisitorStatCard({ icon: Icon, label, value, supporting, }: {
     </DashboardCard>);
 }
 function VisitorSkeleton() {
-    return (<div role="status" aria-label="Memuat data pengunjung" className="animate-pulse motion-reduce:animate-none">
+    return (<div role="status" aria-label="Memuat data pengunjung" className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (<div key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60"/>))}
+        {Array.from({ length: 4 }).map((_, index) => (<Skeleton key={index} className="h-24 rounded-[var(--radius)] bg-sage-100/60 ring-1 ring-border/50"/>))}
       </div>
-      <div className="mt-4 h-56 rounded-[var(--radius)] bg-sage-100/60"/>
+      <Skeleton className="mt-4 h-56 rounded-[var(--radius)] bg-sage-100/60 ring-1 ring-border/50"/>
     </div>);
 }
 export function DashboardVisitors() {

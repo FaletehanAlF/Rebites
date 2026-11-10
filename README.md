@@ -716,7 +716,7 @@ npm run lint
 node --test tests/*.test.ts
 ```
 
-Dokumentasi yang digabung mencatat angka pengujian berbeda pada dua snapshot: satu bagian menyebut **96 test suites / sekitar 401 kasus**, sedangkan catatan proyek yang lebih baru menyebut **sekitar 1.308 tes**. Karena angka tersebut berasal dari snapshot dokumentasi yang berbeda, jumlah aktual harus diperiksa dari direktori `tests/` dan skrip repository saat ini.
+Dokumentasi yang digabung mencatat angka pengujian berbeda pada dua snapshot: satu bagian menyebut **96 test suites / sekitar 401 kasus**, sedangkan catatan proyek yang lebih baru menyebut **sekitar 1.312 tes**. Karena angka tersebut berasal dari snapshot dokumentasi yang berbeda, jumlah aktual harus diperiksa dari direktori `tests/` dan skrip repository saat ini.
 
 Tidak ada pengujian E2E browser (Playwright/Cypress) atau pipeline CI/CD yang dinyatakan telah terkonfigurasi pada dokumentasi.
 
