@@ -5,7 +5,7 @@
 <h1 align="center">ReBites</h1>
 
 <p align="center">
-  Marketplace makanan surplus untuk UMKM kuliner — menghubungkan penjual sisa masakan yang masih layak konsumsi dengan pembeli yang mencari makanan terjangkau.
+  Marketplace makanan surplus dari UMKM kuliner.
 </p>
 
 <p align="center">
@@ -13,679 +13,789 @@
 </p>
 
 <p align="center">
-  <a href="#-mulai-cepat"><strong>Mulai Cepat</strong></a> ·
-  <a href="#-fitur-utama"><strong>Fitur Utama</strong></a> ·
-  <a href="#-arsitektur-sistem"><strong>Arsitektur</strong></a> ·
-  <a href="#-teknologi"><strong>Teknologi</strong></a> ·
-  <a href="#-panduan-pengembangan"><strong>Pengembangan</strong></a> ·
-  <a href="https://github.com/kayy-eci/Rebitesss-GTNIC2026"><strong>Repositori</strong></a>
+  <a href="#tentang-rebites">Tentang</a> ·
+  <a href="#fitur-utama">Fitur</a> ·
+  <a href="#alur-pesanan">Alur Pesanan</a> ·
+  <a href="#arsitektur-sistem">Arsitektur</a> ·
+  <a href="#menjalankan-proyek">Instalasi</a> ·
+  <a href="#pengujian">Pengujian</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-14.2.35-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js" />
-  <img src="https://img.shields.io/badge/React-18.2.0-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Next.js-14.2.35-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 14" />
+  <img src="https://img.shields.io/badge/React-18.2.0-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 18" />
   <img src="https://img.shields.io/badge/TypeScript-5.2.2-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3.3.3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/Supabase-2.58-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
-  <img src="https://img.shields.io/badge/Xendit-Payment-gateway-1A1A2E?style=flat-square" alt="Xendit" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Supabase-V1-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Xendit-Payment-1A1A2E?style=flat-square" alt="Xendit" />
   <img src="https://img.shields.io/badge/Biteship-Logistics-FF6B35?style=flat-square" alt="Biteship" />
-  <img src="https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/status-active%20development-brightgreen?style=flat-square" alt="Status" />
 </p>
 
 ---
 
-## 📋 Daftar Isi
+## Daftar Isi
 
-- [Tentang ReBites](#-tentang-rebites)
-- [Latar Belakang & Masalah](#-latar-belakang--masalah)
-- [Fitur Utama](#-fitur-utama)
-- [Peran Pengguna & Kontrol Akses](#-peran-pengguna--kontrol-akses)
-- [Alur Bisnis Utama](#-alur-bisnis-utama)
-- [Arsitektur Sistem](#-arsitektur-sistem)
-- [Database & Relasi Data](#-database--relasi-data)
-- [Teknologi](#-teknologi)
-- [Struktur Direktori](#-struktur-direktori)
-- [Panduan Pengembangan](#-panduan-pengembangan)
-- [Variabel Lingkungan](#-variabel-lingkungan)
-- [Keamanan & Keandalan](#-keamanan--keandalan)
-- [Testing & Quality Assurance](#-testing--quality-assurance)
-- [Status Proyek & Known Issues](#-status-proyek--known-issues)
-
----
-
-## 🍽️ Tentang ReBites
-
-**ReBites** adalah marketplace dua-sisi yang mempertemukan **pelaku UMKM kuliner** (penjual) dengan **pembeli** untuk menyelamatkan makanan surplus — makanan yang masih layak konsumsi namun tidak terjual pada akhir jam operasional.
-
-### Masalah yang Diselesaikan
-
-| Sisi | Masalah | Solusi ReBites |
-|------|---------|----------------|
-| **UMKM** | Sisa makanan layak konsumsi dibuang → kerugian & food waste | Jual surplus dengan harga khusus, batas stok, jendela waktu tayang |
-| **Pembeli** | Makanan terjangkau sulit ditemukan, khawatir kualitas | Katalog terkurasi, transparansi (harga asli vs surplus, stok, lokasi, jam buka), ulasan & rating |
-| **Platform** | Perlu biaya operasional berkelanjutan | Model langganan tiered (Basic/Standar/Max) bulanan untuk UMKM |
-
-**Area layanan saat ini:** Kota Depok (statis pada halaman kategori, struktur data mendukung ekspansi multi-kota).
+- [Tentang ReBites](#tentang-rebites)
+- [Latar Belakang dan Tujuan](#latar-belakang-dan-tujuan)
+- [Fitur Utama](#fitur-utama)
+- [Peran Pengguna dan Hak Akses](#peran-pengguna-dan-hak-akses)
+- [Alur Pesanan](#alur-pesanan)
+- [Arsitektur Sistem](#arsitektur-sistem)
+- [Database dan Model Data](#database-dan-model-data)
+- [Teknologi](#teknologi)
+- [Struktur Direktori](#struktur-direktori)
+- [Menjalankan Proyek](#menjalankan-proyek)
+- [Variabel Lingkungan](#variabel-lingkungan)
+- [Keamanan dan Integritas Data](#keamanan-dan-integritas-data)
+- [Integrasi Eksternal](#integrasi-eksternal)
+- [Langganan UMKM](#langganan-umkm)
+- [Pengujian](#pengujian)
+- [Status Proyek dan Known Issues](#status-proyek-dan-known-issues)
+- [Tim](#tim)
+- [Lisensi dan Tautan](#lisensi-dan-tautan)
 
 ---
 
-## 🎯 Fitur Utama
+## Tentang ReBites
 
-### 🛒 Sisi Pembeli (Buyer)
+**ReBites** adalah marketplace dua sisi yang mempertemukan pelaku UMKM kuliner dengan pembeli untuk menyelamatkan makanan surplus. Makanan surplus adalah makanan yang masih layak dikonsumsi, tetapi belum terjual hingga mendekati atau berakhirnya jam operasional toko.
 
-| Modul | Deskripsi | Status |
-|-------|-----------|--------|
-| **Katalog & Pencarian** | 8 kategori (Makanan Berat, Jajanan, Japanese, Roti & Kue, Makanan Cepat Saji, Dessert, Buah & Sayur, Minuman), filter lokasi, jarak, status buka/tutup, rating, pencarian nama toko | ✅ Lengkap |
-| **Detail Produk** | Foto, harga asli vs surplus, stok real-time, ulasan, lokasi toko, opsi ambil/antar | ✅ Lengkap |
-| **Detail Toko** | Halaman khusus UMKM: menu, rating, tinjauan layanan, jam operasional | ✅ Lengkap |
-| **Keranjang & Checkout** | Pilih kuantitas, metode pengambilan (ambil sendiri/diantar), validasi alamat, hitung ongkir real-time via Biteship | ✅ Lengkap |
-| **Pembayaran** | Integrasi Xendit (invoice + webhook), idempotensi (hindari duplikasi pesanan), dukungan ReBites Coin & kode promo | ✅ Lengkap |
-| **Lacak Pesanan** | Timeline status: dibuat → dibayar → disiapkan → siap diambil/diantar → selesai | ✅ Lengkap |
-| **Riwayat & Ulasan** | Riwayat pesanan lengkap, rating produk/toko setelah selesai | ✅ Lengkap |
-| **Notifikasi Realtime** | Supabase Realtime: status pesanan, promo toko yang di-follow, sanksi admin | ✅ Lengkap |
-| **Favorit & Follow** | Like produk, follow toko untuk notifikasi promo | ✅ Lengkap |
-| **Profil & Alamat** | Kelola alamat pengiriman, avatar, preferensi akun | ✅ Lengkap |
+Penjual dapat mengunggah sisa menu hari itu beserta harga, stok, dan jadwal penjualan. Pembeli dapat memesan makanan untuk diantar ke alamat atau diambil langsung di toko.
 
-### 🏪 Sisi Penjual (UMKM)
+ReBites dikembangkan untuk **Garda Tech National Innovation Competition (GTNIC) 2026**, kategori Web Development.
 
-| Modul | Deskripsi | Status |
-|-------|-----------|--------|
-| **Registrasi & Onboarding** | Daftar toko, isi profil, upload logo (Supabase Storage) | ✅ Lengkap |
-| **Manajemen Produk** | Tambah/edit/hapus menu: harga normal vs surplus, stok, jadwal tayang (jam/tanggal), berat/dimensi untuk ongkir | ✅ Lengkap |
-| **Flash Sale** | Jadwalkan promo harga khusus pada slot waktu tertentu (per-paket langganan) | ✅ Lengkap |
-| **Dashboard Penjualan** | Metrik harian/mingguan, produk terlaris, analisis permintaan (paket Max) | ✅ Lengkap |
-| **Kelola Pesanan** | Daftar pesanan masuk, konfirmasi status (siap → diantar/diambil), notifikasi realtime ke pembeli | ✅ Lengkap |
-| **Ulasan & Reputasi** | Lihat rating & komentar pelanggan, kelola reputasi toko | ✅ Lengkap |
-| **Langganan & Billing** | Kelola paket Basic/Standar/Max, perpanjang, riwayat pembayaran via Xendit | ✅ Lengkap |
-| **Analitik Lanjutan (Max)** | Ekspor Excel, analisis permintaan, performa kategori | ✅ Lengkap |
+**Area layanan yang didokumentasikan saat ini: Kota Depok.** Struktur data dirancang agar dapat dikembangkan ke wilayah lain.
 
-### 🛡️ Sisi Admin
+## Latar Belakang dan Tujuan
 
-| Area | Deskripsi | Status |
-|------|-----------|--------|
-| **Moderasi & Sanksi** | Tinjau produk dilaporkan, sanksi (peringatan, blokir sementara/permanen), kelola konten | ✅ Lengkap |
-| **Manajemen Pengguna** | Ganti role (buyer→admin, dll), tangguhkan/hapus akun, kelola hak akses | ✅ Lengkap |
-| **Monitoring & Audit** | Audit trail aksi admin, log aktivitas sistem, pantau kesehatan infrastruktur | ✅ Lengkap |
-| **Data & Ekspor** | Ekspor data, metrik marketplace (pengguna, transaksi), kelola artikel/landing | ✅ Lengkap |
-| **Integrasi** | Konfigurasi Xendit, Biteship, health check service | ✅ Lengkap |
+UMKM kuliner menyiapkan makanan berdasarkan perkiraan permintaan. Ketika jumlah pembeli lebih sedikit dari perkiraan, makanan yang masih layak konsumsi dapat tersisa pada akhir hari. Kondisi ini menyebabkan kerugian bagi pemilik usaha sekaligus meningkatkan jumlah makanan terbuang.
 
-### 🚚 Sisi Kurir (Opsional)
+Di sisi lain, pembeli membutuhkan pilihan makanan yang lebih terjangkau tanpa kehilangan informasi mengenai harga, stok, lokasi, jam penjualan, dan kualitas produk.
 
-| Fitur | Deskripsi | Status |
-|-------|-----------|--------|
-| **Pendaftaran** | Pengguna daftar jadi kurir, verifikasi admin | ✅ Lengkap |
-| **Dashboard Tugas** | Lihat tugas aktif, ubah status (ambil, mulai, selesai) | ✅ Lengkap |
-| **Lokasi Realtime** | Kirim posisi via Supabase Realtime → ditampilkan di peta pembeli (MapLibre GL) | ✅ Lengkap |
-| **Chat Kurir** | Komunikasi dengan pembeli untuk koordinasi | ✅ Lengkap |
+ReBites menyediakan kanal penjualan makanan surplus dengan dua batas utama:
 
-### 🤖 Asisten AI (Chatbot)
+1. Produk hanya ditampilkan selama jadwal penjualan yang ditentukan penjual.
+2. Produk dari toko yang tidak aktif atau belum terverifikasi tidak ditampilkan sebagai pilihan pembelian.
 
-- Terintegrasi di seluruh halaman via `ChatbotMount`
-- Profil perilaku ditentukan server dari status sesi:
-  - **Admin**: akses tool write (kelola data)
-  - **UMKM/Pembeli**: read-only (bantuan informasi)
-- Provider: Gemini / Vibe Code (konfigurable via env)
+Tujuan ReBites adalah membantu UMKM memperoleh pemasukan dari stok yang berpotensi tidak terjual, menyediakan pilihan makanan yang lebih terjangkau, dan mengurangi food waste.
 
----
+## Fitur Utama
 
-## 👥 Peran Pengguna & Kontrol Akses
+### Pembeli
 
-ReBites mendefinisikan peran melalui kolom `role` di tabel `profiles` + tabel `courier_profiles` untuk kurir.
+| Modul | Deskripsi |
+|---|---|
+| Katalog dan pencarian | Katalog makanan surplus, pencarian toko/produk, kategori, filter lokasi, jarak, status buka, dan rating. |
+| Kategori | Makanan Berat, Jajanan, Japanese, Roti & Kue, Makanan Cepat Saji, Dessert, Buah & Sayur, serta Minuman. |
+| Detail produk | Foto, harga normal dan harga surplus, stok, jadwal jual, status toko, ulasan, serta pilihan ambil/antar. |
+| Detail toko | Informasi UMKM, menu, rating, ulasan layanan, dan jam operasional. |
+| Checkout | Pemilihan kuantitas, metode fulfillment, alamat, kode promo, dan penggunaan ReBites Coin. |
+| Pembayaran | Invoice Xendit dan konfirmasi pembayaran melalui webhook. |
+| Pesanan | Status pesanan, riwayat transaksi, dan notifikasi. |
+| Pelacakan | Posisi kurir pada peta ketika pesanan dikirim. |
+| Ulasan dan favorit | Ulasan setelah pesanan selesai, favorit produk, dan follow toko. |
+| Profil | Pengelolaan profil, avatar, alamat, dan preferensi akun. |
 
-| Peran | Deskripsi | Halaman Utama | Akses Utama |
-|-------|-----------|---------------|-------------|
-| `buyer` | Pelanggan membeli makanan surplus | `/home` | Katalog, checkout, riwayat, profil, ulasan, favorit, follow toko |
-| `umkm` | Pemilik toko kuliner | `/dashboard/penjual` | Dashboard penjualan, kelola produk, kelola pesanan, langganan, analitik |
-| `admin` | Administrator platform | `/dashboard/admin` | Moderasi, kelola pengguna, monitoring, ekspor data, konfigurasi integrasi |
-| `super_admin` | Admin tertinggi (satu dari sistem) | `/dashboard/admin` | Semua hak admin + hapus permanen akun, ubah role, bootstrap admin |
-| `courier` | Kurir pengiriman (via `courier_profiles`) | `/dashboard/kurir` | Tugas pengiriman, chat, lokasi realtime |
+### Penjual (UMKM)
 
-**Aturan akses (divalidasi via RLS & guard server):**
-- Pembeli hanya melihat datanya sendiri
-- UMKM hanya melihat toko & produk miliknya
-- Admin melihat semua data
-- Kurir hanya melihat tugas yang ditugaskan
-- Perubahan role hanya oleh admin via panel khusus
+| Modul | Deskripsi |
+|---|---|
+| Registrasi dan onboarding | Pendaftaran akun penjual, profil toko, alamat, dan logo. |
+| Manajemen produk | Tambah, ubah, dan hapus produk; harga normal/surplus; stok; berat; dan metode fulfillment. |
+| Jadwal penjualan | Pengaturan waktu mulai dan berakhirnya penayangan produk. |
+| Flash sale | Penjadwalan harga promosi sesuai ketentuan paket langganan. |
+| Dashboard penjualan | Ringkasan penjualan, pesanan, produk terlaris, dan metrik performa. |
+| Kelola pesanan | Melihat pesanan masuk dan memperbarui status sesuai alur yang diizinkan. |
+| Ulasan toko | Melihat rating dan komentar pelanggan. |
+| Langganan | Pengelolaan paket, perpanjangan, dan riwayat pembayaran. |
+| Analitik | Laporan performa dan ekspor data sesuai hak paket. |
+| Aktivasi toko | Pengajuan aktivasi kembali toko yang dinonaktifkan melalui proses peninjauan admin. |
 
----
+### Admin dan Super Admin
 
-## 🔄 Alur Bisnis Utama
+Panel admin mencakup:
 
-### Alur Pembelian (Buyer)
+- Moderasi produk dan toko serta verifikasi produk.
+- Manajemen pengguna dan permintaan perubahan peran.
+- Peringatan, sanksi, penangguhan, dan pemblokiran akun.
+- Pusat laporan pengguna, kotak pesan dukungan, dan banding akun.
+- Monitoring aktivitas dan audit log.
+- Analitik marketplace dan pengiriman.
+- Pengelolaan koin, langganan, artikel, dan ekspor data Excel.
+- Health check layanan yang terintegrasi.
+
+Super Admin memiliki kewenangan tambahan yang dibatasi, termasuk keputusan perubahan peran dan penghapusan permanen akun sesuai pemeriksaan keamanan.
+
+### Kurir
+
+Fitur kurir merupakan bagian opsional dari sistem:
+
+- Melihat tugas pengiriman yang ditugaskan.
+- Memperbarui status tugas.
+- Mengirim lokasi secara berkala selama pengantaran.
+- Melakukan komunikasi dengan pembeli.
+- Menampilkan posisi kurir kepada pembeli melalui peta.
+
+### ReBitess-Asisten
+
+ReBitess-Asisten merupakan chatbot yang tersedia di dalam aplikasi. Pengetahuan chatbot dibatasi pada informasi ReBites dan halaman yang boleh diakses oleh pengguna sesuai perannya.
+
+- Admin dapat memperoleh akses ke tool tindakan tertentu sesuai guard server.
+- Pembeli dan UMKM menggunakan asisten untuk bantuan informasi dengan akses read-only.
+- Chatbot tidak boleh membuka data pribadi pengguna lain.
+- Provider dapat menggunakan layanan Gemini atau Vibe Code sesuai konfigurasi environment.
+
+## Peran Pengguna dan Hak Akses
+
+Peran pengguna disimpan pada `profiles.role`. Data kurir disimpan pada tabel profil kurir yang digunakan oleh implementasi database.
+
+| Peran | Halaman utama | Hak akses utama |
+|---|---|---|
+| `buyer` | `/home` | Katalog, checkout, riwayat, profil, ulasan, favorit, dan follow toko. |
+| `umkm` | `/dashboard/penjual/<id-toko>` | Dashboard toko, produk, pesanan, langganan, dan analitik. |
+| `courier` | `/dashboard/kurir` | Tugas pengiriman, status, pesan, dan lokasi realtime. |
+| `admin` | `/dashboard/admin` | Moderasi, pengguna, monitoring, ekspor, dan konfigurasi layanan. |
+| `super_admin` | `/dashboard/admin` | Hak admin serta tindakan khusus yang memerlukan kewenangan tertinggi. |
+
+Aturan akses diterapkan berlapis:
+
+- Pembeli hanya dapat mengakses data miliknya.
+- UMKM hanya dapat mengelola toko dan produk yang dimilikinya.
+- Kurir hanya dapat mengakses tugas yang ditugaskan kepadanya.
+- Admin memperoleh akses sesuai cakupan peran admin.
+- Perubahan role tidak boleh dilakukan oleh pengguna biasa melalui pemanggilan API/database langsung.
+
+## Alur Pesanan
+
+### Alur pembelian
+
+1. Pembeli menjelajah katalog dan memilih produk.
+2. Pembeli memilih kuantitas dan metode pemenuhan: `pickup` atau `delivery`.
+3. Sistem memvalidasi stok, jadwal produk, status toko, dan dukungan metode pemenuhan.
+4. Sistem menghitung harga, diskon, koin, biaya layanan, serta ongkir jika berlaku.
+5. Sistem membuat pesanan dan menginisiasi invoice pembayaran.
+6. Pembeli menyelesaikan pembayaran melalui halaman pembayaran Xendit.
+7. Webhook memverifikasi callback dan memperbarui status pembayaran.
+8. UMKM memproses pesanan.
+9. Pesanan disiapkan untuk diambil atau diserahkan kepada kurir.
+10. Pesanan diselesaikan dan pembeli dapat memberikan ulasan.
+
+### Satu sumber kebenaran status pesanan
+
+Status operasional menggunakan kolom `order_status`. Transisi status dijaga oleh trigger database, bukan hanya oleh antarmuka.
+
+Urutan status yang sah:
+
+```text
+pending
+  ├── paid
+  │    └── processing
+  │          ├── out_for_delivery
+  │          │       └── completed
+  │          └── ready_for_pickup
+  │                  └── completed
+  └── cancelled
+```
+
+Pesanan yang masih `pending` dapat dibatalkan. Pesanan yang sudah berada pada tahap pengantaran atau menunggu pengambilan dapat diselesaikan otomatis oleh proses server setelah estimasi tiba terlewati, sesuai aturan implementasi.
+
+Setiap perubahan status dicatat pada `order_status_history` dan dapat memicu notifikasi kepada pihak terkait.
+
+### Checkout dan idempotensi
+
+Alur checkout teknis yang didokumentasikan:
+
+1. Frontend mengirim permintaan ke `POST /api/checkout/xendit`.
+2. Permintaan membawa token sesi Supabase melalui `Authorization: Bearer <access-token>`.
+3. Frontend mengirim `Idempotency-Key` berupa UUID untuk mencegah pesanan ganda.
+4. Server memvalidasi pengguna, payload, produk, stok, jadwal, status toko, dan metode fulfillment.
+5. Server menghitung harga, promo, ReBites Coin, ongkir, serta biaya layanan.
+6. RPC `reserve_stock_for_order` melakukan reservasi stok secara atomik.
+7. Server membuat invoice Xendit dan mengembalikan informasi invoice.
+8. Pembeli diarahkan ke halaman pembayaran Xendit.
+9. Webhook Xendit diverifikasi menggunakan callback token dan pemeriksaan invoice/amount.
+10. Server memperbarui status pembayaran dan menjalankan proses lanjutan yang diperlukan.
+
+Transisi invoice yang didokumentasikan:
+
+```text
+not_started → inflight → paid
+                      └→ failed
+```
+
+## Arsitektur Sistem
+
+ReBites berjalan sebagai satu aplikasi **Next.js 14 App Router**. Halaman menggunakan komponen React, sedangkan operasi yang membutuhkan hak istimewa diproses melalui Route Handlers di `app/api`.
+
+### Lapisan sistem
+
+| Lapisan | Teknologi | Tanggung jawab |
+|---|---|---|
+| Presentasi | Next.js 14, React 18, TypeScript | Halaman, komponen, Server Components, dan Client Components untuk interaksi. |
+| API dan logika bisnis | Next.js Route Handlers | Autentikasi Bearer, validasi input, aturan bisnis, mutasi data, dan integrasi provider. |
+| Data dan otorisasi | Supabase Postgres dan RLS | Penyimpanan data, autentikasi, otorisasi tingkat baris, trigger, dan fungsi database. |
+| Realtime | Supabase Realtime | Notifikasi, perubahan pesanan, dan posisi kurir. |
+| Storage | Supabase Storage | Logo toko, foto produk, dan avatar. |
+| Layanan eksternal | Xendit, Biteship, Gemini/Vibe Code | Pembayaran, logistik, dan asisten AI. |
+
+### Diagram komponen
 
 ```mermaid
-flowchart TD
-    A[Pembeli menjelajah katalog<br/>/makanan/[kategori]] --> B[Pilih produk<br/>/detail/product?id=...]
-    B --> C[Pilih kuantitas & metode<br/>ambil/antar]
-    C --> D[Checkout /detail/pesanan]
-    D --> E[Hitung ongkir<br/>jarak toko → alamat]
-    E --> F[Pilih pembayaran<br/>Xendit invoice]
-    F --> G[Xendit webhook<br/>konfirmasi pembayaran]
-    G --> H[Pesanan: pending → paid]
-    H --> I[Toko memproses<br/>ready → out_for_delivery]
-    I --> J[Kurir mengambil & mengantarkan<br/>jika delivery]
-    J --> K[Pembeli menerima & ulasan]
-    K --> L[Pesanan completed<br/>dana dirilis ke penjual]
+flowchart TB
+    Browser["Browser / Next.js App"]
+    Public["Halaman publik dan preview"]
+    App["Halaman aplikasi berautentikasi"]
+    Admin["Dashboard Admin"]
+    Courier["Dashboard Kurir"]
+    API["Next.js Route Handlers"]
+    DB["Supabase Postgres + RLS"]
+    Auth["Supabase Auth"]
+    Storage["Supabase Storage"]
+    Realtime["Supabase Realtime"]
+    Xendit["Xendit"]
+    Biteship["Biteship"]
+    AI["Gemini / Vibe Code"]
+
+    Browser --> Public
+    Browser --> App
+    Browser --> Admin
+    Browser --> Courier
+    Browser --> API
+    API --> DB
+    API --> Auth
+    API --> Xendit
+    API --> Biteship
+    API --> AI
+    Browser --> Storage
+    Browser --> Realtime
+    Realtime --> DB
 ```
 
-### Alur Penjualan (UMKM)
+### Route dan kelompok halaman
 
-```mermaid
-flowchart LR
-    A[UMKM daftar toko<br/>/auth/register/penjual] --> B[Onboarding: profil & logo]
-    B --> C[Toko aktif → tambah menu<br/>/dashboard/penjual/tambahMenu]
-    C --> D[Produk diverifikasi admin]
-    D --> E[Tersedia di katalog<br/>status: available, verified: approved]
-    E --> F[Pembeli pesan, webhook Xendit konfirmasi]
-    F --> G[Toko proses: siap → diantar/diambil]
-    G --> H[Order selesai, dana masuk ledger coin]
-    H --> I[UMKM lihat metrik & ekspor laporan]
-```
+Route groups `(landing)`, `(app)`, dan `(preview)` digunakan untuk mengelompokkan layout tanpa mengubah URL.
 
-### Alur Checkout & Idempotensi (Teknis)
+- `(landing)`: halaman publik seperti landing page, blog, informasi, dan preview produk.
+- `(app)`: halaman aplikasi yang memerlukan sesi pengguna.
+- `(preview)`: tampilan preview produk publik.
+- `app/dashboard/admin`: dashboard admin dengan RBAC.
+- `app/dashboard/kurir`: dashboard kurir.
+- `app/api`: endpoint backend untuk checkout, pesanan, profil, admin, langganan, shipping, courier, webhook, dan chatbot.
 
-```mermaid
-sequenceDiagram
-    participant FE as Frontend
-    participant API as /api/checkout/xendit
-    participant DB as Supabase (orders, products)
-    participant Xendit as Xendit Gateway
+### Prinsip implementasi
 
-    FE->>API: POST {productSlug, qty, fulfillment, address, idempotency-key}
-    API->>DB: Validasi stok, jadwal, toko aktif, verifikasi produk
-    API->>DB: reserve_stock_for_order (RPC, idempotensi via idempotency_key)
-    API->>API: calculatePricing (harga, promo, coin, ongkir Biteship)
-    API->>Xendit: createXenditInvoice (external_id = orderCode)
-    Xendit-->>API: invoiceUrl
-    API-->>FE: {orderCode, invoiceUrl, invoiceId, amount}
-    FE->>User: Redirect ke invoiceUrl
-    User->>Xendit: Bayar
-    Xendit->>API: POST /api/webhooks/xendit (callback token)
-    API->>API: timingSafeEqual verifikasi token
-    API->>DB: Update order: payment_status=paid, invoice_state=paid
-    API->>DB: Trigger kurir assignment (jika delivery)
-    API-->>Xendit: 200 OK
-```
+- Server Components menjadi pilihan default.
+- Client Components digunakan saat membutuhkan interaksi browser.
+- Operasi sensitif dilakukan di server.
+- Modul `lib/server/*` tidak boleh diimpor oleh komponen client karena dapat menggunakan kredensial server.
+- `SUPABASE_SERVICE_ROLE_KEY` tidak boleh menggunakan prefix `NEXT_PUBLIC_`.
+- `RequireAuth` harus ditempatkan sebelum shell aplikasi agar redirect autentikasi terjadi sebelum navbar atau skeleton aplikasi ditampilkan.
+- `DetailProductContent` menggunakan prop `shell` dari route untuk menghindari masuknya kode autentikasi ke bundle halaman publik.
 
----
+## Database dan Model Data
 
-## 🏗️ Arsitektur Sistem
+Database utama menggunakan **Supabase PostgreSQL**. Perubahan skema dikelola melalui migrasi di `supabase/migrations`.
 
-### Diagram Komponen
+Kelompok entitas yang dijelaskan dalam dokumentasi:
 
-```mermaid
-graph TB
-    subgraph Client["🌐 Client (Browser)"]
-        A["Next.js App<br/>React 18 + TypeScript 5.2<br/>App Router + Server Components"]
-    end
+| Kelompok | Tabel yang disebutkan |
+|---|---|
+| Akun dan peran | `profiles`, `user_preferences`, `role_change_requests`, `role_change_logs` |
+| Usaha | `umkm_profiles`, `store_follows`, `store_activation_requests`, `store_visitors` |
+| Katalog | `products`, `product_favorites`, `reviews`, `moderation_logs` |
+| Transaksi | `orders`, `order_status_history`, `seller_transactions`, `promo_codes`, `coin_transactions` |
+| Langganan | `plans`, `subscriptions` |
+| Logistik | `couriers`, `delivery_assignments`, `delivery_locations`, `courier_messages` |
+| Dukungan | `support_threads`, `support_messages`, `support_appeals` |
+| Pemantauan | `activity_logs`, `admin_audit_logs`, `reports`, `report_notes`, `warnings`, `sanctions` |
+| Konten | `articles` |
+| Asisten | `chat_sessions`, `chat_messages` |
+| Analitik | `site_visitors`, `site_visitor_days` |
 
-    subgraph Backend["☁️ Backend Services"]
-        B["Supabase<br/>Postgres + Auth + Realtime + Storage + Edge"]
-        C["Xendit<br/>Invoice + Webhook"]
-        D["Biteship<br/>Kurir API + Rate + Webhook"]
-        E["AI Provider<br/>Gemini / Vibe Code"]
-    end
+### Entitas dan kolom penting
 
-    subgraph Routes["🛣️ Route Groups"]
-        F["/(landing)/<br/>Public: /, /preview/product"]
-        G["/(app)/<br/>Auth Required: /home, /detail/*, /dashboard/penjual/*, /riwayatPesanan, /notifikasi, /profile, /toko, /langganan/*"]
-        H["/dashboard/admin/*<br/>RBAC: super_admin, admin"]
-        I["/dashboard/kurir<br/>Auth + Courier Profile"]
-        J["/auth/*<br/>Login, Register, OAuth"]
-        K["/api/*<br/>Route Handlers: checkout, webhooks, orders, profile, admin, subscriptions, shipping, courier, chat"]
-    end
+| Tabel | Tujuan dan kolom penting |
+|---|---|
+| `profiles` | Identitas pengguna, email, nama, role, status akun, avatar, dan data verifikasi. |
+| `umkm_profiles` | Identitas toko, pemilik, slug, alamat, kota, koordinat, rating, status verifikasi, dan jam operasional. |
+| `products` | Menu surplus, kategori, harga normal/surplus, stok, status, verifikasi, jadwal tayang, berat, dan opsi delivery/pickup. |
+| `orders` | Pembeli, UMKM, produk, kuantitas, rincian harga, status pembayaran, status operasional, idempotency key, dan invoice state. |
+| `subscriptions` | Langganan UMKM, paket, status, periode, dan jenis billing. |
+| `plans` | Nama paket, slug, harga bulanan/tahunan, batas produk, dan fitur. |
+| `reviews` | Ulasan pesanan/produk oleh pengguna. |
+| `coin_transactions` | Ledger koin yang diperoleh, digunakan, atau dikembalikan. |
+| `couriers` / `courier_profiles` | Data kurir dan identitas pengguna kurir. Nama tabel mengikuti migrasi yang benar-benar ada pada repository. |
+| `delivery_locations` | Koordinat dan waktu pembaruan lokasi pengiriman. |
+| `support_threads`, `support_messages`, `support_appeals` | Percakapan dukungan dan banding akun. |
 
-    A --> B
-    A --> C
-    A --> D
-    A --> E
-    A --> F
-    A --> G
-    A --> H
-    A --> I
-    A --> J
-    A --> K
-    K --> B
-    K --> C
-    K --> D
-    K --> E
-```
+> **Catatan konsistensi skema:** dua naskah dokumentasi yang digabung menyebut nama tabel kurir yang berbeda (`couriers` dan `courier_profiles`). Daftar migrasi aktual di `supabase/migrations` adalah acuan final untuk nama tabel dan kolom. Jangan membuat tabel pengganti hanya berdasarkan perbedaan penamaan pada dokumentasi.
 
-### Lapisan Arsitektur
+### Constraint dan integritas bisnis
 
-| Lapisan | Teknologi | Tanggung Jawab |
-|---------|-----------|----------------|
-| **Presentasi** | Next.js 14 App Router, React 18 | Server Components default, Client Components hanya untuk interaktivitas (`"use client"`). Route groups `(landing)` / `(app)` / `(preview)` tidak mempengaruhi URL. |
-| **API & Logika Bisnis** | Next.js Route Handlers (`app/api/*`) | Semua mutasi: checkout, langganan, profil, admin, webhook. Validasi server-side, integrasi Supabase Service Role, Xendit, Biteship, AI. |
-| **Data & Otorisasi** | Supabase (Postgres + RLS) | Database utama, Auth (email/password + Google OAuth), Realtime (notifikasi, lokasi kurir), Storage (logo, produk, avatar). RLS sebagai lapisan otorisasi database. |
-| **Eksternal** | Xendit, Biteship, AI | Payment gateway, logistik kurir, asisten AI. Semua kredensial hanya di server (`lib/server/*`). |
+- Produk harus memenuhi status verifikasi sebelum ditampilkan kepada pembeli.
+- Transisi `order_status` dibatasi oleh state machine dan trigger database.
+- `Idempotency-Key` digunakan untuk mencegah pesanan checkout ganda.
+- Reservasi stok menggunakan RPC `reserve_stock_for_order` secara atomik.
+- Stok dapat dilepas kembali ketika pembayaran gagal atau pesanan kedaluwarsa melalui mekanisme stock-release guard.
+- RLS membatasi data berdasarkan pemilik, pembeli, kurir, dan peran admin.
 
-### Data Flow: Checkout (Detail)
+## Teknologi
 
-```
-1. Frontend (checkout-view) → POST /api/checkout/xendit
-   - Header: Authorization: Bearer <supabase-access-token>
-   - Header: Idempotency-Key (client-generated UUID)
-   - Body: {productSlug, quantity, fulfillment, addressSnapshot, promoCode, useCoins}
+| Kategori | Teknologi | Peran |
+|---|---|---|
+| Framework | Next.js 14.2.35 | App Router, Turbopack, Server Components, Route Handlers. |
+| UI | React 18.2.0 | Komponen antarmuka. |
+| Bahasa | TypeScript 5.2.2 | Strict type checking. |
+| Styling | Tailwind CSS 3 | Utility CSS dan design tokens. |
+| UI primitives | Radix UI / shadcn-style | Button, Dialog, Dropdown, Select, Toast, Avatar, dan komponen UI. |
+| Animasi | Framer Motion | Transisi dan animasi antarmuka. |
+| Smooth scroll | Lenis | Smooth scrolling pada landing page. |
+| Ikon | Lucide React | Ikon aplikasi. |
+| Form dan validasi | React Hook Form, Zod | Validasi form autentikasi, profil, dan checkout. |
+| Backend dan database | Supabase V1 | PostgreSQL, Auth, Realtime, Storage, dan Edge Functions. |
+| Pembayaran | Xendit | Invoice, webhook, dan pembayaran langganan. |
+| Logistik | Biteship | Tarif, pembuatan kiriman, dan webhook. |
+| Grafik | Recharts | Analitik dashboard penjual. |
+| Peta | MapLibre GL | Pelacakan posisi kurir. |
+| Carousel | Embla Carousel | Komponen carousel. |
+| Font | Plus Jakarta Sans, Be Vietnam Pro | Tipografi aplikasi. |
+| Gambar | next/image | Optimasi gambar. |
+| Testing | `node --test` | Pengujian offline. |
+| AI | Gemini / Vibe Code | Asisten kontekstual. |
 
-2. Route Handler (server):
-   a. getUserFromBearer → validasi sesi Supabase
-   b. Validasi payload (Zod-level via manual check)
-   c. Fetch produk (anon client): stok, status, verification_status, jadwal, harga flash sale
-   d. Validasi toko: is_active, is_open, jam operasional (WIB)
-   e. Validasi fulfillment: produk support delivery/pickup
-   f. Hitung ongkir: Biteship rate (jarak haversine → estimasi jalan → fee)
-   g. calculatePricing: unitPrice × qty + promo% + coin + ongkir + admin fee (12%)
-   h. reserve_stock_for_order (RPC, idempotensi via idempotency_key)
-   i. Insert orders row: invoice_state=not_started, payment_status=unpaid
-   j. createXenditInvoice → dapat invoiceUrl
-   k. Response: {orderCode, invoiceUrl, invoiceId, amount, invoiceState}
+**Penting:** proyek menggunakan Supabase V1. Jangan membuat konfigurasi Supabase V2 untuk repository ini.
 
-3. Frontend → redirect ke invoiceUrl (Xendit hosted page)
+## Struktur Direktori
 
-4. User bayar → Xendit POST /api/webhooks/xendit
-   - Header: x-callback-token (timingSafeEqual vs env)
-   - Verifikasi invoice & amount
-   - Update order: payment_status=paid, invoice_state=paid
-   - Trigger kurir assignment (jika delivery)
-   - Return 200 OK
-```
+Berikut struktur tingkat atas dan kelompok modul utama sebagaimana dijelaskan dokumentasi proyek. Ini merupakan peta direktori, bukan daftar setiap file satu per satu.
 
----
-
-## 🗄️ Database & Relasi Data
-
-### Entitas Utama (Postgres/Supabase)
-
-```mermaid
-erDiagram
-    PROFILES ||--|| UMKM_PROFILES : "pemilik toko (1:1)"
-    UMKM_PROFILES ||--o{ PRODUCTS : "menu toko (1:N)"
-    PRODUCTS ||--o{ ORDERS : "referensi produk (N:1)"
-    PROFILES ||--o{ ORDERS : "buyer (1:N)"
-    UMKM_PROFILES ||--o{ ORDERS : "seller (1:N)"
-    UMKM_PROFILES ||--o| SUBSCRIPTIONS : "langganan (1:1)"
-    PLANS ||--o{ SUBSCRIPTIONS : "paket (1:N)"
-    ORDERS ||--|| REVIEWS : "ulasan pasca-selesai (1:1)"
-    ORDERS ||--o{ COIN_TRANSACTIONS : "ledger reward (1:N)"
-    PROFILES ||--o| COURIER_PROFILES : "kurir opsional (1:1)"
-    ORDERS ||--o{ DELIVERY_LOCATIONS : "lokasi kurir realtime (1:N)"
-    PROFILES ||--o{ SUPPORT_THREADS : "kotak pesan admin (1:N)"
-```
-
-| Tabel | Tujuan | Kolom Kunci |
-|-------|--------|-------------|
-| `profiles` | Pengguna (buyer/umkm/admin) | `id` PK, `email`, `full_name`, `role`, `avatar_url`, `is_verified`, `account_status`, `deleted_at` |
-| `umkm_profiles` | Data toko UMKM | `id` PK, `user_id` FK→profiles, `business_name`, `slug`, `address`, `city`, `lat/lng`, `logo_url`, `rating`, `is_verified`, `open_hours`, `is_open`, `is_active` |
-| `products` | Menu surplus | `id` PK, `umkm_id` FK, `name`, `category`, `slug`, `original_price`, `surplus_price`, `stock`, `status`, `verification_status`, `flash_sale_*`, `scheduled_start/end`, `weight_gram`, `is_delivery/pickup` |
-| `orders` | Pesanan | `order_code` PK, `buyer_id` FK, `umkm_id` FK, `product_id` FK, `quantity`, `unit_price`, `subtotal`, `service_fee`, `delivery_fee`, `total_price`, `payment_status`, `order_status`, `delivery_option`, `idempotency_key`, `invoice_state`, `coin_used`, `coin_earned` |
-| `subscriptions` | Langganan UMKM | `id` PK, `umkm_id` FK, `plan_id` FK, `status` (trial/active/expired/cancelled), `billing` (monthly/yearly), `current_period_start/end` |
-| `plans` | Paket langganan | `id` PK, `slug` (basic/standar/premium), `name`, `price_monthly`, `price_yearly`, `max_products`, `features[]`, `is_popular` |
-| `reviews` | Ulasan | `id` PK, `order_id` FK, `product_id`, `user_id`, `rating`, `comment` |
-| `coin_transactions` | Ledger koin | `id` PK, `user_id`, `order_id`, `type` (earned/spent/refund), `amount` |
-| `courier_profiles` | Data kurir | `id` PK, `user_id` FK, `full_name`, `phone`, `vehicle_type`, `is_active` |
-| `delivery_locations` | Lokasi realtime | `order_id` FK, `lat`, `lng`, `updated_at` |
-| `support_threads` / `support_appeals` | Banding akun | `id`, `user_id`, `status` |
-
-### Constraint & Validasi Bisnis
-
-- **Product verification**: `verification_status` (pending/approved/rejected) dikontrol admin
-- **Order state machine**: `pending → paid → processing → ready_for_pickup/out_for_delivery → completed` (validasi di `lib/order-state-machine.ts`)
-- **Idempotensi**: `idempotency_key` unik per buyer + session checkout, mencegah duplikasi
-- **RLS**: Pembeli lihat data sendiri, UMKM lihat toko sendiri, admin lihat semua
-- **Stock reservation**: RPC `reserve_stock_for_order` atomic, release otomatis via `stock-release-guard` saat gagal/expired
-
----
-
-## 🛠️ Teknologi
-
-| Kategori | Teknologi | Versi | Peran di ReBites |
-|----------|-----------|-------|------------------|
-| **Framework** | Next.js | ^14.2.35 | App Router, Turbopack dev, Server Components, Route Handlers |
-| **UI Library** | React | 18.2.0 | Server Components default, Client Components on demand |
-| **Language** | TypeScript | 5.2.2 | Strict mode (`tsconfig.json`), type safety end-to-end |
-| **Styling** | Tailwind CSS | 3.3.3 | Design tokens (HSL CSS variables), utilities, dark-mode ready |
-| **UI Primitives** | shadcn-style (Radix UI) | — | Button, Dialog, Dropdown, Select, Toast, Avatar, dll. |
-| **Animation** | Framer Motion | ^13 | Transisi, reveal, reduced-motion support via `MotionConfig` |
-| **Smooth Scroll** | Lenis | ^1.3.26 | Smooth scroll landing page, anchor navigation |
-| **Icons** | Lucide React | ^0.446 | Ikon sistematis seluruh aplikasi |
-| **Forms/Validation** | React Hook Form + Zod | ^7.53 / ^3.23 | Auth, profil, checkout forms |
-| **Backend** | Supabase | ^2.58 | Postgres, Auth, Realtime, Storage, Edge Functions |
-| **Payments** | Xendit | — | Invoice (checkout + subscription), webhook, idempotensi |
-| **Logistics** | Biteship | — | Rate calculation, shipment creation, webhook kurir |
-| **Charts** | Recharts | ^2.12 | Dashboard analitik penjual (seller analytics) |
-| **Maps** | MapLibre GL | ^5.24 | Peta lokasi kurir realtime |
-| **Carousel** | Embla Carousel | ^8.3 | Carousel komponen (shadcn) |
-| **Fonts** | Google Fonts (next/font) | — | **Plus Jakarta Sans** (primary), **Be Vietnam Pro** (secondary) |
-| **Images** | next/image | — | Remote hosts: `images.pexels.com`, `*.supabase.co` |
-| **Testing** | node --test | — | 96 test suites offline (no browser/DB), ~401 test cases |
-| **AI/Chatbot** | Gemini / Vibe Code | — | Asisten kontekstual, role-based tool access |
-
----
-
-## 📁 Struktur Direktori
-
-```
+```text
+rebites/
 ├── app/
-│   ├── (landing)/           # Halaman publik (tanpa auth)
-│   │   ├── page.tsx        # Landing page /
-│   │   ├── layout.tsx      # LandingShell (navbar, preloader, footer)
-│   │   ├── preview/product/ # Public product detail /preview/product
-│   │   └── blog/, dampak/, fitur/, tentang-kami/, hubungi-kami/
-│   ├── (app)/              # Aplikasi utama (memerlukan sesi)
-│   │   ├── home/           # Beranda pembeli (RequireAuth)
-│   │   ├── detail/         # Detail produk, pesanan, toko
-│   │   ├── makanan/[category]/ # Kategori SSG (8 paths via generateStaticParams)
-│   │   ├── riwayatPesanan/ # Riwayat pesanan pembeli
-│   │   ├── notifikasi/pembeli/ # Notifikasi realtime
-│   │   ├── profile/        # Profil & alamat
-│   │   ├── toko/           # Daftar UMKM (filter, search, sort)
-│   │   ├── alamat/         # Kelola alamat pengiriman
-│   │   ├── pengaturan/     # Pengaturan akun
-│   │   ├── langganan/      # Pembayaran & sukses langganan
-│   │   └── dashboard/penjual/ # Dashboard UMKM (storeId di URL)
-│   ├── (preview)/preview/  # Preview produk publik (LandingNavbar shell)
-│   ├── api/                # Route Handlers (Backend)
-│   │   ├── admin/          # Admin API (RBAC guarded)
-│   │   ├── checkout/xendit/ # Checkout order + verify
-│   │   ├── courier/        # Kurir atribusi & status
-│   │   ├── delivery/       # Estimasi & tracking
-│   │   ├── orders/         # Detail pesanan
-│   │   ├── profile/        # Profil, alamat, avatar
-│   │   ├── reports/        # Ekspor data admin
-│   │   ├── seller/         # UMKM-specific API
-│   │   ├── shipping/       # Tarif pengiriman (Biteship)
-│   │   ├── store-visitors/ # Analytics kunjungan toko
-│   │   ├── subscriptions/  # Langganan Xendit
-│   │   ├── support/        # Banding akun
-│   │   ├── visitors/       # Analytics pengunjung situs
-│   │   ├── webhooks/       # Xendit & Biteship callback
-│   │   └── chat/           # Chatbot AI endpoint
-│   ├── auth/               # Login, register, seller auth, OAuth callback
+│   ├── (landing)/
+│   │   ├── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── preview/product/
+│   │   └── blog/ dampak/ fitur/ tentang-kami/ hubungi-kami/
+│   │
+│   ├── (app)/
+│   │   ├── home/
+│   │   ├── detail/
+│   │   ├── makanan/[category]/
+│   │   ├── riwayatPesanan/
+│   │   ├── notifikasi/pembeli/
+│   │   ├── profile/
+│   │   ├── toko/
+│   │   ├── alamat/
+│   │   ├── pengaturan/
+│   │   ├── langganan/
+│   │   └── dashboard/penjual/
+│   │
+│   ├── (preview)/preview/
+│   ├── api/
+│   │   ├── admin/
+│   │   ├── checkout/xendit/
+│   │   ├── courier/
+│   │   ├── delivery/
+│   │   ├── orders/
+│   │   ├── profile/
+│   │   ├── reports/
+│   │   ├── seller/
+│   │   ├── shipping/
+│   │   ├── store-visitors/
+│   │   ├── subscriptions/
+│   │   ├── support/
+│   │   ├── visitors/
+│   │   ├── webhooks/
+│   │   └── chat/
+│   │
+│   ├── auth/
 │   ├── dashboard/
-│   │   ├── admin/          # Admin panel (RBAC: super_admin, admin)
-│   │   ├── penjual/        # Seller dashboard pages
-│   │   └── kurir/          # Courier dashboard
-│   ├── components/         # Shared UI Components
-│   │   ├── admin/          # Admin panel components
-│   │   ├── buyer/          # Buyer-specific components
-│   │   ├── seller/         # Seller-specific components
-│   │   ├── auth/           # Auth forms & guards
-│   │   ├── chatbot/        # Chatbot widget
-│   │   ├── dashboard-penjual/ # Seller dashboard components
-│   │   ├── detail-product/ # Shell-injected product detail
-│   │   ├── landing/        # Landing page sections
-│   │   ├── legal/          # Privacy, Terms
-│   │   ├── profile/        # Profile components
-│   │   ├── shared/         # Cross-cutting: shells, modals, reveal, buttons
-│   │   ├── support/        # Support/appeal components
-│   │   └── ui/             # Primitives (shadcn-style: button, card, dialog, dll)
-│   ├── layout.tsx          # Root layout: fonts, metadata, ChatbotMount
-│   ├── globals.css         # Design tokens (CSS variables), utilities
+│   │   ├── admin/
+│   │   ├── penjual/
+│   │   └── kurir/
+│   ├── components/
+│   │   ├── admin/
+│   │   ├── buyer/
+│   │   ├── seller/
+│   │   ├── auth/
+│   │   ├── chatbot/
+│   │   ├── dashboard-penjual/
+│   │   ├── detail-product/
+│   │   ├── landing/
+│   │   ├── legal/
+│   │   ├── profile/
+│   │   ├── shared/
+│   │   ├── support/
+│   │   └── ui/
+│   ├── layout.tsx
+│   ├── globals.css
 │   └── error.tsx / global-error.tsx / not-found.tsx
-├── hooks/                  # Custom React Hooks
-│   ├── buyer/              # use-addresses, use-orders, use-liked-foods, dll
-│   ├── seller/             # use-seller-orders, use-seller-analytics, dll
-│   └── use-*.ts            # Cross-cutting: admin, courier, notifications, auth
-├── lib/                    # Business Logic & Utilities
-│   ├── server/             # Server-only (Supabase service role, Xendit, Biteship, AI)
-│   ├── chatbot/            # Knowledge, tools, rate-limit, guard
-│   ├── catalog.ts          # Fetch produk & vendor (SSR/SSG)
-│   ├── catalog-filters.ts  # Filter & sort vendor/produk
-│   ├── categories.ts       # 8 kategori statis + Pexels images
-│   ├── current-user.ts     # Hook sesi & role (client)
-│   ├── order-state-machine.ts # State transitions & valid actions
-│   ├── pricing.ts          # Perhitungan harga, diskon, coin, ongkir
-│   ├── subscription-plans.ts # 3 tier: Basic/Standar/Max
-│   ├── image-path.ts       # Resolver .jpeg/.webp → .avif (public assets)
-│   ├── shipping-tariff.ts  # Haversine + Biteship rate calculation
-│   ├── store-hours.ts      # Jam operasional toko (WIB)
-│   └── ... (147+ utility modules)
+│
+├── hooks/
+│   ├── buyer/
+│   ├── seller/
+│   └── use-*.ts
+│
+├── lib/
+│   ├── server/
+│   ├── chatbot/
+│   ├── catalog.ts
+│   ├── catalog-filters.ts
+│   ├── categories.ts
+│   ├── current-user.ts
+│   ├── order-state-machine.ts
+│   ├── pricing.ts
+│   ├── subscription-plans.ts
+│   ├── image-path.ts
+│   ├── shipping-tariff.ts
+│   ├── store-hours.ts
+│   └── ... utility modules
+│
 ├── supabase/
-│   └── migrations/         # 80+ SQL migrations (schema, RLS, seed, functions)
-├── tests/                  # 96 test suites (node --test)
-├── scripts/                # One-off scripts (sync bans, check gemini, dll)
-├── public/                 # Static assets (semua .avif)
+│   └── migrations/          # 80+ migrasi database
+│
+├── tests/                   # Suite pengujian node:test
+├── scripts/
+├── public/
 │   ├── logo.avif
 │   ├── hero-makanan.avif
-│   ├── makanan1–15.avif (kecuali 6,7,11,12 dihapus)
-│   ├── foods/, lanyard/
-│   └── step images: penjual-login, pembeli-mencaro, penerimaan, terselamatkan
+│   ├── foods/
+│   └── lanyard/
+│
 ├── docs/
-│   └── PROJECT_CONTEXT.md  # Snapshot arsitektur & konvensi terverifikasi
-├── package.json            # Dependencies & npm scripts
-├── tailwind.config.ts      # Design tokens mapping, admin-only palette
-├── tsconfig.json           # Strict TypeScript config
-├── next.config.js          # Turbopack, image domains, eslint ignore during build
-├── .env.example            # Environment variable template
-└── README.md               # (File ini)
+│   └── PROJECT_CONTEXT.md
+│
+├── package.json
+├── tailwind.config.ts
+├── tsconfig.json
+├── next.config.js
+├── .env.example
+└── README.md
 ```
 
-**Konvensi Penting:**
-- Route groups `(landing)` / `(app)` / `(preview)` **tidak mempengaruhi URL**
-- Halaman `makanan/[category]` menggunakan `generateStaticParams` → **SSG (8 paths)**
-- `RequireAuth` dibungkus **di luar shell** agar navbar/skeleton tidak tampil sebelum redirect
-- `lib/server/*` **tidak boleh** di-import dari client (menggunakan `SUPABASE_SERVICE_ROLE_KEY`)
-- Shell injection: `DetailProductContent` menerima `shell` prop dari route (mencegah auth code di bundle publik)
+### Konvensi direktori dan route
 
----
+- Route groups `(landing)`, `(app)`, dan `(preview)` tidak mengubah URL.
+- Halaman `makanan/[category]` menggunakan `generateStaticParams` untuk delapan path kategori.
+- `RequireAuth` ditempatkan di luar shell halaman yang memerlukan autentikasi.
+- `lib/server/*` hanya boleh digunakan dari sisi server.
+- `DetailProductContent` menerima `shell` dari route untuk menjaga pemisahan tampilan publik dan autentikasi.
 
-## 🚀 Panduan Pengembangan
+## Menjalankan Proyek
 
 ### Prasyarat
 
-- **Node.js** ≥ 18 (direkomendasikan 20+)
-- **npm** ≥ 9
-- **Supabase Project** (Postgres + Auth + Realtime + Storage)
-- (Opsional) **Xendit Account** untuk pembayaran
-- (Opsional) **Biteship Account** untuk logistik kurir
-- (Opsional) **Gemini / Vibe Code API Key** untuk chatbot AI
+- Node.js minimal 18; direkomendasikan Node.js 20 atau lebih baru.
+- npm minimal 9.
+- Project Supabase dengan PostgreSQL, Auth, Realtime, dan Storage.
+- Akun Xendit untuk menguji pembayaran.
+- Akun Biteship untuk menguji layanan pengiriman.
+- API key Gemini atau Vibe Code jika chatbot AI akan digunakan.
 
-### Setup Lokal
+### Instalasi lokal
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/kayy-eci/Rebitesss-GTNIC2026.git rebites
+
+# 2. Masuk ke direktori proyek
 cd rebites
 
-# 2. Install dependensi
+# 3. Install dependency
 npm install
 
-# 3. Salin & isi environment variables
+# 4. Salin environment variables
 cp .env.example .env.local
-# Edit .env.local dengan kredensial Supabase, Xendit, Biteship, dll.
 
-# 4. (Opsional) Setup Supabase migrations
-# Pastikan project Supabase sudah running, lalu:
+# 5. Isi nilai variabel di .env.local
+# Gunakan kredensial milik project masing-masing.
+
+# 6. Periksa status migrasi Supabase
 npx supabase migration list
-# Atau push migrations ke project Anda
 
-# 5. Jalankan development server (Turbopack)
+# 7. Jalankan development server
 npm run dev
-# → http://localhost:3000
+```
 
-# Alternatif tanpa Turbopack
+Buka `http://localhost:3000`.
+
+### Menjalankan server development
+
+Dokumentasi proyek menetapkan port development pada `3000`. Jalankan **satu server development saja** untuk satu folder kerja. Dua server yang menggunakan folder build yang sama dapat menyebabkan chunk hilang atau halaman mengembalikan error 500.
+
+Jika port 3000 masih digunakan, periksa proses yang menggunakannya sebelum menjalankan ulang server. Dokumentasi proyek juga mencantumkan `npm run dev:reset` untuk membersihkan proses milik proyek, kemudian jalankan `npm run dev`.
+
+Alternatif development tanpa Turbopack:
+
+```bash
 npm run dev:webpack
 ```
 
-### Perintah Build & Verifikasi
+### Build dan verifikasi
 
 ```bash
-# Type-check (tsc --noEmit)
+# Type-check kode aplikasi
 npm run typecheck
 
-# Type-check tests (tsconfig.tests.json)
+# Type-check file test
 npm run typecheck:tests
 
-# Lint (ESLint)
+# Lint
 npm run lint
 
-# Production build (type-check + build, lint di-skip via next.config.js)
+# Production build
 npm run build
 
-# Serve production build
+# Jalankan production server
 npm start
 ```
 
-### Menjalankan Test
+Jalankan lint secara terpisah sebelum commit. Konfigurasi proyek mendokumentasikan bahwa ESLint dilewati pada proses build.
 
-Proyek memiliki **96 test suites** (node --test, tanpa browser/DB), ~401 kasus uji.
+## Variabel Lingkungan
 
-```bash
-# Contoh: jalankan suite spesifik
-npm run test:checkout-idempotency
-npm run test:admin-auth-guard
-npm run test:shipping-rates
+Salin `.env.example` menjadi `.env.local`. Nama variabel berikut dihimpun dari dokumentasi proyek; periksa `.env.example` dan konfigurasi aktual repository untuk memastikan nilai default serta kewajiban tiap variabel.
 
-# Jalankan semua (pilih yang relevan, tidak ada script "test:all")
-# Lihat package.json untuk daftar lengkap 96 script test:*
+| Variabel | Fungsi |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL project Supabase. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon/public key Supabase untuk client. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key khusus server. |
+| `NEXT_PUBLIC_SITE_URL` | URL situs untuk redirect dan callback. |
+| `SUPER_ADMIN_USER_ID` | UUID pengguna Super Admin untuk bootstrap. Jika kosong atau bukan UUID, penunjukan diabaikan (fail-closed). |
+| `PASSWORD_DELETE_USER` | Password konfirmasi penghapusan permanen akun. Kosong berarti fitur dinonaktifkan. |
+| `XENDIT_SECRET_KEY` | Secret key Xendit. |
+| `XENDIT_CALLBACK_TOKEN` / `XENDIT_WEBHOOK_TOKEN` | Token verifikasi callback Xendit; gunakan nama yang dibaca oleh kode aktif. |
+| `BITESHIP_API_KEY` | API key Biteship. |
+| `BITESHIP_COURIERS` | Daftar layanan kurir yang digunakan. |
+| `BITESHIP_WEBHOOK_SECRET` | Secret verifikasi webhook Biteship. |
+| `DELIVERY_BASE_FEE_IDR` | Biaya dasar tarif kurir lokal. Dokumentasi menyebut default Rp5.000. |
+| `DELIVERY_PER_KM_FEE_IDR` | Biaya per kilometer. Dokumentasi menyebut default Rp2.500. |
+| `DELIVERY_MIN_FEE_IDR` | Batas minimum ongkir. Dokumentasi menyebut default Rp5.000. |
+| `DELIVERY_MAX_FEE_IDR` | Batas maksimum ongkir. Dokumentasi menyebut default Rp50.000. |
+| `VIBE_CODE_URL` | Endpoint provider AI Vibe Code. |
+| `VIBE_CODE_KEY` | API key provider AI Vibe Code. |
+| `VIBE_CODE_MODEL` | Model AI Vibe Code. |
+| `GEMINI_API_KEY` | API key Gemini. |
+| `GEMINI_MODEL` | Model Gemini. |
+| `CHATBOT_ACTION_SECRET` | Secret untuk aksi chatbot. |
+
+**Keamanan environment:**
+
+- Jangan commit `.env` atau `.env.local`.
+- Jangan menambahkan prefix `NEXT_PUBLIC_` pada service role key atau secret provider.
+- `SUPABASE_SERVICE_ROLE_KEY` hanya digunakan di server dan script tepercaya.
+- `XENDIT_CALLBACK_TOKEN` dan `BITESHIP_WEBHOOK_SECRET` harus cocok dengan konfigurasi callback di dashboard provider.
+- Jangan menempelkan kredensial asli ke issue publik atau dokumentasi yang dapat diakses umum.
+
+## Keamanan dan Integritas Data
+
+### Autentikasi dan otorisasi
+
+- Supabase Auth mendukung email/password dan Google OAuth sesuai konfigurasi project.
+- Endpoint admin menggunakan header `Authorization: Bearer <access_token>`.
+- Pemeriksaan role dilakukan di server melalui guard akses admin.
+- RLS menjadi lapisan otorisasi di PostgreSQL.
+- Akun yang diblokir harus ditolak pada jalur autentikasi dan akses aplikasi.
+- Perubahan role hanya dapat dilakukan melalui jalur tepercaya yang telah diotorisasi.
+
+**Catatan khusus autentikasi admin:** dokumentasi implementasi menyatakan endpoint `app/api/admin/*` tidak bergantung pada `middleware.ts` atau cookie sesi untuk otorisasi. Endpoint tersebut memerlukan Bearer token; permintaan tanpa header harus menerima respons `401`.
+
+### Pengamanan akun dan peran
+
+- Status akun dibaca dari `profiles.account_status`.
+- Sanksi akun disinkronkan dengan status ban Supabase Auth dan dapat menonaktifkan toko terkait.
+- Akun yang diblokir dapat melihat informasi blokir dan memantau banding melalui halaman publik `/banding`.
+- Penghapusan permanen hanya untuk Super Admin, memerlukan password konfirmasi `PASSWORD_DELETE_USER` dan alasan.
+- Penghapusan permanen ditolak jika akun masih memiliki pesanan berjalan atau artikel yang terkait.
+- Jika `PASSWORD_DELETE_USER` kosong, fitur penghapusan permanen dinonaktifkan.
+- Admin tim tidak otomatis memiliki seluruh kewenangan Super Admin.
+- Permintaan perubahan role harus diputuskan oleh pihak yang berwenang dan tidak boleh diputuskan sendiri oleh pengaju.
+
+### Validasi dan integritas transaksi
+
+| Area | Mekanisme |
+|---|---|
+| Validasi input | Zod dan React Hook Form pada form yang relevan. |
+| Stok | Validasi dan reservasi atomik melalui RPC `reserve_stock_for_order`. |
+| Jadwal produk | Validasi jadwal tayang sebelum produk ditampilkan atau dipesan. |
+| Idempotensi | `Idempotency-Key` dan transisi `invoice_state`. |
+| Webhook | Verifikasi token dengan `timingSafeEqual` dan pemeriksaan invoice/amount di server. |
+| Status pesanan | State machine dan trigger database. |
+| Lokasi kurir | `delivery_locations` dengan RLS dan Supabase Realtime Postgres Changes. |
+
+### Audit dan observabilitas
+
+- `GET /api/admin/health` digunakan untuk health check layanan yang didukung.
+- `admin_audit_logs` mencatat aksi administratif.
+- Supabase Realtime digunakan untuk pembaruan pesanan dan sanksi.
+- UI menyediakan error state dan skeleton untuk kondisi data tidak tersedia.
+- Ekspor Excel dibatasi maksimal 5.000 baris; permintaan yang melewati batas harus ditolak dengan pesan yang menjelaskan batas tersebut.
+
+## Integrasi Eksternal
+
+### Xendit
+
+Xendit digunakan untuk:
+
+- Membuat invoice pembayaran checkout.
+- Membuat invoice langganan UMKM.
+- Mengirim callback/webhook pembayaran.
+- Memverifikasi callback token dan data invoice sebelum status transaksi diperbarui.
+
+Endpoint webhook yang didokumentasikan:
+
+```text
+POST /api/webhooks/xendit
 ```
 
-**Konvensi Test:**
-- Setiap test membaca file `lib/server/*` atau `app/api/*` yang relevan
-- Menguji logika murni (tanpa side effect DB/jaringan)
-- Kegagalan test = ada yang salah, **jangan diabaikan**
+### Biteship
 
----
+Biteship digunakan untuk:
 
-## 🔐 Variabel Lingkungan
+- Menghitung tarif pengiriman.
+- Membuat kiriman.
+- Menerima webhook status kiriman dan nomor resi.
 
-**File `.env.example`** (salin ke `.env.local` dan isi):
+Endpoint webhook yang didokumentasikan:
 
-| Variabel | Deskripsi | Wajib |
-|----------|-----------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | URL project Supabase | ✅ |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key Supabase (client) | ✅ |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (server only, **jangan** `NEXT_PUBLIC_`) | ✅ |
-| `NEXT_PUBLIC_SITE_URL` | URL situs (redirect Xendit, webhook) | ✅ |
-| `SUPER_ADMIN_USER_ID` | User ID super admin bootstrap | ✅ |
-| `PASSWORD_DELETE_USER` | Password konfirmasi hapus permanen (kosong = nonaktif) | ❌ |
-| `XENDIT_SECRET_KEY` | Secret key Xendit (server only) | ✅ |
-| `XENDIT_CALLBACK_TOKEN` / `XENDIT_WEBHOOK_TOKEN` | Token verifikasi webhook Xendit | ✅ |
-| `BITESHIP_API_KEY` | API key Biteship | ✅ |
-| `BITESHIP_COURIERS` | Daftar kurir (contoh: `jne,anterait,sih,gojek`) | ✅ |
-| `BITESHIP_WEBHOOK_SECRET` | Secret webhook Biteship | ✅ |
-| `DELIVERY_BASE_FEE_IDR` | Biaya dasar ongkir (default 5000) | ❌ |
-| `DELIVERY_PER_KM_FEE_IDR` | Biaya per km (default 2500) | ❌ |
-| `DELIVERY_MIN_FEE_IDR` | Minimum ongkir (default 5000) | ❌ |
-| `DELIVERY_MAX_FEE_IDR` | Maksimum ongkir (default 50000) | ❌ |
-| `VIBE_CODE_URL` / `VIBE_CODE_KEY` / `VIBE_CODE_MODEL` | Config AI Vibe Code | ❌ |
-| `GEMINI_API_KEY` / `GEMINI_MODEL` | Config Gemini AI | ❌ |
-| `CHATBOT_ACTION_SECRET` | Secret untuk aksi chatbot | ❌ |
+```text
+POST /api/webhooks/biteship
+```
 
-**Keamanan:**
-- ❌ Jangan commit `.env` atau `.env.local` (sudah di `.gitignore`)
-- ❌ `SUPABASE_SERVICE_ROLE_KEY` hanya di server (route handler & script)
-- ✅ `XENDIT_CALLBACK_TOKEN` & `BITESHIP_WEBHOOK_SECRET` harus sama dengan dashboard penyedia
+### Kurir lokal ReBites
 
----
+Selain Biteship, dokumentasi menyebut opsi tarif lokal Kurir ReBites. Tarif dihitung berdasarkan jarak dan menggunakan variabel lingkungan untuk biaya dasar, biaya per kilometer, batas minimum, dan maksimum.
 
-## 🔒 Keamanan & Keandalan
+### Pelacakan kurir
 
-### Autentikasi & Otorisasi
+Posisi kurir disimpan pada `delivery_locations`, dilindungi RLS, dan disiarkan melalui Supabase Realtime Postgres Changes. Dokumentasi menyatakan bahwa kanal Broadcast publik tidak digunakan untuk data posisi pesanan karena dapat mengekspos lokasi kepada pihak yang mengetahui kode pesanan.
 
-| Mekanisme | Implementasi |
-|-----------|--------------|
-| **Supabase Auth** | Email/password + Google OAuth; sesi di `localStorage` (client) & `cookies` (server untuk route handler) |
-| **Bearer Token** | Semua API admin & checkout: `Authorization: Bearer <token>` (dari sesi Supabase), validasi server via `getUserFromBearer` |
-| **Role Guard** | `profiles.role` + `getAdminUser` (server) memastikan hanya admin akses route/admin API |
-| **RLS (Row-Level Security)** | Postgres policy: pembeli lihat data sendiri, UMKM lihat toko sendiri, admin lihat semua |
-| **Hapus Akun** | Super Admin butuh `PASSWORD_DELETE_USER` (env) + alasan, tolak jika ada pesanan berjalan |
+### Asisten AI
 
-### Validasi & Integritas Data
+Provider AI dapat menggunakan Gemini atau Vibe Code. Akses tool ditentukan server berdasarkan sesi dan role. Informasi pribadi pengguna lain tidak boleh disediakan kepada chatbot.
 
-| Area | Implementasi |
-|------|--------------|
-| **Input Validation** | Zod + React Hook Form (auth, profil, checkout) |
-| **Stok & Jadwal** | Server memvalidasi stok (RPC `reserve_stock_for_order`) & jadwal menu (`isMenuScheduleVisible`) sebelum checkout |
-| **Idempotensi** | `Idempotency-Key` (client-generated) + `invoice_state` transition (`not_started → inflight → paid/failed`) mencegah pesanan duplikat |
-| **Webhook Verifikasi** | `timingSafeEqual` untuk token Xendit & Biteship; verifikasi invoice & amount di server |
+## Langganan UMKM
 
-### Error Handling & Observability
+Dokumentasi fitur menyebut tiga tier paket: **Basic, Standar, dan Max**. Paket memengaruhi batas jumlah produk, akses riwayat penjualan, prioritas marketplace, laporan, dan dukungan.
 
-- **Health Check**: `GET /api/admin/health` (probe Supabase & Xendit) untuk monitoring
-- **Audit Log**: `admin_audit_logs` mencatat semua aksi admin (best-effort insert)
-- **Notifikasi Realtime**: Supabase Realtime untuk pesanan & sanksi (pembeli & kurir)
-- **Error State UI**: `AdminErrorState`, `StoreClosedModal`, skeleton loaders untuk UX saat data tidak tersedia
+| Paket | Harga bulanan | Harga tahunan | Batas produk |
+|---|---:|---:|---:|
+| Basic | Rp24.999 | Rp249.990 | 3 produk |
+| Standar | Rp49.000 | Rp490.000 | 5 produk |
+| Max | Rp99.000 | Rp990.000 | 15 produk |
 
-### Batasan & Risiko Terkenal
+Aktivasi langganan dilakukan setelah pembayaran terverifikasi. Halaman sukses menyediakan jalur kembali manual apabila proses verifikasi belum selesai.
 
-- ⚠️ Belum ada load testing / rate limit di level API (hanya chatbot & webhook)
-- ⚠️ Belum ada backup otomatis (bergantung pada Supabase managed backup)
-- ⚠️ Fitur kurir opsional (butuh migrasi khusus & dashboard terpisah)
-- ⚠️ Integrasi Xendit & Biteship bergantung pada ketersediaan API eksternal
-- ⚠️ `next build` skip ESLint (`eslint.ignoreDuringBuilds: true`), jalankan `npm run lint` terpisah
-- ⚠️ `public/makanan2.avif` dan `public/makanan5.avif` memiliki artifact checkerboard transparency (baked-in), **jangan digunakan di UI baru**
+> Jika nilai paket pada database atau migrasi berbeda dari tabel ini, gunakan data paket pada implementasi aktif sebagai acuan operasional.
 
----
+## Pengujian
 
-## 🧪 Testing & Quality Assurance
+Proyek menggunakan test runner bawaan Node.js melalui `node --test`. Pengujian berfokus pada logika dan kontrak kode tanpa memerlukan browser, database, atau jaringan.
 
-| Aspek | Detail |
-|-------|--------|
-| **Test Runner** | `node --test` (native, no dependencies) |
-| **Test Suites** | 96 files di `tests/` (~401 kasus uji) |
-| **Coverage Areas** | Checkout idempotency/price/failure, Admin RBAC/health/analytics/export, Stock release, Shipping rates, Order state machine, Seller dashboard, Courier location, Chatbot, Image path resolver, dll. |
-| **Type Checking** | `npm run typecheck` (strict), `npm run typecheck:tests` |
-| **Linting** | `npm run lint` (ESLint + Next.js config) |
-| **Build Verification** | `npm run build` (production build + type-check) |
-| **Visual Verification** | Manual di breakpoint 320/375/768/1024/1440/1920 (no horizontal overflow pada `/`) |
+Area pengujian yang disebutkan:
 
-> **Catatan:** Tidak ada test E2E browser (Playwright/Cypress) dan tidak ada CI pipeline terkonfigurasi. Semua test offline (unit/integration logic only).
+- Checkout: idempotensi, perhitungan harga, dan kegagalan pembayaran.
+- Admin: RBAC, health check, analitik, dan ekspor.
+- Stock reservation dan stock release.
+- Tarif pengiriman.
+- Order state machine.
+- Dashboard penjual.
+- Lokasi kurir.
+- Chatbot.
+- Image path resolver.
+- Regresi antarmuka dan kontrak komponen.
 
----
+Perintah pemeriksaan:
 
-## 📊 Status Proyek & Known Issues
+```bash
+npm run typecheck
+npm run typecheck:tests
+npm run lint
+node --test tests/*.test.ts
+```
 
-### ✅ Sudah Terimplementasi (Core)
+Dokumentasi yang digabung mencatat angka pengujian berbeda pada dua snapshot: satu bagian menyebut **96 test suites / sekitar 401 kasus**, sedangkan catatan proyek yang lebih baru menyebut **96 test suites / sekitar 1.293 tes**. Karena angka tersebut berasal dari snapshot dokumentasi yang berbeda, jumlah aktual harus diperiksa dari direktori `tests/` dan skrip repository saat ini.
 
-- Marketplace: katalog, detail, checkout, riwayat, ulasan
-- Autentikasi: email/password + Google OAuth
-- Manajemen toko (UMKM) & produk (CRUD, flash sale, jadwal)
-- Langganan tiered: Basic / Standar / Max (bulanan/tahunan via Xendit)
-- Integrasi Xendit (invoice + webhook idempoten) & Biteship (rate + shipment)
-- Admin dashboard lengkap: moderasi, pengguna, monitoring, ekspor, konfigurasi
-- Dashboard kurir (opsional): tugas, status, lokasi realtime, chat
-- Chatbot AI: role-based (admin write tools, user read-only)
-- Notifikasi realtime (Supabase Realtime) & banding akun
-- 96 test suites offline passing
+Tidak ada pengujian E2E browser (Playwright/Cypress) atau pipeline CI/CD yang dinyatakan telah terkonfigurasi pada dokumentasi.
 
-### 🔧 Known Issues / Technical Debt
+**Kegagalan tes tidak boleh diabaikan.** Perbaiki penyebabnya dan jalankan kembali pemeriksaan yang relevan.
 
-| Issue | Deskripsi | Mitigasi |
-|-------|-----------|----------|
-| **ESLint skipped during build** | `eslint.ignoreDuringBuilds: true` di `next.config.js` | Jalankan `npm run lint` manual sebelum commit |
-| **Image path mismatch DB vs FS** | DB menyimpan `/makanan1.jpeg`, `/makanan9.webp` tapi file fisik `.avif` | `lib/image-path.ts` (`resolveImageSrc`) memetakan ekstensi lama → `.avif` |
-| **Transparency artifact** | `makanan2.avif`, `makanan5.avif` punya checkerboard baked-in | Jangan gunakan di UI baru; mungkin masih dirujuk DB |
-| **EOL sensitivity (Windows)** | `tests/admin-ui-regressions` gagal spurious jika CRLF | Restore LF via `git cat-file blob :0:lib/admin-preferences.ts` atau tambah `.gitattributes` |
-| **Stale types after route move** | `npm run typecheck` baca `.next/types` | Jalankan `npm run build` dulu setelah pindah route |
-| **No CI/CD** | Belum ada GitHub Actions / pipeline | Manual verification: `typecheck` + `lint` + `build` + visual pass |
+## Status Proyek dan Known Issues
 
-### 🚧 Rencana Penguatan (Backlog)
+### Fitur inti yang didokumentasikan
 
-- Load testing & rate limit di level API (bukan hanya chatbot)
-- Multi-region / area layanan di luar Kota Depok
-- Integrasi kurir lokal mandiri (bukan hanya Biteship)
-- Fitur ekspor data UMKM (Excel format khusus)
-- Refactor `lib/server/*` untuk mengurangi kompleksitas (khususnya checkout idempoten)
+- Marketplace: katalog, detail produk, checkout, riwayat, dan ulasan.
+- Autentikasi email/password dan Google OAuth.
+- Manajemen toko dan produk UMKM.
+- Flash sale dan jadwal produk.
+- Langganan Basic, Standar, dan Max.
+- Integrasi Xendit untuk invoice dan webhook.
+- Integrasi Biteship untuk tarif dan kiriman.
+- Dashboard admin untuk moderasi, pengguna, monitoring, dan ekspor.
+- Dashboard kurir opsional dengan tugas, status, lokasi realtime, dan chat.
+- Chatbot AI dengan akses berdasarkan role.
+- Notifikasi realtime dan banding akun.
 
----
+### Known issues dan mitigasi
 
-## 📄 Lisensi
+| Issue | Keterangan | Mitigasi yang didokumentasikan |
+|---|---|---|
+| ESLint dilewati saat build | `eslint.ignoreDuringBuilds: true` pada konfigurasi Next.js. | Jalankan `npm run lint` secara terpisah sebelum commit. |
+| Ketidaksesuaian ekstensi gambar | Database dapat menyimpan path `.jpeg`/`.webp`, sedangkan aset fisik menggunakan `.avif`. | Gunakan `lib/image-path.ts` dan `resolveImageSrc`. |
+| Artifact transparansi gambar | `public/makanan2.avif` dan `public/makanan5.avif` memiliki pola checkerboard yang sudah menyatu pada gambar. | Hindari penggunaan untuk UI baru. |
+| Sensitivitas EOL Windows | Tes regresi admin UI dapat gagal karena perbedaan CRLF/LF. | Pulihkan line ending LF atau gunakan `.gitattributes`. |
+| Tipe Next.js usang setelah pemindahan route | Type-check dapat membaca `.next/types` yang belum diperbarui. | Jalankan build ulang setelah pemindahan route. |
+| Belum ada CI/CD | GitHub Actions atau pipeline belum dinyatakan terkonfigurasi. | Jalankan typecheck, lint, build, dan pemeriksaan visual secara manual. |
+| Load testing dan rate limit API | Belum ada load testing atau rate limit menyeluruh di level API. | Masuk backlog penguatan. |
+| Backup otomatis | Backup mengikuti fasilitas backup managed Supabase. | Pastikan kebijakan backup project Supabase sesuai kebutuhan. |
+| Ketergantungan provider | Pembayaran dan pengiriman bergantung pada layanan eksternal. | Tampilkan kegagalan secara jelas dan jangan membuat status transaksi palsu. |
 
-Proyek ini bersifat **non-komersial / untuk keperluan demonstrasi & kompetisi** (GTNIC 2026). Tidak ada lisensi komersial atau open-source yang dideklarasikan di `package.json` (hanya `private: true`).
+### Batasan operasional
 
-- **Sumber:** [GitHub — kayy-eci/Rebitesss-GTNIC2026](https://github.com/kayy-eci/Rebitesss-GTNIC2026)
-- **Demo Development:** `http://localhost:3000` (setelah `npm run dev`)
+- Area layanan yang didokumentasikan masih Kota Depok.
+- Ongkir dapat berupa estimasi apabila berat produk atau koordinat toko belum lengkap.
+- Verifikasi email, Google OAuth, dan pembayaran membutuhkan kredensial provider milik pemilik project.
+- Fitur kurir bergantung pada migrasi dan konfigurasi yang sesuai.
+- Tidak ada klaim bahwa load testing atau CI/CD telah selesai.
+
+### Backlog pengembangan
+
+- Load testing dan rate limiting API.
+- Perluasan layanan ke luar Kota Depok.
+- Integrasi kurir lokal mandiri.
+- Ekspor data UMKM ke format Excel khusus.
+- Refactor `lib/server/*`, terutama proses checkout idempoten.
+
+## Tim
+
+Dikembangkan oleh **Team Tony Stark Inc.** untuk GTNIC 2026.
+
+| Nama | Peran |
+|---|---|
+| Faletehan Al Farabi | Backend Developer |
+| Aburahman Kayysan | Fullstack Developer |
+| Jona Alfaros | Frontend Developer |
+
+## Lisensi dan Tautan
+
+Proyek ini ditujukan untuk keperluan demonstrasi dan kompetisi GTNIC 2026. Dokumentasi sumber menyatakan bahwa `package.json` menggunakan `private: true` dan tidak mendeklarasikan lisensi komersial maupun lisensi open-source.
+
+- **Repository:** https://github.com/kayy-eci/Rebitesss-GTNIC2026
+- **Dokumentasi konteks:** `docs/PROJECT_CONTEXT.md`
+- **Indeks dokumentasi:** `docs/README.md`
+- **Naskah demo video:** `docs/naskah-demo-video.md`
+- **Development:** http://localhost:3000
 
 ---
 
 <p align="center">
-  <strong>ReBites</strong> — Dibangun dengan Next.js, Supabase, Xendit & Biteship<br/>
-  untuk menghadirkan marketplace makanan surplus yang transparan, cepat, dan efisien bagi UMKM kuliner.
+  <strong>ReBites</strong> — Dari dapur UMKM, ke piring yang butuh.
+  <br />
+  Membantu mengurangi food waste dan membuka peluang baru bagi UMKM kuliner.
 </p>
 
 <p align="center">
-  <sub>Dokumentasi ini mencerminkan kondisi codebase per November 2026. Semua klaim teknis diverifikasi terhadap implementasi aktual.</sub>
+  <sub>README gabungan berdasarkan dokumentasi proyek yang diberikan. Periksa migrasi, konfigurasi, dan source code aktif sebelum menggunakan detail teknis sebagai acuan implementasi.</sub>
 </p>
