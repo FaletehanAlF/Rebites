@@ -1,3 +1,5 @@
+'use client';
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Marquee } from "@/components/ui/marquee-01-utils/marquee";
 import { Star } from "lucide-react";
