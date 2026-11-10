@@ -13,13 +13,14 @@ type Review = {
 };
 
 // Data contoh ReBites (bukan testimoni pelanggan nyata).
-// Avatar: foto potret (Unsplash). Semua kartu menampilkan foto profil.
+// Avatar: randomuser.me (foto potret stock, stabil dipakai hotlink).
+// Jika foto gagal dimuat (mis. jaringan diblok), otomatis turun ke avatar inisial.
 const reviews: Review[] = [
   {
     name: "Dimas A.",
     username: "@dimasbeji",
     body: "Di ReBites saya bisa lihat dulu menu surplus yang masih tersedia, jadi tidak perlu menebak-nebak stok warung sekitar.",
-    profile: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=128&h=128&q=80",
+    profile: "https://randomuser.me/api/portraits/men/32.jpg",
     audience: "Pembeli",
     role: "Pembeli — Beji, Depok",
     rating: 5.0,
@@ -28,7 +29,7 @@ const reviews: Review[] = [
     name: "Sri Wahyuni",
     username: "@sriwarung",
     body: "Menjelang tutup masih ada sisa nasi? Sekarang saya unggah dari pagi, dan biasanya habis sebelum jam tutup.",
-    profile: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=128&h=128&q=80",
+    profile: "https://randomuser.me/api/portraits/women/65.jpg",
     audience: "UMKM",
     role: "Penjual nasi rumahan — Margonda, Depok",
     rating: 5.0,
@@ -37,7 +38,7 @@ const reviews: Review[] = [
     name: "Hendra S.",
     username: "@hendraroti",
     body: "Dashboard-nya tidak bikin pusing: isi menu, harga, stok. Pesanan langsung kelihatan tanpa bolak-balik cek HP.",
-    profile: "https://images.unsplash.com/photo-1500648767791-00dcc994a43?auto=format&fit=crop&w=128&h=128&q=80",
+    profile: "https://randomuser.me/api/portraits/men/85.jpg",
     audience: "UMKM",
     role: "Penjual roti — Sawangan, Depok",
     rating: 4.9,
@@ -46,7 +47,7 @@ const reviews: Review[] = [
     name: "Sinta Maharani",
     username: "@sintasav",
     body: "Pesanan sampai masih hangat dan porsinya sama seperti beli langsung di tempat. Harga surplusnya jujur.",
-    profile: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=128&h=128&q=80",
+    profile: "https://randomuser.me/api/portraits/women/44.jpg",
     audience: "Pembeli",
     role: "Pembeli — Cimanggis, Depok",
     rating: 4.8,
@@ -55,7 +56,7 @@ const reviews: Review[] = [
     name: "Laras Lestari",
     username: "@larasbakery",
     body: "Roti sisa display pagi yang biasanya didiskon habis-habisan, sekarang masuk etalase ReBites. Lebih untung.",
-    profile: "https://images.unsplash.com/photo-1544005313-4817aa6c0977?auto=format&fit=crop&w=128&h=128&q=80",
+    profile: "https://randomuser.me/api/portraits/women/17.jpg",
     audience: "UMKM",
     role: "Penjual kue & roti — Depok Lama",
     rating: 4.9,
@@ -64,12 +65,20 @@ const reviews: Review[] = [
     name: "Dewi Kurnia",
     username: "@dewiku",
     body: "Hemat bukan berarti berkompromi — harganya masuk akal karena belum habis terjual, bukan karena kualitasnya buruk.",
-    profile: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?auto=format&fit=crop&w=128&h=128&q=80",
+    profile: "https://randomuser.me/api/portraits/women/68.jpg",
     audience: "Pembeli",
     role: "Pembeli — Pancoran Mas, Depok",
     rating: 5.0,
   },
 ];
+
+const initials = (name: string) =>
+  name.replace(/[^A-Za-z ]/g, '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
+
+const initialsAvatar = (name: string) => {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect width='96' height='96' rx='48' fill='#1B4D33'/><text x='48' y='48' fill='#ffffff' font-family='Arial, sans-serif' font-size='34' font-weight='700' text-anchor='middle' dominant-baseline='central'>${initials(name)}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
 
 const firstRow = reviews.slice(0, reviews.length / 2);
 const secondRow = reviews.slice(reviews.length / 2);
@@ -84,40 +93,45 @@ const ReviewCard = ({
   rating,
 }: Review) => {
   return (
-    <Card className="relative h-full w-72 cursor-pointer overflow-hidden border-border bg-white p-4 shadow-none transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
-      <CardContent className="flex h-full flex-col gap-2.5 p-0">
-        <div className="flex flex-row items-center gap-2.5">
+    <Card className="relative w-80 shrink-0 cursor-pointer border-border bg-white p-5 shadow-none transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5">
+      <CardContent className="flex h-full flex-col gap-4 p-0">
+        <div className="flex flex-row items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            className="h-10 w-10 shrink-0 rounded-full border border-border/60 object-cover"
-            width="40"
-            height="40"
+            className="h-12 w-12 shrink-0 rounded-full object-cover ring-1 ring-border"
+            width="48"
+            height="48"
             loading="lazy"
-            alt={name}
+            alt={`Foto profil ${name}`}
             src={profile}
+            onError={(e) => {
+              const img = e.currentTarget;
+              if (img.dataset.fallbackApplied)
+                return;
+              img.dataset.fallbackApplied = "1";
+              img.src = initialsAvatar(name);
+            }}
           />
-          <div className="flex min-w-0 flex-col">
-            <p className="truncate text-[13px] font-semibold leading-tight text-foreground">{name}</p>
-            <p className="truncate text-[10.5px] leading-tight text-muted-foreground">
-              {username}
-            </p>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <p className="truncate text-[13px] font-semibold leading-snug text-foreground">{name}</p>
+            <p className="truncate text-[11px] text-muted-foreground">{role}</p>
           </div>
-          <span className="ml-auto shrink-0 self-start rounded-full bg-accent px-2 py-0.5 font-secondary text-[9px] font-semibold uppercase tracking-[0.12em] text-primary">
+          <span className="ml-auto shrink-0 self-start rounded-full bg-accent px-2.5 py-1 font-secondary text-[9px] font-semibold uppercase tracking-[0.12em] text-primary">
             {audience}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5" aria-label={`Rating ${rating} dari 5`}>
+        <div className="flex items-center gap-2 border-t border-border/50 pt-3" aria-label={`Rating ${rating} dari 5`}>
           <div className="flex items-center gap-0.5">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden />
             ))}
           </div>
           <span className="text-[11px] font-semibold text-foreground/80">{rating.toFixed(1)}</span>
-          <span className="text-[10px] text-muted-foreground">· {role}</span>
+          <span className="text-[10.5px] text-muted-foreground">· {username}</span>
         </div>
 
-        <p className="line-clamp-3 text-[12px] leading-snug text-foreground/90">
+        <p className="text-[12px] leading-relaxed text-foreground/90">
           &ldquo;{body}&rdquo;
         </p>
       </CardContent>
@@ -127,19 +141,19 @@ const ReviewCard = ({
 
 export default function TestimonialMarqueeDemo() {
   return (
-    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-2">
-      <Marquee pauseOnHover className="[--duration:24s]">
+    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-3 [--gap:1.25rem]">
+      <Marquee pauseOnHover className="[--duration:28s]">
         {firstRow.map((review) => (
           <ReviewCard key={`${review.username}-1`} {...review} />
         ))}
       </Marquee>
-      <Marquee reverse pauseOnHover className="mt-4 [--duration:24s]">
+      <Marquee reverse pauseOnHover className="mt-5 [--duration:28s]">
         {secondRow.map((review) => (
           <ReviewCard key={`${review.username}-2`} {...review} />
         ))}
       </Marquee>
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent sm:w-28" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white to-transparent sm:w-28" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white to-transparent sm:w-24" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent sm:w-24" />
     </div>
   );
 }
