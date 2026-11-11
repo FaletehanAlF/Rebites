@@ -38,7 +38,7 @@ export default function CategoryView({ slug, name, }: {
     }, [catalogLoading]);
     const categoryItems = useMemo(() => foodItems.filter((item) => item.category === name), [name, foodItems]);
     const handleViewDetail = (id: string) => {
-        router.push(`/detail/product?id=${encodeURIComponent(id)}`);
+        router.push(`/detail/product?id=${encodeURIComponent(id)}&from=makanan`);
     };
     const handleBack = () => {
         if (typeof window !== "undefined" && window.history.length > 1) {
