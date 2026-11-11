@@ -2,7 +2,6 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Marquee } from '@/components/ui/marquee-01-utils/marquee';
-import { cn } from '@/lib/utils';
 import { Star, Quote } from 'lucide-react';
 
 type Review = {
@@ -93,95 +92,76 @@ const secondRow = reviews.slice(Math.ceil(reviews.length / 2));
 const ReviewCard = ({
   profile,
   name,
-  username,
   body,
-  audience,
   role,
-  rating,
 }: Review) => {
   return (
-    <Card className="group relative w-[340px] shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-border/60 bg-white p-0 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10">
-      <CardContent className="flex h-full flex-col gap-4 p-6">
-        {/* Header: avatar + identitas + pill */}
-        <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-primary/15 transition-transform duration-300 group-hover:scale-105"
-            width="48"
-            height="48"
-            loading="lazy"
-            alt={`Foto profil ${name}`}
-            src={profile}
-            onError={(e) => {
-              const img = e.currentTarget;
-              if (img.dataset.fallbackApplied) return;
-              img.dataset.fallbackApplied = '1';
-              img.src = initialsAvatar(name);
-            }}
-          />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold leading-snug text-foreground">
-              {name}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">{role}</p>
-          </div>
-          <span
-            className={cn(
-              'shrink-0 self-start rounded-full px-2.5 py-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.12em]',
-              audience === 'Pembeli'
-                ? 'bg-primary/10 text-primary'
-                : 'bg-accent text-primary',
-            )}
-          >
-            {audience}
-          </span>
-        </div>
-
-        {/* Rating */}
-        <div
-          className="flex items-center gap-2 border-t border-border/40 pt-3"
-          aria-label={`Rating ${rating} dari 5`}
-        >
-          <div className="flex items-center gap-0.5">
+    <Card className="w-[300px] shrink-0 rounded-3xl border border-border/60 bg-white p-5 shadow-[0_18px_40px_-24px_rgba(27,77,50,0.35)] transition-transform duration-300">
+      <CardContent className="flex h-full flex-col gap-4 p-0">
+        {/* Stars kiri + ikon quote kanan */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-0.5" aria-label="Rating 5 dari 5">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
-                className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
+                className="h-4 w-4 fill-violet-500 text-violet-500"
                 aria-hidden
               />
             ))}
           </div>
-          <span className="text-xs font-semibold text-foreground/80">
-            {rating.toFixed(1)}
-          </span>
-          <span className="text-[11px] text-muted-foreground">· {username}</span>
-        </div>
-
-        {/* Quote */}
-        <div className="relative flex-1">
           <Quote
-            className="absolute -left-1 -top-1 h-5 w-5 text-primary/15"
+            className="h-7 w-7 shrink-0 rotate-180 text-violet-300"
             aria-hidden
           />
-          <p className="pl-4 text-sm leading-relaxed text-foreground/85">
-            {body}
-          </p>
+        </div>
+
+        {/* Isi ulasan */}
+        <p className="text-sm leading-relaxed text-foreground/85">
+          {body}
+        </p>
+
+        {/* Divider + identitas */}
+        <div className="border-t border-border/60 pt-4">
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="h-11 w-11 shrink-0 rounded-full object-cover ring-1 ring-border"
+              width="44"
+              height="44"
+              loading="lazy"
+              alt={`Foto profil ${name}`}
+              src={profile}
+              onError={(e) => {
+                const img = e.currentTarget;
+                if (img.dataset.fallbackApplied) return;
+                img.dataset.fallbackApplied = '1';
+                img.src = initialsAvatar(name);
+              }}
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold leading-snug text-foreground">
+                {name}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">{role}</p>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
   );
 };
 
-// Dua baris marquee horizontal berlawanan arah: atas ke kiri, bawah ke kanan.
+// Dua baris marquee horizontal berlawanan arah:
+// baris atas bergerak ke kanan, baris bawah ke kiri.
 export default function TestimonialMarqueeDemo() {
   return (
-    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-4 [--gap:2rem]">
-      <Marquee pauseOnHover className="[--duration:32s]">
+    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-4 [--gap:2.5rem]">
+      <Marquee pauseOnHover reverse className="[--duration:32s]">
         {firstRow.map((review) => (
           <ReviewCard key={`${review.username}-1`} {...review} />
         ))}
       </Marquee>
-      <Marquee pauseOnHover reverse className="mt-8 [--duration:32s]">
+      <Marquee pauseOnHover className="mt-10 [--duration:32s]">
         {secondRow.map((review) => (
           <ReviewCard key={`${review.username}-2`} {...review} />
         ))}
