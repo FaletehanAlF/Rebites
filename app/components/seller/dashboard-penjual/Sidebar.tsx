@@ -125,7 +125,7 @@ function SidebarContent({ onClose, storeId, collapsed, onToggleCollapsed }: {
         try {
             await supabase.auth.signOut();
             onClose();
-            router.push('/auth/login');
+            window.location.assign('/auth/login');
         }
         finally {
             setSigningOut(false);

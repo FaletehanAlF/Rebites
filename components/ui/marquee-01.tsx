@@ -104,13 +104,13 @@ const ReviewCard = ({
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
-                className="h-4 w-4 fill-violet-500 text-violet-500"
+                className="h-4 w-4 fill-primary text-primary"
                 aria-hidden
               />
             ))}
           </div>
           <Quote
-            className="h-7 w-7 shrink-0 rotate-180 text-violet-300"
+            className="h-7 w-7 shrink-0 rotate-180 text-primary/25"
             aria-hidden
           />
         </div>

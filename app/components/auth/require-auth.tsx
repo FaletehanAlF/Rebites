@@ -19,6 +19,16 @@ export function RequireAuth({ children }: {
             : "/auth/login";
         router.replace(loginTarget);
     }, [loading, user, router]);
+    // Proteksi BFCache: bila halaman proteksi dipulihkan dari cache browser
+    // (mis. tombol Back setelah logout), paksa muat ulang agar guard jalan lagi.
+    useEffect(() => {
+        const onPageShow = (event: PageTransitionEvent) => {
+            if (event.persisted)
+                window.location.reload();
+        };
+        window.addEventListener("pageshow", onPageShow);
+        return () => window.removeEventListener("pageshow", onPageShow);
+    }, []);
     if (loading || !user) {
         return (<div role="status" aria-label="Memeriksa sesi login" className="min-h-screen bg-secondary px-4 py-6 sm:px-6 lg:px-8">
 
