@@ -28,7 +28,7 @@
     --primary-foreground-strong: 0 0% 100%;
 
     /* Secondary */
-    --secondary: 105 20% 96%;
+    --secondary: 0 0% 100%;
     --secondary-foreground: 151 56% 22%;
 
     /* Muted */
@@ -111,7 +111,7 @@
     --ring: var(--brand-forest);
 
     /* Soft surfaces */
-    --secondary: var(--brand-canvas);
+    --secondary: 0 0% 100%;
     --secondary-foreground: var(--brand-forest-dark);
     --muted: var(--brand-canvas);
     --accent: var(--brand-mint);
@@ -220,7 +220,7 @@
   --primary: 152 40% 32%;
   --primary-foreground: 0 0% 100%;
   --primary-foreground-strong: 0 0% 100%;
-  --secondary: 150 30% 96%;
+  --secondary: 0 0% 100%;
   --secondary-foreground: 152 40% 26%;
   --accent: 152 40% 32%;
   --accent-foreground: 0 0% 100%;

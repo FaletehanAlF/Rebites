@@ -328,7 +328,7 @@ function StoreDetailContent() {
     const [openNow, setOpenNow] = useState(true);
     const router = useRouter();
     const handleViewDetail = (id: string) => {
-        router.push(`/detail/product?id=${encodeURIComponent(id)}`);
+        router.push(`/detail/product?id=${encodeURIComponent(id)}&from=toko`);
     };
     useEffect(() => {
         setQuery("");

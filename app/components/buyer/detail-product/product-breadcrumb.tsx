@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Share2 } from "lucide-react";
 import type { ProductDetail } from "@/app/components/buyer/detail-product/data";
 
@@ -12,19 +12,34 @@ export function ProductBreadcrumb({
   product: ProductDetail;
   onShare: () => void;
 }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const fromPage = searchParams.get("from") === "home" ? "/home" : "/";
+  const fromPage = searchParams.get("from") === "home"
+    ? "/home"
+    : searchParams.get("from") === "toko"
+      ? `/detail/toko?id=${encodeURIComponent(product.vendor.id)}`
+      : searchParams.get("from") === "makanan"
+        ? "/makanan"
+        : "/";
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push(fromPage);
+    }
+  };
 
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="flex min-w-0 items-center gap-4">
-        <Link
-          href={fromPage}
+        <button
+          type="button"
+          onClick={handleBack}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 font-secondary text-sm font-semibold text-foreground transition-colors duration-200 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <ArrowLeft className="h-4 w-4" />
           Kembali
-        </Link>
+        </button>
 
         <nav
           aria-label="Breadcrumb"

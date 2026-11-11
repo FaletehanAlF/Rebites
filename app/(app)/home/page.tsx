@@ -12,7 +12,7 @@ import { scrollToId } from "@/lib/scroll";
 function HomePageContent() {
     const router = useRouter();
     const handleViewDetail = useCallback((id: string) => {
-        router.push(`/detail/product?id=${encodeURIComponent(id)}`);
+        router.push(`/detail/product?id=${encodeURIComponent(id)}&from=home`);
     }, [router]);
     useEffect(() => {
         const scrollToHash = () => {
