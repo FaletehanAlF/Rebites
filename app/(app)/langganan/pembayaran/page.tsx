@@ -1,6 +1,7 @@
 ﻿import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { SubscriptionCheckoutView } from '@/app/components/seller/subscription/subscription-checkout-view';
+import { RequireAuth } from '@/app/components/auth/require-auth';
 
 export const metadata: Metadata = {
   title: 'Pembayaran Langganan | ReBites',
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 
 export default function SubscriptionPaymentPage() {
   return (
+    <RequireAuth>
     <main className="min-h-screen bg-secondary px-4 py-6 sm:px-6 sm:py-8">
       <div className="mx-auto w-full max-w-[980px]">
         <Suspense
@@ -34,5 +36,6 @@ export default function SubscriptionPaymentPage() {
         </Suspense>
       </div>
     </main>
+    </RequireAuth>
   );
 }

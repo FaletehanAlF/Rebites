@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useCatalog } from "@/lib/catalog";
 import type { FoodItem, Vendor } from "@/lib/types";
 import { BuyerShell } from "@/app/components/shared/buyer-shell";
+import { RequireAuth } from "@/app/components/auth/require-auth";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { CategoryRow } from "@/app/components/buyer/detail-toko/category-row";
 import { Avatar, AvatarImage, AvatarFallback, } from "@/app/components/ui/avatar";
@@ -604,9 +605,9 @@ function StoreDetailContent() {
     </BuyerShell>);
 }
 export default function DetailTokoPage() {
-    return (<Suspense fallback={<div className="min-h-screen bg-secondary"/>}>
+    return (<RequireAuth><Suspense fallback={<div className="min-h-screen bg-secondary"/>}>
 
       <StoreDetailContent />
 
-    </Suspense>);
+    </Suspense></RequireAuth>);
 }
