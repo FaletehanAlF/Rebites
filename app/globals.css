@@ -497,5 +497,8 @@ html.lenis body {
 }
 
 .animate-marquee {
-  animation: marquee var(--duration, 40s) linear infinite;
+  animation-name: marquee;
+  animation-duration: var(--duration, 40s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
