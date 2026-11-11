@@ -155,13 +155,13 @@ const ReviewCard = ({
 // baris atas bergerak ke kanan, baris bawah ke kiri.
 export default function TestimonialMarqueeDemo() {
   return (
-    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-4 [--gap:2.5rem]">
-      <Marquee pauseOnHover reverse className="[--duration:32s]">
+    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-4">
+      <Marquee pauseOnHover reverse className="[--duration:32s] [--gap:3.5rem]">
         {firstRow.map((review) => (
           <ReviewCard key={`${review.username}-1`} {...review} />
         ))}
       </Marquee>
-      <Marquee pauseOnHover className="mt-10 [--duration:32s]">
+      <Marquee pauseOnHover className="mt-10 [--duration:32s] [--gap:3.5rem]">
         {secondRow.map((review) => (
           <ReviewCard key={`${review.username}-2`} {...review} />
         ))}
