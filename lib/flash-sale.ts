@@ -114,7 +114,7 @@ export async function getActiveFlashSaleProducts(now: number = Date.now()): Prom
     const fetchGlobal = async (): Promise<SellerProduct[]> => {
         const { data, error } = await supabase
             .from('products')
-            .select('*, umkm:umkm_profiles(business_name)')
+            .select('*, umkm:umkm_profiles(business_name, is_active, deleted_at)')
             .not('flash_sale_price', 'is', null)
             .eq('status', 'available')
             .eq('verification_status', 'approved')
@@ -127,7 +127,12 @@ export async function getActiveFlashSaleProducts(now: number = Date.now()): Prom
         return ((data ?? []) as Record<string, unknown>[])
             .filter((row) => {
             const umkm = (row as Record<string, unknown>).umkm;
-            return Boolean(umkm) && typeof umkm === 'object';
+            // Toko nonaktif/terhapus tidak boleh ikut flash sale (RLS tetap
+            // menampilkannya untuk admin & pemilik, jadi diverifikasi manual).
+            if (!umkm || typeof umkm !== 'object')
+                return false;
+            const store = umkm as Record<string, unknown>;
+            return store.is_active !== false && !store.deleted_at;
         })
             .map((row) => {
             const r = row as Record<string, unknown>;

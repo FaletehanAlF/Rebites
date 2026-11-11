@@ -14,7 +14,7 @@ import { getSellerStoreSettings } from "@/lib/store-settings-storage";
 const HERO_IMAGE =
   "https://images.pexels.com/photos/16134564/pexels-photo-16134564.jpeg?auto=compress&cs=tinysrgb&w=1200";
 
-const UMKM_IMAGE = "/terselamatan.avif";
+const UMKM_IMAGE = "/terselamatkan.avif";
 
 const SIDE_LINK =
   "inline-flex w-fit items-center gap-1.5 rounded-full font-sans text-[13px] font-semibold text-primary transition-colors duration-150 hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
@@ -137,7 +137,7 @@ export function Hero() {
                 sizes="(min-width: 1024px) 40vw, 100vw"
               />
             </div>
-            <div className="absolute inset-0 bg-primary/80 transition-colors duration-300 group-hover:bg-primary-dark/70" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/55 to-primary-dark/70 transition-colors duration-300 group-hover:from-primary-dark/85 group-hover:via-primary-dark/65 group-hover:to-primary-dark/80" />
 
             <div className="relative flex h-full flex-col justify-end p-4 sm:p-6 lg:p-8">
               <h2 className="mt-3 font-sans text-lg font-semibold leading-snug text-primary-foreground sm:mt-4 sm:text-2xl lg:text-[1.7rem]">
@@ -171,7 +171,7 @@ export function Hero() {
                 sizes="(min-width: 1024px) 40vw, 100vw"
               />
             </div>
-            <div className="absolute inset-0 bg-primary/80 transition-colors duration-300 group-hover:bg-primary-dark/70" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/55 to-primary-dark/70 transition-colors duration-300 group-hover:from-primary-dark/85 group-hover:via-primary-dark/65 group-hover:to-primary-dark/80" />
 
             <div className="relative flex h-full flex-col justify-end p-4 sm:p-6 lg:p-8">
               <h2 className="mt-2 font-sans text-base font-semibold leading-snug text-primary-foreground sm:mt-3 sm:text-xl lg:text-2xl">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CATEGORIES, getCategoryBySlug } from "@/lib/categories";
 import CategoryView from "@/app/components/buyer/makanan-category/category-view";
+import { RequireAuth } from "@/app/components/auth/require-auth";
 
 interface CategoryPageProps {
   params: { category: string };
@@ -29,5 +30,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   if (!category) {
     notFound();
   }
-  return <CategoryView slug={category.id} name={category.name} />;
+  return (
+    <RequireAuth>
+      <CategoryView slug={category.id} name={category.name} />
+    </RequireAuth>
+  );
 }

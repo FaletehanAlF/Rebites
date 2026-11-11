@@ -102,7 +102,7 @@ export function HowItWorksSection() {
           <div
             role="tablist"
             aria-label="Pilih cara menggunakan ReBites"
-            className="mx-auto mt-8 flex w-full max-w-sm rounded-xl border border-border bg-white p-1 sm:mt-10 sm:w-fit"
+            className="mx-auto mt-8 flex w-full max-w-md items-center justify-center gap-2 sm:mt-10 sm:gap-3"
           >
             {(
               [
@@ -121,11 +121,11 @@ export function HowItWorksSection() {
                 onClick={() => setAudience(key)}
                 onKeyDown={handleTabKeyDown}
                 className={cn(
-                  'inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg px-5 font-secondary text-sm font-semibold transition-colors lg:flex-none',
+                  'inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 rounded-xl border px-5 font-secondary text-sm font-semibold transition-all duration-300 ease-out sm:text-base',
                   FOCUS_RING,
                   audience === key
-                    ? 'bg-primary text-white'
-                    : 'text-muted-foreground hover:text-foreground',
+                    ? 'border-primary bg-primary text-white shadow-lg shadow-primary/25'
+                    : 'border-border bg-white text-foreground hover:border-primary/50 hover:text-primary hover:shadow-md',
                 )}
               >
                 <Icon className="h-4 w-4" aria-hidden />
@@ -173,7 +173,7 @@ export function HowItWorksSection() {
             <Link
               href={currentPath.href}
               className={cn(
-                'group inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-secondary text-sm font-semibold text-white transition-colors hover:bg-primary-dark sm:w-fit',
+                'group inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-xl bg-primary px-7 py-3.5 font-secondary text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-xl hover:shadow-primary/30 sm:w-fit',
                 FOCUS_RING,
               )}
             >

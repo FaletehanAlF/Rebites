@@ -38,6 +38,11 @@ export function DeliveryAddressSection() {
     const [returnToList, setReturnToList] = useState(false);
     const closeTimer = useRef<number | undefined>(undefined);
     useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+    // Tutup form alamat saat metode berubah ke "Ambil sendiri" — form hanya untuk pengiriman.
+    useEffect(() => {
+        if (fulfillment !== 'delivery')
+            setPopupOpen(false);
+    }, [fulfillment]);
     const openPopup = (nextView: PopupView, address: DeliveryAddress | null, fromList: boolean) => {
         window.clearTimeout(closeTimer.current);
         setEditing(address);
@@ -85,7 +90,7 @@ export function DeliveryAddressSection() {
 
                 </h3>
 
-                {selectedAddress && (<button type="button" onClick={() => openPopup('form', null, false)} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-muted">
+                {selectedAddress && (<button type="button" onClick={() => openPopup('form', null, false)} className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-muted">
 
                     <Plus className="h-3.5 w-3.5"/>
 
@@ -107,7 +112,7 @@ export function DeliveryAddressSection() {
 
                     </span>
 
-                    <button type="button" onClick={() => openPopup('form', selectedAddress, false)} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark/10">
+                    <button type="button" onClick={() => openPopup('form', selectedAddress, false)} className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark/10">
 
                       <Pencil className="h-3.5 w-3.5"/>
 
@@ -163,7 +168,7 @@ export function DeliveryAddressSection() {
 
                       </p>
 
-                      <button type="button" onClick={() => openPopup('form', selectedAddress, false)} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-dark">
+                      <button type="button" onClick={() => openPopup('form', selectedAddress, false)} className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-dark">
 
                         <LocateFixed className="h-3.5 w-3.5" aria-hidden/>
 
@@ -175,7 +180,7 @@ export function DeliveryAddressSection() {
 
 
 
-                  <button type="button" onClick={() => openPopup('list', null, false)} className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white">
+                  <button type="button" onClick={() => openPopup('list', null, false)} className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-primary px-4 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white">
 
                     Pilih Alamat Lain
 
@@ -187,7 +192,7 @@ export function DeliveryAddressSection() {
 
                   </button>
 
-                </div>) : (<button type="button" onClick={() => openPopup('form', null, false)} className="mt-4 flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-primary/30 px-6 py-8 text-center transition-colors hover:border-primary hover:bg-primary-dark/[0.03]">
+                </div>) : (<button type="button" onClick={() => openPopup('form', null, false)} className="mt-4 flex w-full flex-col items-start gap-2 rounded-2xl border-2 border-dashed border-primary/30 px-6 py-6 text-left transition-colors hover:border-primary hover:bg-primary-dark/[0.03]">
 
                   <span className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-primary">
 
@@ -219,7 +224,7 @@ export function DeliveryAddressSection() {
 
       
 
-      {popupOpen && (<div className="mt-4 rounded-2xl border border-border bg-white p-5 shadow-sm" role="region" aria-labelledby={view === 'list' ? 'judul-pilih-alamat' : 'judul-form-alamat'}>
+      {fulfillment === 'delivery' && popupOpen && (<div className="mt-4 rounded-2xl border border-border bg-white p-5 shadow-sm" role="region" aria-labelledby={view === 'list' ? 'judul-pilih-alamat' : 'judul-form-alamat'}>
 
           {view === 'list' ? (<>
 
@@ -304,7 +309,7 @@ export function DeliveryAddressSection() {
 
 
 
-                <button type="button" onClick={() => closePopup(false)} className="w-full rounded-full border border-border px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted">
+                <button type="button" onClick={() => closePopup(false)} className="w-full rounded-xl border border-border px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted">
 
                   Tutup
 
