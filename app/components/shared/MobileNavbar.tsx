@@ -40,7 +40,7 @@ export function MobileNavbar() {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         setDrawerOpen(false);
-        router.push("/auth/login");
+        window.location.assign("/auth/login");
     };
     const closeDrawer = () => setDrawerOpen(false);
     useEffect(() => {

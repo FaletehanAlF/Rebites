@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Check, MapPin, Pencil, Plus, ArrowLeft } from "lucide-react";
+import { Check, MapPin, Pencil, Plus } from "lucide-react";
 import { RequireAuth } from "@/app/components/auth/require-auth";
 import { BuyerShell } from "@/app/components/shared/buyer-shell";
 import { AddressFormView } from "@/app/components/buyer/checkout/address-form-view";
@@ -16,6 +15,7 @@ import {
   DialogDescription,
 } from "@/app/components/ui/dialog";
 import type { DeliveryAddress } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 function formatFullAddress(address: DeliveryAddress) {
   return [
@@ -45,88 +45,96 @@ function AlamatContent() {
 
   if (loading) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
-        <div className="flex items-center justify-between gap-3">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-40 rounded-xl" />
-        </div>
-        <div className="mt-6 space-y-4">
-          <Skeleton className="h-28 rounded-2xl" />
-          <Skeleton className="h-28 rounded-2xl" />
-        </div>
+      <main className="min-h-screen bg-white pb-24 lg:pb-12">
+        <section className="border-b border-border/70">
+          <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="mt-3 h-4 w-80" />
+          </div>
+        </section>
+        <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <div className="space-y-4">
+            <Skeleton className="h-28 rounded-2xl" />
+            <Skeleton className="h-28 rounded-2xl" />
+          </div>
+        </section>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      {/* Header: rata kiri; tombol di kanan */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <Link
-            href="/home"
-            className="inline-flex items-center gap-1.5 font-secondary text-xs text-muted-foreground transition-colors hover:text-primary"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-            Beranda
-          </Link>
-          <h1 className="mt-2 font-display text-2xl font-semibold tracking-[-0.01em] text-foreground sm:text-3xl">
-            Alamat Pengiriman
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Kelola alamat yang dipakai untuk pesanan diantar.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={openAdd}
-          className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-xl hover:shadow-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-        >
-          <Plus className="h-4 w-4" aria-hidden />
-          Tambah Alamat
-        </button>
-      </div>
+    <main className="min-h-screen bg-white pb-24 lg:pb-12">
+      <section className="border-b border-border/70">
+        <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <h1 className="font-display text-[clamp(1.75rem,3.4vw,2.5rem)] font-semibold leading-tight tracking-[-0.03em] text-primary">
+                Alamat Pengiriman
+              </h1>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                Kelola alamat yang dipakai untuk pesanan diantar. Jadikan alamat utama aktif, atau tambahkan yang baru.
+              </p>
+            </div>
 
-      {/* Daftar alamat */}
-      <div className="mt-6">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span
+                className="inline-flex items-center rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted-foreground"
+                aria-live="polite"
+              >
+                {addresses.length} alamat tersimpan
+              </span>
+              <button
+                type="button"
+                onClick={openAdd}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-xl hover:shadow-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              >
+                <Plus className="h-4 w-4" aria-hidden />
+                Tambah Alamat
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {addresses.length === 0 ? (
-          <div className="flex flex-col items-start gap-3 rounded-2xl border-2 border-dashed border-primary/30 px-6 py-8 text-left transition-colors hover:border-primary">
+          <div className="flex flex-col items-start gap-4 rounded-2xl border-2 border-dashed border-primary/30 px-6 py-10 text-left">
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <MapPin className="h-6 w-6" aria-hidden />
             </span>
             <div>
-              <p className="text-sm font-semibold text-foreground">
+              <p className="text-base font-semibold text-foreground">
                 Belum ada alamat tersimpan
               </p>
-              <p className="mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
-                Tambahkan alamat pengiriman agar pesanan bisa diantar. Alamat
-                juga bisa ditambahkan otomatis saat checkout pertama.
+              <p className="mt-1 max-w-md text-sm leading-relaxed text-muted-foreground">
+                Tambahkan alamat pengiriman agar pesanan bisa diantar. Alamat juga bisa dibuat otomatis saat checkout pertama.
               </p>
             </div>
             <button
               type="button"
               onClick={openAdd}
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <Plus className="h-4 w-4" aria-hidden />
               Tambah Alamat Pertama
             </button>
           </div>
         ) : (
-          <ul className="grid gap-3">
+          <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
             {addresses.map((address) => {
               const isSelected = address.id === selectedAddressId;
               return (
                 <li key={address.id}>
                   <div
-                    className={`flex flex-col gap-3 rounded-2xl border-2 p-4 transition-all duration-200 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:p-5 ${
+                    className={cn(
+                      "flex h-full flex-col justify-between gap-4 rounded-2xl border-2 p-5 transition-all duration-200",
                       isSelected
                         ? "border-primary bg-primary/[0.04] shadow-[0_10px_30px_-18px_rgba(27,77,50,0.5)]"
-                        : "border-border bg-white hover:border-primary/40 hover:shadow-md"
-                    }`}
+                        : "border-border bg-white hover:border-primary/40 hover:shadow-md",
+                    )}
                   >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
                         <span className="inline-flex items-center rounded-lg bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                           {address.label}
                         </span>
@@ -137,7 +145,7 @@ function AlamatContent() {
                           </span>
                         )}
                       </div>
-                      <p className="mt-2.5 text-sm font-semibold text-foreground">
+                      <p className="mt-3 text-sm font-semibold text-foreground">
                         {address.receiverName}
                         {address.phone ? (
                           <span className="ml-2 font-normal text-muted-foreground">
@@ -155,16 +163,16 @@ function AlamatContent() {
                       )}
                     </div>
 
-                    <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-end">
-                      {!isSelected ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {!isSelected && (
                         <button
                           type="button"
                           onClick={() => selectAddress(address.id)}
-                          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-primary/40 px-4 text-xs font-semibold text-primary transition-all duration-200 hover:bg-primary hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="inline-flex min-h-[44px] items-center rounded-xl border border-primary/40 px-4 text-xs font-semibold text-primary transition-all duration-200 hover:bg-primary hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           Jadikan Utama
                         </button>
-                      ) : null}
+                      )}
                       <button
                         type="button"
                         onClick={() => openEdit(address)}
@@ -181,9 +189,8 @@ function AlamatContent() {
             })}
           </ul>
         )}
-      </div>
+      </section>
 
-      {/* Popup form tambah/ubah alamat (bottom-sheet di mobile, modal di desktop) */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-h-[92dvh] overflow-y-auto bg-white p-6 sm:p-7">
           <DialogHeader>
