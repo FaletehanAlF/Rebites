@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { arahGeser, arahRoda, halamanBerikut, GESER_MIN_PX, RODA_MIN_PX } from '../lib/use-swipe-pager.ts';
+function readProjectFile(relativePath: string): string {
+    return readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), 'utf8').replace(/\\r\\n/g, '\\n');
+}
+const SWIPE = readProjectFile('lib/use-swipe-pager.ts');
 
 test('geser mendatar yang cukup jauh mengganti halaman, ke arah yang benar', () => {
     assert.equal(arahGeser(-120, 4), 1, 'geser ke kiri harus maju ke halaman berikutnya');
@@ -40,4 +46,12 @@ test('masukan bukan angka tidak pernah memindahkan halaman', () => {
     assert.equal(arahGeser(Number.NaN, 0), 0);
     assert.equal(arahRoda(Number.POSITIVE_INFINITY, 0), 0);
     assert.equal(arahGeser(Number.NaN, Number.NaN), 0);
+});
+
+test('ketukan biasa (bukan geseran) tetap memicu klik pada kartu/tombol', () => {
+    // Penangkap pointer dapat menelan klik sintetis browser; pastikan ada
+    // pemicuan klik manual saat tidak ada geseran agar kartu menu bisa diklik.
+    assert.match(SWIPE, /closest\?\.\('button, \[role="button"\]'\)/);
+    assert.match(SWIPE, /\.click\(\)/);
+    assert.match(SWIPE, /telanSintetis/);
 });
