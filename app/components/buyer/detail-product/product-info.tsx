@@ -16,12 +16,10 @@ export function ProductInfo({
   product,
   ctaRef,
   onOrder,
-  notify,
 }: {
   product: ProductDetail;
   ctaRef: React.RefObject<HTMLDivElement>;
   onOrder: () => void;
-  notify: (message: string) => void;
 }) {
   const savings = product.originalPrice - product.discountedPrice;
 
@@ -110,7 +108,7 @@ export function ProductInfo({
 
       <div ref={ctaRef}>
         <SectionReveal amount={0.4}>
-          <CTAButtons product={product} onOrder={onOrder} notify={notify} />
+          <CTAButtons product={product} onOrder={onOrder} />
           <p className="mt-3 flex items-center gap-1.5 font-secondary text-xs text-muted-foreground">
             <Lock className="h-3.5 w-3.5 text-primary" />
             Pembayaran aman via QRIS &amp; e-wallet · Ambil sendiri di lokasi

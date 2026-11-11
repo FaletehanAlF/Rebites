@@ -95,7 +95,7 @@ function DetailPageContent({ product, reviews, relatedProducts, shell, }: {
 
           <div ref={rightColRef} className="min-w-0">
 
-            <ProductInfo product={product} ctaRef={ctaRef} onOrder={handleOrder} notify={notify}/>
+            <ProductInfo product={product} ctaRef={ctaRef} onOrder={handleOrder}/>
 
           </div>
 
