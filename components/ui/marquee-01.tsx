@@ -152,16 +152,16 @@ const ReviewCard = ({
 };
 
 // Dua baris marquee horizontal berlawanan arah:
-// baris atas bergerak ke kanan, baris bawah ke kiri.
+// baris atas bergerak ke kiri, baris bawah ke kanan.
 export default function TestimonialMarqueeDemo() {
   return (
     <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-4">
-      <Marquee pauseOnHover reverse className="[--duration:36s] [--gap:4rem]">
+      <Marquee pauseOnHover className="[--duration:36s] [--gap:4rem]">
         {firstRow.map((review) => (
           <ReviewCard key={`${review.username}-1`} {...review} />
         ))}
       </Marquee>
-      <Marquee pauseOnHover className="mt-10 [--duration:36s] [--gap:4rem]">
+      <Marquee pauseOnHover reverse className="mt-10 [--duration:36s] [--gap:4rem]">
         {secondRow.map((review) => (
           <ReviewCard key={`${review.username}-2`} {...review} />
         ))}
