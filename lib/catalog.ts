@@ -107,10 +107,31 @@ function hasActiveStore(row: ProductRow): boolean {
         return false;
     return true;
 }
+// Kolom minimal untuk kartu menu: payload kecil = katalog lebih cepat.
+const FOOD_ITEM_COLUMNS = [
+    'id',
+    'slug',
+    'name',
+    'category',
+    'image_url',
+    'rating',
+    'distance_km',
+    'sell_window_start',
+    'sell_window_end',
+    'stock',
+    'stock_label',
+    'original_price',
+    'surplus_price',
+    'discount_percent',
+    'expires_at',
+    'scheduled_start',
+    'scheduled_end',
+    'umkm:umkm_profiles(business_name, is_active, deleted_at)',
+].join(', ');
 async function queryFoodItems(): Promise<FetchResult<FoodItem>> {
     const { data, error } = await supabase
         .from('products')
-        .select('*, umkm:umkm_profiles(business_name, is_active, deleted_at)')
+        .select(FOOD_ITEM_COLUMNS)
         .is('slot', null)
         .eq('status', 'available')
         .eq('verification_status', 'approved')
@@ -132,7 +153,7 @@ export async function fetchUrgentItems(): Promise<UrgentItem[]> {
 async function queryUrgentItems(): Promise<FetchResult<UrgentItem>> {
     const { data, error } = await supabase
         .from('products')
-        .select('*, umkm:umkm_profiles(business_name, is_active, deleted_at)')
+        .select([FOOD_ITEM_COLUMNS, 'slot'].join(', '))
         .not('slot', 'is', null)
         .eq('status', 'available')
         .eq('verification_status', 'approved')
@@ -142,7 +163,7 @@ async function queryUrgentItems(): Promise<FetchResult<UrgentItem>> {
         return { items: [], error: error.message };
     }
     return {
-        items: (data ?? [])
+        items: ((data ?? []) as ProductRow[])
             .filter((row) => hasActiveStore(row) && isScheduledVisible(row))
             .map((row) => ({
             ...productToFoodItem(row),
@@ -178,13 +199,38 @@ export async function fetchCategoryCounts(): Promise<Record<string, number>> {
     }
     return counts;
 }
+// Kolom minimal untuk kartu toko — tanpa kolom berat yang tidak dipakai UI.
+const VENDOR_COLUMNS = [
+    'id',
+    'slug',
+    'business_name',
+    'logo_url',
+    'is_rescue_partner',
+    'is_verified',
+    'rating',
+    'is_open',
+    'category',
+    'address',
+    'open_hours',
+    'description',
+    'tagline',
+    'partner_tier',
+    'followers',
+    'member_since',
+    'response_time',
+    'porsi_terselamatkan',
+    'co2e_saved_kg',
+    'distance_km',
+    'is_active',
+    'deleted_at',
+].join(', ');
 async function queryVendors(): Promise<FetchResult<Vendor>> {
     const [umkmResult, productResult] = await Promise.all([
         // Toko nonaktif (dinonaktifkan admin) dan toko terhapus (soft delete)
         // tidak boleh tampil di beranda, apa pun peran yang sedang login.
         supabase
             .from('umkm_profiles')
-            .select('*')
+            .select(VENDOR_COLUMNS)
             .eq('is_active', true)
             .is('deleted_at', null)
             .order('rating', { ascending: false }),
