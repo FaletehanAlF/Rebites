@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -11,7 +11,6 @@ import {
   Check,
   Clock,
   Coins,
-  Heart,
   Leaf,
   Loader2,
   Mail,
@@ -36,8 +35,7 @@ import { getUserOrders } from "@/lib/order-storage";
 import { useAddresses } from "@/hooks/buyer/use-addresses";
 import { useRebitesCoins } from "@/hooks/buyer/use-rebites-coins";
 import { useFollowedStores } from "@/hooks/buyer/use-followed-stores";
-import { useLikedFoods } from "@/hooks/buyer/use-liked-foods";
-import { useCatalog } from "@/lib/catalog";
+
 import { formatOrderDateTime } from "@/lib/order-utils";
 import { formatRupiah } from "@/lib/data";
 import type { StoredOrder } from "@/lib/types";
@@ -222,7 +220,7 @@ function ProfileSidebar() {
         <p className="mt-1 flex items-center justify-center gap-1.5 font-secondary text-sm text-muted-foreground">
           <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
           {addressLoading
-            ? "Memuat…"
+            ? "Memuat�"
             : selectedAddress?.city
               ? `${selectedAddress.city}, Indonesia`
               : "Depok, Jawa Barat"}
@@ -257,7 +255,7 @@ function ProfileSidebar() {
           <InfoRow
             icon={Phone}
             label="No. HP"
-            value={addressLoading ? "Memuat…" : selectedAddress?.phone || "-"}
+            value={addressLoading ? "Memuat�" : selectedAddress?.phone || "-"}
             chip="bg-muted text-muted-foreground"
           />
           <InfoRow
@@ -341,14 +339,14 @@ function ImpactStats({
   const stats: ImpactStat[] = [
     {
       icon: Utensils,
-      value: loading ? "…" : porsi.toLocaleString("id-ID"),
+      value: loading ? "�" : porsi.toLocaleString("id-ID"),
       unit: "porsi",
       label: "Porsi Diselamatkan",
       chip: "bg-primary/15 text-primary",
     },
     {
       icon: Receipt,
-      value: loading ? "…" : totalPesanan.toLocaleString("id-ID"),
+      value: loading ? "�" : totalPesanan.toLocaleString("id-ID"),
       unit: "x",
       label: "Total Pesanan",
       chip: "bg-primary/20 text-muted-foreground",
@@ -356,10 +354,10 @@ function ImpactStats({
     {
       icon: Leaf,
       value: loading
-        ? "…"
+        ? "�"
         : co2eKg.toLocaleString("id-ID", { maximumFractionDigits: 1 }),
       unit: "kg",
-      label: "CO₂e Terselamatkan",
+      label: "CO2e Terselamatkan",
       chip: "bg-primary/15 text-primary",
     },
   ];
@@ -460,31 +458,30 @@ function CoinsAndAddress() {
       >
         <motion.div
           variants={fadeUp}
-          className="relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground shadow-sm"
+          className="rounded-2xl border border-border/70 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
         >
-          <FloatingLeaf
-            className="right-8 bottom-8 hidden h-5 w-5 text-primary/50 lg:block"
-            delay={1.1}
-          />
           <div className="flex items-start justify-between gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary-foreground">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Coins className="h-5 w-5" />
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-secondary text-xs font-semibold text-primary-foreground">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 font-secondary text-xs font-semibold text-muted-foreground">
               <Sparkles className="h-3 w-3" />
-              ReBites Coins
+              Saldo Koin
             </span>
           </div>
-          <p className="mt-4 font-display text-3xl font-semibold tabular-nums text-primary-foreground">
+          <h3 className="mt-4 font-display text-base font-semibold text-primary">
+            ReBites Coins
+          </h3>
+          <p className="mt-2 font-display text-3xl font-semibold tabular-nums text-foreground">
             {balance.toLocaleString("id-ID")}
           </p>
-          <p className="mt-1 font-secondary text-sm text-primary-foreground/80">
+          <p className="mt-1 font-secondary text-sm text-muted-foreground">
             Total didapat:{" "}
-            <span className="font-semibold text-primary-foreground">
+            <span className="font-semibold text-foreground">
               {totalEarned.toLocaleString("id-ID")} Coin
             </span>
           </p>
-          <p className="mt-3 font-secondary text-xs leading-relaxed text-primary-foreground/60">
+          <p className="mt-3 font-secondary text-xs leading-relaxed text-muted-foreground">
             Koin didapat dari tiap pesanan selesai dan bisa dipakai untuk
             memotong harga checkout berikutnya.
           </p>
@@ -492,7 +489,7 @@ function CoinsAndAddress() {
 
         <motion.div
           variants={fadeUp}
-          className="rounded-2xl border border-border/70 bg-white p-6 shadow-sm"
+          className="rounded-2xl border border-border/70 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
         >
           <div className="flex items-start justify-between gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -517,7 +514,7 @@ function CoinsAndAddress() {
                 {selectedAddress.receiverName}
                 {selectedAddress.phone ? (
                   <span className="ml-2 font-normal text-muted-foreground">
-                    · {selectedAddress.phone}
+                    � {selectedAddress.phone}
                   </span>
                 ) : null}
               </p>
@@ -659,7 +656,7 @@ function OrderHistory({
                       {order.vendorName}
                     </p>
                     <p className="font-secondary text-xs text-muted-foreground">
-                      {order.productName} ·{" "}
+                      {order.productName} �{" "}
                       {formatOrderDateTime(order.createdAt)}
                     </p>
                     <p className="mt-1 font-secondary text-sm font-semibold text-primary">
@@ -700,7 +697,7 @@ function FollowedStoresSection() {
           </p>
         </div>
         <span className="shrink-0 rounded-full bg-muted px-3 py-1 font-secondary text-xs font-semibold text-muted-foreground">
-          {hydrated ? stores.length : "…"} toko
+          {hydrated ? stores.length : "�"} toko
         </span>
       </div>
 
@@ -776,124 +773,6 @@ function FollowedStoresSection() {
   );
 }
 
-function LikedFoodsSection() {
-  const { foods, hydrated } = useLikedFoods();
-  const { foodItems } = useCatalog();
-  // catalog id bisa slug atau uuid -> index semua kunci agar foto tidak hilang (bug slug vs uuid)
-  const catalogMap = new Map<string, any>();
-  for (const f of (foodItems || []) as any[]) {
-    if (f.id) catalogMap.set(String(f.id), f);
-    if (f.slug) catalogMap.set(String(f.slug), f);
-    if (f.rawId) catalogMap.set(String(f.rawId), f);
-  }
-
-  return (
-    <motion.section
-      id="sukai-makanan"
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.12 }}
-      className="relative scroll-mt-28 rounded-2xl border border-border/70 bg-white p-6 shadow-sm"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-semibold text-primary">
-            Makanan Disukai
-          </h3>
-          <p className="mt-0.5 font-secondary text-xs text-muted-foreground">
-            Makanan yang kamu sukai lewat tombol ❤️ di card produk.
-          </p>
-        </div>
-        <span className="shrink-0 rounded-full bg-muted px-3 py-1 font-secondary text-xs font-semibold text-muted-foreground">
-          {hydrated ? foods.length : "…"} makanan
-        </span>
-      </div>
-
-      {!hydrated ? (
-        <div className="mt-4 grid gap-2 sm:grid-cols-1">
-          {[0, 1, 2].map((i) => (
-            <div key={i} aria-hidden className="h-16 rounded-xl bg-muted" />
-          ))}
-        </div>
-      ) : foods.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-secondary/70 px-4 py-6 text-center">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <Heart className="h-4 w-4" />
-          </span>
-          <div>
-            <p className="text-xs font-bold text-foreground">
-              Belum ada makanan disukai
-            </p>
-            <p className="mt-1 max-w-sm text-[10px] leading-relaxed text-muted-foreground">
-              Tekan ikon ❤️ pada card produk di Beranda, Flash Sale, atau
-              halaman detail untuk menambah ke sini.
-            </p>
-          </div>
-          <Link
-            href="/home"
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary-dark hover:text-white"
-          >
-            Jelajahi Makanan
-            <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-      ) : (
-        <ul className="mt-4 grid gap-2 sm:grid-cols-1">
-          {foods.map((fav) => {
-            const detail: any =
-              catalogMap.get(fav.productId) || catalogMap.get(fav.id) || null;
-            const name = fav.name || detail?.name || "Makanan";
-            const image = fav.image || detail?.image || null;
-            const vendor = detail?.vendorName || "";
-            const price = detail
-              ? (detail.discountedPrice ?? detail.originalPrice)
-              : fav.price;
-            const href = detail
-              ? `/detail/product?id=${detail.id}`
-              : fav.productId
-                ? `/detail/product?id=${fav.productId}`
-                : "/home";
-            return (
-              <li key={fav.id || fav.productId}>
-                <Link
-                  href={href}
-                  className="group flex items-center gap-2.5 rounded-xl border border-border bg-white p-2 transition-colors duration-150 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted ring-1 ring-border">
-                    {image ? (
-                      <SmartImage src={image} alt={name} sizes="40px" />
-                    ) : (
-                      <span className="font-display text-lg font-semibold text-primary">
-                        {(name || "?").charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-secondary text-xs font-medium text-foreground">
-                      {name}
-                    </span>
-                    {vendor && (
-                      <span className="mt-0.5 block truncate font-secondary text-[10px] text-muted-foreground">
-                        {vendor}
-                      </span>
-                    )}
-                    {price != null && (
-                      <span className="mt-1 block font-secondary text-[9px] font-medium text-primary">
-                        Rp{Number(price).toLocaleString("id-ID")}
-                      </span>
-                    )}
-                  </span>
-                  <Heart className="h-3 w-3 shrink-0 fill-sale text-sale" />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </motion.section>
-  );
-}
 
 export function UserProfile() {
   const { userId } = useCurrentUser();
@@ -911,7 +790,6 @@ export function UserProfile() {
     addAddress,
   } = useAddresses();
   const { stores, hydrated: storesHydrated } = useFollowedStores();
-  const { count: likedCount, hydrated: likedHydrated } = useLikedFoods();
   const { balance } = useRebitesCoins();
   const { profile: globalProfile, avatarUrl: globalAvatarUrl, refresh: refreshProfile } = useProfile();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -922,7 +800,6 @@ export function UserProfile() {
   const [savingPersonal, setSavingPersonal] = useState(false);
   
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
-  const [isSukaiMakananDialogOpen, setIsSukaiMakananDialogOpen] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
@@ -965,9 +842,7 @@ export function UserProfile() {
   useEffect(() => {
     const syncHash = () => {
       const hash = window.location.hash.replace(/^#/, "");
-      if (hash === "sukai-makanan") {
-        router.push("/sukai");
-      } else if (hash === "toko-diikuti") {
+      if (hash === "toko-diikuti") {
         router.replace("/toko-diikuti");
       } else if (hash) {
         document.getElementById(hash)?.scrollIntoView({ block: "start" });
@@ -1003,11 +878,11 @@ export function UserProfile() {
         .join("")
     : "";
   const cityLabel = addressLoading
-    ? "Memuat…"
+    ? "Memuat�"
     : selectedAddress?.city
       ? `${selectedAddress.city}, Indonesia`
       : "Depok, Indonesia";
-  const phoneLabel = addressLoading ? "Memuat…" : selectedAddress?.phone || "-";
+  const phoneLabel = addressLoading ? "Memuat�" : selectedAddress?.phone || "-";
 
   return (
     <BuyerShell>
@@ -1108,61 +983,43 @@ export function UserProfile() {
             </div>
 
             {}
-            <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:w-auto lg:min-w-[520px] lg:max-w-[600px]">
+            <div className="grid w-full grid-cols-2 gap-3 lg:w-auto lg:min-w-[440px] lg:max-w-[480px]">
               <Link
                 href="/toko-diikuti"
-                className="group flex flex-col items-start gap-2 rounded-2xl border border-zinc-100 bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="group flex flex-col items-start gap-2 rounded-2xl border border-border bg-white p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-border group-hover:bg-primary-dark group-hover:text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-primary shadow-sm ring-1 ring-border transition-all duration-300 group-hover:bg-primary group-hover:text-white">
                   <Store className="h-4 w-4" />
                 </span>
                 <span className="font-secondary text-sm font-semibold text-primary">
                   Ikuti Toko
                 </span>
                 <span className="font-secondary text-xs text-muted-foreground">
-                  {storesHydrated ? `${stores.length} toko` : "… toko"}
+                  {storesHydrated ? `${stores.length} toko` : "� toko"}
                 </span>
                 <span className="mt-1 inline-flex items-center gap-1 font-secondary text-xs font-semibold text-primary">
                   Lihat <ArrowRight className="h-3 w-3" />
                 </span>
               </Link>
 
-              <button
-                type="button"
-                onClick={() => setIsSukaiMakananDialogOpen(true)}
-                className="group flex flex-col items-start gap-2 rounded-2xl border border-border bg-secondary p-4 text-left transition-colors hover:border-border hover:bg-white"
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sale shadow-sm ring-1 ring-border group-hover:bg-sale group-hover:text-white">
-                  <Heart className="h-4 w-4" />
-                </span>
-                <span className="font-secondary text-sm font-semibold text-primary">
-                  Sukai Makanan
-                </span>
-                <span className="font-secondary text-xs text-muted-foreground">
-                  {likedHydrated ? `${likedCount} makanan` : "… makanan"}
-                </span>
-                <span className="mt-1 inline-flex items-center gap-1 font-secondary text-xs font-semibold text-primary">
-                  Lihat <ArrowRight className="h-3 w-3" />
-                </span>
-              </button>
-
-              <div
+              <Link
+                href="/pengaturan/coin"
                 id="rebites-coin"
-                className="col-span-2 flex scroll-mt-24 flex-col items-start gap-2 rounded-2xl border border-warning/50 bg-primary/15 p-4 sm:col-span-1"
+                className="group flex scroll-mt-24 flex-col items-start gap-2 rounded-2xl border border-border bg-white p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-warning/50">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-primary shadow-sm ring-1 ring-border transition-all duration-300 group-hover:bg-primary group-hover:text-white">
                   <Coins className="h-4 w-4" />
                 </span>
                 <span className="font-secondary text-sm font-semibold text-primary">
                   ReBites Coins
                 </span>
-                <span className="font-secondary text-xs font-bold text-primary">
+                <span className="font-secondary text-xs font-bold tabular-nums text-foreground">
                   {balance.toLocaleString("id-ID")} Coin
                 </span>
-                <span className="font-secondary text-[11px] text-muted-foreground">
-                  Tersedia
+                <span className="mt-1 inline-flex items-center gap-1 font-secondary text-xs font-semibold text-primary">
+                  Lihat <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5" />
                 </span>
-              </div>
+              </Link>
             </div>
             </motion.section>
 
@@ -1212,7 +1069,7 @@ export function UserProfile() {
                       <Camera className="h-4 w-4" />
                       {avatarFile ? "Ganti Foto" : "Pilih Foto"}
                     </button>
-                    <p className="text-center font-secondary text-[11px] text-muted-foreground">JPG, JPEG, PNG, WebP · Maks 2MB</p>
+                    <p className="text-center font-secondary text-[11px] text-muted-foreground">JPG, JPEG, PNG, WebP � Maks 2MB</p>
                   </div>
 
                   {avatarError && (
@@ -1265,7 +1122,7 @@ export function UserProfile() {
                     {uploadingAvatar ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Menyimpan…
+                        Menyimpan�
                       </>
                     ) : (
                       "Simpan"
@@ -1275,31 +1132,6 @@ export function UserProfile() {
               </DialogContent>
             </Dialog>
 
-            <Dialog
-            open={isSukaiMakananDialogOpen}
-            onOpenChange={setIsSukaiMakananDialogOpen}
-          >
-            <DialogContent className="bg-white p-6 sm:p-7">
-              <DialogHeader>
-                <DialogTitle className="font-display text-lg font-semibold text-primary">
-                  Makanan Disukai
-                </DialogTitle>
-                <DialogDescription className="font-secondary text-sm text-muted-foreground">
-                  Makanan yang kamu sukai lewat tombol ❤️ di card produk.
-                </DialogDescription>
-              </DialogHeader>
-              <LikedFoodsSection />
-              <DialogFooter>
-                <button
-                  type="button"
-                  onClick={() => setIsSukaiMakananDialogOpen(false)}
-                  className="rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
-                >
-                  Tutup
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
 
 
           {}
@@ -1361,13 +1193,13 @@ export function UserProfile() {
                 <p className="font-secondary text-xs text-muted-foreground">Alamat Lengkap</p>
                 <p className="mt-1 font-secondary text-sm font-semibold leading-relaxed text-foreground">
                   {addressLoading
-                    ? "Memuat…"
+                    ? "Memuat�"
                     : selectedAddress?.fullAddress || "-"}
                 </p>
                 {!addressLoading && selectedAddress?.city && (
                   <p className="mt-1 font-secondary text-xs text-muted-foreground">
                     {selectedAddress.city}
-                    {selectedAddress.province ? `, ${selectedAddress.province}` : ""} · Indonesia
+                    {selectedAddress.province ? `, ${selectedAddress.province}` : ""} � Indonesia
                   </p>
                 )}
               </div>
@@ -1488,7 +1320,7 @@ export function UserProfile() {
                   }}
                   className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
                 >
-                  {savingPersonal ? "Menyimpan…" : "Simpan Perubahan"}
+                  {savingPersonal ? "Menyimpan�" : "Simpan Perubahan"}
                 </button>
               </DialogFooter>
             </DialogContent>

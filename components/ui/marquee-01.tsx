@@ -156,12 +156,12 @@ const ReviewCard = ({
 export default function TestimonialMarqueeDemo() {
   return (
     <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-4">
-      <Marquee pauseOnHover reverse className="[--duration:32s] [--gap:3.5rem]">
+      <Marquee pauseOnHover reverse className="[--duration:36s] [--gap:4rem]">
         {firstRow.map((review) => (
           <ReviewCard key={`${review.username}-1`} {...review} />
         ))}
       </Marquee>
-      <Marquee pauseOnHover className="mt-10 [--duration:32s] [--gap:3.5rem]">
+      <Marquee pauseOnHover className="mt-10 [--duration:36s] [--gap:4rem]">
         {secondRow.map((review) => (
           <ReviewCard key={`${review.username}-2`} {...review} />
         ))}

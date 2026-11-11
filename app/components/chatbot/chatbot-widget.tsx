@@ -282,7 +282,7 @@ export function ChatbotWidget() {
 
       <AnimatePresence>
 
-        {open && (<motion.div ref={panelRef} role="dialog" aria-label="ReBitess-Asisten" initial={prefersReducedMotion ? false : { opacity: 0, y: 12, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }} transition={{ duration: 0.24, ease: PANEL_EASE }} className={cn('fixed bottom-36 right-4 z-[60] flex w-[calc(100vw-2rem)] max-w-[400px] flex-col', 'h-[70vh] max-h-[560px] overflow-hidden rounded-2xl border border-border bg-white shadow-admin-pop', 'lg:bottom-24 lg:right-6')}>
+        {open && (<motion.div ref={panelRef} role="dialog" aria-label="ReBitess-Asisten" data-lenis-prevent initial={prefersReducedMotion ? false : { opacity: 0, y: 12, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }} transition={{ duration: 0.24, ease: PANEL_EASE }} className={cn('fixed bottom-36 right-4 z-[60] flex w-[calc(100vw-2rem)] max-w-[400px] flex-col', 'h-[70vh] max-h-[560px] overflow-hidden rounded-2xl border border-border bg-white shadow-admin-pop', 'lg:bottom-24 lg:right-6')}>
 
             <header className="flex items-center gap-2 border-b border-border px-4 py-3">
 
@@ -318,7 +318,7 @@ export function ChatbotWidget() {
 
             
 
-            <div ref={listRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 py-3">
+            <div ref={listRef} data-lenis-prevent className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 py-3">
 
               {messages.length === 0 && (<div className="space-y-2">
 

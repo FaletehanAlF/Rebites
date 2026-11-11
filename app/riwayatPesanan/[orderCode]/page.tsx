@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Check, CheckCheck, Coins, Copy, MapPin, RefreshCw, Star, Store, Truck, } from 'lucide-react';
+import { ArrowLeft, Check, CheckCheck, Coins, Copy, MapPin, RefreshCw, Star, Store, Truck, Send, } from 'lucide-react';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { Skeleton } from '@/app/components/ui/skeleton';
 import { formatRupiah } from '@/lib/data';
@@ -49,6 +49,9 @@ function OrderDetailContent() {
         rating: number;
         comment: string;
     } | null>(null);
+    const [draftRating, setDraftRating] = useState(0);
+    const [draftComment, setDraftComment] = useState('');
+    const [submittingReview, setSubmittingReview] = useState(false);
     const load = useCallback(async () => {
         if (!orderCode)
             return;
@@ -71,8 +74,11 @@ function OrderDetailContent() {
         if (!order || !userId)
             return;
         getReviewFor(order.orderId, userId).then((r) => {
-            if (r)
+            if (r) {
                 setReview({ rating: r.rating, comment: r.comment });
+                setDraftRating(r.rating);
+                setDraftComment(r.comment ?? '');
+            }
         });
     }, [order, userId]);
     const orderStatus = order?.orderStatus ?? 'processing';
@@ -138,19 +144,33 @@ function OrderDetailContent() {
             setCancellingOrder(false);
         }
     };
-    const saveRating = (rating: number) => {
+    const handleSaveReview = async () => {
         if (!order || !userId)
             return;
-        setReview({ rating, comment: '' });
-        saveReview({
-            orderId: order.orderId,
-            userId,
-            rating,
-            comment: '',
-            createdAt: new Date().toISOString(),
-        })
-            .then(() => toast({ title: 'Terima kasih atas penilaianmu' }))
-            .catch(() => toast({ title: 'Gagal menyimpan penilaian' }));
+        const rating = draftRating || review?.rating || 0;
+        if (rating < 1) {
+            toast({ title: 'Pilih bintang dulu', description: 'Klik 1 sampai 5 bintang untuk memberi nilai.' });
+            return;
+        }
+        setSubmittingReview(true);
+        try {
+            const comment = draftComment.trim();
+            await saveReview({
+                orderId: order.orderId,
+                userId,
+                rating,
+                comment,
+                createdAt: new Date().toISOString(),
+            });
+            setReview({ rating, comment });
+            toast({ title: 'Terima kasih atas ulasanmu' });
+        }
+        catch (error) {
+            toast({ title: 'Gagal menyimpan ulasan', description: error instanceof Error ? error.message : 'Coba lagi.' });
+        }
+        finally {
+            setSubmittingReview(false);
+        }
     };
     const subStatus = order ? getOrderSubStatus(order) : 'disiapkan';
     const metrics = useMemo(() => {
@@ -322,16 +342,27 @@ function OrderDetailContent() {
                     {confirmingReceipt ? 'Memproses…' : 'Pesanan Sudah Saya Terima'}
                   </button>)}
 
-                {isDone && !review && (<div className="flex items-center gap-1 rounded-full border border-hairline px-3 py-2">
-                    <span className="mr-1 text-xs font-semibold text-charcoal-700">Beri nilai:</span>
-                    {[1, 2, 3, 4, 5].map((n) => (<button key={n} type="button" aria-label={`Beri ${n} bintang`} onClick={() => saveRating(n)} className="rounded p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                        <Star className="h-4 w-4 text-caramel" aria-hidden/>
-                      </button>))}
+                {isDone && (<div className="w-full rounded-2xl border border-hairline bg-secondary/60 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-charcoal-700">
+                        {review ? 'Ulasan kamu' : 'Beri ulasan pesanan ini'}
+                      </span>
+                      {review && (<span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sage-600">
+                          <Check className="h-3 w-3" aria-hidden/>
+                          Ulasan tersimpan
+                        </span>)}
+                    </div>
+                    <div className="mt-2 flex items-center gap-1" role="radiogroup" aria-label="Beri bintang">
+                      {[1, 2, 3, 4, 5].map((n) => (<button key={n} type="button" role="radio" aria-checked={draftRating === n} aria-label={`Beri ${n} bintang`} onClick={() => setDraftRating(n)} className="rounded p-0.5 transition-transform hover:scale-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                          <Star className={`h-6 w-6 text-caramel transition-transform ${draftRating >= n ? 'fill-caramel' : ''}`} aria-hidden/>
+                        </button>))}
+                    </div>
+                    <textarea value={draftComment} onChange={(event) => setDraftComment(event.target.value)} placeholder="Tulis komentar/ulasan kamu (opsional)…" rows={2} maxLength={500} className="mt-2 w-full resize-none rounded-xl border border-hairline bg-white px-3 py-2 text-sm leading-relaxed text-charcoal-900 outline-none focus:ring-2 focus:ring-primary"/>
+                    <button type="button" disabled={submittingReview} onClick={() => void handleSaveReview()} className="mt-2 inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                      <Send className="h-4 w-4" aria-hidden/>
+                      {submittingReview ? 'Menyimpan…' : review ? 'Perbarui Ulasan' : 'Kirim Ulasan'}
+                    </button>
                   </div>)}
-                {isDone && review && (<p className="inline-flex items-center gap-1.5 text-xs font-semibold text-sage-600">
-                    <Star className="h-3.5 w-3.5 fill-caramel text-caramel" aria-hidden/>
-                    Kamu memberi {review.rating} bintang
-                  </p>)}
 
                 {!canConfirmReceipt && !isDone && (<p className="text-xs leading-relaxed text-charcoal-500">
                     Belum ada tindakan yang perlu kamu lakukan. Status akan diperbarui otomatis.
