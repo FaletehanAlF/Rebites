@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect } from 'react';
 import Image from 'next/image';
@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   Bell,
   Coins,
-  Heart,
   LogOut,
   MapPin,
   Receipt,
@@ -58,7 +57,6 @@ const ACTIVITY_MENU: {
   label: string;
   icon: LucideIcon;
 }[] = [
-  { href: '/profile#sukai-makanan', label: 'Makanan Disukai', icon: Heart },
   { href: '/toko-diikuti', label: 'Toko Diikuti', icon: Store },
   { href: '/pengaturan/coin', label: 'ReBites Coin', icon: Coins },
   { href: '/profile#alamat', label: 'Alamat Pengiriman', icon: MapPin },
