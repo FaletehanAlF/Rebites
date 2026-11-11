@@ -6,8 +6,6 @@ import { SmartImage } from "@/app/components/shared/SmartImage";
 import type { FoodItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useLikedFoods } from "@/hooks/buyer/use-liked-foods";
-import { isStoreOpen } from "@/lib/store-hours";
-import { openStoreClosedModal } from "@/lib/store-closed-modal-store";
 import { useCurrentUser } from "@/lib/current-user";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -41,10 +39,6 @@ export function FoodCard({
 
   const handleOpen = () => {
     if (isUnavailable) return;
-    if (!isStoreOpen(item.availableFrom, item.availableTo)) {
-      openStoreClosedModal(item.availableFrom, item.availableTo);
-      return;
-    }
     if (authLoading) return;
     if (!user) {
       toast({
@@ -57,6 +51,9 @@ export function FoodCard({
       );
       return;
     }
+    // Klik kartu / "Lihat Detail" selalu masuk ke halaman detail. Status toko
+    // tutup atau nonaktif dicegah di halaman detail saat mencoba memesan,
+    // jadi tidak perlu memblokir navigasi di level kartu.
     if (onViewDetail) {
       onViewDetail(item.id);
       return;

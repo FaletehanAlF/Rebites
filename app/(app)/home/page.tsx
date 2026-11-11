@@ -7,13 +7,10 @@ import { UrgentDealsSection } from "@/app/components/buyer/home/UrgentDealsSecti
 import { FlashSaleSection } from "@/app/components/buyer/home/FlashSaleSection";
 import { CategorySection } from "@/app/components/buyer/home/CategorySection";
 import { VendorSection } from "@/app/components/buyer/home/VendorSection";
-import { StoreClosedModal } from "@/app/components/shared/StoreClosedModal";
-import { useStoreClosedModal } from "@/lib/store-closed-modal-store";
 import { RequireAuth } from "@/app/components/auth/require-auth";
 import { scrollToId } from "@/lib/scroll";
 function HomePageContent() {
     const router = useRouter();
-    const storeClosedModal = useStoreClosedModal();
     const handleViewDetail = useCallback((id: string) => {
         router.push(`/detail/product?id=${encodeURIComponent(id)}`);
     }, [router]);
@@ -39,8 +36,6 @@ function HomePageContent() {
         <FlashSaleSection onViewDetail={handleViewDetail}/>
         <VendorSection />
       </main>
-
-      <StoreClosedModal isOpen={storeClosedModal.isOpen} onClose={storeClosedModal.close} availableFrom={storeClosedModal.availableFrom} availableTo={storeClosedModal.availableTo}/>
     </BuyerShell>);
 }
 export default function HomePage() {
