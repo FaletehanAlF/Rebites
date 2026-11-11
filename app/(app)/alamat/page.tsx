@@ -78,7 +78,7 @@ function AlamatContent() {
 
             <div className="flex flex-wrap items-center gap-2.5">
               <span
-                className="inline-flex items-center rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted-foreground"
+                className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground"
                 aria-live="polite"
               >
                 {addresses.length} alamat tersimpan
@@ -86,9 +86,9 @@ function AlamatContent() {
               <button
                 type="button"
                 onClick={openAdd}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-xl hover:shadow-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-primary/40 px-4 text-xs font-semibold text-primary transition-all duration-200 hover:bg-primary hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <Plus className="h-4 w-4" aria-hidden />
+                <Plus className="h-3.5 w-3.5" aria-hidden />
                 Tambah Alamat
               </button>
             </div>
@@ -113,9 +113,9 @@ function AlamatContent() {
             <button
               type="button"
               onClick={openAdd}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-primary/40 px-4 text-xs font-semibold text-primary transition-all duration-200 hover:bg-primary hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <Plus className="h-4 w-4" aria-hidden />
+              <Plus className="h-3.5 w-3.5" aria-hidden />
               Tambah Alamat Pertama
             </button>
           </div>
