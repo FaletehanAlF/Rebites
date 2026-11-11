@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { DetailProductContent } from '@/app/components/buyer/detail-product/detail-product-content';
+import { RequireAuth } from '@/app/components/auth/require-auth';
 
 export const metadata: Metadata = {
   title: 'Detail Produk - ReBites',
@@ -10,14 +11,16 @@ export const metadata: Metadata = {
 
 export default function DetailProductPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-secondary" />}>
-      <DetailProductContent
-        shell={{
-          buyerShell: true,
-          productPath: '/detail/product',
-          seeAllHref: '/home',
-        }}
-      />
-    </Suspense>
+    <RequireAuth>
+      <Suspense fallback={<div className="min-h-screen bg-secondary" />}>
+        <DetailProductContent
+          shell={{
+            buyerShell: true,
+            productPath: '/detail/product',
+            seeAllHref: '/home',
+          }}
+        />
+      </Suspense>
+    </RequireAuth>
   );
 }
