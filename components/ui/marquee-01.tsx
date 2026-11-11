@@ -2,7 +2,8 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Marquee } from '@/components/ui/marquee-01-utils/marquee';
-import { Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Star, Quote } from 'lucide-react';
 
 type Review = {
   name: string;
@@ -15,8 +16,6 @@ type Review = {
 };
 
 // Data demo ReBites (bukan testimoni pelanggan nyata).
-// Avatar: randomuser.me (potret stock, stabil untuk hotlink);
-// bila foto gagal dimuat otomatis turun ke avatar inisial.
 const reviews: Review[] = [
   {
     name: 'Dimas A.',
@@ -84,21 +83,30 @@ const initialsOf = (name: string) =>
     .join('');
 
 const initialsAvatar = (name: string) => {
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect width='96' height='96' rx='48' fill='#1B4D33'/><text x='48' y='48' fill='#ffffff' font-family='Arial, sans-serif' font-size='34' font-weight='700' text-anchor='middle' dominant-baseline='central'>${initialsOf(name)}</text></svg>`;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect width='96' height='96' rx='48' fill='#247A4D'/><text x='48' y='48' fill='#ffffff' font-family='Arial, sans-serif' font-size='34' font-weight='700' text-anchor='middle' dominant-baseline='central'>${initialsOf(name)}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
-const firstRow = reviews.slice(0, reviews.length / 2);
-const secondRow = reviews.slice(reviews.length / 2);
+const firstRow = reviews.slice(0, Math.ceil(reviews.length / 2));
+const secondRow = reviews.slice(Math.ceil(reviews.length / 2));
 
-const ReviewCard = ({ profile, name, username, body, audience, role, rating }: Review) => {
+const ReviewCard = ({
+  profile,
+  name,
+  username,
+  body,
+  audience,
+  role,
+  rating,
+}: Review) => {
   return (
-    <Card className="relative w-80 shrink-0 cursor-pointer border-border bg-white p-5 shadow-none transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5">
-      <CardContent className="flex h-full flex-col gap-4 p-0">
-        <div className="flex flex-row items-center gap-3">
+    <Card className="group relative w-[340px] shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-border/60 bg-white p-0 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10">
+      <CardContent className="flex h-full flex-col gap-4 p-6">
+        {/* Header: avatar + identitas + pill */}
+        <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            className="h-12 w-12 shrink-0 rounded-full object-cover ring-1 ring-border"
+            className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-primary/15 transition-transform duration-300 group-hover:scale-105"
             width="48"
             height="48"
             loading="lazy"
@@ -111,51 +119,75 @@ const ReviewCard = ({ profile, name, username, body, audience, role, rating }: R
               img.src = initialsAvatar(name);
             }}
           />
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <p className="truncate text-[13px] font-semibold leading-snug text-foreground">{name}</p>
-            <p className="truncate text-[11px] text-muted-foreground">{role}</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold leading-snug text-foreground">
+              {name}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">{role}</p>
           </div>
-          <span className="ml-auto shrink-0 self-start rounded-full bg-accent px-2.5 py-1 font-secondary text-[9px] font-semibold uppercase tracking-[0.12em] text-primary">
+          <span
+            className={cn(
+              'shrink-0 self-start rounded-full px-2.5 py-1 font-secondary text-[10px] font-semibold uppercase tracking-[0.12em]',
+              audience === 'Pembeli'
+                ? 'bg-primary/10 text-primary'
+                : 'bg-accent text-primary',
+            )}
+          >
             {audience}
           </span>
         </div>
 
+        {/* Rating */}
         <div
-          className="flex items-center gap-2 border-t border-border/50 pt-3"
+          className="flex items-center gap-2 border-t border-border/40 pt-3"
           aria-label={`Rating ${rating} dari 5`}
         >
           <div className="flex items-center gap-0.5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden />
+              <Star
+                key={i}
+                className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
+                aria-hidden
+              />
             ))}
           </div>
-          <span className="text-[11px] font-semibold text-foreground/80">{rating.toFixed(1)}</span>
-          <span className="text-[10.5px] text-muted-foreground">· {username}</span>
+          <span className="text-xs font-semibold text-foreground/80">
+            {rating.toFixed(1)}
+          </span>
+          <span className="text-[11px] text-muted-foreground">· {username}</span>
         </div>
 
-        <p className="text-[12px] leading-relaxed text-foreground/90">&ldquo;{body}&rdquo;</p>
+        {/* Quote */}
+        <div className="relative flex-1">
+          <Quote
+            className="absolute -left-1 -top-1 h-5 w-5 text-primary/15"
+            aria-hidden
+          />
+          <p className="pl-4 text-sm leading-relaxed text-foreground/85">
+            {body}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
 };
 
-// Dua baris marquee horizontal berlawanan arah ala marquee-01 (21st.dev),
-// adaptasi ReBites: foto profil, rating bintang, dan pill Pembeli/UMKM.
+// Dua baris marquee horizontal berlawanan arah: atas ke kiri, bawah ke kanan.
 export default function TestimonialMarqueeDemo() {
   return (
-    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-3 [--gap:1.25rem]">
-      <Marquee pauseOnHover className="[--duration:28s]">
+    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-4 [--gap:2rem]">
+      <Marquee pauseOnHover className="[--duration:32s]">
         {firstRow.map((review) => (
           <ReviewCard key={`${review.username}-1`} {...review} />
         ))}
       </Marquee>
-      <Marquee reverse pauseOnHover className="mt-5 [--duration:28s]">
+      <Marquee pauseOnHover reverse className="mt-8 [--duration:32s]">
         {secondRow.map((review) => (
           <ReviewCard key={`${review.username}-2`} {...review} />
         ))}
       </Marquee>
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white to-transparent sm:w-24" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent sm:w-24" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent sm:w-32" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white to-transparent sm:w-32" />
     </div>
   );
 }
