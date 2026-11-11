@@ -122,7 +122,7 @@ export function BuyerSidebarNav({ collapsed, onToggleCollapsed, }: BuyerSidebarN
     const orderBadge = useOrderBadge(user?.id);
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        router.push("/auth/login");
+        window.location.assign("/auth/login");
     };
     const handleBerandaClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
         if (pathname !== "/home")

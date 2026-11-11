@@ -299,7 +299,7 @@ function TokoDiikutiView() {
           <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div className="max-w-2xl">
-                <h1 className="font-display text-[clamp(1.75rem,3.4vw,2.5rem)] font-semibold leading-tight tracking-[-0.03em] text-primary">
+                <h1 className="font-display text-2xl font-semibold tracking-tight text-primary">
                   Toko Diikuti
                 </h1>
                 <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">

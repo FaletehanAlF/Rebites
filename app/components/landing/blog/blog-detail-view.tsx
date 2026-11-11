@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, ArrowRight, Clock3 } from 'lucide-react';
 import { SmartImage } from '@/app/components/shared/SmartImage';
 import { Skeleton } from '@/app/components/ui/skeleton';
@@ -103,9 +104,13 @@ export function BlogDetailView({ slug }: { slug: string }) {
                 </h1>
 
                 <div className="mt-7 flex items-center gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-base font-bold text-primary">
-                        RB
-                    </span>
+                    <Image
+                        src="/logo.avif"
+                        alt=""
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 shrink-0 rounded-full object-cover"
+                    />
                     <div>
                         <p className="text-[14px] font-bold text-foreground">Tim ReBites</p>
                         <p className="text-[12px] text-muted-foreground">
@@ -137,9 +142,13 @@ export function BlogDetailView({ slug }: { slug: string }) {
                     </div>)}
 
                     <div className="mt-12 flex items-center gap-4 border-t border-border/50 pt-6">
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-base font-bold text-primary">
-                            RB
-                        </span>
+                        <Image
+                            src="/logo.avif"
+                            alt=""
+                            width={48}
+                            height={48}
+                            className="h-12 w-12 shrink-0 rounded-full object-cover"
+                        />
                         <div>
                             <p className="text-[14px] font-bold text-foreground">Tim ReBites</p>
                             <p className="text-[12px] leading-relaxed text-muted-foreground">
@@ -181,7 +190,7 @@ export function BlogDetailView({ slug }: { slug: string }) {
                             <p className="mt-2 text-[13px] leading-relaxed text-white/80">
                                 Temukan makanan surplus layak konsumsi dari UMKM sekitar dengan harga lebih bersahabat.
                             </p>
-                            <Link href="/home" className="mt-5 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:text-white/75">
+                            <Link href="/#rekomendasi" className="mt-5 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:text-white/75">
                                 Mulai Jelajah
                                 <ArrowRight className="h-4 w-4" aria-hidden />
                             </Link>

@@ -112,7 +112,7 @@ export async function fetchRelatedProducts(category: string, excludeSlug: string
     try {
         const { data, error } = await supabase
             .from('products')
-            .select('slug, name, image_url, original_price, surplus_price, scheduled_start, scheduled_end, umkm:umkm_profiles(business_name)')
+            .select('slug, name, image_url, original_price, surplus_price, scheduled_start, scheduled_end, umkm:umkm_profiles(business_name, is_active, deleted_at)')
             .eq('category', category)
             .neq('slug', excludeSlug)
             .order('rating', { ascending: false })
@@ -121,6 +121,7 @@ export async function fetchRelatedProducts(category: string, excludeSlug: string
             return [];
         return data
             .filter((row: Record<string, any>) => row.umkm && typeof row.umkm === 'object')
+            .filter((row: Record<string, any>) => row.umkm.is_active !== false && !row.umkm.deleted_at)
             .filter((row: Record<string, any>) => isMenuScheduleVisible({
             scheduledStart: row.scheduled_start ?? null,
             scheduledEnd: row.scheduled_end ?? null,

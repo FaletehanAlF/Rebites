@@ -114,7 +114,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
     const handleLogout = async () => {
         setMenuOpen(false);
         await supabase.auth.signOut();
-        router.push('/auth/login');
+        window.location.assign('/auth/login');
     };
     return (<>
 

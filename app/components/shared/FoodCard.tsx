@@ -6,8 +6,6 @@ import { SmartImage } from "@/app/components/shared/SmartImage";
 import type { FoodItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useLikedFoods } from "@/hooks/buyer/use-liked-foods";
-import { isStoreOpen } from "@/lib/store-hours";
-import { openStoreClosedModal } from "@/lib/store-closed-modal-store";
 import { useCurrentUser } from "@/lib/current-user";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -40,11 +38,8 @@ export function FoodCard({
   const router = useRouter();
 
   const handleOpen = () => {
-    if (isUnavailable) return;
-    if (!isStoreOpen(item.availableFrom, item.availableTo)) {
-      openStoreClosedModal(item.availableFrom, item.availableTo);
-      return;
-    }
+    // Item yang habis/tutup tetap bisa dilihat detailnya (pemesanan dicegah
+    // di halaman detail); jangan blokir navigasi di level kartu.
     if (authLoading) return;
     if (!user) {
       toast({
@@ -57,6 +52,9 @@ export function FoodCard({
       );
       return;
     }
+    // Klik kartu / "Lihat Detail" selalu masuk ke halaman detail. Status toko
+    // tutup atau nonaktif dicegah di halaman detail saat mencoba memesan,
+    // jadi tidak perlu memblokir navigasi di level kartu.
     if (onViewDetail) {
       onViewDetail(item.id);
       return;
@@ -78,7 +76,7 @@ export function FoodCard({
           handleOpen();
         }
       }}
-      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-border bg-white outline-none transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_36px_-28px_rgba(27,77,50,0.5)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:hover:-translate-y-1"
+      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-border bg-white outline-none transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_36px_-28px_rgba(27,77,50,0.5)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:hover:-translate-y-1 [touch-action:manipulation]"
     >
       {/* Gambar penuh di semua breakpoint supaya kartu tetap terbaca di rail mobile. */}
       <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-muted">

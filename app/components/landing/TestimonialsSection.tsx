@@ -1,5 +1,5 @@
 import { SectionHeading } from '@/app/components/landing/SectionHeading';
-import VerticalMarqueeDemo from '@/components/ui/marquee-03';
+import TestimonialMarqueeDemo from '@/components/ui/marquee-01';
 
 export function TestimonialsSection() {
   return (
@@ -16,7 +16,7 @@ export function TestimonialsSection() {
         />
 
         <div className="mt-10 sm:mt-12">
-          <VerticalMarqueeDemo />
+          <TestimonialMarqueeDemo />
         </div>
 
         <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground sm:mt-10">

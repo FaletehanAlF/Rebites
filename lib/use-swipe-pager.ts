@@ -1,5 +1,4 @@
 "use client";
-
 import { useCallback, useRef, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from "react";
 
 export const GESER_MIN_PX = 48;
@@ -48,12 +47,12 @@ export function useSwipePager({ page, pageCount, onPageChange }: OpsiPager) {
 
   const onPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    // Jangan panggil setPointerCapture: capture dapat menelan klik sintetis
+    // browser sehingga onClick pada kartu/tombol "Lihat Detail" tidak pernah
+    // terpicu. Cukup catat titik awal geseran; geseran yang keluar area
+    // container tidak terdeteksi (trade-off kecil demi klik yang andal).
     mulaiX.current = event.clientX;
     mulaiY.current = event.clientY;
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-    }
   }, []);
 
   const onPointerUp = useCallback(
