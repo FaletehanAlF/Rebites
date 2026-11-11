@@ -95,12 +95,22 @@ export async function fetchFoodItems(): Promise<FoodItem[]> {
     return (await queryFoodItems()).items;
 }
 function hasActiveStore(row: ProductRow): boolean {
-    return Boolean(row.umkm) && typeof row.umkm === 'object';
+    // RLS hanya menyembunyikan toko nonaktif dari anon/pembeli; admin dan
+    // pemilik toko masih menerimanya lewat embed. Karena itu status toko
+    // tetap diverifikasi di sisi klien agar tidak tampil di katalog publik.
+    const umkm = row.umkm;
+    if (!umkm || typeof umkm !== 'object')
+        return false;
+    if (umkm.is_active === false)
+        return false;
+    if (umkm.deleted_at)
+        return false;
+    return true;
 }
 async function queryFoodItems(): Promise<FetchResult<FoodItem>> {
     const { data, error } = await supabase
         .from('products')
-        .select('*, umkm:umkm_profiles(business_name)')
+        .select('*, umkm:umkm_profiles(business_name, is_active, deleted_at)')
         .is('slot', null)
         .eq('status', 'available')
         .eq('verification_status', 'approved')
@@ -122,7 +132,7 @@ export async function fetchUrgentItems(): Promise<UrgentItem[]> {
 async function queryUrgentItems(): Promise<FetchResult<UrgentItem>> {
     const { data, error } = await supabase
         .from('products')
-        .select('*, umkm:umkm_profiles(business_name)')
+        .select('*, umkm:umkm_profiles(business_name, is_active, deleted_at)')
         .not('slot', 'is', null)
         .eq('status', 'available')
         .eq('verification_status', 'approved')
@@ -148,7 +158,7 @@ export async function fetchVendors(): Promise<Vendor[]> {
 export async function fetchCategoryCounts(): Promise<Record<string, number>> {
     const { data, error } = await supabase
         .from('products')
-        .select('category, scheduled_start, scheduled_end')
+        .select('category, scheduled_start, scheduled_end, umkm:umkm_profiles(is_active, deleted_at)')
         .eq('status', 'available')
         .eq('verification_status', 'approved');
     if (error) {
@@ -157,6 +167,8 @@ export async function fetchCategoryCounts(): Promise<Record<string, number>> {
     }
     const counts: Record<string, number> = {};
     for (const row of data ?? []) {
+        if (!hasActiveStore(row as ProductRow))
+            continue;
         if (!isScheduledVisible(row as ProductRow))
             continue;
         const key = (row as Record<string, any>).category;
@@ -168,7 +180,14 @@ export async function fetchCategoryCounts(): Promise<Record<string, number>> {
 }
 async function queryVendors(): Promise<FetchResult<Vendor>> {
     const [umkmResult, productResult] = await Promise.all([
-        supabase.from('umkm_profiles').select('*').order('rating', { ascending: false }),
+        // Toko nonaktif (dinonaktifkan admin) dan toko terhapus (soft delete)
+        // tidak boleh tampil di beranda, apa pun peran yang sedang login.
+        supabase
+            .from('umkm_profiles')
+            .select('*')
+            .eq('is_active', true)
+            .is('deleted_at', null)
+            .order('rating', { ascending: false }),
         supabase
             .from('products')
             .select('umkm_id, scheduled_start, scheduled_end')
@@ -185,7 +204,9 @@ async function queryVendors(): Promise<FetchResult<Vendor>> {
         counts.set(p.umkm_id, (counts.get(p.umkm_id) ?? 0) + 1);
     }
     return {
-        items: (umkmResult.data ?? []).map((row: UmkmRow) => umkmToVendor(row, counts.get(row.id) ?? 0)),
+        items: (umkmResult.data ?? [])
+            .filter((row: UmkmRow) => row.is_active !== false && !row.deleted_at)
+            .map((row: UmkmRow) => umkmToVendor(row, counts.get(row.id) ?? 0)),
         error: null,
     };
 }
