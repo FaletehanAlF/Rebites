@@ -42,7 +42,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'dialog-panel relative z-[80] rounded-t-2xl border-t border-x-0 border-b-0 border-border bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-12px_40px_rgba(30,42,34,0.16)] sm:rounded-2xl sm:border sm:p-6 sm:shadow-[0_24px_60px_rgba(30,42,34,0.2)]',
+        'dialog-panel rounded-t-2xl border-t border-x-0 border-b-0 border-border bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-12px_40px_rgba(30,42,34,0.16)] sm:rounded-2xl sm:border sm:p-6 sm:shadow-[0_24px_60px_rgba(30,42,34,0.2)]',
         className
       )}
       {...props}
