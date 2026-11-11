@@ -48,10 +48,9 @@ test('masukan bukan angka tidak pernah memindahkan halaman', () => {
     assert.equal(arahGeser(Number.NaN, Number.NaN), 0);
 });
 
-test('ketukan biasa (bukan geseran) tetap memicu klik pada kartu/tombol', () => {
-    // Penangkap pointer dapat menelan klik sintetis browser; pastikan ada
-    // pemicuan klik manual saat tidak ada geseran agar kartu menu bisa diklik.
-    assert.match(SWIPE, /closest\?\.\('button, \[role="button"\]'\)/);
-    assert.match(SWIPE, /\.click\(\)/);
-    assert.match(SWIPE, /telanSintetis/);
+test('tidak memakai pointer capture agar klik kartu/tombol tidak tertelan', () => {
+    // pointer capture dapat menelan klik sintetis browser sehingga onClick pada
+    // kartu dan tombol "Lihat Detail" tidak pernah terpicu. Pastikan tidak
+    // dipakai; klik mengalir secara native ke elemen yang diklik.
+    assert.doesNotMatch(SWIPE, /setPointerCapture\(/);
 });
