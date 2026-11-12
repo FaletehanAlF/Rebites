@@ -71,11 +71,12 @@ function toFormValues(editing: DeliveryAddress | null): AddressFormValues {
         longitude: editing.longitude ?? null,
     };
 }
-export function AddressFormView({ editing, onDone, addAddress, updateAddress, }: {
+export function AddressFormView({ editing, onDone, addAddress, updateAddress, showHeader = true, }: {
     editing: DeliveryAddress | null;
-    onDone: () => void;
+    onDone: (saved?: boolean) => void;
     addAddress?: (values: AddressFormValues) => Promise<DeliveryAddress | null> | void;
     updateAddress?: (id: string, values: AddressFormValues) => Promise<boolean> | void;
+    showHeader?: boolean;
 }) {
     const checkout = useCheckoutOptional();
     const saveAdd = addAddress ?? checkout?.addAddress;
@@ -163,11 +164,11 @@ export function AddressFormView({ editing, onDone, addAddress, updateAddress, }:
             if (!saved)
                 return setError('Gagal menyimpan alamat. Periksa koneksi lalu coba lagi.');
         }
-        onDone();
+        onDone(true);
     };
     return (<>
 
-      <div className="text-left">
+      {showHeader && (<div className="text-left">
 
         <h3 id="judul-form-alamat" className="font-display text-xl font-semibold text-foreground">
 
@@ -181,7 +182,7 @@ export function AddressFormView({ editing, onDone, addAddress, updateAddress, }:
 
         </p>
 
-      </div>
+      </div>)}
 
 
 
@@ -439,7 +440,7 @@ export function AddressFormView({ editing, onDone, addAddress, updateAddress, }:
 
         <div className="flex gap-3">
 
-          <button type="button" onClick={onDone} className="flex-1 rounded-full border border-border px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted">
+          <button type="button" onClick={() => onDone()} className="flex-1 rounded-full border border-border px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted">
 
             Batal
 
