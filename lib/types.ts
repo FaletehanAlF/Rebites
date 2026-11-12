@@ -54,6 +54,7 @@ export type AddressLabel = "Rumah" | "Kos" | "Sekolah" | "Lainnya";
 export interface DeliveryAddress {
     id: string;
     label: AddressLabel;
+    isSelected?: boolean;
     receiverName: string;
     phone: string;
     province: string;

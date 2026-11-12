@@ -22,6 +22,7 @@ function rowToAddress(row: AddressRow): DeliveryAddress {
     return {
         id: row.id,
         label: row.label as AddressLabel,
+        isSelected: row.is_selected === true,
         receiverName: row.receiver_name ?? '',
         phone: row.phone ?? '',
         province: row.province ?? '',
@@ -107,7 +108,7 @@ export function useAddresses() {
                 return;
             setError(loadError);
             setAddresses(list);
-            const selected = list.find((item) => item.id) ?? null;
+            const selected = list.find((item) => item.isSelected) ?? list[0] ?? null;
             setSelectedAddressId((prev) => prev && list.some((item) => item.id === prev) ? prev : selected?.id ?? null);
             setLoading(false);
         })();
@@ -117,6 +118,7 @@ export function useAddresses() {
     }, [userId, userLoading, reloadToken]);
     const selectAddress = useCallback((id: string) => {
         setSelectedAddressId(id);
+        setAddresses((prev) => prev.map((item) => ({ ...item, isSelected: item.id === id })));
         if (!userId)
             return;
         (async () => {

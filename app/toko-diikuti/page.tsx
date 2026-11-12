@@ -294,33 +294,28 @@ function TokoDiikutiView() {
 
   return (
     <BuyerShell>
-      <main className="min-h-screen bg-white pb-24 lg:pb-12">
-        <section className="border-b border-border/70 bg-white">
-          <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-              <div className="max-w-2xl">
-                <h1 className="font-display text-[clamp(1.75rem,3.4vw,2.5rem)] font-semibold leading-tight tracking-[-0.03em] text-primary">
-                  Toko Diikuti
-                </h1>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                  Toko yang kamu ikuti lewat tombol &quot;Ikuti Toko&quot; di halaman
-                  detail toko. Pantau menu dan promo terbarunya dari sini.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span
-                  className="inline-flex items-center rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted-foreground"
-                  aria-live="polite"
-                >
-                  {status === 'loading' ? 'Memuat…' : `${stores.length} toko diikuti`}
-                </span>
-              </div>
-            </div>
+      <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pb-12 lg:pt-8">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl">
+            <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-primary">
+              Toko Diikuti
+            </h1>
+            <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
+              Toko yang kamu ikuti lewat tombol &quot;Ikuti Toko&quot; di halaman
+              detail toko. Pantau menu dan promo terbarunya dari sini.
+            </p>
           </div>
-        </section>
 
-        <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <span
+            className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm"
+            aria-live="polite"
+          >
+            <Store className="h-3.5 w-3.5 text-primary" aria-hidden />
+            {status === 'loading' ? 'Memuat…' : `${stores.length} toko diikuti`}
+          </span>
+        </header>
+
+        <section className="mt-5 lg:mt-6">
           {actionError && (
             <p
               role="alert"
