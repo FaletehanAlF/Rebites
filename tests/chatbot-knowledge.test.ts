@@ -110,7 +110,7 @@ test('tidak ada path duplikat di dalam satu grup kecuali anchor pada halaman sam
 });
 test('identitas asisten dan tim pengembang terdefinisi lengkap', () => {
     assert.equal(ASSISTANT_NAME, 'ReBitess-Asisten');
-    assert.equal(ASSISTANT_MODEL_IDENTITY, 'GPT 6 Luna');
+    assert.equal(ASSISTANT_MODEL_IDENTITY, 'VibeCode Flash');
     assert.match(REBITES_DEVELOPER, /Tony Stark Inc/);
     assert.equal(REBITES_TEAM.length, 3, 'tim pengembang berjumlah tiga orang');
     const expected = [

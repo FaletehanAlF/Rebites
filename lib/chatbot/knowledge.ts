@@ -403,7 +403,7 @@ export const REBITES_IDENTITY = [
     'Area layanan saat ini terbatas di Kota Depok.',
 ] as const;
 export const ASSISTANT_NAME = 'ReBitess-Asisten';
-export const ASSISTANT_MODEL_IDENTITY = 'GPT 6 Luna';
+export const ASSISTANT_MODEL_IDENTITY = 'VibeCode Flash';
 export const ASSISTANT_PROVIDER = 'vibecodeagent.my.id';
 export const ASSISTANT_PROVIDER_LABEL = 'VibeCode Agent';
 export const REBITES_DEVELOPER = 'Team Tony Stark Inc.';
