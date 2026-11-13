@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { AlertCircle, AlertTriangle, CheckCircle2, Clock3, ImageIcon, ImagePlus, LocateFixed, MapPin, PenLine, Store, Trash2, } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, Clock3, ImageIcon, ImagePlus, LocateFixed, MapPin, PenLine, Phone, Sparkles, Store, Trash2, } from "lucide-react";
 import { Card } from './Card';
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -161,29 +161,88 @@ function Field({ id, label, hint, error, className, footer, children, }: {
       {footer}
     </div>);
 }
-function Section({ icon: Icon, title, description, action, children, }: {
+function Section({ icon: Icon, title, description, children, }: {
     icon: React.ComponentType<{
         className?: string;
     }>;
     title: string;
     description: string;
-    action?: React.ReactNode;
     children: React.ReactNode;
 }) {
     return (<Card>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Icon className="h-5 w-5"/>
-          </span>
-          <div className="min-w-0">
-            <h2 className="font-display text-base font-semibold text-charcoal-900">{title}</h2>
-            <p className="mt-0.5 text-xs leading-relaxed text-sage-500">{description}</p>
-          </div>
+      <div className="flex min-w-0 items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <Icon aria-hidden className="h-5 w-5"/>
+        </span>
+        <div className="min-w-0">
+          <h2 className="font-display text-base font-semibold text-charcoal-900">{title}</h2>
+          <p className="mt-0.5 text-xs leading-relaxed text-sage-500">{description}</p>
         </div>
-        {action && <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">{action}</div>}
       </div>
       <div className="mt-5 space-y-5">{children}</div>
+    </Card>);
+}
+function StorePreviewCard({ values, logoPreview }: {
+    values: FormValues;
+    logoPreview: string | null;
+}) {
+    const image = logoPreview || values.imageUrl;
+    const openHours = values.openTime.trim() && values.closeTime.trim()
+        ? `${values.openTime.trim()}–${values.closeTime.trim()}`
+        : "Belum diatur";
+    const address = [values.address.trim(), values.postalCode.trim()].filter(Boolean).join(", ");
+    return (<Card className="overflow-hidden p-0">
+      <div className="relative h-24 bg-gradient-to-br from-primary via-primary to-primary-dark">
+        <div aria-hidden className="absolute inset-0 opacity-20" style={{
+            backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+            backgroundSize: "14px 14px",
+        }}/>
+        <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white ring-1 ring-white/25 backdrop-blur-sm">
+          <Store aria-hidden className="h-3 w-3"/>
+          Pratinjau toko
+        </span>
+      </div>
+      <div className="px-5 pb-5">
+        <div className="relative z-10 -mt-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-secondary shadow-sm">
+          {image ? (<img src={image} alt="Logo toko" decoding="async" loading="lazy" className="h-full w-full object-cover"/>) : (<ImageIcon aria-hidden className="h-7 w-7 text-muted-foreground/40"/>)}
+        </div>
+        <h2 className="mt-3 break-words font-display text-lg font-semibold leading-snug text-charcoal-900">
+          {values.storeName.trim() || "Nama toko Anda"}
+        </h2>
+        <p className="mt-1 line-clamp-3 min-h-[3.25rem] text-sm leading-relaxed text-muted-foreground">
+          {values.description.trim() || "Deskripsi singkat toko akan tampil di sini."}
+        </p>
+        <dl className="mt-4 space-y-3.5 border-t border-border/70 pt-4">
+          <div className="flex items-start gap-3">
+            <Clock3 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary"/>
+            <div className="min-w-0">
+              <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Jam buka</dt>
+              <dd className="mt-0.5 text-sm font-medium text-charcoal-900">{openHours}</dd>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <MapPin aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary"/>
+            <div className="min-w-0">
+              <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Alamat</dt>
+              <dd className="mt-0.5 break-words text-sm leading-relaxed text-charcoal-900">
+                {address || "Belum diisi"}
+              </dd>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Phone aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary"/>
+            <div className="min-w-0">
+              <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Telepon</dt>
+              <dd className="mt-0.5 break-words text-sm font-medium text-charcoal-900">
+                {values.storePhone.trim() || "Belum diisi"}
+              </dd>
+            </div>
+          </div>
+        </dl>
+        <p className="mt-4 border-t border-border/70 pt-3 text-[11px] leading-relaxed text-muted-foreground">
+          Ringkasan ini mengikuti isian Anda dan tampil di halaman Detail Toko pembeli.
+        </p>
+      </div>
     </Card>);
 }
 export function StoreSettingsView() {
@@ -425,50 +484,85 @@ export function StoreSettingsView() {
     const openTimeError = fieldErrors.openTime;
     const closeTimeError = fieldErrors.closeTime;
     const formLocked = !editing || saving;
-    return (<div className="mx-auto max-w-3xl pb-4">
-      <header>
-        <h1 className="font-display text-2xl font-semibold leading-tight tracking-[-0.01em] text-primary">
-          Pengaturan Toko
-        </h1>
-        <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Isi nama, foto, jam buka–tutup, dan lokasi toko. Yang disimpan langsung tampil di beranda dan Detail Toko pembeli.
-        </p>
+    return (<div className="pb-4">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0 max-w-2xl">
+          <h1 className="mt-1 font-display text-2xl font-semibold leading-tight tracking-tight text-primary">
+            Profil Toko
+          </h1>
+          <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
+            Kelola identitas, jam buka, dan lokasi toko. Perubahan langsung tampil di beranda dan halaman Detail Toko pembeli.
+          </p>
+        </div>
+        {!loading && (<div className="flex shrink-0 flex-wrap items-center gap-2.5">
+            {editing ? (<button type="button" onClick={handleCancelEdit} disabled={saving} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-white px-4 text-sm font-semibold text-charcoal-700 shadow-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50">
+                Batal
+              </button>) : (<button type="button" onClick={handleStartEdit} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm shadow-primary/20 transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                <PenLine aria-hidden className="h-4 w-4"/>
+                Edit profil
+              </button>)}
+          </div>)}
       </header>
 
-      {loading ? (<Card className="mt-5">
-          <div role="status" aria-label="Memuat pengaturan toko" className="space-y-4">
-            {[0, 1, 2, 3].map((i) => (<Skeleton key={i} className="h-16 rounded-2xl"/>))}
-          </div>
-        </Card>) : (<form className="mt-5 space-y-4" onSubmit={(e) => {
+      <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)] xl:items-start xl:gap-5">
+        <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+          {loading ? (<Card className="overflow-hidden p-0">
+              <Skeleton className="h-24 rounded-none"/>
+              <div className="space-y-3 px-5 pb-5">
+                <Skeleton className="-mt-10 h-20 w-20 rounded-2xl border-4 border-white"/>
+                <Skeleton className="h-5 w-40"/>
+                <Skeleton className="h-4 w-full"/>
+                <Skeleton className="h-4 w-3/4"/>
+                <Skeleton className="mt-4 h-4 w-full rounded-xl"/>
+                <Skeleton className="h-10 w-full rounded-xl"/>
+                <Skeleton className="h-10 w-full rounded-xl"/>
+              </div>
+            </Card>) : (<>
+              <StorePreviewCard values={values} logoPreview={logoPreview}/>
+              <Card className="hidden border-dashed bg-white/70 p-4 shadow-none xl:block">
+                <p className="flex items-center gap-2 text-xs font-semibold text-charcoal-900">
+                  <Sparkles aria-hidden className="h-4 w-4 text-caramel-dark"/>
+                  Agar toko mudah ditemukan
+                </p>
+                <ul className="mt-2.5 space-y-2 text-[11px] leading-relaxed text-muted-foreground">
+                  <li className="flex gap-2"><span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary"/><span>Pakai foto persegi agar logo tampil rapi di katalog.</span></li>
+                  <li className="flex gap-2"><span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary"/><span>Tulis satu–dua kalimat tentang menu andalan toko.</span></li>
+                  <li className="flex gap-2"><span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary"/><span>Tandai titik lokasi toko supaya ongkir lebih akurat.</span></li>
+                </ul>
+              </Card>
+            </>)}
+        </aside>
+
+        <div className="min-w-0 space-y-4 xl:order-2">
+          {loading ? (<Card>
+              <div role="status" aria-label="Memuat pengaturan toko" className="space-y-4">
+                {[0, 1, 2, 3].map((i) => (<Skeleton key={i} className="h-16 rounded-2xl"/>))}
+              </div>
+            </Card>) : (<form className="space-y-4" onSubmit={(e) => {
                 e.preventDefault();
                 if (!editing)
                     return;
                 void handleSave();
             }} noValidate>
           
-          <Section icon={Store} title="Identitas toko" description="Nama dan foto yang pertama kali dilihat pembeli." action={<div className="flex flex-wrap items-center justify-end gap-2">
-                {!editing ? (<button type="button" onClick={handleStartEdit} className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-primary bg-white px-4 text-xs font-semibold text-primary transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] sm:min-h-[44px] sm:px-5 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
-                    <PenLine aria-hidden className="h-4 w-4"/>
-                    Edit
-                  </button>) : (<button type="button" onClick={handleCancelEdit} disabled={saving} className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-border bg-white px-4 text-xs font-semibold text-charcoal-700 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-[44px] sm:px-5 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
-                    Batal
-                  </button>)}
-                <button type="button" onClick={() => logoInputRef.current?.click()} disabled={formLocked} className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-border bg-white px-3.5 text-xs font-semibold text-primary transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-[44px] sm:px-4 sm:text-sm motion-reduce:transition-none motion-reduce:active:scale-100">
-                  <ImagePlus aria-hidden className="h-4 w-4"/>
-                  {logoPreview || values.imageUrl ? "Ganti foto" : "Unggah foto"}
-                </button>
-              </div>}>
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-secondary">
-                {logoPreview || values.imageUrl ? (<img src={logoPreview ?? values.imageUrl} alt="Logo toko saat ini" decoding="async" loading="lazy" className="h-full w-full object-cover"/>) : (<ImageIcon className="h-6 w-6 text-muted-foreground/40"/>)}
+          <Section icon={Store} title="Identitas toko" description="Nama dan foto yang pertama kali dilihat pembeli.">
+            <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border/70 bg-secondary/40 p-3">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-white">
+                {logoPreview || values.imageUrl ? (<img src={logoPreview ?? values.imageUrl} alt="Logo toko saat ini" decoding="async" loading="lazy" className="h-full w-full object-cover"/>) : (<ImageIcon aria-hidden className="h-6 w-6 text-muted-foreground/40"/>)}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-charcoal-900">
                   {values.storeName || "Nama toko"}
                 </p>
-                <p className="mt-0.5 text-xs leading-relaxed text-sage-500">
+                <p className="mt-0.5 text-[11px] leading-relaxed text-sage-500">
                   PNG atau JPG, maksimal 2MB. Foto persegi paling rapi.
                 </p>
+                {editing ? (<button type="button" onClick={() => logoInputRef.current?.click()} disabled={saving} className="mt-2 inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-border bg-white px-3 text-xs font-semibold text-primary transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50">
+                    <ImagePlus aria-hidden className="h-3.5 w-3.5"/>
+                    {logoPreview || values.imageUrl ? "Ganti foto" : "Unggah foto"}
+                  </button>) : (<p className="mt-1 text-[11px] font-medium text-muted-foreground">
+                    Klik “Edit profil” untuk mengganti foto.
+                  </p>)}
                 <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/jpg" className="hidden" onChange={handleLogoChange}/>
               </div>
             </div>
@@ -601,9 +695,7 @@ export function StoreSettingsView() {
             </div>)}
 
           
-            <div aria-hidden={!editing || (!isDirty && !saving)} className={cn("sticky bottom-20 z-20 mr-16 transition-[opacity,transform] duration-200 ease-smooth motion-reduce:transition-none lg:bottom-6 lg:mr-24", editing && (isDirty || saving)
-                ? "translate-y-0 opacity-100"
-                : "pointer-events-none translate-y-3 opacity-0")}>
+            {editing && (isDirty || saving) && (<div className="sticky bottom-20 z-20 mr-16 lg:bottom-6 lg:mr-24">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-white/95 px-4 py-3 shadow-lg shadow-primary/5 backdrop-blur">
               <p className="flex items-center gap-2 text-sm font-medium text-charcoal-700">
                 {saving ? ("Menyimpan perubahan…") : (<>
@@ -612,20 +704,19 @@ export function StoreSettingsView() {
                   </>)}
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={handleDiscard} disabled={saving} className="inline-flex min-h-[44px] items-center rounded-full border border-border bg-white px-4 text-sm font-semibold text-charcoal-700 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
+                <button type="button" onClick={handleDiscard} disabled={saving} className="inline-flex min-h-[44px] items-center rounded-xl border border-border bg-white px-4 text-sm font-semibold text-charcoal-700 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
                   Batalkan
                 </button>
-                <button type="submit" disabled={saving || !editing} className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
+                <button type="submit" disabled={saving || !editing} className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
                   {saving ? "Menyimpan…" : "Simpan perubahan"}
                 </button>
               </div>
             </div>
-          </div>
+          </div>)}
 
-        </form>)}
-
-      
-      {!loading && (<Card className="mt-6 border-destructive/25">
+          </form>)}
+          
+          {!loading && (<Card className="border-destructive/25">
           <div className="flex items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
               <AlertTriangle className="h-5 w-5"/>
@@ -668,6 +759,8 @@ export function StoreSettingsView() {
                 </div>)}
             </div>
           </div>
-        </Card>)}
+          </Card>)}
+        </div>
+      </div>
     </div>);
 }

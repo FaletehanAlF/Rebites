@@ -52,29 +52,35 @@ function StockEditor({ product }: {
 }) {
     const [stock, setStock] = useState(product.stock);
     const [editing, setEditing] = useState(false);
+    useEffect(() => {
+        setStock(product.stock);
+    }, [product.stock]);
     const handleSave = (newStock: number) => {
-        const clamped = Math.max(0, newStock);
+        const clamped = Number.isFinite(newStock) ? Math.max(0, Math.round(newStock)) : 0;
         setStock(clamped);
         patchSellerProduct(product.id, { stock: clamped });
         setEditing(false);
     };
-    return (<div className="flex items-center gap-2">
-      <Package className="h-3.5 w-3.5 text-muted-foreground"/>
-      <span className="text-xs text-muted-foreground">Stok:</span>
-      {editing ? (<div className="flex items-center gap-1">
-          <button type="button" onClick={() => handleSave(Math.max(0, stock - 1))} className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white text-foreground transition-colors hover:bg-secondary">
-            <Minus className="h-3 w-3"/>
+    if (editing) {
+        return (<div className="flex items-center gap-1.5">
+          <button type="button" aria-label="Kurangi stok" onClick={() => handleSave(Math.max(0, stock - 1))} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+            <Minus aria-hidden className="h-3.5 w-3.5"/>
           </button>
-          <input type="number" value={stock} onChange={(e) => setStock(Math.max(0, Number(e.target.value)))} onBlur={() => handleSave(stock)} onKeyDown={(e) => e.key === 'Enter' && handleSave(stock)} className="h-7 w-14 rounded-md border border-primary bg-white px-2 text-center text-xs font-bold text-foreground outline-none ring-2 ring-primary/20" min={0} autoFocus/>
-          <button type="button" onClick={() => handleSave(stock + 1)} className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white text-foreground transition-colors hover:bg-secondary">
-            <Plus className="h-3 w-3"/>
+          <input type="number" aria-label="Jumlah stok" value={stock} onChange={(e) => {
+            const parsed = Number(e.target.value);
+            setStock(Number.isFinite(parsed) ? Math.max(0, parsed) : 0);
+        }} onBlur={() => handleSave(stock)} onKeyDown={(e) => e.key === 'Enter' && handleSave(stock)} className="h-8 w-16 rounded-lg border border-primary bg-white px-2 text-center text-xs font-bold text-foreground outline-none ring-2 ring-primary/20" min={0} autoFocus/>
+          <button type="button" aria-label="Tambah stok" onClick={() => handleSave(stock + 1)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+            <Plus aria-hidden className="h-3.5 w-3.5"/>
           </button>
-        </div>) : (<button type="button" onClick={() => setEditing(true)} className={cn('rounded-full px-2.5 py-0.5 text-xs font-bold transition-colors', stock > 0
-                ? 'bg-primary/10 text-primary hover:bg-primary-dark'
-                : 'bg-destructive/15 text-destructive hover:bg-destructive/25')}>
-          {stock > 0 ? `${stock} porsi` : 'Habis'}
-        </button>)}
-    </div>);
+        </div>);
+    }
+    return (<button type="button" onClick={() => setEditing(true)} aria-label={`Ubah stok ${product.name}`} className={cn('inline-flex min-h-[32px] items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30', stock > 0
+            ? 'bg-primary/10 text-primary hover:bg-primary/15'
+            : 'bg-destructive/10 text-destructive hover:bg-destructive/15')}>
+      {stock > 0 ? `${stock} porsi` : 'Habis'}
+      <Pencil aria-hidden className="h-3 w-3 opacity-60"/>
+    </button>);
 }
 function TimeEditor({ product }: {
     product: SellerProduct;
@@ -82,6 +88,15 @@ function TimeEditor({ product }: {
     const [startTime, setStartTime] = useState(product.startTime || '09:00');
     const [endTime, setEndTime] = useState(product.endTime || '17:00');
     const [allDay, setAllDay] = useState(product.allDay ?? false);
+    useEffect(() => {
+        setStartTime(product.startTime || '09:00');
+    }, [product.startTime]);
+    useEffect(() => {
+        setEndTime(product.endTime || '17:00');
+    }, [product.endTime]);
+    useEffect(() => {
+        setAllDay(product.allDay ?? false);
+    }, [product.allDay]);
     const handleAllDayToggle = () => {
         const next = !allDay;
         setAllDay(next);
@@ -97,47 +112,25 @@ function TimeEditor({ product }: {
             patchSellerProduct(product.id, { endTime: value });
         }
     };
-    const available = isProductAvailable(product);
-    const scheduleStatus = resolveMenuScheduleStatus(product);
     return (<div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex items-center gap-2 text-[11px] font-semibold text-charcoal-700">
+          <Clock aria-hidden className="h-3.5 w-3.5 text-muted-foreground"/>
+          Jam jual
+        </span>
         <div className="flex items-center gap-2">
-          <Clock className="h-3.5 w-3.5 text-muted-foreground"/>
-          <span className="text-xs text-muted-foreground">Jam jual:</span>
+          <span className="text-[11px] font-medium text-muted-foreground">Sepanjang hari</span>
+          <button type="button" role="switch" aria-checked={allDay} aria-label="Jual sepanjang hari" onClick={handleAllDayToggle} className={cn('relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1', allDay ? 'bg-primary' : 'bg-muted')}>
+            <span className={cn('absolute h-4 w-4 rounded-full bg-white shadow-sm transition-all', allDay ? 'left-[22px]' : 'left-1')}/>
+          </button>
         </div>
-        <button type="button" onClick={handleAllDayToggle} className={cn('relative inline-flex h-5 w-9 items-center rounded-full transition-colors', allDay ? 'bg-primary' : 'bg-muted')}>
-          <span className={cn('absolute h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-all', allDay ? 'left-[18px]' : 'left-0.5')}/>
-        </button>
       </div>
 
       {!allDay && (<div className="flex items-center gap-2">
-          <input type="time" value={startTime} onChange={(e) => handleTimeChange('startTime', e.target.value)} className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"/>
+          <input type="time" aria-label="Jam mulai jual" value={startTime} onChange={(e) => handleTimeChange('startTime', e.target.value)} className="h-9 flex-1 rounded-lg border border-border bg-white px-2.5 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"/>
           <span className="text-xs text-muted-foreground">–</span>
-          <input type="time" value={endTime} onChange={(e) => handleTimeChange('endTime', e.target.value)} className="h-7 flex-1 rounded-md border border-border bg-white px-2 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"/>
+          <input type="time" aria-label="Jam selesai jual" value={endTime} onChange={(e) => handleTimeChange('endTime', e.target.value)} className="h-9 flex-1 rounded-lg border border-border bg-white px-2.5 text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"/>
         </div>)}
-
-      <div className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', available
-            ? 'bg-primary/10 text-primary'
-            : scheduleStatus === 'scheduled' || scheduleStatus === 'ended'
-                ? 'bg-caramel/20 text-caramel-dark'
-                : 'bg-destructive/15 text-destructive')}>
-        <span className={cn('h-1.5 w-1.5 rounded-full', available
-            ? 'bg-primary/100'
-            : scheduleStatus === 'scheduled' || scheduleStatus === 'ended'
-                ? 'bg-caramel-dark'
-                : 'bg-destructive')}/>
-        {scheduleStatus === 'scheduled'
-            ? `Dijadwalkan ${formatScheduleDate(product.scheduledStart)}`
-            : scheduleStatus === 'ended'
-                ? 'Jadwal Berakhir'
-                : available
-                    ? allDay
-                        ? 'Tersedia Sepanjang Hari'
-                        : 'Sedia Sekarang'
-                    : product.stock <= 0
-                        ? 'Stok Habis'
-                        : 'Di Luar Jam Jual'}
-      </div>
     </div>);
 }
 function formatPeriodLabel(iso: string): string {
@@ -176,8 +169,11 @@ const FLASH_STATUS_META: Record<Exclude<FlashSaleStatus, 'inactive'>, {
 function FlashStatusBadge({ status }: {
     status: FlashSaleStatus;
 }) {
-    if (status === 'inactive')
-        return null;
+    if (status === 'inactive') {
+        return (<span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        Tidak aktif
+      </span>);
+    }
     const meta = FLASH_STATUS_META[status];
     return (<span className={cn('inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', meta.className)}>
       {status === 'active' && (<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary/100"/>)}
@@ -300,15 +296,16 @@ function FlashSalePanel({ product, quota, used, onUpgradeClick, onQuotaBlocked, 
         : 'Tanggal atau slot Flash Sale tidak valid.';
     return (<div className="mt-3 border-t border-border/70 pt-3">
       <div className="flex items-center gap-2">
-        <Zap className={cn('h-3.5 w-3.5 shrink-0', occupiesSlot || editing ? 'text-primary' : 'text-muted-foreground')}/>
-        
+        <span className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg', occupiesSlot || editing ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground')}>
+          <Zap aria-hidden className="h-3.5 w-3.5"/>
+        </span>
         <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-foreground">
           Flash Sale
         </span>
         <div className="ml-auto flex min-w-0 items-center gap-2">
           <FlashStatusBadge status={status}/>
-          <button type="button" onClick={handleToggle} aria-label={`Atur Flash Sale ${product.name}`} title="Atur Flash Sale" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sage-200 text-charcoal-500 transition-colors hover:border-caramel hover:bg-caramel/20 hover:text-caramel">
-            <Pencil className="h-3.5 w-3.5" aria-hidden/>
+          <button type="button" onClick={handleToggle} aria-label={`Atur Flash Sale ${product.name}`} title="Atur Flash Sale" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-white text-charcoal-500 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+            <Pencil aria-hidden className="h-3.5 w-3.5"/>
           </button>
         </div>
       </div>
@@ -326,11 +323,9 @@ function FlashSalePanel({ product, quota, used, onUpgradeClick, onQuotaBlocked, 
             <CalendarDays className="h-3 w-3 shrink-0" aria-hidden/>
             {formatFlashScheduleLabel(cfg.startIso)}
           </span>
-        </div>) : (<p className="mt-2 text-[11px] text-muted-foreground">
-          {!canEnable
-                ? 'Kuota Flash Sale paket Standar sudah digunakan.'
-                : 'Tidak mengikuti Flash Sale.'}
-        </p>)}
+        </div>) : !canEnable ? (<p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+          Kuota Flash Sale paket Standar sudah digunakan.
+        </p>) : null}
 
       {editing && (<Dialog open onOpenChange={(open) => !open && setEditing(false)}>
           <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border-sage-100 bg-white p-5">
@@ -511,50 +506,63 @@ function MenuCard({ product, flashQuota, flashUsed, onUpgradeClick, onQuotaBlock
     };
     const available = isProductAvailable(product);
     const scheduleStatus = resolveMenuScheduleStatus(product);
-    return (<Card className="flex flex-col p-4 sm:p-5">
+    const verificationStatus = product.verificationStatus ?? 'approved';
+    const availability = scheduleStatus === 'scheduled'
+        ? { label: 'Dijadwalkan', className: 'bg-caramel/20 text-caramel-dark' }
+        : scheduleStatus === 'ended'
+            ? { label: 'Jadwal berakhir', className: 'bg-muted text-muted-foreground' }
+            : available
+                ? { label: 'Tayang', className: 'bg-primary/10 text-primary' }
+                : product.stock <= 0
+                    ? { label: 'Stok habis', className: 'bg-destructive/10 text-destructive' }
+                    : { label: 'Di luar jam', className: 'bg-muted text-muted-foreground' };
+    return (<Card className="flex h-full flex-col p-4 sm:p-5">
       
       <div className="flex items-start gap-3.5">
         <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-sage-100">
           <SmartImage src={product.image} alt={`Foto ${product.name}`} sizes="96px"/>
-          {product.featured && (<span className="absolute left-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-caramel text-white shadow-sm" title="Unggulan">
+          {product.featured && (<span className="absolute left-1.5 top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-caramel text-white shadow-sm" title="Unggulan">
               <Crown className="h-3 w-3" aria-hidden/>
             </span>)}
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="line-clamp-2 text-sm font-bold leading-snug text-charcoal-900" title={product.name}>
-              {product.name}
-            </h3>
-            <Link href={editHref} aria-label={`Ubah ${product.name}`} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sage-200 text-charcoal-500 transition-colors hover:border-caramel hover:bg-caramel/20 hover:text-caramel">
-              <Pencil className="h-3.5 w-3.5" aria-hidden/>
+            <div className="min-w-0">
+              <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-charcoal-900" title={product.name}>
+                {product.name}
+              </h3>
+              <p className="mt-0.5 truncate text-xs text-sage-500">{product.category}</p>
+            </div>
+            <Link href={editHref} aria-label={`Ubah ${product.name}`} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border bg-white px-2.5 text-[11px] font-semibold text-charcoal-600 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+              <Pencil aria-hidden className="h-3.5 w-3.5"/>
+              Edit
             </Link>
           </div>
 
-          <p className="mt-0.5 truncate text-xs text-sage-500">{product.category}</p>
-
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-            {(product.verificationStatus ?? 'approved') === 'approved' ? (<Badge variant="success">Tayang</Badge>) : (product.verificationStatus ?? 'approved') === 'rejected' ? (<Badge variant="destructive">Ditunda Admin</Badge>) : (<Badge variant="warning">Menunggu Verifikasi</Badge>)}
-            {scheduleStatus === 'scheduled' && (<Badge variant="warning">
-                <CalendarDays className="h-3 w-3" aria-hidden/>
-                Dijadwalkan
-              </Badge>)}
-            {scheduleStatus === 'ended' && (<Badge variant="secondary">Jadwal berakhir</Badge>)}
-            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]', available ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground')}>
-              {scheduleStatus === 'scheduled'
-            ? 'Belum tayang'
-            : scheduleStatus === 'ended'
-                ? 'Tidak tayang'
-                : available
-                    ? `Stok ${product.stock}`
-                    : product.stock <= 0
-                        ? 'Habis'
-                        : 'Tutup'}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {verificationStatus === 'approved' ? null : verificationStatus === 'rejected' ? (<Badge variant="destructive">Ditunda Admin</Badge>) : (<Badge variant="warning">Menunggu Verifikasi</Badge>)}
+            <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]', availability.className)}>
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current"/>
+              {availability.label}
             </span>
           </div>
-          {scheduleStatus !== 'none' && (<p className="mt-1 text-[11px] text-charcoal-500">
-              <CalendarDays className="mr-1 inline h-3 w-3 align-[-1px]" aria-hidden/>
-              {scheduleStatus === 'scheduled'
+
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
+            <span className="text-base font-bold text-primary">
+              {formatRupiah(product.surplusPrice)}
+            </span>
+            <span className="text-[11px] text-muted-foreground line-through">
+              {formatRupiah(product.originalPrice)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {scheduleStatus !== 'none' && (<p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-muted-foreground">
+          <CalendarDays aria-hidden className="mt-0.5 h-3 w-3 shrink-0"/>
+          <span>
+            {scheduleStatus === 'scheduled'
                 ? `Tayang mulai ${formatScheduleDate(product.scheduledStart)}`
                 : scheduleStatus === 'ended'
                     ? `Jadwal berakhir ${formatScheduleDate(product.scheduledEnd)}`
@@ -563,60 +571,56 @@ function MenuCard({ product, flashQuota, flashUsed, onUpgradeClick, onQuotaBlock
                             ? ` – ${formatScheduleDate(product.scheduledEnd)}`
                             : ''}`
                         : `Tayang sampai ${formatScheduleDate(product.scheduledEnd)}`}
-            </p>)}
-
-          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
-            <span className="text-sm font-bold text-primary">
-              {formatRupiah(product.surplusPrice)}
-            </span>
-            <span className="text-[11px] text-charcoal-500 line-through">
-              {formatRupiah(product.originalPrice)}
-            </span>
-          </div>
-        </div>
-      </div>
+          </span>
+        </p>)}
 
       
-      {(product.verificationStatus ?? 'approved') === 'rejected' &&
+      {verificationStatus === 'rejected' &&
             product.rejectionReason?.trim() ? (<p className="mt-2.5 line-clamp-3 rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-red-700">
           <span className="font-bold">Alasan penundaan: </span>
           {product.rejectionReason.trim()}
         </p>) : null}
-      {product.isDelivery && product.weightGram == null ? (<div className="mt-2.5 flex items-start gap-2 rounded-lg bg-caramel/15 px-2.5 py-1.5">
-          <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark" aria-hidden/>
-          <div className="min-w-0">
-            <p className="text-[11px] font-bold leading-snug text-charcoal-900">
-              Berat belum diisi — ongkir masih perkiraan
-            </p>
-            <Link href={`${editHref}?fokus=berat`} className="mt-0.5 inline-block text-[11px] font-semibold text-caramel-dark underline-offset-2 hover:underline">
-              Isi berat agar ongkir lebih akurat
-            </Link>
-          </div>
+      {product.isDelivery && product.weightGram == null ? (<div className="mt-2.5 flex items-start gap-2 rounded-lg bg-caramel/15 px-2.5 py-2">
+          <TriangleAlert aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caramel-dark"/>
+          <p className="text-[11px] leading-relaxed text-charcoal-700">
+            <span className="font-bold text-charcoal-900">Berat belum diisi.</span>{" "}
+            <Link href={`${editHref}?fokus=berat`} className="font-semibold text-caramel-dark underline-offset-2 hover:underline">
+              Isi berat
+            </Link>{" "}
+            agar ongkir lebih akurat.
+          </p>
         </div>) : null}
 
       
       <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
-        <StockEditor product={product}/>
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2 text-[11px] font-semibold text-charcoal-700">
+            <Package aria-hidden className="h-3.5 w-3.5 text-muted-foreground"/>
+            Stok
+          </span>
+          <StockEditor product={product}/>
+        </div>
         <TimeEditor product={product}/>
       </div>
 
       <FlashSalePanel product={product} quota={flashQuota} used={flashUsed} onUpgradeClick={onUpgradeClick} onQuotaBlocked={onQuotaBlocked}/>
 
-      <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-3">
-        <button type="button" onClick={handleToggleStock} className="rounded-full border border-border px-3 py-1.5 text-[11px] font-semibold text-foreground transition-colors hover:bg-secondary">
+      <div className="mt-auto flex flex-wrap items-center gap-2 pt-3">
+        <button type="button" onClick={handleToggleStock} className="inline-flex min-h-[34px] items-center rounded-lg border border-border bg-white px-3 text-[11px] font-semibold text-foreground transition-colors hover:bg-secondary">
           {product.stock > 0 ? 'Set Habis' : 'Set Tersedia'}
         </button>
 
-        {plan.featuredPromo && (<button type="button" onClick={handleToggleFeatured} className={cn('rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors', product.featured
+        {plan.featuredPromo && (<button type="button" onClick={handleToggleFeatured} className={cn('inline-flex min-h-[34px] items-center gap-1.5 rounded-lg px-3 text-[11px] font-semibold transition-colors', product.featured
                 ? 'bg-primary text-white hover:bg-primary-dark'
-                : 'border border-primary text-primary hover:bg-primary-dark/15')}>
+                : 'border border-primary/50 text-primary hover:bg-primary/5')}>
+            <Crown aria-hidden className="h-3 w-3"/>
             {product.featured ? 'Lepas Unggulan' : 'Jadikan Unggulan'}
           </button>)}
 
-        <button type="button" onClick={handleDelete} onBlur={() => setConfirmingDelete(false)} aria-label={confirmingDelete ? `Klik lagi untuk menghapus ${product.name}` : `Hapus ${product.name}`} className={cn('ml-auto inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors', confirmingDelete
+        <button type="button" onClick={handleDelete} onBlur={() => setConfirmingDelete(false)} aria-label={confirmingDelete ? `Klik lagi untuk menghapus ${product.name}` : `Hapus ${product.name}`} className={cn('ml-auto inline-flex min-h-[34px] items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition-colors', confirmingDelete
             ? 'bg-destructive text-white'
-            : 'border border-border text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-          <Trash2 className="h-3 w-3" aria-hidden/>
+            : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+          <Trash2 aria-hidden className="h-3 w-3"/>
           {confirmingDelete ? 'Yakin?' : 'Hapus'}
         </button>
       </div>
@@ -629,25 +633,27 @@ function FlashSaleSummaryRow({ plan, quota, used, }: {
 }) {
     const isBasic = quota === 0;
     const storeId = useStoreRouteId();
-    const statusText = isBasic
-        ? 'Tidak tersedia di paket Basic'
+    const value = isBasic
+        ? 'Tidak tersedia'
         : quota === Infinity
-            ? used > 0
-                ? `Aktif untuk ${used} produk`
-                : 'Tanpa batas produk'
-            : `${used}/${quota} produk digunakan`;
-    return (<div className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-2 border-t border-border/70 pt-3.5">
-      <Zap className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden/>
-      <span className="text-xs font-bold text-foreground">Flash Sale</span>
-      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-charcoal-500">
-        {isBasic && <Lock className="h-3 w-3" aria-hidden/>}
-        {statusText}
-      </span>
-      <span className="text-[11px] text-muted-foreground">paket {plan.label}</span>
-      {isBasic && (<Link href={sellerStorePath(storeId, 'langganan')} className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary px-3 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10">
-          <Crown className="h-3 w-3" aria-hidden/>
-          Lihat Paket
-        </Link>)}
+            ? `${used} produk`
+            : `${used}/${quota}`;
+    return (<div className="flex flex-col rounded-xl border border-border/60 bg-secondary/40 p-3.5">
+      <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+        <Zap aria-hidden className="h-3.5 w-3.5 text-primary"/>
+        Flash Sale
+        {isBasic && <Lock aria-hidden className="h-3 w-3"/>}
+      </p>
+      <p className={cn('mt-1 font-bold tabular-nums', isBasic ? 'text-sm text-charcoal-500' : 'text-xl text-charcoal-900')}>
+        {value}
+      </p>
+      <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-0.5">
+        <p className="text-[11px] text-muted-foreground">paket {plan.label}</p>
+        {isBasic && (<Link href={sellerStorePath(storeId, 'langganan')} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary underline-offset-2 hover:underline">
+            <Crown aria-hidden className="h-3 w-3"/>
+            Lihat paket
+          </Link>)}
+      </div>
     </div>);
 }
 export default function MenuSayaPage() {
@@ -672,39 +678,63 @@ export default function MenuSayaPage() {
         return () => window.clearTimeout(timeout);
     }, [quotaBlocked]);
     const isLimitReached = plan.maxProducts !== null && products.length >= plan.maxProducts;
+    const availableCount = products.filter(isProductAvailable).length;
     return (<SellerShell>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: 'easeOut' }}>
-        <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.6rem)] font-medium leading-tight tracking-[-0.02em] text-primary">
-          Menu Saya
-        </h1>
-      </motion.div>
-
-      
-      <Card className="mt-6 p-4 sm:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-bold text-foreground">
-            Menu toko
-            <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold tabular-nums text-charcoal-500">
-              {products.length}
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 max-w-2xl">
+            <h1 className="mt-1 font-display text-2xl font-semibold leading-tight tracking-tight text-primary">
+              Menu Saya
+            </h1>
+            <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
+              Kelola stok, jam tayang, dan Flash Sale setiap menu. Menu yang tayang langsung muncul di halaman Detail Toko.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2.5">
+            <span aria-live="polite" className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm">
+              <Utensils aria-hidden className="h-3.5 w-3.5 text-primary"/>
+              {productsLoading ? "Memuat menu…" : `${products.length} menu`}
             </span>
-          </p>
-          {isLimitReached ? (plan.upgradeSlug && (<Link href={`/langganan/pembayaran?plan=${plan.upgradeSlug}&billing=monthly`} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark">
-                <Lock className="h-3.5 w-3.5"/>
-                Naikkan kuota via upgrade
-              </Link>)) : (<Link href={sellerStorePath(routeStoreId, 'tambahMenu')} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark">
-              <Plus className="h-3.5 w-3.5"/>
+            {isLimitReached ? (plan.upgradeSlug && (<Link href={`/langganan/pembayaran?plan=${plan.upgradeSlug}&billing=monthly`} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm shadow-primary/20 transition-colors hover:bg-primary-dark">
+                <Lock className="h-4 w-4" aria-hidden/>
+                Naikkan kuota
+              </Link>)) : (<Link href={sellerStorePath(routeStoreId, 'tambahMenu')} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm shadow-primary/20 transition-colors hover:bg-primary-dark">
+              <Plus className="h-4 w-4" aria-hidden/>
               Tambah Menu
             </Link>)}
+          </div>
+        </header>
+      </motion.div>
+
+      <Card className="mt-5 p-4 sm:p-5">
+        <div className="grid gap-2.5 sm:grid-cols-3">
+          <div className="flex flex-col rounded-xl border border-border/60 bg-secondary/40 p-3.5">
+            <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+              <Utensils aria-hidden className="h-3.5 w-3.5 text-primary"/>
+              Total menu
+            </p>
+            <p className="mt-1 text-xl font-bold tabular-nums text-charcoal-900">{products.length}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {plan.maxProducts === null ? "Tanpa batas paket" : `Maksimal ${plan.maxProducts} produk`}
+            </p>
+          </div>
+          <div className="flex flex-col rounded-xl border border-border/60 bg-secondary/40 p-3.5">
+            <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+              <CheckCircle2 aria-hidden className="h-3.5 w-3.5 text-primary"/>
+              Tayang sekarang
+            </p>
+            <p className="mt-1 text-xl font-bold tabular-nums text-charcoal-900">{availableCount}</p>
+            <p className="text-[11px] text-muted-foreground">siap dipesan pembeli</p>
+          </div>
+          <FlashSaleSummaryRow plan={plan} quota={flashQuota} used={flashUsed}/>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 border-t border-border/70 pt-4">
           <ProductLimitMeter products={products}/>
         </div>
 
-        <FlashSaleSummaryRow plan={plan} quota={flashQuota} used={flashUsed}/>
-
         {isLimitReached && (<p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1.5 text-[11px] font-medium text-charcoal-900">
-            <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-primary"/>
+            <BadgeCheck aria-hidden className="h-3.5 w-3.5 shrink-0 text-primary"/>
             Batas produk tercapai. Hapus salah satu menu atau upgrade paket.
           </p>)}
       </Card>
@@ -716,11 +746,11 @@ export default function MenuSayaPage() {
                 : 'Paket Standar hanya dapat memasukkan 1 produk ke Flash Sale.'}
         </p>)}
 
-      {productsLoading ? (<div role="status" aria-label="Memuat daftar menu" className="mt-6 grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
-          {[0, 1, 2, 3].map((i) => (<Skeleton key={i} className="h-72 rounded-2xl"/>))}
+      {productsLoading ? (<div role="status" aria-label="Memuat daftar menu" className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
+          {[0, 1, 2, 3].map((i) => (<Skeleton key={i} className="h-80 rounded-2xl"/>))}
         </div>) : productsError ? (<div className="mt-6 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-white p-5 sm:flex-row sm:items-center">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <XCircle className="h-4 w-4"/>
+            <XCircle aria-hidden className="h-4 w-4"/>
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-foreground">
@@ -730,25 +760,25 @@ export default function MenuSayaPage() {
               {productsError} Coba lagi untuk memuat menu tokomu.
             </p>
           </div>
-          <button type="button" onClick={refreshProducts} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark">
+          <button type="button" onClick={refreshProducts} className="inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark">
             Coba Lagi
           </button>
-        </div>) : products.length === 0 ? (<div className="mt-6 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-10 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary shadow-sm">
-            <Utensils className="h-6 w-6"/>
+        </div>) : products.length === 0 ? (<div className="mt-6 flex flex-col items-start gap-4 rounded-2xl border-2 border-dashed border-border bg-white p-6 sm:flex-row sm:items-center">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary shadow-sm">
+            <Utensils aria-hidden className="h-5 w-5"/>
           </span>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-foreground">Belum ada menu</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               Menu yang kamu tambahkan akan tampil di sini dan langsung muncul
               di halaman Detail Toko.
             </p>
           </div>
-          {!isLimitReached && (<Link href={sellerStorePath(routeStoreId, 'tambahMenu')} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark">
-              <Plus className="h-3.5 w-3.5"/>
+          {!isLimitReached && (<Link href={sellerStorePath(routeStoreId, 'tambahMenu')} className="inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-sm shadow-primary/25 transition-colors hover:bg-primary-dark">
+              <Plus aria-hidden className="h-3.5 w-3.5"/>
               Tambah Menu
             </Link>)}
-        </div>) : (<div className="mt-6 grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
+        </div>) : (<div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
           {products.map((product) => (<MenuCard key={product.id} product={product} flashQuota={flashQuota} flashUsed={flashUsed} onUpgradeClick={() => setUpgradeOpen(true)} onQuotaBlocked={() => setQuotaBlocked(true)} editHref={`${sellerStorePath(routeStoreId, 'menu')}/${encodeURIComponent(product.id)}/edit`}/>))}
         </div>)}
 
