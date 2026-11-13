@@ -1,4 +1,4 @@
-export const DEFAULT_CHATBOT_MODEL = 'gpt-6-luna';
+export const DEFAULT_CHATBOT_MODEL = 'vibecode-1.1';
 export const AI_REQUEST_TIMEOUT_MS = 45000;
 export interface AiToolCall {
     id: string;

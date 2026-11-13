@@ -38,10 +38,10 @@ test('knowledge tidak menunjuk seksi profil yang tidak ada', () => {
         assert.ok(profile.includes(`id="${id}"`), `seksi #${id} hilang dari halaman profil`);
     }
 });
-test('ikon aplikasi disajikan dari app/icon.svg', () => {
-    const icon = path.join(APP, 'icon.svg');
-    assert.ok(existsSync(icon), 'app/icon.svg harus ada agar /favicon.ico tidak 404');
-    const svg = readFileSync(icon, 'utf8');
-    assert.match(svg, /<svg[^>]*viewBox/);
-    assert.match(svg, /<rect/);
+test('ikon aplikasi disajikan dari app/icon.png', () => {
+    const icon = path.join(APP, 'icon.png');
+    assert.ok(existsSync(icon), 'app/icon.png harus ada agar /favicon.ico tidak 404');
+    const png = readFileSync(icon);
+    assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', 'app/icon.png harus berkas PNG yang sah');
+    assert.ok(png.length > 1000, 'app/icon.png terlalu kecil untuk sebuah ikon aplikasi');
 });
